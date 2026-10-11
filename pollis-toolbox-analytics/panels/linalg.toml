@@ -1,0 +1,612 @@
+# Linear Algebra Webview Configuration
+# This is the declarative source for the webview. The build script generates:
+# - src/vs/workbench/contrib/model/browser/webviews/linalg.data.ts
+# Run: npm run gulp compile-toml
+
+[meta]
+title = "Linear Algebra"
+viewType = "pollis.linalg"
+defaultModel = "solve"
+
+[[packages]]
+name = "LinearAlgebra.jl"
+github = "https://github.com/JuliaLang/LinearAlgebra.jl"
+
+[requires]
+packages = ["LinearAlgebra.jl", "Plots.jl"]
+
+[[notebookSections]]
+label = ""
+
+[[notebookSections.notebooks]]
+name = "Solving Linear Systems"
+file = "linalg/tutorial-01-linear-systems.ipynb"
+bundled = true
+description = "Solve A x = b with the backslash operator, check the residual and see when a system has no unique solution"
+
+[[notebookSections.notebooks]]
+name = "Matrix Factorisations"
+file = "linalg/tutorial-02-factorisations.ipynb"
+bundled = true
+description = "LU, QR and Cholesky: what each one writes A as, and why a factorisation is computed once and reused"
+
+[[notebookSections.notebooks]]
+name = "Eigenvalues and Eigenvectors"
+file = "linalg/tutorial-03-eigenvalues.ipynb"
+bundled = true
+description = "The directions a matrix only stretches, the long-run behaviour of a linear recursion and the power method"
+
+[[notebookSections.notebooks]]
+name = "The Singular Value Decomposition"
+file = "linalg/tutorial-04-svd.ipynb"
+bundled = true
+description = "Singular values, rank, the condition number and the best low-rank approximation of a matrix"
+
+[[notebookSections.notebooks]]
+name = "Least Squares"
+file = "linalg/tutorial-05-least-squares.ipynb"
+bundled = true
+description = "Fit a polynomial to noisy data by QR, by the normal equations and by the SVD, and see why QR is the default"
+
+[[wikis]]
+name = "Factsheet"
+file = "linalg/factsheet.md"
+bundled = true
+
+[[wikis]]
+name = "Overview"
+file = "linalg/overview.md"
+bundled = true
+
+[[wikis]]
+name = "Assumptions"
+file = "linalg/assumptions.md"
+bundled = true
+
+[[wikis]]
+name = "Diagnostics"
+file = "linalg/diagnostics.md"
+bundled = true
+
+[[wikis]]
+name = "Interpretation"
+file = "linalg/interpretation.md"
+bundled = true
+
+[[wikis]]
+name = "Decision Guide"
+file = "linalg/decision-guide.md"
+bundled = true
+
+[[wikis]]
+separator = true
+label = "Models"
+
+[[wikis]]
+name = "Linear Systems"
+file = "linalg/linear-systems.md"
+bundled = true
+
+[[wikis]]
+name = "Factorisations"
+file = "linalg/factorisations.md"
+bundled = true
+
+[[wikis]]
+name = "Eigenvalues"
+file = "linalg/eigenvalues.md"
+bundled = true
+
+[[wikis]]
+name = "Singular Value Decomposition"
+file = "linalg/singular-values.md"
+bundled = true
+
+[[wikis]]
+name = "Least Squares"
+file = "linalg/least-squares.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+title = "Julia: A Fresh Approach to Numerical Computing"
+authors = "Bezanson, Jeff; Edelman, Alan; Karpinski, Stefan; Shah, Viral B."
+year = 2017
+journal = "SIAM Review"
+doi = "10.1137/141000671"
+openAccess = true
+
+[[references]]
+title = "LAPACK Users' Guide"
+authors = "Anderson, Edward; Bai, Zhaojun; Bischof, Christian; Blackford, Susan; Demmel, James; Dongarra, Jack; Du Croz, Jeremy; Greenbaum, Anne; Hammarling, Sven; McKenney, Alan; Sorensen, Danny"
+year = 1999
+journal = "Society for Industrial and Applied Mathematics"
+doi = "10.1137/1.9780898719604"
+openAccess = false
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+title = "Matrix Computations"
+authors = "Golub, Gene H.; Van Loan, Charles F."
+year = 2013
+journal = "Johns Hopkins University Press"
+openAccess = false
+
+[[references]]
+title = "Numerical Linear Algebra"
+authors = "Trefethen, Lloyd N.; Bau, David"
+year = 1997
+journal = "Society for Industrial and Applied Mathematics"
+doi = "10.1137/1.9780898719574"
+openAccess = false
+
+[[references]]
+title = "Accuracy and Stability of Numerical Algorithms"
+authors = "Higham, Nicholas J."
+year = 2002
+journal = "Society for Industrial and Applied Mathematics"
+doi = "10.1137/1.9780898718027"
+openAccess = false
+
+[[references]]
+title = "Introduction to Linear Algebra"
+authors = "Strang, Gilbert"
+year = 2023
+journal = "Wellesley-Cambridge Press"
+openAccess = false
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+title = "Unitary Triangularization of a Nonsymmetric Matrix"
+authors = "Householder, Alston S."
+year = 1958
+journal = "Journal of the ACM"
+doi = "10.1145/320941.320947"
+openAccess = false
+
+[[references]]
+title = "The QR Transformation: A Unitary Analogue to the LR Transformation, Part 1"
+authors = "Francis, John G. F."
+year = 1961
+journal = "The Computer Journal"
+doi = "10.1093/comjnl/4.3.265"
+openAccess = true
+
+[[references]]
+title = "Calculating the Singular Values and Pseudo-Inverse of a Matrix"
+authors = "Golub, Gene H.; Kahan, William"
+year = 1965
+journal = "Journal of the Society for Industrial and Applied Mathematics, Series B: Numerical Analysis"
+doi = "10.1137/0702016"
+openAccess = false
+
+[[references]]
+title = "The Approximation of One Matrix by Another of Lower Rank"
+authors = "Eckart, Carl; Young, Gale"
+year = 1936
+journal = "Psychometrika"
+doi = "10.1007/BF02288367"
+openAccess = false
+
+[[models]]
+id = "solve"
+label = "Linear Systems"
+
+[[models]]
+id = "fact"
+label = "Factorisations"
+
+[[models]]
+id = "eig"
+label = "Eigenvalues"
+
+[[models]]
+id = "svd"
+label = "Singular Values"
+
+[[models]]
+id = "lsq"
+label = "Least Squares"
+
+[[bullets]]
+text = "Linear Systems"
+detail = "solves A x = b with the backslash operator, which picks the method from the structure of A, and checks the residual"
+
+[[bullets]]
+text = "Factorisations"
+detail = "writes A as a product of simple matrices: LU (triangular), QR (orthogonal times triangular) and Cholesky (for symmetric positive definite A)"
+
+[[bullets]]
+text = "Eigenvalues"
+detail = "the directions A only stretches and by how much: stability, long-run growth and the shape of a quadratic form"
+
+[[bullets]]
+text = "Singular Values"
+detail = "the rank, the condition number and the best approximation of A by a matrix of lower rank"
+
+[[bullets]]
+text = "Least Squares"
+detail = "the coefficients that best fit more equations than unknowns, here a polynomial through simulated noisy data"
+
+[[decisionRows]]
+task = "Linear Systems"
+context = "As many equations as unknowns and a matrix that is not singular: equilibrium prices, input-output models, a step inside Newton's method"
+purpose = "A \\ b factorises A (Cholesky, LU or another, from its structure) and solves two triangular systems; never form inv(A)"
+
+[[decisionRows]]
+task = "Factorisations"
+context = "The same matrix with many right-hand sides, a determinant, or a check that a matrix is positive definite"
+purpose = "LU with partial pivoting for general square A; QR for any shape, the stable route to least squares; Cholesky, about twice as fast as LU, exists only when A is symmetric positive definite"
+
+[[decisionRows]]
+task = "Eigenvalues"
+context = "Dynamics of x(t+1) = A x(t), stability of an equilibrium, principal components, the curvature of a quadratic form"
+purpose = "eigen runs the QR algorithm (LAPACK); for a symmetric matrix the eigenvalues are real and the eigenvectors orthogonal, and it uses a faster, more accurate routine"
+
+[[decisionRows]]
+task = "Singular Values"
+context = "Any matrix, of any shape: its numerical rank, how ill-conditioned it is, or a compressed version of it"
+purpose = "svd writes A = U S Vt with orthogonal U and V; the singular values give the rank and the condition number, and the leading k terms are the best rank-k approximation (Eckart-Young)"
+
+[[decisionRows]]
+task = "Least Squares"
+context = "More equations than unknowns, a tall design matrix: regression, curve fitting, calibration"
+purpose = "A \\ b on a tall A uses a pivoted QR and minimises the sum of squared residuals; the normal equations square the condition number, the SVD handles a rank-deficient A"
+
+[[inputs]]
+id = "A"
+label = "Matrix A"
+tooltip = "A matrix as a Julia literal: rows separated by semicolons, entries by spaces, e.g. [4.0 1 2; 1 5 1; 2 1 6]. Write one entry as a decimal (4.0) so the matrix holds floating-point numbers."
+default = "[4.0 1 2; 1 5 1; 2 1 6]"
+models = ["solve", "fact", "eig", "svd"]
+
+[[inputs]]
+id = "b"
+label = "Right-Hand Side b"
+tooltip = "A vector with one entry per row of A, e.g. [1.0, 2, 3]."
+default = "[1.0, 2, 3]"
+models = ["solve"]
+
+[[inputs]]
+id = "k"
+label = "Rank k"
+tooltip = "Number of singular values kept in the low-rank approximation of A. At most the smaller dimension of A."
+default = "1"
+models = ["svd"]
+
+[[inputs]]
+id = "n"
+label = "Observations"
+tooltip = "Number of simulated data points: more equations than unknowns."
+default = "50"
+models = ["lsq"]
+
+[[inputs]]
+id = "degree"
+label = "Polynomial Degree"
+tooltip = "Degree of the fitted polynomial: the design matrix has degree + 1 columns (1, t, t^2, ...). The data come from a degree 2 curve."
+default = "2"
+models = ["lsq"]
+
+[[inputs]]
+id = "noise"
+label = "Noise Standard Deviation"
+tooltip = "Standard deviation of the normal noise added to the true curve 1 + 2t - 0.5t^2."
+default = "0.5"
+models = ["lsq"]
+newRow = true
+
+[[inputs]]
+id = "seed"
+label = "Random Seed"
+tooltip = "Random seed for the simulated data: the same seed gives the same data on every run."
+default = "1"
+models = ["lsq"]
+
+[[codeBranches]]
+model = "solve"
+code = '''
+using LinearAlgebra
+
+A = {{A}}
+b = {{b}}
+x = A \ b  # factorises A (Cholesky, LU, ...) from its structure, then solves two triangular systems
+r = b - A * x  # residual: zero up to rounding when the system is solved
+(x = x, residual_norm = norm(r), determinant = det(A), condition_number = cond(A))
+'''
+
+[[codeBranches]]
+model = "fact"
+code = '''
+using LinearAlgebra
+
+A = {{A}}
+F_lu = lu(A)  # P A = L U, partial pivoting
+F_qr = qr(A)  # A = Q R, Householder reflections
+F_ch = isposdef(A) ? cholesky(Symmetric(A)) : nothing  # A = transpose(U) U, only for symmetric positive definite A
+(L = F_lu.L, U = F_lu.U, row_order = F_lu.p, Q = Matrix(F_qr.Q), R = F_qr.R,
+ cholesky_factor = F_ch === nothing ? "A is not symmetric positive definite" : F_ch.U)
+'''
+
+[[codeBranches]]
+model = "eig"
+code = '''
+using LinearAlgebra
+
+A = {{A}}
+E = eigen(A)  # A V = V Diagonal(values)
+values, V = E.values, E.vectors  # complex when A is not symmetric
+(eigenvalues = values, eigenvectors = V, symmetric = issymmetric(A),
+ trace = tr(A), sum_of_eigenvalues = sum(values), determinant = det(A), product_of_eigenvalues = prod(values))
+'''
+
+[[codeBranches]]
+model = "svd"
+code = '''
+using LinearAlgebra
+
+A = {{A}}
+S = svd(A)  # A = U Diagonal(S) Vt, singular values in decreasing order
+k = {{k}}
+Ak = S.U[:, 1:k] * Diagonal(S.S[1:k]) * S.Vt[1:k, :]  # best rank-k approximation (Eckart-Young)
+(singular_values = S.S, rank = rank(A), condition_number = S.S[1] / S.S[end],
+ rank_k_error = opnorm(A - Ak), next_singular_value = k < length(S.S) ? S.S[k + 1] : 0.0)
+'''
+
+[[codeBranches]]
+model = "lsq"
+code = '''
+using LinearAlgebra, Random
+
+rng = Xoshiro({{seed}})  # fixed seed: the same data on every run
+n = {{n}}
+t = sort(4 .* rand(rng, n))  # inputs on [0, 4]
+truth(s) = 1 + 2s - 0.5s^2  # the true curve
+b = truth.(t) .+ {{noise}} .* randn(rng, n)
+A = [s^j for s in t, j in 0:{{degree}}]  # design matrix: columns 1, t, t^2, ...
+x = A \ b  # tall A: least squares through a pivoted QR
+r = b - A * x
+(coefficients = x, true_coefficients = [1.0, 2.0, -0.5], residual_norm = norm(r),
+ r_squared = 1 - sum(abs2, r) / sum(abs2, b .- sum(b) / n))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "result-plot"
+label = "Result Plot"
+desc = "The result at a glance: the solution vector, the L and U factors, the eigenvalues in the complex plane, the singular values, or the data with the fitted curve"
+code = '''
+using Plots
+{{?model=solve}} Plots.bar(1:length(x), x, label="x", xlabel="component", title="Solution of A x = b")
+{{?model=fact}} Plots.plot(Plots.heatmap(Matrix(F_lu.L), yflip=true, title="L", c=:balance, clims=(-1, 1) .* maximum(abs, F_lu.L)), Plots.heatmap(F_lu.U, yflip=true, title="U", c=:balance, clims=(-1, 1) .* maximum(abs, F_lu.U)), layout=(1, 2), size=(800, 350))
+{{?model=eig}} Plots.scatter(real.(values), imag.(values), ms=7, label="eigenvalues", xlabel="real part", ylabel="imaginary part", aspect_ratio=:equal)
+{{?model=eig}} Plots.plot!(cos.(range(0, 2pi, length=200)), sin.(range(0, 2pi, length=200)), c=:gray, ls=:dot, label="unit circle")
+{{?model=svd}} Plots.bar(1:length(S.S), S.S, label="singular values", xlabel="index", c=[i <= k ? :steelblue : :lightgray for i in 1:length(S.S)])
+{{?model=lsq}} ts = range(0, 4, length=200)
+{{?model=lsq}} Plots.scatter(t, b, ms=3, label="data", xlabel="t", ylabel="y")
+{{?model=lsq}} Plots.plot!(ts, [sum(x[j + 1] * s^j for j in 0:{{degree}}) for s in ts], lw=2, label="fitted, degree {{degree}}")
+{{?model=lsq}} Plots.plot!(ts, truth.(ts), lw=1.5, ls=:dash, c=:black, label="true curve")
+'''
+
+[[actionGroups.actions]]
+id = "heatmap"
+label = "Matrix Heatmap"
+desc = "Each entry of the matrix as a colour, rows from top to bottom: structure such as symmetry, a dominant diagonal or near-equal columns shows at once"
+code = '''
+using Plots
+Plots.heatmap(A, yflip=true, c=:balance, clims=(-1, 1) .* maximum(abs, A), title="A, $(size(A, 1)) x $(size(A, 2))", xlabel="column", ylabel="row")
+'''
+
+[[actionGroups.actions]]
+id = "gershgorin"
+label = "Gershgorin Discs"
+desc = "Each eigenvalue lies in a disc centred on a diagonal entry, with radius the sum of the other absolute entries in its row: a bound found without computing anything"
+models = ["eig"]
+code = '''
+using Plots
+c = diag(A); rad = [sum(abs, A[i, :]) - abs(A[i, i]) for i in 1:size(A, 1)]
+th = range(0, 2pi, length=200)
+p = Plots.plot(aspect_ratio=:equal, xlabel="real part", ylabel="imaginary part", title="Gershgorin discs")
+for i in eachindex(c)
+    Plots.plot!(p, real(c[i]) .+ rad[i] .* cos.(th), imag(c[i]) .+ rad[i] .* sin.(th), fill=true, fillalpha=0.15, label="row $i")
+end
+Plots.scatter!(p, real.(values), imag.(values), ms=6, c=:black, label="eigenvalues")
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "residual-check"
+label = "Residual Check"
+desc = "Multiplies the result back and measures what is left: the relative residual of the solution, the factors against A, A V against V times the eigenvalues, U S Vt against A, or the normal equations. Values near 1e-16 mean exact up to rounding"
+code = '''
+{{?model=solve}} (relative_residual = norm(A * x - b) / (opnorm(A) * norm(x)),)
+{{?model=fact}} (lu = norm(F_lu.L * F_lu.U - A[F_lu.p, :]) / norm(A), qr = norm(Matrix(F_qr.Q) * F_qr.R - A) / norm(A), cholesky = F_ch === nothing ? missing : norm(transpose(F_ch.U) * F_ch.U - A) / norm(A))
+{{?model=eig}} (eigen_equation = norm(A * V - V * Diagonal(values)) / norm(A), vectors_unit_length = maximum(abs.([norm(V[:, j]) for j in 1:size(V, 2)] .- 1)))
+{{?model=svd}} (reconstruction = norm(S.U * Diagonal(S.S) * S.Vt - A) / norm(A), U_orthonormal = norm(transpose(S.U) * S.U - I), V_orthonormal = norm(S.Vt * transpose(S.Vt) - I))
+{{?model=lsq}} (normal_equations = norm(transpose(A) * r) / (opnorm(A) * norm(r)), note = "the residual is orthogonal to every column of A at the least-squares solution")
+'''
+
+[[actionGroups.actions]]
+id = "conditioning"
+label = "Condition Number"
+desc = "How much the result can change when the data change a little: the condition number, the decimal digits it may cost, and an experiment that perturbs the data by one part in a hundred million"
+code = '''
+using Random
+kappa = cond(A)
+{{?model=solve|lsq}} rng_p = Xoshiro(2); db = 1e-8 * norm(b) .* normalize(randn(rng_p, length(b)))  # change b by one part in a hundred million
+{{?model=solve|lsq}} dx = A \ (b + db) - x
+{{?model=solve}} (condition_number = kappa, digits_at_risk = log10(kappa), relative_change_in_b = norm(db) / norm(b), relative_change_in_x = norm(dx) / norm(x), bound = kappa * norm(db) / norm(b))
+{{?model=lsq}} (condition_of_A = kappa, condition_of_normal_equations = cond(transpose(A) * A), relative_change_in_b = norm(db) / norm(b), relative_change_in_x = norm(dx) / norm(x), note = "forming transpose(A) * A squares the condition number")
+{{?model=fact|svd}} (condition_number = kappa, digits_at_risk = log10(kappa), smallest_singular_value = minimum(svdvals(A)))
+{{?model=eig}} (condition_number = kappa, digits_at_risk = log10(kappa), eigenvector_condition = cond(V), note = "eigenvector condition near 1 for a symmetric matrix; large when eigenvalues are sensitive to changes in A")
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "reuse-factorisation"
+label = "Reuse the Factorisation"
+desc = "Factorises A once and solves for 200 new right-hand sides, against solving each from scratch: the fastest of 20 runs of each, and how far the two answers are apart. The saving grows with the size of A"
+models = ["solve", "fact", "lsq"]
+code = '''
+using Random
+rng_b = Xoshiro(3)
+B = randn(rng_b, size(A, 1), 200)  # 200 new right-hand sides
+F = factorize(A)  # chosen from the structure of A: Cholesky, LU, QR, ...
+reuse(F, B) = reduce(hcat, [F \ B[:, j] for j in 1:size(B, 2)])  # the factors are reused for every column
+fresh(A, B) = reduce(hcat, [A \ B[:, j] for j in 1:size(B, 2)])  # A is factorised again for every column
+X1 = reuse(F, B); X2 = fresh(A, B)  # also compiles both before timing
+t_reuse = minimum(@elapsed(reuse(F, B)) for _ in 1:20)
+t_fresh = minimum(@elapsed(fresh(A, B)) for _ in 1:20)
+(factorisation = nameof(typeof(F)), seconds_reusing = t_reuse, seconds_from_scratch = t_fresh, largest_difference = maximum(abs.(X1 - X2)))
+'''
+
+[[actionGroups.actions]]
+id = "predictions"
+label = "Predictions"
+desc = "The fitted polynomial at new values of t, beside the true curve, including outside the data range, where a polynomial fit soon goes wrong"
+models = ["lsq"]
+code = '''
+fit(s) = sum(x[j + 1] * s^j for j in 0:{{degree}})
+[(t = s, predicted = round(fit(s), digits=4), true_value = round(truth(s), digits=4)) for s in (0.5, 1.5, 2.5, 3.5, 5.0, 6.0)]
+'''
+
+[[actionGroups.actions]]
+id = "long-run"
+label = "Long-Run Behaviour"
+desc = "Iterates x(t+1) = A x(t) from a starting vector: the growth rate per step approaches the largest eigenvalue in absolute value and the direction approaches its eigenvector (the power method)"
+models = ["eig"]
+code = '''
+xk = ones(size(A, 1))
+rows = map(1:12) do step
+    y = A * xk
+    rate = norm(y) / norm(xk)
+    global xk = y / norm(y)
+    (step = step, growth_rate = rate, direction = round.(xk, digits=4))
+end
+j = argmax(abs.(values))
+(iterations = rows, dominant_eigenvalue = values[j], dominant_eigenvector = normalize(V[:, j]))
+'''
+
+[[actionGroups.actions]]
+id = "low-rank"
+label = "Low-Rank Reconstruction"
+desc = "A beside its rank-k approximation, entry by entry: how much of the matrix the first k singular values carry"
+models = ["svd"]
+code = '''
+(A = A, rank_k_approximation = round.(Ak, digits=4), largest_entry_error = maximum(abs.(A - Ak)))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "solvers"
+label = "Compare Solvers"
+desc = "The same system solved by backslash, LU, QR, Cholesky (when A allows it) and the explicit inverse: the relative residual and the fastest of 20 runs of each. For a small, well-conditioned matrix they agree; as A grows or becomes ill-conditioned, the inverse costs more and loses accuracy"
+models = ["solve", "fact"]
+code = '''
+{{?model=fact}} b = ones(size(A, 1))
+methods = ["backslash" => () -> A \ b, "LU" => () -> lu(A) \ b, "QR" => () -> qr(A) \ b, "inverse" => () -> inv(A) * b]
+isposdef(A) && push!(methods, "Cholesky" => () -> cholesky(Symmetric(A)) \ b)
+map(methods) do (name, solver)
+    xs = solver()  # also compiles before timing
+    t = minimum(@elapsed(solver()) for _ in 1:20)
+    (method = name, relative_residual = norm(A * xs - b) / (opnorm(A) * norm(xs)), seconds = t)
+end
+'''
+
+[[actionGroups.actions]]
+id = "lsq-methods"
+label = "Compare Methods"
+desc = "The least-squares coefficients by QR, by the normal equations and by the SVD pseudo-inverse, with the residual of each and the condition number each one faces"
+models = ["lsq"]
+code = '''
+x_qr = A \ b
+x_ne = (transpose(A) * A) \ (transpose(A) * b)  # normal equations
+x_svd = pinv(A) * b  # SVD pseudo-inverse
+[(method = m, coefficients = round.(c, digits=6), residual_norm = norm(b - A * c), condition_faced = k)
+ for (m, c, k) in (("QR", x_qr, cond(A)), ("normal equations", x_ne, cond(transpose(A) * A)), ("SVD", x_svd, cond(A)))]
+'''
+
+[[actionGroups.actions]]
+id = "degrees"
+label = "Compare Degrees"
+desc = "Polynomials of degree 1 to 6 fitted to the same data: the residual falls with every term added, but the error against the true curve barely improves after degree 2 and then grows, while the condition number rises about tenfold with each degree"
+models = ["lsq"]
+code = '''
+ts = range(0, 4, length=200)
+map(1:6) do d
+    Ad = [s^j for s in t, j in 0:d]
+    xd = Ad \ b
+    fd(s) = sum(xd[j + 1] * s^j for j in 0:d)
+    (degree = d, residual_norm = norm(b - Ad * xd), max_error_vs_truth = maximum(abs.(fd.(ts) .- truth.(ts))), condition_number = cond(Ad))
+end
+'''
+
+[[actionGroups.actions]]
+id = "eig-vs-svd"
+label = "Eigenvalues and Singular Values"
+desc = "The absolute eigenvalues beside the singular values, largest first: the same for a symmetric matrix, different otherwise"
+models = ["eig", "svd"]
+code = '''
+lam = sort(abs.(eigvals(A)), rev=true)
+sig = svdvals(A)
+(symmetric = issymmetric(A), absolute_eigenvalues = round.(lam, digits=6), singular_values = round.(sig, digits=6))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "properties"
+label = "Matrix Properties"
+desc = "The facts that decide which method applies: size, rank, symmetry, positive definiteness, determinant, trace, norm and condition number"
+code = '''
+m, p = size(A)
+(size = (m, p), rank = rank(A), square = m == p, symmetric = issymmetric(A), positive_definite = isposdef(A),
+ determinant = m == p ? det(A) : missing, trace = m == p ? tr(A) : missing, norm_2 = opnorm(A), condition_number = cond(A))
+'''
+
+[[actionGroups.actions]]
+id = "energy"
+label = "Energy Captured"
+desc = "The share of the sum of squared entries of A carried by the first 1, 2, ... singular values: the same reading as the variance explained by principal components"
+models = ["svd"]
+code = '''
+s2 = S.S .^ 2
+[(components = j, singular_value = S.S[j], share = round(sum(s2[1:j]) / sum(s2), digits=4)) for j in eachindex(s2)]
+'''
+
+[[actionGroups.actions]]
+id = "eigen-reading"
+label = "Reading the Eigenvalues"
+desc = "What each eigenvalue says about x(t+1) = A x(t) along its eigenvector: growth or decay, and oscillation when it is complex or negative"
+models = ["eig"]
+code = '''
+map(values) do lam
+    a = abs(lam)
+    kind = a > 1 ? "grows" : a < 1 ? "decays" : "keeps its size"
+    turn = imag(lam) != 0 ? ", rotating by $(round(rad2deg(angle(lam)), digits=1)) degrees a step" : real(lam) < 0 ? ", changing sign every step" : ""
+    (eigenvalue = lam, modulus = a, behaviour = kind * turn, half_life_or_doubling_steps = a == 1 ? Inf : log(2) / abs(log(a)))
+end
+'''
