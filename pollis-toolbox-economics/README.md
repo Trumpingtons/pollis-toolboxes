@@ -1,8 +1,8 @@
-# Macroeconomics Toolbox
+# Economics Toolbox
 
-The Pollis Macroeconomics Toolbox covers quantitative macroeconomics: business cycle filters, stochastic volatility macroeconomic models, DSGE models, heterogeneous-agent models and continuous-time macro-finance.
+The Pollis Economics Toolbox covers quantitative macroeconomics and game theory: business cycle filters, stochastic volatility macroeconomic models, DSGE models, heterogeneous-agent models, continuous-time macro-finance, and normal-form, zero-sum, potential and evolutionary games.
 
-Installing it adds the **Macroeconomic Models** submenu to the end of the **Simulate** menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
+Installing it adds the **Economic Models** submenu to the end of the **Simulate** menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
 ## Panels
 
@@ -13,6 +13,7 @@ Installing it adds the **Macroeconomic Models** submenu to the end of the **Simu
 | Dynamic Stochastic General Equilibrium (DSGE) | Model moments, estimation and impulse responses | MacroModelling.jl, Dynare.jl, DSGE.jl, SolveDSGE.jl, StateSpaceEcon.jl |
 | Heterogeneous-Agent Models | Huggett and Aiyagari economies | EconPDEs.jl |
 | Continuous-Time Macro-Finance | Asset pricing through Hamilton-Jacobi-Bellman equations: habit formation, long-run risk, disaster risk and financial intermediaries | EconPDEs.jl |
+| Game Theory | Normal-form, zero-sum, potential and evolutionary games: Nash equilibria, minimax strategies and replicator dynamics | GameTheory.jl, JuMP.jl, HiGHS.jl, BaryPlots.jl |
 
 ## Requirements
 
