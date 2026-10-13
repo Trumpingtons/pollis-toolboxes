@@ -1,0 +1,31 @@
+{
+	"toolboxes": [
+		{
+			"id": "pollis.pollis-toolbox-econometrics",
+			"name": "Financial Econometrics Toolbox",
+			"description": "Pollis Financial Econometrics Toolbox: ARIMAX models, VAR/VECM systems, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
+			"author": "Pollis",
+			"version": "1.0.4",
+			"vsix": "pollis-toolbox-econometrics-1.0.4.vsix",
+			"readme": "pollis-toolbox-econometrics-README.md"
+		},
+		{
+			"id": "pollis.pollis-toolbox-economics",
+			"name": "Economics Toolbox",
+			"description": "Pollis Economics Toolbox: business cycle filters, stochastic volatility macroeconomic models, DSGE models, heterogeneous-agent models, continuous-time macro-finance and game theory.",
+			"author": "Pollis",
+			"version": "1.0.5",
+			"vsix": "pollis-toolbox-economics-1.0.5.vsix",
+			"readme": "pollis-toolbox-economics-README.md"
+		},
+		{
+			"id": "pollis.pollis-toolbox-mathematical-core",
+			"name": "Mathematical Core Toolbox",
+			"description": "Pollis Mathematical Core Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
+			"author": "Pollis",
+			"version": "1.0.5",
+			"vsix": "pollis-toolbox-mathematical-core-1.0.5.vsix",
+			"readme": "pollis-toolbox-mathematical-core-README.md"
+		}
+	]
+}
