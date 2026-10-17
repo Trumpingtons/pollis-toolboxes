@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-economics",
   "displayName": "Economics Toolbox",
   "description": "Pollis Economics Toolbox: business cycle filters, stochastic volatility macroeconomic models, DSGE models, heterogeneous-agent models, continuous-time macro-finance and game theory.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -20,8 +20,6 @@
       {
         "id": "economics",
         "title": "Economic Models",
-        "menu": "Simulate",
-        "group": "z_toolboxes",
         "order": 1,
         "panels": [
           { "id": "bcf", "command": "chiara.statistics.macro.hpf", "title": "Business Cycle Filters", "group": "4_mt", "order": 1, "data": "panels/bcf.toml", "defaultModel": "hp", "decisionFirstColumn": "Model" },

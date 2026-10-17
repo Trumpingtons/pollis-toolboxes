@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Financial Econometrics Toolbox",
   "description": "Pollis Financial Econometrics Toolbox: ARIMAX models, VAR/VECM systems, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -20,8 +20,6 @@
       {
         "id": "econometrics",
         "title": "Financial Econometrics",
-        "menu": "Model",
-        "group": "z_toolboxes",
         "order": 1,
         "panels": [
           { "id": "arima", "command": "chiara.statistics.arma.arima", "title": "ARIMA Models", "menuTitle": "ARIMAX Models", "group": "1_et", "order": 1, "data": "panels/arima.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },

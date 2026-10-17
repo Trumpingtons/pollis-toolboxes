@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-mathematical-core",
   "displayName": "Mathematical Core Toolbox",
   "description": "Pollis Mathematical Core Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -20,8 +20,6 @@
       {
         "id": "mathematical-core",
         "title": "Mathematical Core",
-        "menu": "Extend",
-        "group": "1_toolboxes",
         "order": 1,
         "panels": [
           { "id": "symb", "command": "chiara.toolboxes.symb", "title": "Symbolic Math", "group": "1_at", "order": 1, "data": "panels/symb.toml", "defaultModel": "alg", "decisionFirstColumn": "Task" },
