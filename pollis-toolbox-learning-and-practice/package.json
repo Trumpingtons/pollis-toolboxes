@@ -1,0 +1,46 @@
+{
+  "name": "pollis-toolbox-learning-and-practice",
+  "displayName": "Learning and Practice Toolbox",
+  "description": "Pollis Learning and Practice Toolbox: multiple-choice exercises whose data and answers Julia computes, on descriptive statistics, hypothesis tests and linear regression, and a panel to write new ones.",
+  "version": "1.0.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "learning",
+        "title": "Learning and Practice",
+        "panels": [
+          {
+            "id": "learning-and-practice.practice",
+            "command": "pollis.pollis-toolbox-learning-and-practice.practice",
+            "title": "Practice",
+            "group": "1_panels",
+            "order": 1,
+            "data": "panels/learning-and-practice.practice.toml",
+            "defaultModel": "ds",
+            "decisionFirstColumn": "Topic"
+          },
+          {
+            "id": "learning-and-practice.exwrite",
+            "command": "pollis.pollis-toolbox-learning-and-practice.exwrite",
+            "title": "Write an Exercise",
+            "group": "1_panels",
+            "order": 2,
+            "data": "panels/learning-and-practice.exwrite.toml",
+            "defaultModel": "computed",
+            "decisionFirstColumn": "Kind"
+          }
+        ]
+      }
+    ]
+  }
+}

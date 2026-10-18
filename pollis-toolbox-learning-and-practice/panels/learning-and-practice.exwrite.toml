@@ -1,0 +1,167 @@
+# Request topic: Write an Exercise
+[meta]
+title = "Write an Exercise"
+defaultModel = "computed"
+decisionFirstColumn = "Kind"
+
+[[packages]]
+name = "Distributions.jl"
+github = "https://github.com/JuliaStats/Distributions.jl"
+
+[requires]
+packages = ["Distributions.jl", "Plots.jl"]
+
+[[models]]
+id = "computed"
+label = "Computed from Data"
+
+[[models]]
+id = "concept"
+label = "Conceptual"
+
+[[bullets]]
+text = "One Function"
+detail = "An exercise is a Julia function: from a random number generator it returns the question, the choices with the correct one first, and the explanation"
+
+[[bullets]]
+text = "Wrong Choices"
+detail = "Make each wrong choice a usual mistake, computed from the same data, so that a student who picks it learns which mistake it was"
+
+[[bullets]]
+text = "Versions"
+detail = "Each seed gives a version with other data and another order of the choices; preview a few before you use the exercise"
+
+[[bullets]]
+text = "Check the Choices"
+detail = "Two choices that come out the same make a version ambiguous: Choices That Coincide looks for them in many versions"
+
+[[decisionRows]]
+task = "Computed from Data"
+context = "Numbers drawn from the seed; the choices are computed"
+purpose = "Calculations: a statistic, a p-value, a prediction"
+
+[[decisionRows]]
+task = "Conceptual"
+context = "Fixed text; only the order of the choices changes"
+purpose = "Concepts: choosing a method, reading a result"
+
+[[inputs]]
+id = "title"
+label = "Title"
+tooltip = "The title of the exercise, shown above each version."
+default = "The mean of a sample"
+
+[[inputs]]
+id = "seed"
+label = "First Seed"
+tooltip = "The seed of the first version to preview."
+default = "1"
+
+[[inputs]]
+id = "versions"
+label = "Versions"
+tooltip = "How many versions to preview, from the first seed on."
+default = "3"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using Random, Statistics, Printf, Distributions
+
+fmt(x, digits) = Printf.format(Printf.Format("%.$(digits)f"), x)  # fixed decimals
+
+# One version of the exercise: edit the data, the question, the choices (the correct one first) and the explanation
+function exercise(rng)
+{{?model=computed}}    x = round.(rand(rng, Normal(rand(rng, 20:80), 8), 8); digits = 1)
+{{?model=computed}}    question = "A sample of 8 measurements: $(join(x, ", ")). What is the sample mean?"
+{{?model=computed}}    choices = [fmt(mean(x), 2), fmt(median(x), 2), fmt(sum(x) / 7, 2)]  # the mean, then two usual mistakes
+{{?model=computed}}    explanation = "The mean is the sum divided by n = 8: $(fmt(sum(x), 1)) / 8 = $(fmt(mean(x), 2)). Dividing by 7 belongs to the variance; $(fmt(median(x), 2)) is the median."
+{{?model=concept}}    question = "Which summary of a sample changes least when one value is recorded with three extra zeros?"
+{{?model=concept}}    choices = ["The median", "The mean", "The standard deviation", "The range"]  # the correct one first
+{{?model=concept}}    explanation = "The median depends only on the middle of the sorted values; the others use the extreme value itself."
+    return (; question, choices, explanation)
+end
+
+title = "{{title}}"
+for seed in {{seed}}:({{seed}} + {{versions}} - 1)
+    rng = Xoshiro(seed)
+    version = exercise(rng)
+    order = randperm(rng, length(version.choices))  # shuffled, as students see them
+    println(title, ", seed ", seed)
+    println(version.question)
+    for (letter, i) in zip("ABCDEFGH", order)
+        println("  ", letter, ") ", version.choices[i], i == 1 ? "   (correct)" : "")
+    end
+    println(version.explanation)
+    println()
+end
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "spread"
+label = "The Correct Answer Across Versions"
+desc = "A histogram of the correct answer in 500 versions: are the numbers in a sensible range?"
+models = ["computed"]
+code = '''
+using Plots
+
+answers = [parse(Float64, exercise(Xoshiro(seed)).choices[1]) for seed in 1:500]
+histogram(answers, xlabel="Correct answer", ylabel="Versions", label=false)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "coincide"
+label = "Choices That Coincide"
+desc = "The seeds, among the first 1000, whose version has two equal choices"
+code = '''
+ambiguous = [seed for seed in 1:1000 if !allunique(exercise(Xoshiro(seed)).choices)]
+isempty(ambiguous) ? println("No two choices coincide in 1000 versions") : println(length(ambiguous), " versions with equal choices, the first at seeds ", first(ambiguous, 10))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "try"
+label = "Try a Version"
+desc = "A version as a student sees it, without the answer marked"
+code = '''
+rng = Xoshiro(rand(1:10^6))
+version = exercise(rng)
+order = randperm(rng, length(version.choices))
+correct = findfirst(==(1), order)  # the letter of the answer, to check yourself
+println(version.question)
+for (letter, i) in zip("ABCDEFGH", order)
+    println("  ", letter, ") ", version.choices[i])
+end
+'''
+
+[[wikis]]
+name = "Overview"
+file = "learning-and-practice.exwrite/overview.md"
+bundled = true
+description = "What makes a good multiple-choice exercise"
+
+[[wikis]]
+name = "Writing the Choices"
+file = "learning-and-practice.exwrite/writing-the-choices.md"
+bundled = true
+description = "Wrong choices from usual mistakes, and choices that never coincide"
+
+[[notebookSections]]
+label = ""
+
+[[notebookSections.notebooks]]
+name = "Writing an Exercise"
+file = "learning-and-practice.exwrite/tutorial-01-write.ipynb"
+bundled = true
+description = "Write an exercise on the median, preview its versions and check its choices"

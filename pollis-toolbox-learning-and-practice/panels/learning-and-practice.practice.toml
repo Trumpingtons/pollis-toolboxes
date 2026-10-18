@@ -1,0 +1,327 @@
+# Request topic: Practice
+[meta]
+title = "Practice"
+defaultModel = "ds"
+decisionFirstColumn = "Topic"
+
+[[packages]]
+name = "Distributions.jl"
+github = "https://github.com/JuliaStats/Distributions.jl"
+
+[requires]
+packages = ["Distributions.jl"]
+
+[[models]]
+id = "ds"
+label = "Descriptive Statistics"
+
+[[models]]
+id = "ht"
+label = "Hypothesis Tests"
+
+[[models]]
+id = "lr"
+label = "Linear Regression"
+
+[[bullets]]
+text = "Multiple Choice"
+detail = "Each exercise asks one question with four choices; the wrong choices are the usual mistakes"
+
+[[bullets]]
+text = "Computed by Julia"
+detail = "The data and the answers come from Julia, so they are always right"
+
+[[bullets]]
+text = "New Data"
+detail = "Another seed gives other data and another order of the choices; the same seed gives the same exercise again"
+
+[[bullets]]
+text = "Check Your Answer"
+detail = "Run the Example Code, pick your answer under Your Answer, then Check My Answer under Next Steps for the explanation"
+
+[[decisionRows]]
+task = "Descriptive Statistics"
+context = "Mean, median, standard deviation, outliers, correlation"
+purpose = "Centre, spread and association of a sample"
+
+[[decisionRows]]
+task = "Hypothesis Tests"
+context = "t statistic, p-values, decisions, choosing a test, chi-square"
+purpose = "Test statistics, p-values and what they let you conclude"
+
+[[decisionRows]]
+task = "Linear Regression"
+context = "Slope, intercept, R-squared, prediction, interpretation"
+purpose = "Fit, prediction and reading of a simple regression"
+
+[[inputs]]
+id = "dsex"
+label = "Exercise"
+kind = "select"
+tooltip = "The exercise of Descriptive Statistics to practise."
+default = "mean"
+models = ["ds"]
+
+[[inputs.options]]
+value = "mean"
+label = "The Mean of a Sample"
+
+[[inputs.options]]
+value = "median"
+label = "The Median of an Even Number of Values"
+
+[[inputs.options]]
+value = "sd"
+label = "The Sample Standard Deviation"
+
+[[inputs.options]]
+value = "outlier"
+label = "A Measure That Resists Outliers"
+
+[[inputs.options]]
+value = "cor"
+label = "The Correlation Coefficient"
+
+[[inputs]]
+id = "htex"
+label = "Exercise"
+kind = "select"
+tooltip = "The exercise of Hypothesis Tests to practise."
+default = "tstat"
+models = ["ht"]
+
+[[inputs.options]]
+value = "tstat"
+label = "The One-Sample t Statistic"
+
+[[inputs.options]]
+value = "pvalue"
+label = "A Two-Sided p-Value"
+
+[[inputs.options]]
+value = "decision"
+label = "Reading a p-Value"
+
+[[inputs.options]]
+value = "paired"
+label = "Choosing a Test"
+
+[[inputs.options]]
+value = "chisq"
+label = "The Chi-Square Statistic of a 2 x 2 Table"
+
+[[inputs]]
+id = "lrex"
+label = "Exercise"
+kind = "select"
+tooltip = "The exercise of Linear Regression to practise."
+default = "slope"
+models = ["lr"]
+
+[[inputs.options]]
+value = "slope"
+label = "The Least-Squares Slope"
+
+[[inputs.options]]
+value = "intercept"
+label = "The Intercept from the Means"
+
+[[inputs.options]]
+value = "rsquared"
+label = "R-Squared from the Correlation"
+
+[[inputs.options]]
+value = "prediction"
+label = "A Prediction from the Fitted Line"
+
+[[inputs.options]]
+value = "slopemeaning"
+label = "What the Slope Means"
+
+[[inputs]]
+id = "seed"
+label = "Seed"
+tooltip = "Any whole number: another seed gives other data and another order of the choices."
+default = "1"
+
+[[inputs]]
+id = "answer"
+label = "Your Answer"
+kind = "select"
+tooltip = "The choice you think is correct, for Check My Answer under Next Steps."
+default = "A"
+newRow = true
+
+[[inputs.options]]
+value = "A"
+label = "A"
+
+[[inputs.options]]
+value = "B"
+label = "B"
+
+[[inputs.options]]
+value = "C"
+label = "C"
+
+[[inputs.options]]
+value = "D"
+label = "D"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using Random, Statistics, Printf, Distributions
+
+fmt(x, digits) = Printf.format(Printf.Format("%.$(digits)f"), x)  # fixed decimals
+rng = Xoshiro({{seed}})  # another seed, other data
+
+{{?model=ds}}{{?dsex=mean}}x = round.(rand(rng, Normal(rand(rng, 20:80), 8), 8); digits = 1)
+{{?model=ds}}{{?dsex=mean}}question = "A sample of 8 measurements: $(join(x, ", ")). What is the sample mean?"
+{{?model=ds}}{{?dsex=mean}}choices = [fmt(mean(x), 2), fmt(median(x), 2), fmt(sum(x) / 7, 2), fmt((minimum(x) + maximum(x)) / 2, 2)]
+{{?model=ds}}{{?dsex=mean}}explanation = "The mean is the sum of the values divided by their number, n = 8: $(fmt(sum(x), 1)) / 8 = $(fmt(mean(x), 2)). Dividing by n - 1 = 7 belongs to the variance, not the mean; $(fmt(median(x), 2)) is the median and $(fmt((minimum(x) + maximum(x)) / 2, 2)) the midrange."
+{{?model=ds}}{{?dsex=median}}x = shuffle(rng, sort(randperm(rng, 60)[1:8] .+ 10))
+{{?model=ds}}{{?dsex=median}}s = sort(x)
+{{?model=ds}}{{?dsex=median}}question = "Eight students scored $(join(x, ", ")) in a test. What is the median score?"
+{{?model=ds}}{{?dsex=median}}choices = [fmt(median(x), 1), fmt(s[4], 1), fmt(s[5], 1), fmt(mean(x), 1)]
+{{?model=ds}}{{?dsex=median}}explanation = "Sorted, the scores are $(join(s, ", ")). With an even number of values the median is the mean of the two middle ones, the 4th and the 5th: ($(s[4]) + $(s[5])) / 2 = $(fmt(median(x), 1))."
+{{?model=ds}}{{?dsex=sd}}x = round.(rand(rng, Normal(rand(rng, 10:40), rand(rng, 2:6)), 6); digits = 1)
+{{?model=ds}}{{?dsex=sd}}question = "A sample of 6 values: $(join(x, ", ")). What is the sample standard deviation?"
+{{?model=ds}}{{?dsex=sd}}choices = [fmt(std(x), 3), fmt(std(x; corrected = false), 3), fmt(var(x), 3), fmt(mean(abs.(x .- mean(x))), 3)]
+{{?model=ds}}{{?dsex=sd}}explanation = "The sample standard deviation is the square root of the sum of squared deviations from the mean ($(fmt(mean(x), 3))) divided by n - 1 = 5: $(fmt(std(x), 3)). Dividing by n gives $(fmt(std(x; corrected = false), 3)), which underestimates the population value; $(fmt(var(x), 3)) is the variance, before the square root."
+{{?model=ds}}{{?dsex=outlier}}question = "One value in a sample of incomes is recorded with three extra zeros. Which summary changes least?"
+{{?model=ds}}{{?dsex=outlier}}choices = ["The median", "The mean", "The standard deviation", "The range"]
+{{?model=ds}}{{?dsex=outlier}}explanation = "The median depends only on the middle of the sorted values, so a single extreme value barely moves it. The mean, the standard deviation and the range all use the extreme value itself, and can change a great deal."
+{{?model=ds}}{{?dsex=cor}}x = round.(rand(rng, Uniform(0, 10), 6); digits = 1)
+{{?model=ds}}{{?dsex=cor}}y = round.(2 .+ rand(rng, [-1, 1]) * rand(rng, 0.5:0.1:1.5) .* x .+ rand(rng, Normal(0, 2), 6); digits = 1)
+{{?model=ds}}{{?dsex=cor}}question = "Six pairs (x, y): $(join(["($a, $b)" for (a, b) in zip(x, y)], ", ")). What is the Pearson correlation of x and y?"
+{{?model=ds}}{{?dsex=cor}}choices = [fmt(cor(x, y), 3), fmt(cov(x, y), 3), fmt(cor(x, y)^2, 3), fmt(-cor(x, y), 3)]
+{{?model=ds}}{{?dsex=cor}}explanation = "The correlation is the covariance ($(fmt(cov(x, y), 3))) divided by the product of the standard deviations ($(fmt(std(x), 3)) and $(fmt(std(y), 3))): $(fmt(cor(x, y), 3)). It is always between -1 and 1; its square, $(fmt(cor(x, y)^2, 3)), is the R-squared of a simple regression."
+{{?model=ht}}{{?htex=tstat}}m0 = rand(rng, 50:5:100)
+{{?model=ht}}{{?htex=tstat}}x = round.(rand(rng, Normal(m0 + rand(rng, -4:4), 5), 10); digits = 1)
+{{?model=ht}}{{?htex=tstat}}t = (mean(x) - m0) / (std(x) / sqrt(10))
+{{?model=ht}}{{?htex=tstat}}question = "A sample of 10 values: $(join(x, ", ")). The null hypothesis is that the population mean is $m0. What is the one-sample t statistic?"
+{{?model=ht}}{{?htex=tstat}}choices = [fmt(t, 3), fmt((mean(x) - m0) / (std(x) / 10), 3), fmt((mean(x) - m0) / std(x), 3), fmt((mean(x) - m0) / (var(x) / sqrt(10)), 3)]
+{{?model=ht}}{{?htex=tstat}}explanation = "t = (mean - $m0) / (s / sqrt(n)) = ($(fmt(mean(x), 3)) - $m0) / ($(fmt(std(x), 3)) / sqrt(10)) = $(fmt(t, 3)). The standard error divides s, the standard deviation (not the variance), by the square root of n, not by n; without it the statistic is a standardised difference, not a test statistic."
+{{?model=ht}}{{?htex=pvalue}}df = rand(rng, 8:25)
+{{?model=ht}}{{?htex=pvalue}}t = round(rand(rng, [-1, 1]) * rand(rng, Uniform(1.2, 3.2)); digits = 2)
+{{?model=ht}}{{?htex=pvalue}}p = 2 * ccdf(TDist(df), abs(t))
+{{?model=ht}}{{?htex=pvalue}}question = "A t test with $df degrees of freedom gives t = $t. What is the two-sided p-value?"
+{{?model=ht}}{{?htex=pvalue}}choices = [fmt(p, 4), fmt(p / 2, 4), fmt(2 * ccdf(Normal(), abs(t)), 4), fmt(1 - p, 4)]
+{{?model=ht}}{{?htex=pvalue}}explanation = "The two-sided p-value is the probability, under the null hypothesis, of a t at least as far from 0 as $(abs(t)) in either direction: 2 P(T > $(abs(t))) with T ~ t($df), which is $(fmt(p, 4)). Half of it is the one-sided p-value; the normal distribution would give $(fmt(2 * ccdf(Normal(), abs(t)), 4)), too small for $df degrees of freedom."
+{{?model=ht}}{{?htex=decision}}p = round(rand(rng, [rand(rng) * 0.04 + 0.002, rand(rng) * 0.5 + 0.06]); digits = 3)
+{{?model=ht}}{{?htex=decision}}reject = p < 0.05
+{{?model=ht}}{{?htex=decision}}yes = "Reject the null hypothesis: the data show a difference at the 5% level"
+{{?model=ht}}{{?htex=decision}}no = "Do not reject the null hypothesis: the data do not show a difference at the 5% level"
+{{?model=ht}}{{?htex=decision}}question = "A test of the null hypothesis that a new teaching method makes no difference gives p = $p. At the 5% significance level, what do you conclude?"
+{{?model=ht}}{{?htex=decision}}choices = [reject ? yes : no, reject ? no : yes, reject ? "The probability that the method makes no difference is $p" : "The method is proven to make no difference", reject ? "The method is proven to make a large difference" : "The probability that the method makes no difference is $p"]
+{{?model=ht}}{{?htex=decision}}explanation = "$p is $(reject ? "below" : "above") 0.05, so the null hypothesis is $(reject ? "" : "not ")rejected. A p-value is the probability of data at least this extreme if the null hypothesis were true: it is not the probability that the null hypothesis is true, and not rejecting it does not prove it."
+{{?model=ht}}{{?htex=paired}}question = "The blood pressure of the same 15 patients is measured before and after a treatment. Which test asks whether the treatment changes blood pressure on average?"
+{{?model=ht}}{{?htex=paired}}choices = ["A paired t test on the 15 differences", "A two-sample t test comparing the before and after groups", "A chi-square test of independence", "A one-sample t test on the after values only"]
+{{?model=ht}}{{?htex=paired}}explanation = "Each patient is measured twice, so the two samples are not independent. The paired t test works on the differences, one per patient, and removes the variation between patients; the two-sample test ignores the pairing and loses power."
+{{?model=ht}}{{?htex=chisq}}o = [rand(rng, 15:45) rand(rng, 15:45); rand(rng, 15:45) rand(rng, 15:45)]
+{{?model=ht}}{{?htex=chisq}}e = sum(o; dims = 2) * sum(o; dims = 1) / sum(o)
+{{?model=ht}}{{?htex=chisq}}chi2 = sum((o .- e) .^ 2 ./ e)
+{{?model=ht}}{{?htex=chisq}}yates = sum((abs.(o .- e) .- 0.5) .^ 2 ./ e)
+{{?model=ht}}{{?htex=chisq}}question = "In a survey, $(o[1, 1]) of the $(o[1, 1] + o[1, 2]) men and $(o[2, 1]) of the $(o[2, 1] + o[2, 2]) women prefer the morning shift; the rest prefer the evening shift. What is the Pearson chi-square statistic for independence of sex and preference (without continuity correction)?"
+{{?model=ht}}{{?htex=chisq}}choices = [fmt(chi2, 3), fmt(yates, 3), fmt(sum((o .- e) .^ 2 ./ o), 3), fmt(sum(abs.(o .- e) ./ e), 3)]
+{{?model=ht}}{{?htex=chisq}}explanation = "The expected count of each cell is its row total times its column total divided by $(sum(o)), here $(fmt(e[1, 1], 2)) men and $(fmt(e[2, 1], 2)) women for the morning shift, $(fmt(e[1, 2], 2)) men and $(fmt(e[2, 2], 2)) women for the evening shift. The statistic adds (observed - expected)^2 / expected over the four cells: $(fmt(chi2, 3)), with 1 degree of freedom. The Yates continuity correction gives $(fmt(yates, 3))."
+{{?model=lr}}{{?lrex=slope}}x = sort(round.(rand(rng, Uniform(1, 12), 6); digits = 1))
+{{?model=lr}}{{?lrex=slope}}y = round.(rand(rng, 1:5) .+ rand(rng, 0.5:0.25:2.5) .* x .+ rand(rng, Normal(0, 1.5), 6); digits = 1)
+{{?model=lr}}{{?lrex=slope}}b1 = cov(x, y) / var(x)
+{{?model=lr}}{{?lrex=slope}}question = "Six pairs (x, y): $(join(["($a, $b)" for (a, b) in zip(x, y)], ", ")). What is the least-squares slope of the regression of y on x?"
+{{?model=lr}}{{?lrex=slope}}choices = [fmt(b1, 3), fmt(cov(x, y) / var(y), 3), fmt(cor(x, y), 3), fmt(mean(y) - b1 * mean(x), 3)]
+{{?model=lr}}{{?lrex=slope}}explanation = "The slope is the covariance of x and y divided by the variance of x: $(fmt(cov(x, y), 3)) / $(fmt(var(x), 3)) = $(fmt(b1, 3)). Dividing by the variance of y gives the slope of x on y instead; $(fmt(mean(y) - b1 * mean(x), 3)) is the intercept."
+{{?model=lr}}{{?lrex=intercept}}xbar = round(rand(rng) * 20 + 5; digits = 1)
+{{?model=lr}}{{?lrex=intercept}}ybar = round(rand(rng) * 50 + 20; digits = 1)
+{{?model=lr}}{{?lrex=intercept}}b1 = round(rand(rng, [-1, 1]) * (rand(rng) * 2 + 0.5); digits = 2)
+{{?model=lr}}{{?lrex=intercept}}question = "In a simple regression the mean of x is $xbar, the mean of y is $ybar and the least-squares slope is $b1. What is the intercept?"
+{{?model=lr}}{{?lrex=intercept}}choices = [fmt(ybar - b1 * xbar, 2), fmt(ybar + b1 * xbar, 2), fmt(b1 * xbar - ybar, 2), fmt(ybar - b1, 2)]
+{{?model=lr}}{{?lrex=intercept}}explanation = "The least-squares line passes through the point of means, so ybar = b0 + b1 xbar and b0 = $ybar - ($b1)($xbar) = $(fmt(ybar - b1 * xbar, 2))."
+{{?model=lr}}{{?lrex=rsquared}}r = round(rand(rng, [-1, 1]) * (rand(rng) * 0.6 + 0.3); digits = 2)
+{{?model=lr}}{{?lrex=rsquared}}question = "The correlation between x and y is $r. What share of the variance of y does the simple regression of y on x explain?"
+{{?model=lr}}{{?lrex=rsquared}}choices = ["$(fmt(100 * r^2, 1))%", "$(fmt(100 * abs(r), 1))%", "$(fmt(100 * sqrt(abs(r)), 1))%", "$(fmt(100 * (1 - r^2), 1))%"]
+{{?model=lr}}{{?lrex=rsquared}}explanation = "In a simple regression R-squared is the square of the correlation: ($r)^2 = $(fmt(r^2, 4)), so $(fmt(100 * r^2, 1))% of the variance of y is explained and $(fmt(100 * (1 - r^2), 1))% is left in the residuals. The sign of the correlation does not matter."
+{{?model=lr}}{{?lrex=prediction}}b0 = round(rand(rng) * 40 - 10; digits = 1)
+{{?model=lr}}{{?lrex=prediction}}b1 = round(rand(rng) * 4 + 0.5; digits = 2)
+{{?model=lr}}{{?lrex=prediction}}x0 = rand(rng, 3:15)
+{{?model=lr}}{{?lrex=prediction}}question = "The fitted line is y = $b0 + $b1 x. What value of y does it predict for x = $x0?"
+{{?model=lr}}{{?lrex=prediction}}choices = [fmt(b0 + b1 * x0, 2), fmt(b0 * x0 + b1, 2), fmt(b1 * x0, 2), fmt((x0 - b0) / b1, 2)]
+{{?model=lr}}{{?lrex=prediction}}explanation = "Substitute x = $x0 in the line: $b0 + $b1 * $x0 = $(fmt(b0 + b1 * x0, 2)). Leaving out the intercept gives $(fmt(b1 * x0, 2)), which is only right when the line goes through the origin."
+{{?model=lr}}{{?lrex=slopemeaning}}b1 = round(rand(rng) * 0.6 + 0.3; digits = 2)
+{{?model=lr}}{{?lrex=slopemeaning}}question = "A regression of weight (kg) on height (cm) in a sample of adults has slope $b1. What does the slope say?"
+{{?model=lr}}{{?lrex=slopemeaning}}choices = ["Adults who are 1 cm taller weigh $b1 kg more, on average", "Growing 1 cm taller makes an adult $b1 kg heavier", "Height explains $(fmt(100 * b1, 0))% of the variation in weight", "Adults who weigh 1 kg more are $b1 cm taller, on average"]
+{{?model=lr}}{{?lrex=slopemeaning}}explanation = "The slope compares the average weight of adults whose heights differ by 1 cm: $b1 kg. It describes an association in the sample, not the effect of growing taller, and it is not R-squared. The slope of height on weight is a different number, from the other regression."
+
+order = randperm(rng, length(choices))  # the choices in shuffled order
+correct = findfirst(==(1), order)  # the correct choice is the first before shuffling
+allunique(choices) || println("Two choices are the same with this seed: change the Seed for another version")
+println(question)
+println()
+for (letter, i) in zip("ABCD", order)
+    println("  ", letter, ") ", choices[i])
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "check"
+label = "Check My Answer"
+desc = "Whether Your Answer is correct, and why"
+code = '''
+mine = findfirst(==("{{answer}}"), ["A", "B", "C", "D"])
+if mine == correct
+    println("Correct: ", "ABCD"[correct], ") ", choices[1])
+else
+    println("Not quite: you chose ", "ABCD"[mine], ") ", choices[order[mine]], ", the answer is ", "ABCD"[correct], ") ", choices[1])
+end
+println()
+println(explanation)
+'''
+
+[[actionGroups.actions]]
+id = "show"
+label = "Show the Answer"
+desc = "The correct choice and the explanation, without answering"
+code = '''
+println("The answer is ", "ABCD"[correct], ") ", choices[1])
+println()
+println(explanation)
+'''
+
+[[wikis]]
+name = "Overview"
+file = "learning-and-practice.practice/overview.md"
+bundled = true
+description = "How the exercises work: seeds, choices, checking"
+
+[[wikis]]
+separator = true
+label = "Topics"
+
+[[wikis]]
+name = "Descriptive Statistics"
+file = "learning-and-practice.practice/descriptive-statistics.md"
+bundled = true
+
+[[wikis]]
+name = "Hypothesis Tests"
+file = "learning-and-practice.practice/hypothesis-tests.md"
+bundled = true
+
+[[wikis]]
+name = "Linear Regression"
+file = "learning-and-practice.practice/linear-regression.md"
+bundled = true
+
+[[notebookSections]]
+label = ""
+
+[[notebookSections.notebooks]]
+name = "A Practice Session"
+file = "learning-and-practice.practice/tutorial-01-session.ipynb"
+bundled = true
+description = "Make an exercise from a seed, answer it, check it, and try new data"
