@@ -11,12 +11,13 @@ A toolbox is a data-only extension that adds guided panels, with their wiki page
 | [pollis-toolbox-learning-and-practice](pollis-toolbox-learning-and-practice/README.md) | Learning and Practice, in the Extend menu: multiple-choice exercises whose data and answers Julia computes, on descriptive statistics, hypothesis tests and linear regression, and a panel to write new ones. |
 | [pollis-toolbox-mathematical-core](pollis-toolbox-mathematical-core/README.md) | Mathematical Core, in the Extend menu: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, ODEs and PDEs. |
 
-New toolboxes are welcome. A toolbox can be built with the Pollis Agents skills (**Compose > Pollis Agents** in Pollis, or the [pollis-plugins](https://github.com/Trumpingtons/pollis-plugins) marketplace); please open an issue before sending one.
+New toolboxes are welcome, as pull requests: see [CONTRIBUTING.md](CONTRIBUTING.md). A toolbox can be built with the Pollis Agents skills (**Compose > Pollis Agents** in Pollis, or the [pollis-plugins](https://github.com/Trumpingtons/pollis-plugins) marketplace), which can also open the pull request.
 
 ## Layout
 
 - `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/` and `notebooks/<id>/`.
-- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history.
+- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
+- `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
 
 ## For developers
 
@@ -26,7 +27,7 @@ Pollis' build tools read the sources from a `toolboxes/` folder at the root of t
 cd <pollis> && git clone https://github.com/Trumpingtons/pollis-toolboxes.git toolboxes
 ```
 
-`node build/pollis/packageToolboxes.ts` in Pollis then writes the files of `dist` to `.build/toolboxes/`; the steps to publish them are at the top of that script.
+`node build/pollis/packageToolboxes.ts` in Pollis runs `scripts/packageToolboxes.ts` and writes the files of `dist` to `.build/toolboxes/`, to try them locally. To publish, push to `main`: the packages are built and `dist` is replaced automatically.
 
 ## License
 
