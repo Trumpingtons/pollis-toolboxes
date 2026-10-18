@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-learning-and-practice",
   "displayName": "Learning and Practice Toolbox",
   "description": "Pollis Learning and Practice Toolbox: multiple-choice exercises whose data and answers Julia computes, on descriptive statistics, hypothesis tests and linear regression, and a panel to write new ones.",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
