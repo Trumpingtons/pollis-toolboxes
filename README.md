@@ -31,4 +31,4 @@ cd <pollis> && git clone https://github.com/Trumpingtons/pollis-toolboxes.git to
 
 ## License
 
-AGPL-3.0-or-later, see [LICENSE.txt](LICENSE.txt).
+AGPL-3.0, see [LICENSE.txt](LICENSE.txt).
