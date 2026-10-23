@@ -1,0 +1,62 @@
+{
+  "name": "pollis-toolbox-epidemiology",
+  "displayName": "Epidemiology Toolbox",
+  "description": "Pollis Epidemiology Toolbox: inference of epidemiological parameters, compartmental models (SIR, SIS, SEIR, SIRS, SEIRD) and universal differential equations for epidemics.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "epidemiology",
+        "title": "Epidemiology Toolbox",
+        "panels": [
+          {
+            "id": "cest",
+            "command": "chiara.statistics.cest",
+            "title": "Contagion Models",
+            "menuTitle": "Epidemiological Inference",
+            "group": "1_inference",
+            "order": 1,
+            "data": "panels/cest.toml",
+            "defaultModel": "rt",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "epiComp",
+            "command": "chiara.simulate.epi-comp",
+            "title": "Compartmental Models",
+            "group": "2_models",
+            "order": 2,
+            "data": "panels/epiComp.toml",
+            "defaultModel": "sir",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "epiUde",
+            "command": "chiara.simulate.epi-ude",
+            "title": "Machine Learning for Epidemics",
+            "menuTitle": "Universal Differential Equations for Epidemiology",
+            "group": "2_models",
+            "order": 3,
+            "data": "panels/epiUde.toml",
+            "defaultModel": "node",
+            "decisionFirstColumn": "Model"
+          }
+        ]
+      }
+    ]
+  }
+}
