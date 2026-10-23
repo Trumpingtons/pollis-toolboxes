@@ -1,0 +1,72 @@
+{
+  "name": "pollis-toolbox-robotics",
+  "displayName": "Robotics Toolbox",
+  "description": "Pollis Robotics Toolbox: rotations, rigid-body kinematics and dynamics, robot control (inverse kinematics, PD joint control, computed torque, impedance control), 3D visualisation with MeshCat and the RobotZoo model library.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": [
+    "Other"
+  ],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "robotics",
+        "title": "Robotics Toolbox",
+        "panels": [
+          {
+            "id": "rdyn",
+            "command": "chiara.explore.rt.1_rdyn",
+            "title": "Robot Dynamics",
+            "group": "1_rt",
+            "order": 1,
+            "data": "panels/rdyn.toml",
+            "defaultModel": "rot",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "rctl",
+            "command": "chiara.explore.rt.2_rctl",
+            "title": "Robot Control",
+            "group": "1_rt",
+            "order": 2,
+            "data": "panels/rctl.toml",
+            "defaultModel": "ik",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "mcat",
+            "command": "chiara.explore.rt.3_mcat",
+            "title": "MeshCat — 3D Visualisation",
+            "menuTitle": "MeshCat 3D Visualisation",
+            "group": "2_rt",
+            "order": 1,
+            "data": "panels/mcat.toml",
+            "defaultModel": "scene",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "rzoo",
+            "command": "chiara.explore.rt.4_rzoo",
+            "title": "RobotZoo — Robot Model Library",
+            "menuTitle": "Robot Model Library",
+            "group": "2_rt",
+            "order": 2,
+            "data": "panels/rzoo.toml",
+            "defaultModel": "pend",
+            "decisionFirstColumn": "Model"
+          }
+        ]
+      }
+    ]
+  }
+}
