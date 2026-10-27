@@ -32,7 +32,7 @@ import * as path from 'path';
 
 /** The root of this repository: one folder per toolbox. */
 const ROOT = path.join(import.meta.dirname, '..');
-const ALLOWED_EXTENSIONS = new Set(['.toml', '.md', '.json', '.ipynb', '.txt', '.png', '.svg']);
+const ALLOWED_EXTENSIONS = new Set(['.toml', '.md', '.json', '.ipynb', '.txt', '.png', '.svg', '.jpg', '.tex', '.bib']);
 const MAX_FILE_BYTES = 1024 * 1024;
 const MAX_TOOLBOX_BYTES = 5 * 1024 * 1024;
 const NEW_TOOLBOX_VERSION = '0.1.0';
@@ -57,6 +57,7 @@ interface ToolboxManifest {
 		readonly pollisToolboxes?: readonly {
 			readonly id?: string;
 			readonly panels?: readonly { readonly id?: string; readonly command?: string; readonly data?: string }[];
+			readonly documents?: readonly { readonly title?: string; readonly source?: string }[];
 		}[];
 	};
 }
@@ -216,6 +217,19 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 				error(`the panel ${panel.id} names ${panel.data}, which does not exist`);
 			} else {
 				panelTomls.push(path.join(ROOT, folder, panel.data));
+			}
+		}
+		// The documents of Help > Documentation > Toolboxes: a main .tex file inside the toolbox folder
+		for (const document of toolbox.documents ?? []) {
+			if (!document.title || !document.source) {
+				error(`a document of ${toolbox.id ?? 'a toolbox'} needs a "title" and a "source"`);
+				continue;
+			}
+			const source = path.resolve(ROOT, folder, document.source);
+			if (!source.startsWith(path.resolve(ROOT, folder) + path.sep) || !/^[A-Za-z0-9_-]+\.tex$/.test(path.basename(source))) {
+				error(`the document ${document.title} names ${document.source}: it must be a .tex file inside the toolbox folder`);
+			} else if (!fs.existsSync(source)) {
+				error(`the document ${document.title} names ${document.source}, which does not exist`);
 			}
 		}
 	}

@@ -15,7 +15,23 @@ New toolboxes are welcome, as pull requests: see [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Layout
 
-- `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/` and `notebooks/<id>/`.
+- `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/` and, optionally, `docs/<document>/`, the LaTeX sources of the toolbox's documentation (see below).
+
+## Documentation
+
+A toolbox can bring its own documentation, listed in **Help > Documentation > Toolboxes** in Pollis. It ships LaTeX sources, not PDFs: Pollis compiles a document with PollisTeX (the XeTeX of Tectonic) the first time it is opened, and again when the toolbox's version changes. Each toolbox entry of `pollisToolboxes` lists its documents:
+
+```json
+"documents": [
+  {
+    "title": "Finance Toolbox Guide",
+    "description": "The models of the toolbox, how to read their output, and worked examples.",
+    "source": "docs/guide/guide.tex"
+  }
+]
+```
+
+`source` is the main `.tex` file, relative to the toolbox folder; its name is letters, digits, `-` and `_`. The document's other `.tex` files and its `.bib` files go in the same folder, and its images (`.png`, `.jpg`) in a `resources/` folder beside them. Write the sources for XeTeX: `fontspec` rather than `inputenc`, and no shell escape.
 - `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
 - `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
 

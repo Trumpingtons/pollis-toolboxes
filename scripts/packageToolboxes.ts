@@ -175,6 +175,9 @@ const CONTENT_TYPES: Record<string, string> = {
 	'.txt': 'text/plain',
 	'.png': 'image/png',
 	'.svg': 'image/svg+xml',
+	'.jpg': 'image/jpeg',
+	'.tex': 'text/plain',
+	'.bib': 'text/plain',
 };
 
 function contentTypesXml(names: readonly string[]): string {

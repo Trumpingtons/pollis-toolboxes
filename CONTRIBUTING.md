@@ -8,7 +8,7 @@ Build the toolbox with the Pollis Agents skills (**Compose > Pollis Agents** in 
 
 ## By hand
 
-1. Fork this repository and add your toolbox as one folder, `pollis-toolbox-<name>/`, laid out like the others: `package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/`, `README.md` and, optionally, `icon.png`. Add its row to the table in this repository's `README.md`.
+1. Fork this repository and add your toolbox as one folder, `pollis-toolbox-<name>/`, laid out like the others: `package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/`, `README.md` and, optionally, `icon.png` and `docs/<document>/`, the LaTeX sources of its documentation (see [Documentation](README.md#documentation) in the README). Add its row to the table in this repository's `README.md`.
 2. Open a pull request to `main`, one toolbox per pull request.
 
 ## What is checked
@@ -19,7 +19,8 @@ Every push to a pull request runs `scripts/checkToolboxes.ts`, and the result is
 - the folder is named like its `package.json`, which has a name, display name, description, version, publisher, author and license, and contributes `pollisToolboxes` only: a toolbox has no code;
 - a new toolbox is at version `0.1.0`; a changed one has a higher version than on `main`, or the installed copies are not offered the update;
 - its toolbox ids, panel ids and commands are not used by another toolbox;
-- only `.toml`, `.md`, `.json`, `.ipynb`, `.txt`, `.png` and `.svg` files, each at most 1 MB and 5 MB in all; notebooks saved without outputs;
+- only `.toml`, `.md`, `.json`, `.ipynb`, `.txt`, `.png`, `.svg`, `.jpg`, `.tex` and `.bib` files, each at most 1 MB and 5 MB in all; notebooks saved without outputs;
+- every document names, as its `source`, a `.tex` file that exists inside the toolbox folder;
 - every panel passes the panel validator of the Pollis Agents skills (`validatePanel.mjs`), which reads it with Pollis' own parser;
 - the toolboxes still package.
 
