@@ -16,6 +16,7 @@ New toolboxes are welcome, as pull requests: see [CONTRIBUTING.md](CONTRIBUTING.
 ## Layout
 
 - `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/` and, optionally, `docs/<document>/`, the LaTeX sources of the toolbox's documentation (see below).
+- A toolbox folder with a `DEFERRED.md` stays on `main` but is not published: the packaging leaves it out until the file is deleted.
 
 ## Documentation
 

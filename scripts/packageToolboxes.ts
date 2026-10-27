@@ -281,8 +281,9 @@ function main(): void {
 	fs.rmSync(OUT_DIR, { recursive: true, force: true });
 	fs.mkdirSync(OUT_DIR, { recursive: true });
 
+	// A toolbox with a DEFERRED.md is kept on main but not published until the file is deleted
 	const folders = fs.readdirSync(ROOT, { withFileTypes: true })
-		.filter(entry => entry.isDirectory() && fs.existsSync(path.join(ROOT, entry.name, 'package.json')))
+		.filter(entry => entry.isDirectory() && fs.existsSync(path.join(ROOT, entry.name, 'package.json')) && !fs.existsSync(path.join(ROOT, entry.name, 'DEFERRED.md')))
 		.map(entry => path.join(ROOT, entry.name))
 		.sort();
 	const toolboxes = folders.map(folder => packageToolbox(folder));
