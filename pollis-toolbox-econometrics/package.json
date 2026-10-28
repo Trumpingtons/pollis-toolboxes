@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Financial Econometrics Toolbox",
   "description": "Pollis Financial Econometrics Toolbox: volatility measurement, ARIMAX models, VAR/VECM systems, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
