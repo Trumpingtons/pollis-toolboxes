@@ -1,6 +1,6 @@
 # Financial Econometrics Toolbox
 
-The Pollis Financial Econometrics Toolbox covers time-series econometrics and empirical asset pricing: ARIMAX models, VAR/VECM systems, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.
+The Pollis Financial Econometrics Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement, ARIMAX models, VAR/VECM systems, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.
 
 Installing it adds the **Financial Econometrics** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
@@ -8,6 +8,7 @@ Installing it adds the **Financial Econometrics** submenu to the end of the **Ex
 
 | Panel | What it covers | Powered by |
 |---|---|---|
+| Measuring Volatility | Range-based volatility estimators: close-to-close, Parkinson, Garman-Klass, Rogers-Satchell, Garman-Klass-Yang-Zhang, Yang-Zhang and Alizadeh-Brandt-Diebold | [RangeVol.jl](https://github.com/Trumpingtons/RangeVol.jl) |
 | ARIMAX Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl) |
 | VAR/VECM Systems | VAR, structural VAR, factor-augmented VAR and VECM, with transmission channel analysis | [MacroEconometricModels.jl](https://github.com/FriedmanJP/MacroEconometricModels.jl), [TransmissionChannelAnalysis.jl](https://github.com/enweg/TransmissionChannelAnalysis.jl) |
 | GARCH-Type Models | GARCH, EGARCH, GJR-GARCH and DCC volatility models | [ARCHModels.jl](https://github.com/s-broda/ARCHModels.jl) |
