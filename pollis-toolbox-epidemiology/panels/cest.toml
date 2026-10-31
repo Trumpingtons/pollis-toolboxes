@@ -14,7 +14,9 @@ github = "https://github.com/TuringLang/Turing.jl"
 
 [[packages]]
 name = "Pathogen.jl"
-github = "https://github.com/jangevaare/Pathogen.jl"
+# Fork of jangevaare/Pathogen.jl accepting StatsBase 0.34, so that Turing is not held back (upstream PR 41)
+github = "https://github.com/Trumpingtons/Pathogen.jl"
+fork = true
 
 [[packages]]
 name = "MCMCChains.jl"
@@ -110,11 +112,11 @@ doi = "10.18637/jss.v104.i04"
 openAccess = true
 
 [[references]]
-title = "Turing.jl: A Language for Flexible Probabilistic Inference"
+title = "Turing: A Language for Flexible Probabilistic Inference"
 authors = "Ge, Hong; Xu, Kai; Ghahramani, Zoubin"
 year = 2018
 journal = "Proceedings of Machine Learning Research"
-doi = "10.17863/CAM.42246"
+url = "https://proceedings.mlr.press/v84/ge18b.html"
 openAccess = true
 
 [[references]]
@@ -136,19 +138,27 @@ journal = "Oxford University Press"
 openAccess = false
 
 [[references]]
+title = "Modeling Infectious Diseases in Humans and Animals"
+authors = "Keeling, Matt J.; Rohani, Pejman"
+year = 2008
+journal = "Princeton University Press"
+doi = "10.1515/9781400841035"
+openAccess = false
+
+[[references]]
 separator = true
 label = "Original Papers"
 
 [[references]]
-title = "Individual-Level Models of Infectious Disease: Epiillm"
-authors = "Warriyar, Vineetha; Deardon, Rob"
-year = 2018
+title = "Individual-Level Modelling of Infectious Disease Data: EpiILM"
+authors = "Warriyar K. V., Vineetha; Almutiry, Waleed; Deardon, Rob"
+year = 2020
 journal = "The R Journal"
-doi = "10.32614/RJ-2018-065"
+doi = "10.32614/RJ-2020-020"
 openAccess = true
 
 [[references]]
-title = "A New Framework and Software to Estimate Time-Varying Reproduction Numbers during Epidemics"
+title = "A New Framework and Software to Estimate Time-Varying Reproduction Numbers During Epidemics"
 authors = "Cori, Anne; Ferguson, Neil M.; Fraser, Christophe; Cauchemez, Simon"
 year = 2013
 journal = "American Journal of Epidemiology"
@@ -157,7 +167,7 @@ openAccess = true
 
 [[references]]
 title = "Practical Considerations for Measuring the Effective Reproductive Number, Rt"
-authors = "Gostic, Katelyn M.; McGough, Lauren; Baskerville, Edward B.; Abbott, Sam; Joshi, Keya; Tedijanto, Christine; Kahn, Rebecca; Niehus, Rene; Hay, James A.; De Salazar, Pablo M.; Hellewell, Joel; Meakin, Sophie; Munday, James D.; Bosse, Nikos I.; Sherrat, Katharine; Thompson, Robin N.; White, Laura F.; Huisman, Jana S.; Ukachukwu, Jantje; Baguelin, Marc; Dorigatti, Ilaria; Cori, Anne; Donnelly, Christl A.; Riley, Steven; Lipsitch, Marc; Atchison, Christina; Jombart, Thibaut; Procter, Simon R.; Knight, Gwenan M."
+authors = "Gostic, Katelyn M.; McGough, Lauren; Baskerville, Edward B.; Abbott, Sam; Joshi, Keya; Tedijanto, Christine; Kahn, Rebecca; Niehus, Rene; Hay, James A.; De Salazar, Pablo M.; Hellewell, Joel; Meakin, Sophie; Munday, James D.; Bosse, Nikos I.; Sherrat, Katharine; Thompson, Robin N.; White, Laura F.; Huisman, Jana S.; Scire, Jérémie; Bonhoeffer, Sebastian; Stadler, Tanja; Wallinga, Jacco; Funk, Sebastian; Lipsitch, Marc; Cobey, Sarah"
 year = 2020
 journal = "PLOS Computational Biology"
 doi = "10.1371/journal.pcbi.1008409"
@@ -169,6 +179,54 @@ authors = "Wallinga, Jacco; Lipsitch, Marc"
 year = 2007
 journal = "Proceedings of the Royal Society B"
 doi = "10.1098/rspb.2006.3754"
+openAccess = true
+
+[[references]]
+title = "Different Epidemic Curves for Severe Acute Respiratory Syndrome Reveal Similar Impacts of Control Measures"
+authors = "Wallinga, Jacco; Teunis, Peter"
+year = 2004
+journal = "American Journal of Epidemiology"
+doi = "10.1093/aje/kwh255"
+openAccess = true
+
+[[references]]
+title = "Estimating Individual and Household Reproduction Numbers in an Emerging Epidemic"
+authors = "Fraser, Christophe"
+year = 2007
+journal = "PLoS ONE"
+doi = "10.1371/journal.pone.0000758"
+openAccess = true
+
+[[references]]
+title = "Improved inference of time-varying reproduction numbers during infectious disease outbreaks"
+authors = "Thompson, R. N.; Stockwin, J. E.; van Gaalen, R. D.; Polonsky, J. A.; Kamvar, Z. N.; Demarsh, P. A.; Dahlqwist, E.; Li, S.; Miguel, E.; Jombart, T.; Lessler, J.; Cauchemez, S.; Cori, A."
+year = 2019
+journal = "Epidemics"
+doi = "10.1016/j.epidem.2019.100356"
+openAccess = true
+
+[[references]]
+title = "The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo"
+authors = "Hoffman, Matthew D.; Gelman, Andrew"
+year = 2014
+journal = "Journal of Machine Learning Research"
+url = "https://jmlr.org/papers/v15/hoffman14a.html"
+openAccess = true
+
+[[references]]
+title = "Rank-Normalization, Folding, and Localization: An Improved R-hat for Assessing Convergence of MCMC (with Discussion)"
+authors = "Vehtari, Aki; Gelman, Andrew; Simpson, Daniel; Carpenter, Bob; Bürkner, Paul-Christian"
+year = 2021
+journal = "Bayesian Analysis"
+doi = "10.1214/20-BA1221"
+openAccess = true
+
+[[references]]
+title = "Visualization in Bayesian Workflow"
+authors = "Gabry, Jonah; Simpson, Daniel; Vehtari, Aki; Betancourt, Michael; Gelman, Andrew"
+year = 2019
+journal = "Journal of the Royal Statistical Society Series A"
+doi = "10.1111/rssa.12378"
 openAccess = true
 
 [[models]]

@@ -128,6 +128,7 @@ title = "An Introduction to Mathematical Epidemiology"
 authors = "Martcheva, Maia"
 year = 2015
 journal = "Springer"
+doi = "10.1007/978-1-4899-7612-3"
 openAccess = false
 
 [[references]]
@@ -135,6 +136,22 @@ title = "Infectious Diseases of Humans: Dynamics and Control"
 authors = "Anderson, Roy M.; May, Robert M."
 year = 1991
 journal = "Oxford University Press"
+openAccess = false
+
+[[references]]
+title = "Modeling Infectious Diseases in Humans and Animals"
+authors = "Keeling, Matt J.; Rohani, Pejman"
+year = 2008
+journal = "Princeton University Press"
+doi = "10.1515/9781400841035"
+openAccess = false
+
+[[references]]
+title = "Epidemics: Models and Data Using R"
+authors = "Bjørnstad, Ottar N."
+year = 2018
+journal = "Springer"
+doi = "10.1007/978-3-319-97487-3"
 openAccess = false
 
 [[references]]
@@ -150,7 +167,7 @@ doi = "10.1098/rspa.1927.0118"
 openAccess = false
 
 [[references]]
-title = "Contributions to the Mathematical Theory of Epidemics II"
+title = "Contributions to the Mathematical Theory of Epidemics. II. The Problem of Endemicity"
 authors = "Kermack, William O.; McKendrick, Anderson G."
 year = 1932
 journal = "Proceedings of the Royal Society A"
@@ -158,11 +175,67 @@ doi = "10.1098/rspa.1932.0171"
 openAccess = false
 
 [[references]]
-title = "An SEIRD Epidemic Model for Predicting the Spread of COVID-19 over a Long Period"
+title = "An Extended SEIR Model with Vaccination for Forecasting the COVID-19 Pandemic in Saudi Arabia Using an Ensemble Kalman Filter"
 authors = "Ghostine, Rabih; Gharamti, Mohamad; Hassrouny, Sally; Hoteit, Ibrahim"
 year = 2021
-journal = "Biology"
-doi = "10.3390/biology10060482"
+journal = "Mathematics"
+doi = "10.3390/math9060636"
+openAccess = true
+
+[[references]]
+title = "The Mathematics of Infectious Diseases"
+authors = "Hethcote, Herbert W."
+year = 2000
+journal = "SIAM Review"
+doi = "10.1137/S0036144500371907"
+openAccess = false
+
+[[references]]
+title = "Reproduction numbers and sub-threshold endemic equilibria for compartmental models of disease transmission"
+authors = "van den Driessche, P.; Watmough, James"
+year = 2002
+journal = "Mathematical Biosciences"
+doi = "10.1016/S0025-5564(02)00108-6"
+openAccess = false
+
+[[references]]
+title = "Generality of the Final Size Formula for an Epidemic of a Newly Invading Infectious Disease"
+authors = "Ma, Junling; Earn, David J. D."
+year = 2006
+journal = "Bulletin of Mathematical Biology"
+doi = "10.1007/s11538-005-9047-7"
+openAccess = false
+
+[[references]]
+title = "Herd Immunity: History, Theory, Practice"
+authors = "Fine, Paul E. M."
+year = 1993
+journal = "Epidemiologic Reviews"
+doi = "10.1093/oxfordjournals.epirev.a036121"
+openAccess = false
+
+[[references]]
+title = "Appropriate Models for the Management of Infectious Diseases"
+authors = "Wearing, Helen J.; Rohani, Pejman; Keeling, Matt J."
+year = 2005
+journal = "PLoS Medicine"
+doi = "10.1371/journal.pmed.0020174"
+openAccess = true
+
+[[references]]
+title = "Why is it difficult to accurately predict the COVID-19 epidemic?"
+authors = "Roda, Weston C.; Varughese, Marie B.; Han, Donglin; Li, Michael Y."
+year = 2020
+journal = "Infectious Disease Modelling"
+doi = "10.1016/j.idm.2020.03.001"
+openAccess = true
+
+[[references]]
+title = "Structural and practical identifiability analysis of partially observed dynamical models by exploiting the profile likelihood"
+authors = "Raue, A.; Kreutz, C.; Maiwald, T.; Bachmann, J.; Schilling, M.; Klingmüller, U.; Timmer, J."
+year = 2009
+journal = "Bioinformatics"
+doi = "10.1093/bioinformatics/btp358"
 openAccess = true
 
 [[models]]

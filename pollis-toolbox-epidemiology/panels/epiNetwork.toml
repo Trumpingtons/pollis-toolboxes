@@ -1,0 +1,910 @@
+# Epidemics on Networks Webview Configuration
+# This is the declarative source for the webview. The build script generates its data file.
+# Run: npm run gulp compile-toml
+
+[meta]
+title = "Epidemics on Networks"
+viewType = "pollis.epiNetwork"
+defaultModel = "sir"
+
+[[packages]]
+name = "GraphEpidemics.jl"
+github = "https://github.com/fabmazz/GraphEpidemics.jl"
+
+[[packages]]
+name = "Graphs.jl"
+github = "https://github.com/JuliaGraphs/Graphs.jl"
+
+[[packages]]
+name = "Distributions.jl"
+github = "https://github.com/JuliaStats/Distributions.jl"
+
+[[packages]]
+name = "Plots.jl"
+github = "https://github.com/JuliaPlots/Plots.jl"
+
+[requires]
+packages = ["GraphEpidemics.jl", "Graphs.jl", "Distributions.jl", "Plots.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "epi-network/factsheet.md"
+bundled = true
+
+[[wikis]]
+name = "Overview"
+file = "epi-network/overview.md"
+bundled = true
+
+[[wikis]]
+name = "Assumptions"
+file = "epi-network/assumptions.md"
+bundled = true
+
+[[wikis]]
+name = "Diagnostics"
+file = "epi-network/diagnostics.md"
+bundled = true
+
+[[wikis]]
+name = "Interpretation"
+file = "epi-network/interpretation.md"
+bundled = true
+
+[[wikis]]
+name = "Decision Guide"
+file = "epi-network/decision-guide.md"
+bundled = true
+
+[[wikis]]
+separator = true
+label = "Models"
+
+[[wikis]]
+name = "SIR"
+file = "epi-network/sir.md"
+bundled = true
+
+[[wikis]]
+name = "SEIR"
+file = "epi-network/seir.md"
+bundled = true
+
+[[wikis]]
+name = "SIS and SIRS"
+file = "epi-network/recurring.md"
+bundled = true
+
+[[wikis]]
+name = "Continuous Time"
+file = "epi-network/continuous.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+title = "Mathematics of Epidemics on Networks: From Exact to Approximate Models"
+authors = "Kiss, István Z.; Miller, Joel C.; Simon, Péter L."
+year = 2017
+journal = "Springer"
+doi = "10.1007/978-3-319-50806-1"
+openAccess = false
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+title = "Epidemic Spreading in Scale-Free Networks"
+authors = "Pastor-Satorras, Romualdo; Vespignani, Alessandro"
+year = 2001
+journal = "Physical Review Letters"
+doi = "10.1103/PhysRevLett.86.3200"
+openAccess = false
+
+[[references]]
+title = "Immunization of complex networks"
+authors = "Pastor-Satorras, Romualdo; Vespignani, Alessandro"
+year = 2002
+journal = "Physical Review E"
+doi = "10.1103/PhysRevE.65.036104"
+openAccess = false
+
+[[references]]
+title = "Epidemic processes in complex networks"
+authors = "Pastor-Satorras, Romualdo; Castellano, Claudio; Van Mieghem, Piet; Vespignani, Alessandro"
+year = 2015
+journal = "Reviews of Modern Physics"
+doi = "10.1103/RevModPhys.87.925"
+openAccess = false
+
+[[references]]
+title = "Spread of epidemic disease on networks"
+authors = "Newman, M. E. J."
+year = 2002
+journal = "Physical Review E"
+doi = "10.1103/PhysRevE.66.016128"
+openAccess = false
+
+[[references]]
+title = "Networks and epidemic models"
+authors = "Keeling, Matt J.; Eames, Ken T. D."
+year = 2005
+journal = "Journal of the Royal Society Interface"
+doi = "10.1098/rsif.2005.0051"
+openAccess = true
+
+[[references]]
+title = "Efficient Immunization Strategies for Computer Networks and Populations"
+authors = "Cohen, Reuven; Havlin, Shlomo; ben-Avraham, Daniel"
+year = 2003
+journal = "Physical Review Letters"
+doi = "10.1103/PhysRevLett.91.247901"
+openAccess = false
+
+[[references]]
+title = "Exact stochastic simulation of coupled chemical reactions"
+authors = "Gillespie, Daniel T."
+year = 1977
+journal = "The Journal of Physical Chemistry"
+doi = "10.1021/j100540a008"
+openAccess = false
+
+[[references]]
+title = "Collective dynamics of small-world networks"
+authors = "Watts, Duncan J.; Strogatz, Steven H."
+year = 1998
+journal = "Nature"
+doi = "10.1038/30918"
+openAccess = false
+
+[[references]]
+title = "Emergence of Scaling in Random Networks"
+authors = "Barabási, Albert-László; Albert, Réka"
+year = 1999
+journal = "Science"
+doi = "10.1126/science.286.5439.509"
+openAccess = false
+
+[[references]]
+title = "Identification of influential spreaders in complex networks"
+authors = "Kitsak, Maksim; Gallos, Lazaros K.; Havlin, Shlomo; Liljeros, Fredrik; Muchnik, Lev; Stanley, H. Eugene; Makse, Hernán A."
+year = 2010
+journal = "Nature Physics"
+doi = "10.1038/nphys1746"
+openAccess = false
+
+[[references]]
+title = "On the definition and the computation of the basic reproduction ratio R0 in models for infectious diseases in heterogeneous populations"
+authors = "Diekmann, O.; Heesterbeek, J. A. P.; Metz, J. A. J."
+year = 1990
+journal = "Journal of Mathematical Biology"
+doi = "10.1007/BF00178324"
+openAccess = false
+
+[[references]]
+title = "SIR dynamics in random networks with heterogeneous connectivity"
+authors = "Volz, Erik"
+year = 2008
+journal = "Journal of Mathematical Biology"
+doi = "10.1007/s00285-007-0116-4"
+openAccess = false
+
+[[references]]
+title = "Superspreading and the effect of individual variation on disease emergence"
+authors = "Lloyd-Smith, J. O.; Schreiber, S. J.; Kopp, P. E.; Getz, W. M."
+year = 2005
+journal = "Nature"
+doi = "10.1038/nature04153"
+openAccess = false
+
+[[models]]
+id = "sir"
+label = "SIR"
+
+[[models]]
+id = "seir"
+label = "SEIR"
+
+[[models]]
+id = "recurring"
+label = "SIS and SIRS"
+
+[[models]]
+id = "continuous"
+label = "Continuous Time"
+
+[[bullets]]
+text = "SIR"
+detail = "each person is a node and each contact an edge: infection passes along edges, one day at a time, and recovery gives lasting immunity, so that the shape of the network sets how far the epidemic goes"
+
+[[bullets]]
+text = "SEIR"
+detail = "adds a latent period before a person can infect, and lets people differ in how infectious they are, which produces superspreading from the model rather than from an assumed distribution"
+
+[[bullets]]
+text = "SIS and SIRS"
+detail = "immunity is absent or wanes, so that people are infected again and the infection can settle at an endemic level or die out"
+
+[[bullets]]
+text = "Continuous Time"
+detail = "the exact stochastic simulation of the SIR model on a network, with infection and recovery as rates, event by event, in place of daily steps"
+
+[[decisionRows]]
+task = "SIR"
+context = "Lasting immunity; who meets whom matters"
+purpose = "Final size, peak and timing on a given network; the effect of vaccinating by random choice or by number of contacts"
+
+[[decisionRows]]
+task = "SEIR"
+context = "A latent period; people unequally infectious"
+purpose = "How latency delays an epidemic without changing its final size, and what unequal infectivity does"
+
+[[decisionRows]]
+task = "SIS and SIRS"
+context = "No lasting immunity"
+purpose = "Whether the infection persists, and at which level"
+
+[[decisionRows]]
+task = "Continuous Time"
+context = "Rates rather than daily probabilities; exact timing of each event"
+purpose = "An exact simulation, and a check of what the daily steps of the other tabs change"
+
+[[inputs]]
+id = "network"
+label = "Network"
+kind = "select"
+default = "random"
+tooltip = "Random: every pair equally likely to meet (Erdos-Renyi). Scale-Free: a few people with very many contacts (Barabasi-Albert). Small-World: a ring of local contacts with some long ties (Watts-Strogatz). Regular: everybody with the same number of contacts."
+
+[[inputs.options]]
+value = "random"
+label = "Random"
+
+[[inputs.options]]
+value = "scalefree"
+label = "Scale-Free"
+
+[[inputs.options]]
+value = "smallworld"
+label = "Small-World"
+
+[[inputs.options]]
+value = "regular"
+label = "Regular"
+
+[[inputs]]
+id = "people"
+label = "People"
+tooltip = "Number of nodes of the network."
+default = "2000"
+
+[[inputs]]
+id = "contacts"
+label = "Mean Contacts"
+tooltip = "Mean number of edges per person. Scale-Free, Small-World and Regular use the nearest even number."
+default = "10"
+
+[[inputs]]
+id = "R0"
+label = "Basic R"
+tooltip = "Sets the infection rate as R x recovery / mean contacts. This ignores the shape of the network: Next Steps > Diagnose shows the reproduction number the network really gives."
+default = "2.5"
+
+[[inputs]]
+id = "recovery"
+label = "Recovery per Day"
+tooltip = "Daily probability of recovering, or the recovery rate in Continuous Time. The mean infectious period is 1 / this."
+default = "0.2"
+newRow = true
+
+[[inputs]]
+id = "latent"
+label = "End of Latency per Day"
+tooltip = "Daily probability that a latent person becomes infectious. The mean latent period is 1 / this."
+default = "0.25"
+models = ["seir"]
+
+[[inputs]]
+id = "spreaders"
+label = "Infectiousness"
+kind = "select"
+default = "equal"
+models = ["seir"]
+tooltip = "Equal: everybody equally infectious. Unequal: each person's infectiousness is drawn from a Gamma distribution with mean 1. Next Steps > Diagnose shows that this also lowers the reproduction number."
+
+[[inputs.options]]
+value = "equal"
+label = "Equal"
+
+[[inputs.options]]
+value = "unequal"
+label = "Unequal"
+
+[[inputs]]
+id = "shape"
+label = "Gamma Shape"
+tooltip = "Shape of the Gamma distribution of infectiousness. Smaller means a few people do most of the infecting."
+default = "0.3"
+models = ["seir"]
+when = "spreaders=unequal"
+
+[[inputs]]
+id = "immunity"
+label = "Immunity"
+kind = "select"
+default = "none"
+models = ["recurring"]
+tooltip = "None (SIS): a person who recovers can be infected at once. Waning (SIRS): immune for a while first."
+
+[[inputs.options]]
+value = "none"
+label = "None (SIS)"
+
+[[inputs.options]]
+value = "waning"
+label = "Waning (SIRS)"
+
+[[inputs]]
+id = "waning"
+label = "Loss of Immunity per Day"
+tooltip = "Daily probability that a recovered person becomes susceptible again."
+default = "0.02"
+models = ["recurring"]
+when = "immunity=waning"
+
+[[inputs]]
+id = "days"
+label = "Days"
+tooltip = "Number of days simulated."
+default = "300"
+models = ["recurring"]
+
+[[inputs]]
+id = "first-cases"
+label = "First Cases"
+tooltip = "Number of people infected at the start, chosen at random."
+default = "5"
+newRow = true
+
+[[inputs]]
+id = "seed"
+label = "Seed"
+tooltip = "Random seed for the network and the simulation."
+default = "42"
+
+[[codeBranches]]
+model = "sir"
+code = '''
+using GraphEpidemics, Graphs, Distributions, Random  # simulation; networks; distributions; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same network and epidemic on every run
+people, contacts = {{people}}, {{contacts}}
+even_contacts = 2 * round(Int, contacts / 2)
+
+{{?network=random}}g = erdos_renyi(people, contacts / (people - 1); rng)
+{{?network=scalefree}}g = barabasi_albert(people, even_contacts ÷ 2; rng)
+{{?network=smallworld}}g = watts_strogatz(people, even_contacts, 0.1; rng)
+{{?network=regular}}g = random_regular_graph(people, even_contacts; rng)
+
+recovery = {{recovery}}
+infection = beta_R0({{R0}}, g, recovery)  # daily chance of infection along one edge
+model = SIRModel(infection, recovery)
+
+first_cases = randperm(rng, people)[1:{{first-cases}}]
+data, trace = run_sir_fast(g, model, -1, rng, first_cases)  # -1: until nobody is infectious
+
+S, I, R = eachrow(stack(trace))  # counts of each state by day
+println("Mean contacts: ", round(mean(degree(g)); digits = 1), ", infection per edge per day: ", round(infection; digits = 4))
+println("Infected in all: ", R[end], " of ", people, " (", round(100 * R[end] / people; digits = 1), "%)")
+println("Peak: ", maximum(I), " infectious on day ", argmax(I) - 1, ", over on day ", length(I) - 1)
+'''
+
+[[codeBranches]]
+model = "seir"
+code = '''
+using GraphEpidemics, Graphs, Distributions, Random  # simulation; networks; distributions; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same network and epidemic on every run
+people, contacts = {{people}}, {{contacts}}
+even_contacts = 2 * round(Int, contacts / 2)
+
+{{?network=random}}g = erdos_renyi(people, contacts / (people - 1); rng)
+{{?network=scalefree}}g = barabasi_albert(people, even_contacts ÷ 2; rng)
+{{?network=smallworld}}g = watts_strogatz(people, even_contacts, 0.1; rng)
+{{?network=regular}}g = random_regular_graph(people, even_contacts; rng)
+
+recovery, latent = {{recovery}}, {{latent}}
+infection = beta_R0({{R0}}, g, recovery)  # daily chance of infection along one edge
+{{?spreaders=equal}}model = SEIRModel(latent, infection, recovery)
+{{?spreaders=unequal}}infectiousness = rand(rng, Gamma({{shape}}, 1 / {{shape}}), people)  # mean 1: the same mean infectiousness, unevenly shared
+{{?spreaders=unequal}}model = SEIRHetModel(infection, infectiousness, ones(people), latent, recovery)
+
+first_cases = randperm(rng, people)[1:{{first-cases}}]
+data, trace = run_seir_fast(g, model, -1, rng, first_cases)  # -1: until nobody is latent or infectious
+
+S, E, I, R = eachrow(stack(trace))  # counts of each state by day
+println("Infected in all: ", R[end], " of ", people, " (", round(100 * R[end] / people; digits = 1), "%)")
+println("Peak: ", maximum(I), " infectious on day ", argmax(I) - 1, ", over on day ", length(I) - 1)
+'''
+
+[[codeBranches]]
+model = "recurring"
+code = '''
+using GraphEpidemics, Graphs, Distributions, Random  # simulation; networks; distributions; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same network and epidemic on every run
+people, contacts = {{people}}, {{contacts}}
+even_contacts = 2 * round(Int, contacts / 2)
+
+{{?network=random}}g = erdos_renyi(people, contacts / (people - 1); rng)
+{{?network=scalefree}}g = barabasi_albert(people, even_contacts ÷ 2; rng)
+{{?network=smallworld}}g = watts_strogatz(people, even_contacts, 0.1; rng)
+{{?network=regular}}g = random_regular_graph(people, even_contacts; rng)
+
+recovery = {{recovery}}
+infection = beta_R0({{R0}}, g, recovery)  # daily chance of infection along one edge
+{{?immunity=none}}model = SISModel(infection, recovery)
+{{?immunity=waning}}model = SIRSModel(infection, recovery, {{waning}})
+
+# Start with everybody susceptible, then infect the first cases
+data = init_model_discrete(model, g, rng, :S)
+first_cases = randperm(rng, people)[1:{{first-cases}}]
+set_state_nodes(model, data, rng, first_cases, :I, true)
+
+days = {{days}}
+history = run_complex_contagion(model, g, days, rng, data)  # one named tuple per day
+day = [row.t for row in history]
+I = [row.I for row in history]
+
+settled = I[(end - days ÷ 3):end]  # the last third of the run
+println("Infectious at the end: ", I[end], " of ", people)
+println("Mean over the last third: ", round(mean(settled); digits = 1), " (", round(100 * mean(settled) / people; digits = 1), "%)")
+'''
+
+[[codeBranches]]
+model = "continuous"
+code = '''
+using GraphEpidemics, Graphs, Distributions, Random  # simulation; networks; distributions; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same network and epidemic on every run
+people, contacts = {{people}}, {{contacts}}
+even_contacts = 2 * round(Int, contacts / 2)
+
+{{?network=random}}g = erdos_renyi(people, contacts / (people - 1); rng)
+{{?network=scalefree}}g = barabasi_albert(people, even_contacts ÷ 2; rng)
+{{?network=smallworld}}g = watts_strogatz(people, even_contacts, 0.1; rng)
+{{?network=regular}}g = random_regular_graph(people, even_contacts; rng)
+
+recovery = {{recovery}}
+infection = beta_R0({{R0}}, g, recovery)  # rate of infection along one edge
+model = SIRModel(infection, recovery)
+
+first_cases = randperm(rng, people)[1:{{first-cases}}]
+data, times, trace = run_sir_gillespie(g, model, rng, first_cases)  # one entry per event
+
+S, I, R = eachrow(stack(trace))
+println("Events: ", length(times) - 1)
+println("Infected in all: ", R[end], " of ", people, " (", round(100 * R[end] / people; digits = 1), "%)")
+println("Peak: ", maximum(I), " infectious at time ", round(times[argmax(I)]; digits = 1), ", over at time ", round(times[end]; digits = 1))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "curves-sir"
+label = "Epidemic Curves"
+desc = "Susceptible, infectious and recovered people by day"
+models = ["sir"]
+code = '''
+using Plots
+
+days = 0:length(I)-1
+p = plot(days, [S I R]; label = ["Susceptible" "Infectious" "Recovered"], xlabel = "Day", ylabel = "People", title = "SIR on the network")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "curves-seir"
+label = "Epidemic Curves"
+desc = "Susceptible, latent, infectious and recovered people by day"
+models = ["seir"]
+code = '''
+using Plots
+
+days = 0:length(I)-1
+p = plot(days, [S E I R]; label = ["Susceptible" "Latent" "Infectious" "Recovered"], xlabel = "Day", ylabel = "People", title = "SEIR on the network")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "curve-recurring"
+label = "Infectious Over Time"
+desc = "People infectious by day, with the mean over the last third of the run"
+models = ["recurring"]
+code = '''
+using Plots
+
+p = plot(day, I; label = "Infectious", xlabel = "Day", ylabel = "People", title = "Infection over time")
+hline!(p, [mean(settled)]; linestyle = :dash, color = :gray, label = "Mean of the last third")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "curves-continuous"
+label = "Epidemic Curves"
+desc = "Susceptible, infectious and recovered people, changing at each event"
+models = ["continuous"]
+code = '''
+using Plots
+
+p = plot(times, [S I R]; seriestype = :steppost, label = ["Susceptible" "Infectious" "Recovered"], xlabel = "Time", ylabel = "People", title = "Exact simulation")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "contacts-per-person"
+label = "Contacts per Person"
+desc = "The distribution of the number of contacts, which sets how the infection spreads"
+models = ["sir", "seir", "recurring", "continuous"]
+code = '''
+using Plots
+
+k = degree(g)
+p = histogram(k; bins = 40, yscale = :log10, label = false, xlabel = "Contacts", ylabel = "People (log scale)", title = "Contacts per person")
+display(p)
+println("Mean ", round(mean(k); digits = 1), ", variance ", round(var(k); digits = 1), ", largest ", maximum(k))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "network-reproduction"
+label = "Reproduction Number of the Network"
+desc = "What the network really gives, against the Basic R that was entered"
+models = ["sir", "continuous"]
+code = '''
+k = degree(g)
+{{?model=sir}}transmissibility = infection / (infection + recovery - infection * recovery)  # chance an infectious person infects one contact, daily steps
+{{?model=continuous}}transmissibility = infection / (infection + recovery)  # chance an infectious person infects one contact, rates
+excess = (mean(k .^ 2) - mean(k)) / mean(k)  # contacts of a person reached along an edge, other than the one who infected them
+println("Basic R entered:              ", {{R0}})
+println("Chance of infecting a contact: ", round(transmissibility; digits = 3))
+println("Further contacts of a case:   ", round(excess; digits = 1))
+println("Reproduction number:          ", round(transmissibility * excess; digits = 2))
+println("Each contact can be infected only once, which lowers it below Basic R; variation in contacts raises it, as people with many contacts are reached first")
+'''
+
+[[actionGroups.actions]]
+id = "network-reproduction-seir"
+label = "Reproduction Number of the Network"
+desc = "What the network really gives, against the Basic R that was entered"
+models = ["seir"]
+code = '''
+k = degree(g)
+{{?spreaders=equal}}per_edge = [infection]
+{{?spreaders=unequal}}per_edge = min.(infection .* infectiousness, 1.0)  # a chance cannot pass 1
+transmissibility = mean(per_edge ./ (per_edge .+ recovery .- per_edge .* recovery))
+excess = (mean(k .^ 2) - mean(k)) / mean(k)  # contacts of a person reached along an edge, other than the one who infected them
+println("Basic R entered:              ", {{R0}})
+println("Chance of infecting a contact: ", round(transmissibility; digits = 3))
+println("Further contacts of a case:   ", round(excess; digits = 1))
+println("Reproduction number:          ", round(transmissibility * excess; digits = 2))
+'''
+
+[[actionGroups.actions]]
+id = "against-theory"
+label = "Against Theory"
+desc = "The final size in repeated simulations, against the size from this network's contact counts"
+models = ["sir", "continuous"]
+code = '''
+k = degree(g)
+{{?model=sir}}transmissibility = infection / (infection + recovery - infection * recovery)
+{{?model=continuous}}transmissibility = infection / (infection + recovery)
+missed = 0.5  # the chance that an edge does not bring infection, found by iteration
+for _ in 1:2000
+    global missed = sum(k .* (1 - transmissibility + transmissibility * missed) .^ (k .- 1)) / sum(k)
+end
+theory = 1 - mean((1 - transmissibility + transmissibility * missed) .^ k)
+
+sizes = map(1:50) do s
+    r = Xoshiro(s)
+{{?model=sir}}    run = first(run_sir_fast(g, model, -1, r, randperm(r, people)[1:{{first-cases}}]))
+{{?model=continuous}}    run = first(run_sir_gillespie(g, model, r, randperm(r, people)[1:{{first-cases}}]))
+    count(!isnan, run.infect_time) / people
+end
+large = filter(>(0.05), sizes)
+println("Theory, for a network with no clustering: ", round(theory; digits = 3))
+println("Simulated, large outbreaks only:          ", isempty(large) ? "none" : round(mean(large); digits = 3), " (", length(large), " of 50 runs)")
+println("A gap on the Small-World network comes from clustering, which the theory leaves out")
+'''
+
+[[actionGroups.actions]]
+id = "effective-r"
+label = "Effective R Over Time"
+desc = "New infections per person infectious, times the infectious period, in a moving window"
+models = ["sir", "seir"]
+code = '''
+using Plots
+
+new_cases = [count(==(day), data.infect_time) for day in 0:length(I)-1]
+window(day) = max(1, day - 3):min(length(I), day + 3)  # seven days around each day
+effective = [sum(new_cases[window(day)]) / sum(I[window(day)]) / recovery for day in eachindex(I)]  # new infections per person infectious, times the infectious period
+p = plot(0:length(I)-1, effective; label = "Effective R, 7-day window", xlabel = "Day", ylabel = "Effective R", title = "Effective R over time")
+hline!(p, [1.0]; linestyle = :dash, color = :gray, label = "R = 1")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "settled"
+label = "Has It Settled?"
+desc = "The mean over the second and last thirds of the run, and whether the infection was lost"
+models = ["recurring"]
+code = '''
+third = days ÷ 3
+middle = I[(third + 1):(2 * third)]
+println("Second third: ", round(mean(middle); digits = 1), ", last third: ", round(mean(settled); digits = 1))
+println("Standard deviation in the last third: ", round(std(settled); digits = 1))
+if I[end] == 0
+    println("The infection died out on day ", findfirst(==(0), I) - 1, ": the mean of the last third says nothing about a level")
+else
+    println("Close means say the run is long enough; if they differ, raise Days")
+end
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "many-epidemics"
+label = "Many Epidemics"
+desc = "The chance of a large outbreak, and its size and peak, over 100 runs on this network"
+models = ["sir", "seir", "continuous"]
+code = '''
+runs = map(1:100) do s
+    r = Xoshiro(s)
+    start = randperm(r, people)[1:{{first-cases}}]
+{{?model=sir}}    result, counts = run_sir_fast(g, model, -1, r, start)
+{{?model=sir}}    infectious = stack(counts)[2, :]
+{{?model=seir}}    result, counts = run_seir_fast(g, model, -1, r, start)
+{{?model=seir}}    infectious = stack(counts)[3, :]
+{{?model=continuous}}    result, _, counts = run_sir_gillespie(g, model, r, start)
+{{?model=continuous}}    infectious = stack(counts)[2, :]
+    (size = count(!isnan, result.infect_time), peak = maximum(infectious))
+end
+large = filter(run -> run.size > 0.05 * people, runs)
+println("Chance of a large outbreak: ", length(large) / length(runs))
+if !isempty(large)
+    println("Size:  median ", median(run.size for run in large), ", 90% range ", quantile([run.size for run in large], [0.05, 0.95]))
+    println("Peak:  median ", median(run.peak for run in large), ", 90% range ", quantile([run.peak for run in large], [0.05, 0.95]))
+end
+'''
+
+[[actionGroups.actions]]
+id = "dying-out"
+label = "Chance of Dying Out"
+desc = "How many of 30 runs lose the infection, and the level of those that keep it"
+models = ["recurring"]
+code = '''
+levels = map(1:30) do s
+    r = Xoshiro(s)
+    run = init_model_discrete(model, g, r, :S)
+    set_state_nodes(model, run, r, randperm(r, people)[1:{{first-cases}}], :I, true)
+    counts = [row.I for row in run_complex_contagion(model, g, days, r, run)]
+    mean(counts[(end - days ÷ 3):end])
+end
+kept = filter(>(0), levels)
+println("Lost the infection: ", length(levels) - length(kept), " of 30 runs")
+isempty(kept) || println("Level where it stayed: ", round(mean(kept); digits = 1), " people, range ", round.(extrema(kept); digits = 1))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "compare-networks"
+label = "Compare Networks"
+desc = "The same infection on four networks with the same mean contacts"
+models = ["sir"]
+code = '''
+networks = [
+    "Random" => erdos_renyi(people, contacts / (people - 1); rng = Xoshiro({{seed}})),
+    "Scale-Free" => barabasi_albert(people, even_contacts ÷ 2; rng = Xoshiro({{seed}})),
+    "Small-World" => watts_strogatz(people, even_contacts, 0.1; rng = Xoshiro({{seed}})),
+    "Regular" => random_regular_graph(people, even_contacts; rng = Xoshiro({{seed}})),
+]
+println(rpad("Network", 14), rpad("Large outbreak", 16), rpad("Mean size", 11), "Mean peak")
+for (name, network) in networks
+    network_runs = map(1:50) do s
+        r = Xoshiro(s)
+        result, counts = run_sir_fast(network, model, -1, r, randperm(r, people)[1:{{first-cases}}])
+        (size = count(!isnan, result.infect_time), peak = maximum(stack(counts)[2, :]))
+    end
+    took_off = filter(run -> run.size > 0.05 * people, network_runs)
+    println(rpad(name, 14), rpad(length(took_off) / 50, 16), rpad(round(Int, mean(run.size for run in took_off)), 11), round(Int, mean(run.peak for run in took_off)))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-vaccination"
+label = "Compare Vaccination Strategies"
+desc = "One person in five vaccinated, at random or those with the most contacts first"
+models = ["sir"]
+code = '''
+covered = round(Int, 0.2 * people)  # the people vaccinated
+strategies = [
+    "No vaccination" => Int[],
+    "At random" => randperm(Xoshiro({{seed}}), people)[1:covered],
+    "Most contacts first" => sortperm(degree(g); rev = true)[1:covered],
+]
+for (name, vaccinated) in strategies
+    network, _ = induced_subgraph(g, setdiff(1:people, vaccinated))  # the vaccinated no longer pass it on
+    strategy_sizes = map(1:50) do s
+        r = Xoshiro(s)
+        result, _ = run_sir_fast(network, model, -1, r, randperm(r, nv(network))[1:{{first-cases}}])
+        count(!isnan, result.infect_time)
+    end
+    println(rpad(name, 22), "mean infected ", rpad(round(Int, mean(strategy_sizes)), 7), "largest ", maximum(strategy_sizes))
+end
+println("Most contacts first gains the most on a Scale-Free network, and nothing on a Regular one")
+'''
+
+[[actionGroups.actions]]
+id = "compare-spreaders"
+label = "Equal or Unequal Infectiousness"
+desc = "The chance of a large outbreak and its size, with the same mean infectiousness"
+models = ["seir"]
+code = '''
+for (name, spread) in (("Equal", ones(people)), ("Gamma shape 0.3", rand(Xoshiro({{seed}}), Gamma(0.3, 1 / 0.3), people)))
+    unequal_model = SEIRHetModel(infection, spread, ones(people), latent, recovery)
+    spreader_sizes = map(1:100) do s
+        r = Xoshiro(s)
+        result, _ = run_seir_fast(g, unequal_model, -1, r, randperm(r, people)[1:1])  # one first case, where chance matters most
+        count(!isnan, result.infect_time)
+    end
+    took_off = filter(>(0.05 * people), spreader_sizes)
+    println(rpad(name, 18), "chance of a large outbreak ", rpad(length(took_off) / 100, 6), "mean size ", isempty(took_off) ? "none" : round(Int, mean(took_off)))
+end
+println("With unequal infectiousness more introductions die out, and those infecting many reach the same contacts twice over, which also lowers the size")
+'''
+
+[[actionGroups.actions]]
+id = "compare-latency"
+label = "With and Without Latency"
+desc = "The same epidemic with and without a latent period"
+models = ["seir"]
+code = '''
+with_latency = run_seir_fast(g, SEIRModel(latent, infection, recovery), -1, Xoshiro({{seed}}), first_cases)
+without_latency = run_sir_fast(g, SIRModel(infection, recovery), -1, Xoshiro({{seed}}), first_cases)
+seir_infectious = stack(with_latency[2])[3, :]
+sir_infectious = stack(without_latency[2])[2, :]
+println("Latent period:    peak ", maximum(seir_infectious), " on day ", argmax(seir_infectious) - 1, ", infected ", count(!isnan, with_latency[1].infect_time))
+println("No latent period: peak ", maximum(sir_infectious), " on day ", argmax(sir_infectious) - 1, ", infected ", count(!isnan, without_latency[1].infect_time))
+println("Latency delays and flattens the epidemic: the final size stays close")
+'''
+
+[[actionGroups.actions]]
+id = "compare-threshold"
+label = "Threshold by Network"
+desc = "The endemic level as Basic R rises, on a random and a scale-free network, against the level with no network"
+models = ["recurring"]
+code = '''
+using Plots
+
+function endemic_level(network, basic_R)
+    rate = beta_R0(basic_R, network, recovery)
+{{?immunity=none}}    m = SISModel(rate, recovery)
+{{?immunity=waning}}    m = SIRSModel(rate, recovery, {{waning}})
+    r = Xoshiro({{seed}})
+    run = init_model_discrete(m, network, r, :S)
+    set_state_nodes(m, run, r, randperm(r, nv(network))[1:50], :I, true)  # enough first cases to avoid losing it by chance
+    mean(row.I for row in run_complex_contagion(m, network, days, r, run)[(end - days ÷ 3):end]) / nv(network)
+end
+R_values = 0.25:0.25:3.0
+{{?immunity=none}}well_mixed = max.(0.0, 1 .- 1 ./ R_values)
+{{?immunity=waning}}well_mixed = max.(0.0, 1 .- 1 ./ R_values) .* ({{waning}} / ({{waning}} + recovery))
+p = plot(R_values, well_mixed; color = :gray, linestyle = :dash, label = "No network", xlabel = "Basic R", ylabel = "Share infectious", title = "Endemic level")
+plot!(p, R_values, [endemic_level(erdos_renyi(people, contacts / (people - 1); rng = Xoshiro({{seed}})), x) for x in R_values]; marker = :circle, label = "Random")
+plot!(p, R_values, [endemic_level(barabasi_albert(people, even_contacts ÷ 2; rng = Xoshiro({{seed}})), x) for x in R_values]; marker = :circle, label = "Scale-Free")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "compare-immunity"
+label = "SIS or SIRS"
+desc = "The endemic level with no immunity, and with immunity lasting about 100, 30 and 10 days"
+models = ["recurring"]
+code = '''
+scenarios = [
+    "No immunity (SIS)" => SISModel(infection, recovery),
+    "Immunity about 100 days" => SIRSModel(infection, recovery, 0.01),
+    "Immunity about 30 days" => SIRSModel(infection, recovery, 1 / 30),
+    "Immunity about 10 days" => SIRSModel(infection, recovery, 0.1),
+]
+for (name, m) in scenarios
+    r = Xoshiro({{seed}})
+    run = init_model_discrete(m, g, r, :S)
+    set_state_nodes(m, run, r, first_cases, :I, true)
+    level = mean(row.I for row in run_complex_contagion(m, g, days, r, run)[(end - days ÷ 3):end])
+    println(rpad(name, 26), level == 0 ? "the infection was lost" : string(round(level; digits = 1), " infectious (", round(100 * level / people; digits = 1), "%)"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-steps"
+label = "Daily Steps Against Events"
+desc = "The same rates simulated event by event and in daily steps"
+models = ["continuous"]
+code = '''
+daily_model = SIRModel(prob_from_rate(infection, 1.0), prob_from_rate(recovery, 1.0))  # the chance of each event within one day
+exact_sizes = map(1:50) do s
+    r = Xoshiro(s)
+    count(!isnan, first(run_sir_gillespie(g, model, r, randperm(r, people)[1:{{first-cases}}])).infect_time)
+end
+daily_sizes = map(1:50) do s
+    r = Xoshiro(s)
+    count(!isnan, first(run_sir_fast(g, daily_model, -1, r, randperm(r, people)[1:{{first-cases}}])).infect_time)
+end
+println("Event by event: mean infected ", round(Int, mean(exact_sizes)))
+println("Daily steps:    mean infected ", round(Int, mean(daily_sizes)))
+println("The daily steps matter more the larger the rates are per day")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "who-gets-infected"
+label = "Who Gets Infected"
+desc = "The share infected among people with few and with many contacts"
+models = ["sir", "seir", "continuous"]
+code = '''
+k = degree(g)
+was_infected = .!isnan.(data.infect_time)
+order = sortperm(k)
+for (name, group) in zip(("Fewest contacts", "Below the middle", "Above the middle", "Most contacts"), Iterators.partition(order, ceil(Int, people / 4)))
+    println(rpad(name, 18), "mean contacts ", rpad(round(mean(k[group]); digits = 1), 7), "infected ", round(100 * mean(was_infected[group]); digits = 1), "%")
+end
+'''
+
+[[actionGroups.actions]]
+id = "secondary-cases"
+label = "Secondary Cases"
+desc = "How unevenly transmission was shared, read from who infected whom"
+models = ["sir", "seir", "continuous"]
+code = '''
+infected = findall(!isnan, data.infect_time)
+caused = zeros(Int, people)
+for person in infected
+    source = data.infect_node[person]
+    source > 0 && (caused[Int(source)] += 1)  # the first cases have no source
+end
+secondary = sort(caused[infected]; rev = true)
+top = secondary[1:ceil(Int, 0.2 * length(secondary))]
+println("Secondary cases per case: mean ", round(mean(secondary); digits = 2), ", variance ", round(var(secondary); digits = 2))
+println("Infected nobody: ", round(100 * mean(==(0), secondary); digits = 1), "% of cases")
+println("Top 20% of cases caused ", round(100 * sum(top) / sum(secondary); digits = 1), "% of transmission")
+println("A variance far above the mean is superspreading, here produced by the network and by the infectious periods")
+'''
+
+[[actionGroups.actions]]
+id = "endemic-level"
+label = "The Endemic Level"
+desc = "The simulated level against the level with no network"
+models = ["recurring"]
+code = '''
+{{?immunity=none}}well_mixed = max(0.0, 1 - 1 / {{R0}})
+{{?immunity=waning}}well_mixed = max(0.0, 1 - 1 / {{R0}}) * {{waning}} / ({{waning}} + recovery)
+println("With no network: ", round(100 * well_mixed; digits = 1), "% infectious")
+println("On this network: ", round(100 * mean(settled) / people; digits = 1), "% infectious")
+println("Neighbours of an infectious person are often infectious already, so contacts are wasted: this pulls the level below the first figure")
+'''

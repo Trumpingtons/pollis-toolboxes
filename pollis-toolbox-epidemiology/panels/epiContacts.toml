@@ -1,0 +1,910 @@
+# Inference on Contact Networks Webview Configuration
+# This is the declarative source for the webview. The build script generates its data file.
+# Run: npm run gulp compile-toml
+
+[meta]
+title = "Inference on Contact Networks"
+viewType = "pollis.epiContacts"
+defaultModel = "risk"
+
+[[packages]]
+name = "SmallCouplingDynamicCavity.jl"
+github = "https://github.com/Mattiatarabolo/SmallCouplingDynamicCavity.jl"
+
+[[packages]]
+name = "Graphs.jl"
+github = "https://github.com/JuliaGraphs/Graphs.jl"
+
+[[packages]]
+name = "Plots.jl"
+github = "https://github.com/JuliaPlots/Plots.jl"
+
+[requires]
+packages = ["SmallCouplingDynamicCavity.jl", "Graphs.jl", "Plots.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "epi-contacts/factsheet.md"
+bundled = true
+
+[[wikis]]
+name = "Overview"
+file = "epi-contacts/overview.md"
+bundled = true
+
+[[wikis]]
+name = "Assumptions"
+file = "epi-contacts/assumptions.md"
+bundled = true
+
+[[wikis]]
+name = "Diagnostics"
+file = "epi-contacts/diagnostics.md"
+bundled = true
+
+[[wikis]]
+name = "Interpretation"
+file = "epi-contacts/interpretation.md"
+bundled = true
+
+[[wikis]]
+name = "Decision Guide"
+file = "epi-contacts/decision-guide.md"
+bundled = true
+
+[[wikis]]
+separator = true
+label = "Models"
+
+[[wikis]]
+name = "Individual Risk"
+file = "epi-contacts/risk.md"
+bundled = true
+
+[[wikis]]
+name = "First Cases"
+file = "epi-contacts/source.md"
+bundled = true
+
+[[wikis]]
+name = "Changing Contacts"
+file = "epi-contacts/changing.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+title = "Small-coupling dynamic cavity: A Bayesian mean-field framework for epidemic inference"
+authors = "Braunstein, Alfredo; Catania, Giovanni; Dall'Asta, Luca; Mariani, Matteo; Mazza, Fabio; Tarabolo, Mattia"
+year = 2025
+journal = "Physical Review Research"
+doi = "10.1103/physrevresearch.7.023089"
+openAccess = true
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+title = "Bayesian Inference of Epidemics on Networks via Belief Propagation"
+authors = "Altarelli, Fabrizio; Braunstein, Alfredo; Dall'Asta, Luca; Lage-Castellanos, Alejandro; Zecchina, Riccardo"
+year = 2014
+journal = "Physical Review Letters"
+doi = "10.1103/PhysRevLett.112.118701"
+openAccess = false
+
+[[references]]
+title = "Inferring the origin of an epidemic with a dynamic message-passing algorithm"
+authors = "Lokhov, Andrey Y.; Mézard, Marc; Ohta, Hiroki; Zdeborová, Lenka"
+year = 2014
+journal = "Physical Review E"
+doi = "10.1103/PhysRevE.90.012801"
+openAccess = false
+
+[[references]]
+title = "Epidemic mitigation by statistical inference from contact tracing data"
+authors = "Baker, Antoine; Biazzo, Indaco; Braunstein, Alfredo; Catania, Giovanni; Dall'Asta, Luca; Ingrosso, Alessandro; Krzakala, Florent; Mazza, Fabio; Mézard, Marc; Muntoni, Anna Paola; Refinetti, Maria; Sarao Mannelli, Stefano; Zdeborová, Lenka"
+year = 2021
+journal = "Proceedings of the National Academy of Sciences"
+doi = "10.1073/pnas.2106548118"
+openAccess = true
+
+[[references]]
+title = "Message passing approach for general epidemic models"
+authors = "Karrer, Brian; Newman, M. E. J."
+year = 2010
+journal = "Physical Review E"
+doi = "10.1103/PhysRevE.82.016101"
+openAccess = false
+
+[[references]]
+title = "Identification of Patient Zero in Static and Temporal Networks: Robustness and Limitations"
+authors = "Antulov-Fantulin, Nino; Lančić, Alen; Šmuc, Tomislav; Štefančić, Hrvoje; Šikić, Mile"
+year = 2015
+journal = "Physical Review Letters"
+doi = "10.1103/PhysRevLett.114.248701"
+openAccess = false
+
+[[references]]
+title = "Rumors in a Network: Who's the Culprit?"
+authors = "Shah, Devavrat; Zaman, Tauhid"
+year = 2011
+journal = "IEEE Transactions on Information Theory"
+doi = "10.1109/TIT.2011.2158885"
+openAccess = false
+
+[[references]]
+title = "An introduction to ROC analysis"
+authors = "Fawcett, Tom"
+year = 2006
+journal = "Pattern Recognition Letters"
+doi = "10.1016/j.patrec.2005.10.010"
+openAccess = false
+
+[[references]]
+title = "The meaning and use of the area under a receiver operating characteristic (ROC) curve"
+authors = "Hanley, J. A.; McNeil, B. J."
+year = 1982
+journal = "Radiology"
+doi = "10.1148/radiology.143.1.7063747"
+openAccess = false
+
+[[references]]
+title = "A Bayesian generative neural network framework for epidemic inference problems"
+authors = "Biazzo, Indaco; Braunstein, Alfredo; Dall'Asta, Luca; Mazza, Fabio"
+year = 2022
+journal = "Scientific Reports"
+doi = "10.1038/s41598-022-20898-x"
+openAccess = true
+
+[[models]]
+id = "risk"
+label = "Individual Risk"
+
+[[models]]
+id = "source"
+label = "First Cases"
+
+[[models]]
+id = "changing"
+label = "Changing Contacts"
+
+[[bullets]]
+text = "Individual Risk"
+detail = "given who met whom and the results of some tests, the probability that each person is infected on each day, including people who were never tested"
+
+[[bullets]]
+text = "First Cases"
+detail = "given tests at the end of an outbreak, the probability that each person was infected on the first day, which gives a short list of candidates for where it began"
+
+[[bullets]]
+text = "Changing Contacts"
+detail = "the same inference when contacts differ from day to day, as they do in contact-tracing data, with a day from which people meet fewer others"
+
+[[decisionRows]]
+task = "Individual Risk"
+context = "A known contact network and some test results"
+purpose = "Rank untested people by their risk, to decide whom to test or isolate first"
+
+[[decisionRows]]
+task = "First Cases"
+context = "An outbreak that has just been noticed, tested near its end"
+purpose = "A short list of people who may have started it"
+
+[[decisionRows]]
+task = "Changing Contacts"
+context = "Contacts recorded day by day"
+purpose = "Risk that uses the day of each contact"
+
+[[inputs]]
+id = "disease"
+label = "Disease"
+kind = "select"
+default = "sir"
+tooltip = "SI: infected for good. SIR: recovery gives lasting immunity. SIS: recovery with no immunity. SIRS: immunity that wanes."
+models = ["risk", "changing"]
+
+[[inputs.options]]
+value = "si"
+label = "SI"
+
+[[inputs.options]]
+value = "sir"
+label = "SIR"
+
+[[inputs.options]]
+value = "sis"
+label = "SIS"
+
+[[inputs.options]]
+value = "sirs"
+label = "SIRS"
+
+[[inputs]]
+id = "people"
+label = "People"
+tooltip = "Number of people. Memory grows with the square of this number, times the days."
+default = "300"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "source-people"
+label = "People"
+tooltip = "Number of people. Memory grows with the square of this number, times the days."
+default = "200"
+models = ["source"]
+
+[[inputs]]
+id = "contacts"
+label = "Contacts per Person"
+tooltip = "Mean number of contacts of a person. Every person has exactly this many in Individual Risk and First Cases, and about this many, new each day, in Changing Contacts."
+default = "4"
+
+[[inputs]]
+id = "infection"
+label = "Infection"
+tooltip = "Probability that an infected person infects a susceptible contact in one day."
+default = "0.07"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "source-infection"
+label = "Infection"
+tooltip = "Probability that an infected person infects a susceptible contact in one day."
+default = "0.2"
+models = ["source"]
+
+[[inputs]]
+id = "recovery"
+label = "Recovery"
+tooltip = "Probability of recovering in one day. The mean infectious period is 1 / this."
+default = "0.1"
+when = "disease=sir|sis|sirs"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "immunity-loss"
+label = "Loss of Immunity"
+tooltip = "Probability per day that a recovered person becomes susceptible again."
+default = "0.02"
+when = "disease=sirs"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "steps"
+label = "Days"
+tooltip = "Number of days the outbreak is followed."
+default = "30"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "source-steps"
+label = "Days"
+tooltip = "Days from the first case to the tests. The longer the wait, the less the tests say about where it began."
+default = "8"
+models = ["source"]
+
+[[inputs]]
+id = "first-cases"
+label = "First Cases"
+tooltip = "People infected on the first day. The inference knows this number, not who they are."
+default = "3"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "tested-daily"
+label = "Tested per Day"
+tooltip = "Share of people tested each day, chosen at random, from the first day of testing to the end."
+default = "0.1"
+models = ["risk", "changing"]
+newRow = true
+
+[[inputs]]
+id = "first-test-day"
+label = "First Day of Testing"
+tooltip = "Day from which tests are made."
+default = "16"
+models = ["risk", "changing"]
+
+[[inputs]]
+id = "tested-share"
+label = "Tested on the Last Day"
+tooltip = "Share of people tested on the last day, chosen at random."
+default = "0.5"
+models = ["source"]
+newRow = true
+
+[[inputs]]
+id = "false-positive"
+label = "False Positive"
+tooltip = "Probability that a person who is not infected tests positive. The inference is told this value. A person who has recovered tests negative."
+default = "0.01"
+
+[[inputs]]
+id = "false-negative"
+label = "False Negative"
+tooltip = "Probability that an infected person tests negative. The inference is told this value."
+default = "0.05"
+
+[[inputs]]
+id = "change-day"
+label = "Day Contacts Change"
+tooltip = "Day from which people meet fewer others."
+default = "15"
+models = ["changing"]
+newRow = true
+
+[[inputs]]
+id = "contacts-after"
+label = "Contacts After"
+tooltip = "Mean number of contacts per person from that day on."
+default = "2"
+models = ["changing"]
+
+[[inputs]]
+id = "iterations"
+label = "Largest Number of Iterations"
+tooltip = "The inference passes messages between contacts until they stop changing or this number is reached."
+default = "300"
+newRow = true
+
+[[inputs]]
+id = "damping"
+label = "Damping"
+tooltip = "Share of the old message kept at each iteration, from 0 up to below 1. Raise it if the inference does not converge."
+default = "0.3"
+
+[[inputs]]
+id = "seed"
+label = "Seed"
+tooltip = "Fixes the network, the outbreak and the tests."
+default = "1"
+
+[[codeBranches]]
+model = "risk"
+code = '''
+using SmallCouplingDynamicCavity, Graphs, Random, Statistics
+
+people = {{people}}
+steps = {{steps}}
+first_cases = {{first-cases}}
+rng = Xoshiro({{seed}})
+
+{{?disease=si}}disease = SI(0.0, people, steps)
+{{?disease=sir}}disease = SIR(0.0, {{recovery}}, people, steps)
+{{?disease=sis}}disease = SIS(0.0, {{recovery}}, people, steps)
+{{?disease=sirs}}disease = SIRS(0.0, {{recovery}}, {{immunity-loss}}, people, steps)
+
+# Infection probabilities along the contacts of each day
+function contact_couplings(graphs, probability)
+    chance = zeros(people, people, steps + 1)
+    for (day, graph) in enumerate(graphs), e in edges(graph)
+        chance[src(e), dst(e), day] = probability
+        chance[dst(e), src(e), day] = probability
+    end
+    return log.(1 .- chance)
+end
+
+# One graph per day: the form of the package that works with the current Graphs.jl
+function make_graphs(rng)
+    return fill(random_regular_graph(people, {{contacts}}; rng = rng), steps + 1)
+end
+
+# -1 not tested, 1 positive, 0 negative
+function make_tests(truth, rng; share = {{tested-daily}}, first_day = {{first-test-day}}, last_day = steps + 1, false_positive = {{false-positive}}, false_negative = {{false-negative}})
+    tests = fill(Int8(-1), people, steps + 1)
+    for day in first_day:last_day, i in randperm(rng, people)[1:round(Int, share * people)]
+        tests[i, day] = truth[i, day] == 1 ? (rand(rng) < false_negative ? 0 : 1) : (rand(rng) < false_positive ? 1 : 0)
+    end
+    return tests
+end
+
+# The chance of a test result given the state of the person
+function test_likelihood(false_positive, false_negative)
+    return (seen, state) -> seen == -1 ? 1.0 : state == 1 ? (seen == 1 ? 1 - false_negative : false_negative) : (seen == 1 ? false_positive : 1 - false_positive)
+end
+
+# The cutoff keeps the messages stable; the package names this keyword with a Greek letter
+const message_cutoff = NamedTuple{(Symbol("μ_cutoff"),)}((-1.0,))
+
+function infer(model, tests, rng; false_positive = {{false-positive}}, false_negative = {{false-negative}}, changes = Float64[])
+    model.obsmat .= tests
+    nodes = run_SCDC(model, test_likelihood(false_positive, false_negative), first_cases / people, {{iterations}}, 1e-4, {{damping}}; callback = (_, _, change) -> push!(changes, change), rng = rng, message_cutoff...)
+    return nodes
+end
+
+never_tested(tests) = findall(i -> all(==(-1), view(tests, i, :)), 1:people)
+area_under_curve(score, flags) = 0 < sum(flags) < length(flags) ? ROC_curve(score, flags)[3] : NaN
+
+graphs = make_graphs(rng)
+model = EpidemicModel(disease, graphs, steps, contact_couplings(graphs, {{infection}}))
+truth = sim_epidemics(model; patient_zero = randperm(rng, people)[1:first_cases], rng = rng)
+tests = make_tests(truth, rng)
+changes = Float64[]
+nodes = infer(model, tests, rng; changes = changes)
+
+risk = [node.marg.m[2, end] for node in nodes]  # the chance that each person is infected on the last day
+infected = Int.(truth[:, end] .== 1)
+untested = never_tested(tests)
+println("Converged: ", model.converged, ", after ", length(changes), " iterations")
+println("Infected on the last day: ", sum(infected), ", the risks add up to ", round(sum(risk); digits = 1))
+println("Never tested: ", length(untested), " people, ", sum(infected[untested]), " of them infected")
+score = area_under_curve(risk[untested], infected[untested])
+println(isnan(score) ? "Among untested people, nobody or everybody is infected, so there is no ranking to score" : "Chance that an infected untested person ranks above an uninfected one: $(round(score; digits = 3))")
+'''
+
+[[codeBranches]]
+model = "source"
+code = '''
+using SmallCouplingDynamicCavity, Graphs, Random, Statistics
+
+people = {{source-people}}
+rng = Xoshiro({{seed}})
+
+# The test says who is infected on the last day
+function test_likelihood(false_positive, false_negative)
+    return (seen, state) -> seen == -1 ? 1.0 : state == 1 ? (seen == 1 ? 1 - false_negative : false_negative) : (seen == 1 ? false_positive : 1 - false_positive)
+end
+
+# The cutoff keeps the messages stable; the package names this keyword with a Greek letter
+const message_cutoff = NamedTuple{(Symbol("μ_cutoff"),)}((-1.0,))
+
+# One outbreak from one first case: the chance of each person being that case
+function trace_back(seed; days = {{source-steps}}, share = {{tested-share}}, false_positive = {{false-positive}}, false_negative = {{false-negative}})
+    rng = Xoshiro(seed)
+    network = random_regular_graph(people, {{contacts}}; rng = rng)
+    chance = zeros(people, people, days + 1)
+    for e in edges(network)
+        chance[src(e), dst(e), :] .= {{source-infection}}
+        chance[dst(e), src(e), :] .= {{source-infection}}
+    end
+    # One graph per day: the form of the package that works with the current Graphs.jl
+    model = EpidemicModel(SI(0.0, people, days), fill(network, days + 1), days, log.(1 .- chance))
+    first_case = rand(rng, 1:people)
+    truth = sim_epidemics(model; patient_zero = [first_case], rng = rng)
+    tests = fill(Int8(-1), people, days + 1)
+    for i in randperm(rng, people)[1:round(Int, share * people)]
+        tests[i, end] = truth[i, end] == 1 ? (rand(rng) < false_negative ? 0 : 1) : (rand(rng) < false_positive ? 1 : 0)
+    end
+    model.obsmat .= tests
+    changes = Float64[]
+    nodes = run_SCDC(model, test_likelihood(false_positive, false_negative), 1 / people, {{iterations}}, 1e-4, {{damping}}; callback = (_, _, change) -> push!(changes, change), rng = rng, message_cutoff...)
+    first_chance = [node.marg.m[2, 1] for node in nodes]
+    first_chance ./= sum(first_chance)
+    order = sortperm(first_chance; rev = true)
+    set_size = findfirst(>=(0.9), cumsum(first_chance[order]))
+    place = findfirst(==(first_case), order)
+    return (; network, model, truth, tests, changes, first_case, first_chance, order, set_size, place)
+end
+
+result = trace_back({{seed}})
+println("Converged: ", result.model.converged, ", after ", length(result.changes), " iterations")
+println("Infected on the last day: ", count(==(1), result.truth[:, end]), " of ", people)
+println("The real first case ranks ", result.place, " of ", people, ", with a chance of ", round(result.first_chance[result.first_case]; digits = 3))
+println("The first ", result.set_size, " people on the list hold 90% of the chance")
+'''
+
+[[codeBranches]]
+model = "changing"
+code = '''
+using SmallCouplingDynamicCavity, Graphs, Random, Statistics
+
+people = {{people}}
+steps = {{steps}}
+first_cases = {{first-cases}}
+rng = Xoshiro({{seed}})
+
+{{?disease=si}}disease = SI(0.0, people, steps)
+{{?disease=sir}}disease = SIR(0.0, {{recovery}}, people, steps)
+{{?disease=sis}}disease = SIS(0.0, {{recovery}}, people, steps)
+{{?disease=sirs}}disease = SIRS(0.0, {{recovery}}, {{immunity-loss}}, people, steps)
+
+# Infection probabilities along the contacts of each day
+function contact_couplings(graphs, probability)
+    chance = zeros(people, people, steps + 1)
+    for (day, graph) in enumerate(graphs), e in edges(graph)
+        chance[src(e), dst(e), day] = probability
+        chance[dst(e), src(e), day] = probability
+    end
+    return log.(1 .- chance)
+end
+
+# New contacts each day, fewer of them from the day contacts change
+function make_graphs(rng)
+    return [erdos_renyi(people, (day < {{change-day}} ? {{contacts}} : {{contacts-after}}) / people; rng = rng) for day in 1:steps+1]
+end
+
+# -1 not tested, 1 positive, 0 negative
+function make_tests(truth, rng; share = {{tested-daily}}, first_day = {{first-test-day}}, last_day = steps + 1, false_positive = {{false-positive}}, false_negative = {{false-negative}})
+    tests = fill(Int8(-1), people, steps + 1)
+    for day in first_day:last_day, i in randperm(rng, people)[1:round(Int, share * people)]
+        tests[i, day] = truth[i, day] == 1 ? (rand(rng) < false_negative ? 0 : 1) : (rand(rng) < false_positive ? 1 : 0)
+    end
+    return tests
+end
+
+# The chance of a test result given the state of the person
+function test_likelihood(false_positive, false_negative)
+    return (seen, state) -> seen == -1 ? 1.0 : state == 1 ? (seen == 1 ? 1 - false_negative : false_negative) : (seen == 1 ? false_positive : 1 - false_positive)
+end
+
+# The cutoff keeps the messages stable; the package names this keyword with a Greek letter
+const message_cutoff = NamedTuple{(Symbol("μ_cutoff"),)}((-1.0,))
+
+function infer(model, tests, rng; false_positive = {{false-positive}}, false_negative = {{false-negative}}, changes = Float64[])
+    model.obsmat .= tests
+    nodes = run_SCDC(model, test_likelihood(false_positive, false_negative), first_cases / people, {{iterations}}, 1e-4, {{damping}}; callback = (_, _, change) -> push!(changes, change), rng = rng, message_cutoff...)
+    return nodes
+end
+
+never_tested(tests) = findall(i -> all(==(-1), view(tests, i, :)), 1:people)
+area_under_curve(score, flags) = 0 < sum(flags) < length(flags) ? ROC_curve(score, flags)[3] : NaN
+
+graphs = make_graphs(rng)
+model = EpidemicModel(disease, graphs, steps, contact_couplings(graphs, {{infection}}))
+truth = sim_epidemics(model; patient_zero = randperm(rng, people)[1:first_cases], rng = rng)
+tests = make_tests(truth, rng)
+changes = Float64[]
+nodes = infer(model, tests, rng; changes = changes)
+
+risk = [node.marg.m[2, end] for node in nodes]  # the chance that each person is infected on the last day
+infected = Int.(truth[:, end] .== 1)
+untested = never_tested(tests)
+println("Converged: ", model.converged, ", after ", length(changes), " iterations")
+println("Infected on the last day: ", sum(infected), ", the risks add up to ", round(sum(risk); digits = 1))
+println("Never tested: ", length(untested), " people, ", sum(infected[untested]), " of them infected")
+score = area_under_curve(risk[untested], infected[untested])
+println(isnan(score) ? "Among untested people, nobody or everybody is infected, so there is no ranking to score" : "Chance that an infected untested person ranks above an uninfected one: $(round(score; digits = 3))")
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "ranked-risk"
+label = "Risk of Untested People"
+desc = "Untested people from highest risk to lowest, marked by whether they were really infected"
+models = ["risk", "changing"]
+code = '''
+using Plots
+
+ranked = untested[sortperm(risk[untested]; rev = true)]
+hit = findall(==(1), infected[ranked])
+plot(eachindex(ranked), risk[ranked]; label = "Risk", xlabel = "Untested people, by risk", ylabel = "Chance of being infected", title = "Risk on the last day")
+scatter!(hit, risk[ranked][hit]; label = "Really infected", markersize = 3)
+'''
+
+[[actionGroups.actions]]
+id = "expected-cases"
+label = "Expected and Real Cases"
+desc = "The sum of the risks of each day beside the number really infected"
+models = ["risk", "changing"]
+code = '''
+using Plots
+
+expected = [sum(node.marg.m[2, day] for node in nodes) for day in 1:steps+1]
+real_cases = vec(sum(truth .== 1; dims = 1))
+plot(0:steps, [expected real_cases]; label = ["Sum of the risks" "Really infected"], xlabel = "Day", ylabel = "People", title = "Cases by day")
+'''
+
+[[actionGroups.actions]]
+id = "person-course"
+label = "Course of the Highest Risks"
+desc = "The chance of being infected, day by day, for the three untested people at highest risk"
+models = ["risk", "changing"]
+code = '''
+using Plots
+
+highest = untested[sortperm(risk[untested]; rev = true)[1:3]]
+courses = reduce(hcat, [nodes[i].marg.m[2, :] for i in highest])
+plot(0:steps, courses; label = reshape(["Person $i" for i in highest], 1, :), xlabel = "Day", ylabel = "Chance of being infected", ylim = (0, 1), title = "Highest risks")
+'''
+
+[[actionGroups.actions]]
+id = "contacts-per-day"
+label = "Contacts per Day"
+desc = "The number of contacts recorded on each day"
+models = ["changing"]
+code = '''
+using Plots
+
+plot(0:steps, ne.(graphs); label = "", xlabel = "Day", ylabel = "Contacts", title = "Contacts per day")
+'''
+
+[[actionGroups.actions]]
+id = "candidates"
+label = "Candidates for First Case"
+desc = "The fifteen people most likely to be the first case, with the real one marked"
+models = ["source"]
+code = '''
+using Plots
+
+top = result.order[1:15]
+colours = [i == result.first_case ? :orange : :steelblue for i in top]
+bar(string.(top), result.first_chance[top]; color = colours, label = "", xlabel = "Person (the real first case in orange, if listed)", ylabel = "Chance of being the first case", title = "Candidates", xrotation = 45)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "convergence"
+label = "Convergence"
+desc = "How much the messages still change at each iteration"
+models = ["risk", "changing"]
+code = '''
+using Plots
+
+println("Converged: ", model.converged, ". If not, raise the iterations or the damping")
+plot(changes; yscale = :log10, label = "", xlabel = "Iteration", ylabel = "Largest change", title = "Convergence")
+'''
+
+[[actionGroups.actions]]
+id = "convergence-source"
+label = "Convergence"
+desc = "How much the messages still change at each iteration"
+models = ["source"]
+code = '''
+using Plots
+
+println("Converged: ", result.model.converged, ". If not, raise the iterations or the damping")
+plot(result.changes; yscale = :log10, label = "", xlabel = "Iteration", ylabel = "Largest change", title = "Convergence")
+'''
+
+[[actionGroups.actions]]
+id = "calibration"
+label = "Calibration"
+desc = "Among untested people, the mean risk beside the share really infected"
+models = ["risk", "changing"]
+code = '''
+println(rpad("Risk", 14), rpad("People", 9), rpad("Mean risk", 12), "Really infected")
+for (low, high) in ((0.0, 0.05), (0.05, 0.2), (0.2, 0.5), (0.5, 1.01))
+    members = filter(i -> low <= risk[i] < high, untested)
+    isempty(members) && continue
+    println(rpad("$low to $(min(high, 1.0))", 14), rpad(length(members), 9), rpad(round(mean(risk[members]); digits = 3), 12), round(mean(infected[members]); digits = 3))
+end
+println("From one outbreak: small groups say little")
+'''
+
+[[actionGroups.actions]]
+id = "against-simulation"
+label = "Against Simulation, With No Tests"
+desc = "The inference with no test results beside 1000 simulated outbreaks: what the approximation does on its own"
+models = ["risk", "changing"]
+code = '''
+no_tests = fill(Int8(-1), people, steps + 1)
+cavity_nodes = infer(model, no_tests, Xoshiro({{seed}}))
+cavity = [sum(node.marg.m[2, day] for node in cavity_nodes) for day in 1:steps+1]
+sim_rng = Xoshiro({{seed}})
+simulated = mean(vec(sum(sim_epidemics(model; patient_zero = findall(rand(sim_rng, people) .< first_cases / people), rng = sim_rng) .== 1; dims = 1)) for _ in 1:1000)
+println(rpad("Day", 8), rpad("Inference", 12), "Simulated")
+for day in 1:5:steps+1
+    println(rpad(day - 1, 8), rpad(round(cavity[day]; digits = 1), 12), round(simulated[day]; digits = 1))
+end
+println("Where the two part, read the risks as a ranking and not as exact probabilities")
+model.obsmat .= tests  # back to the tests of the Example Code
+'''
+
+[[actionGroups.actions]]
+id = "source-places"
+label = "Place of the First Case"
+desc = "Where the real first case ranks on the list, over 20 outbreaks"
+models = ["source"]
+code = '''
+runs = [trace_back(s) for s in 1:20]
+places = [run.place for run in runs]
+println("Place on the list: median ", median(places), ", range ", extrema(places))
+println("First on the list: ", count(==(1), places), " of 20; among the first five: ", count(<=(5), places), " of 20")
+println("Choosing at random, the median place would be about ", people ÷ 2)
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "future-risk"
+label = "Risk Ahead"
+desc = "Tests stop some days before the end: how well the risks then rank who is infected on the last day"
+models = ["risk", "changing"]
+code = '''
+for ahead in (0, 3, 7)
+    future_rng = Xoshiro({{seed}})
+    earlier = make_tests(truth, future_rng; last_day = steps + 1 - ahead)
+    future_nodes = infer(model, earlier, future_rng)
+    future_risk = [node.marg.m[2, end] for node in future_nodes]
+    println(rpad(ahead, 3), "days ahead: an infected person ranks above an uninfected one with chance ", round(area_under_curve(future_risk, infected); digits = 3))
+end
+model.obsmat .= tests  # back to the tests of the Example Code
+'''
+
+[[actionGroups.actions]]
+id = "whom-to-test"
+label = "Whom to Test First"
+desc = "Of the untested people at highest risk, how many are really infected, beside a random choice"
+models = ["risk", "changing"]
+code = '''
+ranked = untested[sortperm(risk[untested]; rev = true)]
+base_rate = mean(infected[untested])
+for count_tested in (5, 10, 20)
+    chosen = ranked[1:min(count_tested, end)]
+    println("Testing the highest ", rpad(length(chosen), 4), "finds ", rpad(sum(infected[chosen]), 4), "infected; a random choice would find about ", round(length(chosen) * base_rate; digits = 1))
+end
+'''
+
+[[actionGroups.actions]]
+id = "candidate-list"
+label = "Length of the Candidate List"
+desc = "The list holding 90% of the chance, and how often it holds the real first case, over 20 outbreaks"
+models = ["source"]
+code = '''
+runs = [trace_back(s) for s in 1:20]
+println("Length of the list: median ", median(run.set_size for run in runs), " of ", people, " people")
+println("It holds the real first case in ", count(run -> run.place <= run.set_size, runs), " of 20 outbreaks: about 18 if the chances are right")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "compare-rule"
+label = "Compare With a Simple Rule"
+desc = "The inference against counting each person's contacts who tested positive, over 10 outbreaks"
+models = ["risk", "changing"]
+code = '''
+function against_rule(seed)
+    rng = Xoshiro(seed)
+    outbreak_graphs = make_graphs(rng)
+    outbreak_model = EpidemicModel(disease, outbreak_graphs, steps, contact_couplings(outbreak_graphs, {{infection}}))
+    outbreak = sim_epidemics(outbreak_model; patient_zero = randperm(rng, people)[1:first_cases], rng = rng)
+    outbreak_tests = make_tests(outbreak, rng)
+    outbreak_nodes = infer(outbreak_model, outbreak_tests, rng)
+    positive = [any(==(1), view(outbreak_tests, i, :)) for i in 1:people]
+    contacts_of(i) = unique(reduce(vcat, [collect(neighbors(graph, i)) for graph in outbreak_graphs]))
+    rule = [Float64(count(j -> positive[j], contacts_of(i))) for i in 1:people]
+    others = never_tested(outbreak_tests)
+    flags = Int.(outbreak[others, end] .== 1)
+    inferred = [outbreak_nodes[i].marg.m[2, end] for i in others]
+    return (area_under_curve(inferred, flags), area_under_curve(rule[others], flags))
+end
+rule_runs = filter(run -> !any(isnan, run), [against_rule(s) for s in 1:10])
+println("Chance that an infected untested person ranks above an uninfected one, ", length(rule_runs), " outbreaks:")
+println("The inference:                   ", round(mean(first, rule_runs); digits = 3))
+println("Counting contacts who tested positive: ", round(mean(last, rule_runs); digits = 3))
+'''
+
+[[actionGroups.actions]]
+id = "compare-testing"
+label = "Compare Testing Effort"
+desc = "The ranking with 2%, 5%, 10% and 20% of people tested per day, over 10 outbreaks"
+models = ["risk", "changing"]
+code = '''
+function with_effort(seed, share)
+    rng = Xoshiro(seed)
+    outbreak_graphs = make_graphs(rng)
+    outbreak_model = EpidemicModel(disease, outbreak_graphs, steps, contact_couplings(outbreak_graphs, {{infection}}))
+    outbreak = sim_epidemics(outbreak_model; patient_zero = randperm(rng, people)[1:first_cases], rng = rng)
+    outbreak_tests = make_tests(outbreak, rng; share = share)
+    outbreak_nodes = infer(outbreak_model, outbreak_tests, rng)
+    others = never_tested(outbreak_tests)
+    return area_under_curve([outbreak_nodes[i].marg.m[2, end] for i in others], Int.(outbreak[others, end] .== 1))
+end
+for share in (0.02, 0.05, 0.1, 0.2)
+    values = filter(!isnan, [with_effort(s, share) for s in 1:10])
+    println("Tested per day ", rpad(share, 6), "chance an infected person ranks above an uninfected one ", isempty(values) ? "too few untested" : round(mean(values); digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-wrong-rate"
+label = "Compare a Wrong Infection Rate"
+desc = "The inference told half, the right and double the infection probability, over 10 outbreaks"
+models = ["risk", "changing"]
+code = '''
+function with_rate(seed, factor)
+    rng = Xoshiro(seed)
+    outbreak_graphs = make_graphs(rng)
+    outbreak_model = EpidemicModel(disease, outbreak_graphs, steps, contact_couplings(outbreak_graphs, {{infection}}))
+    outbreak = sim_epidemics(outbreak_model; patient_zero = randperm(rng, people)[1:first_cases], rng = rng)
+    outbreak_tests = make_tests(outbreak, rng)
+    assumed_model = EpidemicModel(disease, outbreak_graphs, steps, contact_couplings(outbreak_graphs, factor * {{infection}}))
+    outbreak_nodes = infer(assumed_model, outbreak_tests, rng)
+    others = never_tested(outbreak_tests)
+    return (area_under_curve([outbreak_nodes[i].marg.m[2, end] for i in others], Int.(outbreak[others, end] .== 1)), sum(node.marg.m[2, end] for node in outbreak_nodes), count(==(1), outbreak[:, end]))
+end
+for factor in (0.5, 1.0, 2.0)
+    rate_runs = [with_rate(s, factor) for s in 1:10]
+    println("Told ", rpad(factor, 4), "times the rate: ranking ", rpad(round(mean(filter(!isnan, first.(rate_runs))); digits = 3), 7), "risks add up to ", rpad(round(mean(run[2] for run in rate_runs); digits = 1), 8), "really infected ", round(mean(last, rate_runs); digits = 1))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-waiting"
+label = "Compare Waiting Times"
+desc = "How well the first case is found when the tests come 6, 8 and 12 days after it, over 20 outbreaks"
+models = ["source"]
+code = '''
+for days in (6, 8, 12)
+    waiting_runs = [trace_back(s; days = days) for s in 1:20]
+    waiting_places = [run.place for run in waiting_runs]
+    println(rpad(days, 3), "days: median place ", rpad(median(waiting_places), 7), "first on the list ", rpad(count(==(1), waiting_places), 4), "among the first five ", rpad(count(<=(5), waiting_places), 4), "converged ", count(run -> run.model.converged, waiting_runs), " of 20")
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-source-tests"
+label = "Compare Shares Tested"
+desc = "How well the first case is found with 20%, 50% and 80% of people tested, over 20 outbreaks"
+models = ["source"]
+code = '''
+for share in (0.2, 0.5, 0.8)
+    share_runs = [trace_back(s; share = share) for s in 1:20]
+    share_places = [run.place for run in share_runs]
+    println("Tested ", rpad(share, 5), "median place ", rpad(median(share_places), 7), "first on the list ", rpad(count(==(1), share_places), 4), "among the first five ", count(<=(5), share_places))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-distance-rule"
+label = "Compare With a Simple Rule"
+desc = "The inference against ranking people by their mean distance to those who tested positive, over 20 outbreaks"
+models = ["source"]
+code = '''
+function distance_place(run)
+    positive = findall(i -> run.tests[i, end] == 1, 1:people)
+    isempty(positive) && return people ÷ 2
+    closeness = [-mean(gdistances(run.network, i)[positive]) for i in 1:people]
+    return findfirst(==(run.first_case), sortperm(closeness; rev = true))
+end
+runs = [trace_back(s) for s in 1:20]
+println("The inference:   median place ", median(run.place for run in runs))
+println("Mean distance:   median place ", median(distance_place(run) for run in runs))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "read-risk"
+label = "Read the Risk of One Person"
+desc = "The untested person at highest risk: their chance by state, and the contacts who tested positive"
+models = ["risk", "changing"]
+code = '''
+person = untested[argmax(risk[untested])]
+last_day = nodes[person].marg.m[:, end]
+println("Person ", person, ": susceptible ", round(last_day[1]; digits = 3), ", infected ", round(last_day[2]; digits = 3), length(last_day) > 2 ? ", recovered $(round(last_day[3]; digits = 3))" : "")
+contacts_of_person = unique(reduce(vcat, [collect(neighbors(graph, person)) for graph in graphs]))
+println("Contacts: ", length(contacts_of_person), ", of whom tested positive: ", count(j -> any(==(1), view(tests, j, :)), contacts_of_person))
+println("Really infected: ", infected[person] == 1)
+println("The risk also uses contacts of contacts and negative tests, which is what a count of positive contacts leaves out")
+'''
+
+[[actionGroups.actions]]
+id = "read-ranking"
+label = "Read the Ranking"
+desc = "What the chance printed by the Example Code means"
+models = ["risk", "changing"]
+code = '''
+score = area_under_curve(risk[untested], infected[untested])
+println(isnan(score) ? "Among untested people, nobody or everybody is infected, so there is no ranking to score" : "Pick one infected and one uninfected untested person: the inference ranks the infected one higher with chance $(round(score; digits = 3))")
+println("0.5 is no better than chance and 1 is a perfect ranking")
+println("The network, the rates and the error of the tests are taken as known: wrong values lower it, as Compare a Wrong Infection Rate shows")
+'''
+
+[[actionGroups.actions]]
+id = "read-candidates"
+label = "Read the Candidate List"
+desc = "The chances of the first five people on the list"
+models = ["source"]
+code = '''
+for i in result.order[1:5]
+    println("Person ", rpad(i, 5), "chance ", rpad(round(result.first_chance[i]; digits = 3), 7), "contacts who tested positive ", count(j -> result.tests[j, end] == 1, neighbors(result.network, i)), i == result.first_case ? "   the real first case" : "")
+end
+println("People close to one another share their chance: a short list points to a part of the network more than to one person")
+'''

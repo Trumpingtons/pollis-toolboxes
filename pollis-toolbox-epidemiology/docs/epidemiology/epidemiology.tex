@@ -1,0 +1,91 @@
+% Toolbox Vignette of the Epidemiology Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("epidemiology.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{31 October 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Epidemiology Toolbox}
+  {Epidemiology Toolbox}
+  {What its six panels are for, and when to use each.}
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Epidemiology Toolbox}, with six panels. Each has an example you can edit and run, actions on its results, wikis, and a list of references under Learn More.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{62mm}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Use it when} \\\midrule
+Epidemiological Inference & You have case counts or event times and want the parameters behind them, with their uncertainty. \\
+Inference on Contact Networks & You know who met whom and have some test results, and want the risk of each person or the first cases. \\
+Compartmental Models & You choose the rates and want to see what a classic model implies. \\
+Branching Processes & An outbreak is small, chance decides its fate, and superspreading or control is the question. \\
+Epidemics on Networks & Who meets whom matters: hubs, thresholds and targeted vaccination. \\
+Coinfection & Strains help or hinder each other in one host population, or a survey has imperfect tests. \\\bottomrule
+\end{tabularx}}
+
+
+\nmsection{Epidemiological Inference}
+Bayesian inference, shown on simulated outbreaks. The panel's title is Contagion Models. It uses \package{Turing}{https://github.com/TuringLang/Turing.jl}, \package{Pathogen}{https://github.com/Trumpingtons/Pathogen.jl} (the package of \nmcite{angevaare2022}{Angevaare, Feng and Deardon (2022)}, from a fork that accepts the current StatsBase) and \package{MCMCChains}{https://github.com/TuringLang/MCMCChains.jl}.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{30mm}>{\raggedright\arraybackslash}p{50mm}X@{}}
+\toprule
+\textbf{Model} & \textbf{Data} & \textbf{What it gives} \\\midrule
+Rt Estimation & Daily case counts & The reproduction number over time, by the renewal equation of \nmcite{cori2013}{Cori, Ferguson, Fraser and Cauchemez (2013)} with a random walk on log Rt \\
+SIR Inference & Delayed onsets and removals of individuals, with their positions & The distance kernel, the removal rate and who infected whom \\
+SEIR Inference & The same, with a latent period & Also the unobserved exposure times and the latency rate \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Rt Estimation suits population counts: you supply a serial interval, and the Sensitivity action shows how much the result depends on it. SIR and SEIR Inference track each person, so a few hundred individuals at most keeps the MCMC tractable. Two limits are worth keeping in mind. The renewal equation has no susceptible depletion, so the cases averted in its Counterfactual are an upper bound. Pathogen gives no marginal likelihood, so Model Comparison between SIR and SEIR is a posterior predictive check, not formal model choice. The growth rate shown beside Rt follows \nmcite{wallinga2007}{Wallinga and Lipsitch (2007)}.
+
+\nmsection{Inference on Contact Networks}
+Given a contact network, a disease model and tests with known errors, \package{SmallCouplingDynamicCavity}{https://github.com/Mattiatarabolo/SmallCouplingDynamicCavity.jl} gives each person's probability of being infected on each day, by the small-coupling dynamic cavity of \nmcite{braunstein2025}{Braunstein, Catania, Dall'Asta, Mariani, Mazza and Tarabolo (2025)}. Individual Risk ranks people never tested, First Cases lists candidates for how an outbreak began, and Changing Contacts takes a new network each day. Each tab simulates its epidemic, so that the result can be set against what really happened. Contacts are taken as complete, and the rates are told to the inference and not estimated. With no tests, the estimate lies above simulation, and the panel's actions show by how much. The package's form for a fixed network fails with Graphs 1.15, so the panel passes one graph per day.
+
+\nmsection{Compartmental Models}
+Forward simulation with \package{DifferentialEquations}{https://docs.sciml.ai/DiffEqDocs/stable/}, in the tradition of \nmcite{kermack1927}{Kermack and McKendrick (1927)}. You choose the population, the horizon, the transmission rate and the recovery rate; nothing here is estimated from data, which is the job of the panel above. These models suit large, well-mixed populations where average rates hold, such as national influenza forecasting, endemic disease and policy evaluation.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{18mm}>{\raggedright\arraybackslash}p{30mm}X@{}}
+\toprule
+\textbf{Model} & \textbf{Flow} & \textbf{Use it for} \\\midrule
+SIR & S, I, R & Outbreaks with permanent immunity after recovery \\
+SIS & S, I, S & Endemic diseases where immunity wanes immediately \\
+SEIR & S, E, I, R & Diseases with a latent incubation period before infectiousness \\
+SIRS & S, I, R, S & Waning immunity leading to recurrent epidemic waves \\
+SEIRD & S, E, I, R or D & Tracking disease-attributable mortality alongside recovery \\\bottomrule
+\end{tabularx}}
+
+\medskip
+The actions cover the epidemic curve and phase portrait, R0 and the herd-immunity threshold, the final epidemic size, a sweep of the transmission rate, vaccination, the timing of a contact reduction, and the endemic equilibrium of SIS and SIRS.
+
+\nmsection{Branching Processes}
+A branching process follows an outbreak case by case, with no depletion of susceptible people, using \package{EpiBranch}{https://github.com/epiforecasts/EpiBranch.jl}. Secondary cases follow the negative binomial with mean R and dispersion k of \nmcite{lloydsmith2005}{Lloyd-Smith, Schreiber, Kopp and Getz (2005)}. Containment simulates many outbreaks under isolation, contact tracing and post-exposure vaccination. Superspreading gives exact results with no simulation: the chance of dying out, the share of transmission from the top cases, and chain sizes. Estimating R and k fits offspring counts or the chain sizes of \nmcite{blumberg2013}{Blumberg and Lloyd-Smith (2013)}, by maximum likelihood and with \package{Turing}{https://github.com/TuringLang/Turing.jl}. Line Lists produce data shaped like a real outbreak's, to test an analysis before real data arrive.
+
+\nmsection{Epidemics on Networks}
+\package{GraphEpidemics}{https://github.com/fabmazz/GraphEpidemics.jl} simulates SIR, SEIR, SIS and SIRS person by person on a network from \package{Graphs}{https://github.com/JuliaGraphs/Graphs.jl}: random, scale-free, small-world or regular. The Continuous Time tab runs event by event instead of in daily steps. Basic R sets the infection rate from the mean contacts alone, and an action shows the reproduction number the network really gives, which is what matters when contacts are unequal. Final size is checked against the theory of \nmcite{newman2002}{Newman (2002)}, and the endemic level is compared across networks: unequal contacts lower the threshold, as \nmcite{pastorsatorras2001}{Pastor-Satorras and Vespignani (2001)} showed. Comparisons include vaccinating at random or by number of contacts.
+
+\nmsection{Coinfection}
+\package{CoinfectionSimulator}{https://github.com/Trumpingtons/CoinfectionSimulator.jl} (from a fork that accepts the current Turing and corrects the two kinds of transmission) gives each host a state for each strain. Each strain a host carries multiplies its chance of catching another. Two Strains studies one known interaction in each direction, Strain Community a random matrix of interactions, and Detection a survey with false positives and false negatives; the prevalence corrected for test errors follows \nmcite{rogan1978}{Rogan and Gladen (1978)}. Transmission is frequency-dependent, \fn{:frequency}, or density-dependent, \fn{:density}; the registered package's \fn{:density} computes the first and its \fn{:frequency} a constant chance. Nothing here estimates interactions from data.
+
+\nmsection{References}
+{\footnotesize
+\nmref{angevaare2022}{Angevaare, J., Feng, Z. and Deardon, R. (2022). Pathogen.jl: Infectious disease transmission network modeling with Julia. \emph{Journal of Statistical Software} 104(4). \nmdoi{10.18637/jss.v104.i04}}
+\nmref{blumberg2013}{Blumberg, S. and Lloyd-Smith, J. O. (2013). Inference of R0 and transmission heterogeneity from the size distribution of stuttering chains. \emph{PLoS Computational Biology} 9(5), e1002993. \nmdoi{10.1371/journal.pcbi.1002993}}
+\nmref{braunstein2025}{Braunstein, A., Catania, G., Dall'Asta, L., Mariani, M., Mazza, F. and Tarabolo, M. (2025). Small-coupling dynamic cavity: A Bayesian mean-field framework for epidemic inference. \emph{Physical Review Research} 7(2), 023089. \nmdoi{10.1103/physrevresearch.7.023089}}
+\nmref{cori2013}{Cori, A., Ferguson, N. M., Fraser, C. and Cauchemez, S. (2013). A new framework and software to estimate time-varying reproduction numbers during epidemics. \emph{American Journal of Epidemiology} 178(9), 1505--1512. \nmdoi{10.1093/aje/kwt133}}
+\nmref{kermack1927}{Kermack, W. O. and McKendrick, A. G. (1927). A contribution to the mathematical theory of epidemics. \emph{Proceedings of the Royal Society A} 115(772), 700--721. \nmdoi{10.1098/rspa.1927.0118}}
+\nmref{lloydsmith2005}{Lloyd-Smith, J. O., Schreiber, S. J., Kopp, P. E. and Getz, W. M. (2005). Superspreading and the effect of individual variation on disease emergence. \emph{Nature} 438(7066), 355--359. \nmdoi{10.1038/nature04153}}
+\nmref{newman2002}{Newman, M. E. J. (2002). Spread of epidemic disease on networks. \emph{Physical Review E} 66(1), 016128. \nmdoi{10.1103/PhysRevE.66.016128}}
+\nmref{pastorsatorras2001}{Pastor-Satorras, R. and Vespignani, A. (2001). Epidemic spreading in scale-free networks. \emph{Physical Review Letters} 86(14), 3200--3203.\newline \nmdoi{10.1103/PhysRevLett.86.3200}}
+\nmref{rogan1978}{Rogan, W. J. and Gladen, B. (1978). Estimating prevalence from the results of a screening test. \emph{American Journal of Epidemiology} 107(1), 71--76. \nmdoi{10.1093/oxfordjournals.aje.a112510}}
+\nmref{wallinga2007}{Wallinga, J. and Lipsitch, M. (2007). How generation intervals shape the relationship between growth rates and reproductive numbers. \emph{Proceedings of the Royal Society B} 274(1609), 599--604. \nmdoi{10.1098/rspb.2006.3754}}
+}
+
+\nmcredit
+\end{document}

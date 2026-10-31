@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-epidemiology",
   "displayName": "Epidemiology Toolbox",
-  "description": "Pollis Epidemiology Toolbox: inference of epidemiological parameters, compartmental models (SIR, SIS, SEIR, SIRS, SEIRD) and universal differential equations for epidemics.",
-  "version": "0.1.0",
+  "description": "Pollis Epidemiology Toolbox: inference of epidemiological parameters, inference on contact networks, compartmental models (SIR, SIS, SEIR, SIRS, SEIRD), branching processes, epidemics on networks and coinfection.",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -22,6 +22,13 @@
       {
         "id": "epidemiology",
         "title": "Epidemiology Toolbox",
+        "documents": [
+          {
+            "title": "Epidemiology Toolbox",
+            "description": "What the panels are for, and when to use each.",
+            "source": "docs/epidemiology/epidemiology.tex"
+          }
+        ],
         "panels": [
           {
             "id": "cest",
@@ -35,24 +42,53 @@
             "decisionFirstColumn": "Model"
           },
           {
+            "id": "epiContacts",
+            "command": "chiara.simulate.epi-contacts",
+            "title": "Inference on Contact Networks",
+            "group": "1_inference",
+            "order": 2,
+            "data": "panels/epiContacts.toml",
+            "defaultModel": "risk",
+            "decisionFirstColumn": "Model"
+          },
+          {
             "id": "epiComp",
             "command": "chiara.simulate.epi-comp",
             "title": "Compartmental Models",
             "group": "2_models",
-            "order": 2,
+            "order": 3,
             "data": "panels/epiComp.toml",
             "defaultModel": "sir",
             "decisionFirstColumn": "Model"
           },
           {
-            "id": "epiUde",
-            "command": "chiara.simulate.epi-ude",
-            "title": "Machine Learning for Epidemics",
-            "menuTitle": "Universal Differential Equations for Epidemiology",
+            "id": "epiBranch",
+            "command": "chiara.simulate.epi-branch",
+            "title": "Branching Processes",
             "group": "2_models",
-            "order": 3,
-            "data": "panels/epiUde.toml",
-            "defaultModel": "node",
+            "order": 4,
+            "data": "panels/epiBranch.toml",
+            "defaultModel": "contain",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "epiNetwork",
+            "command": "chiara.simulate.epi-network",
+            "title": "Epidemics on Networks",
+            "group": "2_models",
+            "order": 5,
+            "data": "panels/epiNetwork.toml",
+            "defaultModel": "sir",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "epiCoinfection",
+            "command": "chiara.simulate.epi-coinfection",
+            "title": "Coinfection",
+            "group": "2_models",
+            "order": 6,
+            "data": "panels/epiCoinfection.toml",
+            "defaultModel": "two",
             "decisionFirstColumn": "Model"
           }
         ]

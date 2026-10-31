@@ -1,0 +1,1021 @@
+# Coinfection Webview Configuration
+# This is the declarative source for the webview. The build script generates its data file.
+# Run: npm run gulp compile-toml
+
+[meta]
+title = "Coinfection"
+viewType = "pollis.epiCoinfection"
+defaultModel = "two"
+
+[[packages]]
+name = "CoinfectionSimulator.jl"
+github = "https://github.com/Trumpingtons/CoinfectionSimulator.jl"
+fork = true
+
+[[packages]]
+name = "Plots.jl"
+github = "https://github.com/JuliaPlots/Plots.jl"
+
+[requires]
+packages = ["CoinfectionSimulator.jl", "Plots.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "epi-coinfection/factsheet.md"
+bundled = true
+
+[[wikis]]
+name = "Overview"
+file = "epi-coinfection/overview.md"
+bundled = true
+
+[[wikis]]
+name = "Assumptions"
+file = "epi-coinfection/assumptions.md"
+bundled = true
+
+[[wikis]]
+name = "Diagnostics"
+file = "epi-coinfection/diagnostics.md"
+bundled = true
+
+[[wikis]]
+name = "Interpretation"
+file = "epi-coinfection/interpretation.md"
+bundled = true
+
+[[wikis]]
+name = "Decision Guide"
+file = "epi-coinfection/decision-guide.md"
+bundled = true
+
+[[wikis]]
+separator = true
+label = "Models"
+
+[[wikis]]
+name = "Two Strains"
+file = "epi-coinfection/two.md"
+bundled = true
+
+[[wikis]]
+name = "Strain Community"
+file = "epi-coinfection/community.md"
+bundled = true
+
+[[wikis]]
+name = "Detection"
+file = "epi-coinfection/detection.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+title = "CoinfectionSimulator.jl: A Julia package for multi-strain coinfection dynamics"
+authors = "Pilowsky, J."
+year = 2025
+journal = "GitHub"
+url = "https://github.com/japilo/CoinfectionSimulator.jl"
+openAccess = true
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+title = "Emphasizing the ecology in parasite community ecology"
+authors = "Pedersen, Amy B.; Fenton, Andy"
+year = 2007
+journal = "Trends in Ecology and Evolution"
+doi = "10.1016/j.tree.2006.11.005"
+openAccess = false
+
+[[references]]
+title = "Species Interactions in a Parasite Community Drive Infection Risk in a Wildlife Population"
+authors = "Telfer, Sandra; Lambin, Xavier; Birtles, Richard; Beldomenico, Pablo; Burthe, Sarah; Paterson, Steve; Begon, Mike"
+year = 2010
+journal = "Science"
+doi = "10.1126/science.1190333"
+openAccess = false
+
+[[references]]
+title = "Ecological rules governing helminth–microparasite coinfection"
+authors = "Graham, Andrea L."
+year = 2008
+journal = "Proceedings of the National Academy of Sciences"
+doi = "10.1073/pnas.0707221105"
+openAccess = true
+
+[[references]]
+title = "Dynamics and selection of many-strain pathogens"
+authors = "Gog, Julia R.; Grenfell, Bryan T."
+year = 2002
+journal = "Proceedings of the National Academy of Sciences"
+doi = "10.1073/pnas.252512799"
+openAccess = true
+
+[[references]]
+title = "A status-based approach to multiple strain dynamics"
+authors = "Gog, J. R.; Swinton, J."
+year = 2002
+journal = "Journal of Mathematical Biology"
+doi = "10.1007/s002850100120"
+openAccess = false
+
+[[references]]
+title = "Coinfections by noninteracting pathogens are not independent and require new tests of interaction"
+authors = "Hamelin, Frédéric M.; Allen, Linda J. S.; Bokil, Vrushali A.; Gross, Louis J.; Hilker, Frank M.; Jeger, Michael J.; Manore, Carrie A.; Power, Alison G.; Rúa, Megan A.; Cunniffe, Nik J."
+year = 2019
+journal = "PLOS Biology"
+doi = "10.1371/journal.pbio.3000551"
+openAccess = true
+
+[[references]]
+title = "Statistical Inference for Multi-Pathogen Systems"
+authors = "Shrestha, Sourya; King, Aaron A.; Rohani, Pejman"
+year = 2011
+journal = "PLoS Computational Biology"
+doi = "10.1371/journal.pcbi.1002135"
+openAccess = true
+
+[[references]]
+title = "Epidemiological models with age structure, proportionate mixing, and cross-immunity"
+authors = "Castillo-Chavez, Carlos; Hethcote, Herbert W.; Andreasen, Viggo; Levin, Simon A.; Liu, Wei M."
+year = 1989
+journal = "Journal of Mathematical Biology"
+doi = "10.1007/bf00275810"
+openAccess = false
+
+[[references]]
+title = "Chaos, Persistence, and Evolution of Strain Structure in Antigenically Diverse Infectious Agents"
+authors = "Gupta, Sunetra; Ferguson, Neil; Anderson, Roy"
+year = 1998
+journal = "Science"
+doi = "10.1126/science.280.5365.912"
+openAccess = false
+
+[[references]]
+title = "Ecological interference between fatal diseases"
+authors = "Rohani, Pejman; Green, C. J.; Mantilla-Beniers, N. B.; Grenfell, Bryan T."
+year = 2003
+journal = "Nature"
+doi = "10.1038/nature01542"
+openAccess = false
+
+[[references]]
+title = "Estimating Site Occupancy Rates When Detection Probabilities Are Less Than One"
+authors = "MacKenzie, Darryl I.; Nichols, James D.; Lachman, Gideon B.; Droege, Sam; Royle, J. Andrew; Langtimm, Catherine A."
+year = 2002
+journal = "Ecology"
+doi = "10.1890/0012-9658(2002)083[2248:ESORWD]2.0.CO;2"
+openAccess = false
+
+[[references]]
+title = "Estimating Prevalence from the Results of a Screening Test"
+authors = "Rogan, Walter J.; Gladen, Beth"
+year = 1978
+journal = "American Journal of Epidemiology"
+doi = "10.1093/oxfordjournals.aje.a112510"
+openAccess = false
+
+[[models]]
+id = "two"
+label = "Two Strains"
+
+[[models]]
+id = "community"
+label = "Strain Community"
+
+[[models]]
+id = "detection"
+label = "Detection"
+
+[[bullets]]
+text = "Two Strains"
+detail = "two strains in one host population, where being infected with one makes a host more or less likely to catch the other, so that the strains compete or help each other"
+
+[[bullets]]
+text = "Strain Community"
+detail = "several strains with a random matrix of interactions, set by how strong they are and how many are competitive or facilitative, to see which strains persist and how many hosts carry several"
+
+[[bullets]]
+text = "Detection"
+detail = "a survey of the simulated population with imperfect tests: what a sample of hosts would report, against what was really circulating"
+
+[[decisionRows]]
+task = "Two Strains"
+context = "One known interaction, in each direction"
+purpose = "The effect of competition or facilitation on peaks and coinfection, and of the order in which the strains arrive"
+
+[[decisionRows]]
+task = "Strain Community"
+context = "Many strains; the interactions unknown or only described in general"
+purpose = "How strength and sign of interactions change which strains persist and how many hosts are coinfected"
+
+[[decisionRows]]
+task = "Detection"
+context = "A planned or real survey, with false positives and false negatives"
+purpose = "How much sampling is needed, how much false positives distort a survey, and whether co-occurrence seen in detections reflects the truth"
+
+[[inputs]]
+id = "disease"
+label = "Disease Model"
+kind = "select"
+default = "sir"
+tooltip = "Applied to every strain. SI: no recovery. SIR: lasting immunity. SEIR: adds a latent period. SEIRS: adds a latent period and immunity that wanes."
+
+[[inputs.options]]
+value = "si"
+label = "SI"
+
+[[inputs.options]]
+value = "sir"
+label = "SIR"
+
+[[inputs.options]]
+value = "seir"
+label = "SEIR"
+
+[[inputs.options]]
+value = "seirs"
+label = "SEIRS"
+
+[[inputs]]
+id = "hosts"
+label = "Hosts"
+tooltip = "Number of hosts at the start."
+default = "1000"
+
+[[inputs]]
+id = "steps"
+label = "Time Steps"
+tooltip = "Number of time steps simulated."
+default = "200"
+
+[[inputs]]
+id = "mixing"
+label = "Transmission"
+kind = "select"
+default = "frequency"
+tooltip = "Frequency-Dependent: each susceptible host is infected with probability transmission x infected / hosts. Density-Dependent: with probability (transmission / starting hosts) x infected, so the two agree at the start and part as births and deaths change the number of hosts."
+
+[[inputs.options]]
+value = "frequency"
+label = "Frequency-Dependent"
+
+[[inputs.options]]
+value = "density"
+label = "Density-Dependent"
+
+[[inputs]]
+id = "transmission-1"
+label = "Transmission, Strain 1"
+tooltip = "Probability per time step, between 0 and 1."
+default = "0.3"
+models = ["two"]
+newRow = true
+
+[[inputs]]
+id = "transmission-2"
+label = "Transmission, Strain 2"
+tooltip = "Probability per time step, between 0 and 1."
+default = "0.25"
+models = ["two"]
+
+[[inputs]]
+id = "transmission"
+label = "Transmission"
+tooltip = "Probability per time step, between 0 and 1, the same for every strain: differences among strains then come from the interactions and from chance."
+default = "0.3"
+models = ["community", "detection"]
+newRow = true
+
+[[inputs]]
+id = "mortality"
+label = "Disease Mortality"
+tooltip = "Probability that an infected host dies of the infection in a time step."
+default = "0.005"
+
+[[inputs]]
+id = "recovery"
+label = "Recovery"
+tooltip = "Probability of recovering in a time step. The mean infectious period is 1 / this."
+default = "0.1"
+when = "disease=sir|seir|seirs"
+
+[[inputs]]
+id = "latency"
+label = "Latent Period"
+tooltip = "Mean number of time steps before an exposed host becomes infectious (a whole number)."
+default = "5"
+when = "disease=seir|seirs"
+
+[[inputs]]
+id = "immunity-loss"
+label = "Loss of Immunity"
+tooltip = "Probability per time step that a recovered host becomes susceptible again."
+default = "0.02"
+when = "disease=seirs"
+
+[[inputs]]
+id = "effect-of-2-on-1"
+label = "Effect of Strain 2 on Strain 1"
+tooltip = "Multiplies the chance of catching strain 1 for a host infected with strain 2. Below 1: competition. Above 1: facilitation. 1: no interaction."
+default = "2.0"
+models = ["two"]
+newRow = true
+
+[[inputs]]
+id = "effect-of-1-on-2"
+label = "Effect of Strain 1 on Strain 2"
+tooltip = "Multiplies the chance of catching strain 2 for a host infected with strain 1. Below 1: competition. Above 1: facilitation. 1: no interaction."
+default = "0.5"
+models = ["two"]
+
+[[inputs]]
+id = "first-cases"
+label = "First Cases per Strain"
+tooltip = "Number of hosts infected with each strain at the start, chosen at random."
+default = "5"
+models = ["two"]
+
+[[inputs]]
+id = "strains"
+label = "Strains"
+tooltip = "Number of strains."
+default = "6"
+models = ["community", "detection"]
+newRow = true
+
+[[inputs]]
+id = "strength"
+label = "Interaction Strength"
+tooltip = "Between 0 and 1. Interactions are drawn between 1 - this and 1 + this. At 0 the strains do not interact."
+default = "0.8"
+models = ["community", "detection"]
+
+[[inputs]]
+id = "facilitation"
+label = "Share Facilitative"
+tooltip = "Between 0 and 1: the share of interactions above 1, the rest being below 1."
+default = "0.5"
+models = ["community", "detection"]
+
+[[inputs]]
+id = "priority"
+label = "Priority Effects"
+kind = "select"
+default = "true"
+models = ["community", "detection"]
+tooltip = "On: the effect of one strain on another differs from the effect of the other on it, so the order of arrival can matter. Off: both effects are equal."
+
+[[inputs.options]]
+value = "true"
+label = "On"
+
+[[inputs.options]]
+value = "false"
+label = "Off"
+
+[[inputs]]
+id = "arrival"
+label = "Arrival of Strains"
+kind = "select"
+default = "simultaneous"
+models = ["community", "detection"]
+tooltip = "Together: one host infected with each strain at the first step. At Random Times: each strain arrives at a random step of the run, which can be too late to spread."
+
+[[inputs.options]]
+value = "simultaneous"
+label = "Together"
+
+[[inputs.options]]
+value = "random"
+label = "At Random Times"
+
+[[inputs]]
+id = "sampled"
+label = "Share Sampled"
+tooltip = "Share of hosts tested at each time step, between 0 and 1."
+default = "0.05"
+models = ["detection"]
+newRow = true
+
+[[inputs]]
+id = "false-positive"
+label = "False Positive Rate"
+tooltip = "Chance that a test of a host not infected with the strain is positive."
+default = "0.001"
+models = ["detection"]
+
+[[inputs]]
+id = "false-negative"
+label = "False Negative Rate"
+tooltip = "Chance that a test of a host infected with the strain is negative."
+default = "0.1"
+models = ["detection"]
+
+[[inputs]]
+id = "base-mortality"
+label = "Background Mortality"
+tooltip = "Probability that a host dies of other causes in a time step."
+default = "0.001"
+newRow = true
+
+[[inputs]]
+id = "fecundity"
+label = "Births per Mature Host"
+tooltip = "Mean number of births per mature host in a time step. New hosts are susceptible to every strain."
+default = "0.002"
+
+[[inputs]]
+id = "maturity"
+label = "Age of Maturity"
+tooltip = "Age, in time steps, from which a host can give birth (a whole number)."
+default = "20"
+
+[[inputs]]
+id = "seed"
+label = "Seed"
+tooltip = "Random seed. The package draws from Julia's global random numbers."
+default = "42"
+
+[[codeBranches]]
+model = "two"
+code = '''
+using CoinfectionSimulator, Random, Statistics  # simulation; seed; means
+
+Random.seed!({{seed}})  # the package draws from the global random numbers
+hosts, steps = {{hosts}}, {{steps}}
+susceptible, exposed, infectious, recovered = 1, 2, 3, 4  # the columns of a host's state
+
+{{?disease=si}}model_of(transmission) = SIModel(transmission, {{mortality}})
+{{?disease=sir}}model_of(transmission) = SIRModel(transmission, {{mortality}}, {{recovery}})
+{{?disease=seir}}model_of(transmission) = SEIRModel(transmission, {{mortality}}, {{recovery}}, {{latency}})
+{{?disease=seirs}}model_of(transmission) = SEIRSModel(transmission, {{mortality}}, {{recovery}}, {{latency}}, {{immunity-loss}})
+# Density-dependent transmission is per infected host: divided by the starting hosts, both kinds agree at the start
+rate(transmission, mixing) = mixing == :density ? transmission / hosts : transmission
+models(mixing) = [model_of(rate({{transmission-1}}, mixing)), model_of(rate({{transmission-2}}, mixing))]
+
+# Row i, column j: multiplies the chance of catching strain i for a host infected with strain j
+interactions = [1.0 {{effect-of-2-on-1}};
+                {{effect-of-1-on-2}} 1.0]
+
+parameters(matrix, time_steps, mixing) = SimulationParameters(models(mixing), matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :none, time_steps, mixing)
+
+function infect!(population, strain, cases)
+    for host in randperm(length(population))[1:cases]
+        population[host][strain, susceptible] = false
+        population[host][strain, infectious] = true
+    end
+end
+
+function run_two(matrix; mixing = :{{mixing}})
+    population = Population([Individual(2, rand(0:40)) for _ in 1:hosts])
+    infect!(population, 1, {{first-cases}})
+    infect!(population, 2, {{first-cases}})
+    simulate(population, parameters(matrix, steps, mixing))
+end
+
+tally(runs, strain, state) = [count(host -> host[strain, state], population) for population in runs]
+both_infected(runs) = [count(host -> host[1, infectious] && host[2, infectious], population) for population in runs]
+
+populations = run_two(interactions)
+
+infected = [tally(populations, 1, infectious) tally(populations, 2, infectious)]
+coinfected = both_infected(populations)
+for strain in 1:2
+    met = length(populations[end]) - tally(populations[end:end], strain, susceptible)[1]
+    println("Strain ", strain, ": peak ", maximum(infected[:, strain]), " infected at step ", argmax(infected[:, strain]), ", ", met, " of the hosts at the end have had it")
+end
+println("Coinfected: peak ", maximum(coinfected), " at step ", argmax(coinfected))
+println("Hosts: ", hosts, " at the start, ", length(populations[end]), " at the end")
+'''
+
+[[codeBranches]]
+model = "community"
+code = '''
+using CoinfectionSimulator, Random, Statistics  # simulation; seed; means
+
+Random.seed!({{seed}})  # the package draws from the global random numbers
+hosts, steps, strains = {{hosts}}, {{steps}}, {{strains}}
+susceptible, exposed, infectious, recovered = 1, 2, 3, 4  # the columns of a host's state
+
+{{?disease=si}}model_of(transmission) = SIModel(transmission, {{mortality}})
+{{?disease=sir}}model_of(transmission) = SIRModel(transmission, {{mortality}}, {{recovery}})
+{{?disease=seir}}model_of(transmission) = SEIRModel(transmission, {{mortality}}, {{recovery}}, {{latency}})
+{{?disease=seirs}}model_of(transmission) = SEIRSModel(transmission, {{mortality}}, {{recovery}}, {{latency}}, {{immunity-loss}})
+{{?mixing=frequency}}models = fill(model_of({{transmission}}), strains)
+{{?mixing=density}}models = fill(model_of({{transmission}} / hosts), strains)  # per infected host: both kinds agree at the start
+
+# Row i, column j: multiplies the chance of catching strain i for a host infected with strain j
+interactions = create_interaction_matrix(strains, {{priority}}, {{strength}}; cf_ratio = {{facilitation}})
+
+function run_community(matrix)
+    population = Population([Individual(strains, rand(0:40)) for _ in 1:hosts])
+    simulate(population, SimulationParameters(models, matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :{{arrival}}, steps, :{{mixing}}))
+end
+
+tally(runs, strain, state) = [count(host -> host[strain, state], population) for population in runs]
+infected_by_strain(runs) = reduce(hcat, [tally(runs, strain, infectious) for strain in 1:strains])
+coinfected_hosts(runs) = [count(host -> count(host[:, infectious]) >= 2, population) for population in runs]
+
+populations = run_community(interactions)
+
+infected = infected_by_strain(populations)
+coinfected = coinfected_hosts(populations)
+println("Strains that spread (peak above 1% of hosts): ", count(>(0.01 * hosts), vec(maximum(infected; dims = 1))), " of ", strains)
+println("Peak infected by strain: ", vec(maximum(infected; dims = 1)))
+println("Hosts with two or more strains: peak ", maximum(coinfected), " at step ", argmax(coinfected))
+println("Hosts: ", hosts, " at the start, ", length(populations[end]), " at the end")
+'''
+
+[[codeBranches]]
+model = "detection"
+code = '''
+using CoinfectionSimulator, Random, Statistics  # simulation; seed; means
+
+Random.seed!({{seed}})  # the package draws from the global random numbers
+hosts, steps, strains = {{hosts}}, {{steps}}, {{strains}}
+susceptible, exposed, infectious, recovered = 1, 2, 3, 4  # the columns of a host's state
+
+{{?disease=si}}model_of(transmission) = SIModel(transmission, {{mortality}})
+{{?disease=sir}}model_of(transmission) = SIRModel(transmission, {{mortality}}, {{recovery}})
+{{?disease=seir}}model_of(transmission) = SEIRModel(transmission, {{mortality}}, {{recovery}}, {{latency}})
+{{?disease=seirs}}model_of(transmission) = SEIRSModel(transmission, {{mortality}}, {{recovery}}, {{latency}}, {{immunity-loss}})
+{{?mixing=frequency}}models = fill(model_of({{transmission}}), strains)
+{{?mixing=density}}models = fill(model_of({{transmission}} / hosts), strains)  # per infected host: both kinds agree at the start
+
+# Row i, column j: multiplies the chance of catching strain i for a host infected with strain j
+interactions = create_interaction_matrix(strains, {{priority}}, {{strength}}; cf_ratio = {{facilitation}})
+
+population = Population([Individual(strains, rand(0:40)) for _ in 1:hosts])
+populations = simulate(population, SimulationParameters(models, interactions, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :{{arrival}}, steps, :{{mixing}}))
+
+tally(runs, strain, state) = [count(host -> host[strain, state], population) for population in runs]
+infected = reduce(hcat, [tally(populations, strain, infectious) for strain in 1:strains])
+present = infected .> 0  # steps by strains: what was really circulating
+
+survey = SamplingParameters(float({{sampled}}), float({{false-positive}}), float({{false-negative}}))
+detected = sample_populations(populations, survey)  # steps by strains: what the survey reports
+
+println("Steps with a strain circulating: ", vec(sum(present; dims = 1)))
+println("Steps with a strain detected:    ", vec(sum(detected; dims = 1)))
+println("Steps correctly classified:      ", round(100 * mean(present .== detected); digits = 1), "%")
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "curves-two"
+label = "Infected and Coinfected"
+desc = "Hosts infected with each strain and with both, by time step"
+models = ["two"]
+code = '''
+using Plots
+
+p = plot(0:steps-1, [infected coinfected]; label = ["Strain 1" "Strain 2" "Both"], xlabel = "Time step", ylabel = "Hosts", title = "Infected hosts")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "states-two"
+label = "States of Each Strain"
+desc = "Hosts in each state for the two strains, side by side"
+models = ["two"]
+code = '''
+using Plots
+
+panels = map(1:2) do strain
+    states = reduce(hcat, [tally(populations, strain, state) for state in (susceptible, exposed, infectious, recovered)])
+    plot(0:steps-1, states; label = ["Susceptible" "Exposed" "Infectious" "Recovered"], xlabel = "Time step", ylabel = "Hosts", title = "Strain $strain")
+end
+p = plot(panels...; layout = (1, 2), size = (900, 400))
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "hosts-over-time"
+label = "Hosts Over Time"
+desc = "The number of hosts, with births and deaths"
+models = ["two", "community"]
+code = '''
+using Plots
+
+p = plot(0:steps-1, length.(populations); label = false, xlabel = "Time step", ylabel = "Hosts", title = "Hosts over time")
+display(p)
+println("Lowest: ", minimum(length.(populations)), ", at the end: ", length(populations[end]))
+'''
+
+[[actionGroups.actions]]
+id = "matrix-heatmap"
+label = "Interaction Matrix"
+desc = "Which strain helps or hinders which"
+models = ["community", "detection"]
+code = '''
+using Plots
+
+p = heatmap(1:strains, 1:strains, interactions; yflip = true, color = :RdBu, clims = (0.0, 2.0), xlabel = "Strain already in the host", ylabel = "Strain being caught", title = "Interaction matrix", aspect_ratio = 1)
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "curves-community"
+label = "Infected by Strain"
+desc = "Hosts infected with each strain, and hosts with two or more"
+models = ["community"]
+code = '''
+using Plots
+
+p = plot(0:steps-1, infected; label = permutedims(["Strain $s" for s in 1:strains]), xlabel = "Time step", ylabel = "Hosts", title = "Infected by strain")
+plot!(p, 0:steps-1, coinfected; color = :black, linewidth = 2, label = "Two or more")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "detection-grid"
+label = "Truth and Detections"
+desc = "When each strain was circulating, and when the survey detected it"
+models = ["detection"]
+code = '''
+using Plots
+
+truth = heatmap(0:steps-1, 1:strains, permutedims(Int.(present)); color = :Blues, colorbar = false, xlabel = "Time step", ylabel = "Strain", title = "Circulating")
+seen = heatmap(0:steps-1, 1:strains, permutedims(Int.(detected)); color = :Blues, colorbar = false, xlabel = "Time step", ylabel = "Strain", title = "Detected")
+p = plot(truth, seen; layout = (2, 1), size = (800, 500))
+display(p)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "run-to-run-two"
+label = "Run-to-Run Variation"
+desc = "How much the peaks vary across 30 runs with the same settings, for judging any one run"
+models = ["two"]
+code = '''
+runs = map(1:30) do s
+    Random.seed!(s)
+    result = run_two(interactions)
+    (one = maximum(tally(result, 1, infectious)), two = maximum(tally(result, 2, infectious)), both = maximum(both_infected(result)))
+end
+for (name, values) in (("Strain 1", [run.one for run in runs]), ("Strain 2", [run.two for run in runs]), ("Both", [run.both for run in runs]))
+    println(rpad(name, 10), "peak: mean ", round(mean(values); digits = 1), ", standard deviation ", round(std(values); digits = 1), ", range ", extrema(values))
+end
+'''
+
+[[actionGroups.actions]]
+id = "against-independence"
+label = "Coinfection Against Chance"
+desc = "Coinfected hosts against the number expected if the two strains ignored each other"
+models = ["two"]
+code = '''
+using Plots
+
+alive = length.(populations)
+expected = infected[:, 1] .* infected[:, 2] ./ alive  # if the two infections were independent
+p = plot(0:steps-1, coinfected; label = "Coinfected", xlabel = "Time step", ylabel = "Hosts", title = "Coinfection against chance")
+plot!(p, 0:steps-1, expected; linestyle = :dash, label = "Expected by chance")
+display(p)
+println("Coinfected host-steps: ", sum(coinfected), ", expected by chance: ", round(Int, sum(expected)))
+println("Ratio: ", round(sum(coinfected) / sum(expected); digits = 2), ". Compare it with a run with both effects set to 1")
+'''
+
+[[actionGroups.actions]]
+id = "matrix-summary"
+label = "Matrix Summary"
+desc = "The drawn interactions: how many are competitive and facilitative, and their range"
+models = ["community", "detection"]
+code = '''
+effects = [interactions[i, j] for i in 1:strains for j in 1:strains if i != j]
+println("Interactions: ", length(effects))
+println("Competitive (below 1): ", count(<(1), effects), ", facilitative (above 1): ", count(>(1), effects), ", neutral: ", count(==(1), effects))
+println("Range: ", round.(extrema(effects); digits = 2), ", mean ", round(mean(effects); digits = 2))
+println("Symmetric: ", interactions ≈ transpose(interactions))
+println("One draw of the matrix: Compare runs several")
+'''
+
+[[actionGroups.actions]]
+id = "run-to-run-community"
+label = "Run-to-Run Variation"
+desc = "How much the strains' peaks vary across 20 runs with the same matrix"
+models = ["community"]
+code = '''
+peaks = reduce(hcat, map(1:20) do s
+    Random.seed!(s)
+    vec(maximum(infected_by_strain(run_community(interactions)); dims = 1))
+end)
+for strain in 1:strains
+    println("Strain ", rpad(strain, 3), "peak: mean ", rpad(round(mean(peaks[strain, :]); digits = 1), 8), "standard deviation ", rpad(round(std(peaks[strain, :]); digits = 1), 8), "runs where it failed to spread ", count(<(0.01 * hosts), peaks[strain, :]))
+end
+'''
+
+[[actionGroups.actions]]
+id = "detection-table"
+label = "Sensitivity and Specificity"
+desc = "For each strain, the share of steps circulating that were detected and of steps absent that were not"
+models = ["detection"]
+code = '''
+for strain in 1:strains
+    was, found = present[:, strain], detected[:, strain]
+    sensitivity = any(was) ? round(mean(found[was]); digits = 2) : "none circulating"
+    specificity = all(was) ? "always circulating" : round(mean(.!found[.!was]); digits = 2)
+    println("Strain ", rpad(strain, 3), "sensitivity ", rpad(sensitivity, 8), "specificity ", specificity)
+end
+println("A step counts as detected if any host sampled tests positive: these are by survey, not by test")
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "still-circulating"
+label = "Still Circulating"
+desc = "The chance that each strain is still circulating at the last step, over 30 runs"
+models = ["two"]
+code = '''
+ends = map(1:30) do s
+    Random.seed!(s)
+    result = run_two(interactions)
+    [count(host -> host[strain, infectious] || host[strain, exposed], result[end]) > 0 for strain in 1:2]
+end
+for strain in 1:2
+    println("Strain ", strain, ": still circulating in ", round(100 * mean(run[strain] for run in ends); digits = 1), "% of runs")
+end
+println("Both: ", round(100 * mean(all, ends); digits = 1), "% of runs")
+'''
+
+[[actionGroups.actions]]
+id = "strains-surviving"
+label = "Strains Still Circulating"
+desc = "How many strains are still circulating at the last step, over 20 runs"
+models = ["community"]
+code = '''
+left = map(1:20) do s
+    Random.seed!(s)
+    last_step = run_community(interactions)[end]
+    count(strain -> count(host -> host[strain, infectious] || host[strain, exposed], last_step) > 0, 1:strains)
+end
+println("Strains at the last step: mean ", round(mean(left); digits = 1), ", range ", extrema(left), ", of ", strains)
+'''
+
+[[actionGroups.actions]]
+id = "first-detection"
+label = "Delay to First Detection"
+desc = "Steps from when a strain really arrived to when the survey first reported it"
+models = ["detection"]
+code = '''
+for strain in 1:strains
+    arrived = findfirst(present[:, strain])
+    found = findfirst(detected[:, strain])
+    if isnothing(arrived)
+        println("Strain ", rpad(strain, 3), "never circulated", isnothing(found) ? "" : ", yet detected at step $found: a false positive")
+    elseif isnothing(found)
+        println("Strain ", rpad(strain, 3), "arrived at step ", arrived, ", never detected")
+    else
+        println("Strain ", rpad(strain, 3), "arrived at step ", rpad(arrived, 5), "first detected at step ", rpad(found, 5), present[found, strain] ? "delay $(found - arrived)" : "not circulating then: a false positive")
+    end
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "compare-interactions"
+label = "Compare Interactions"
+desc = "No interaction, competition, facilitation and the matrix entered, over 30 runs each"
+models = ["two"]
+code = '''
+scenarios = [
+    "No interaction" => [1.0 1.0; 1.0 1.0],
+    "Competition" => [1.0 0.5; 0.5 1.0],
+    "Facilitation" => [1.0 2.0; 2.0 1.0],
+    "As entered" => interactions,
+]
+println(rpad("Scenario", 18), rpad("Peak strain 1", 18), rpad("Peak strain 2", 18), "Peak coinfected")
+for (name, matrix) in scenarios
+    scenario_runs = map(1:30) do s
+        Random.seed!(s)
+        result = run_two(matrix)
+        [maximum(tally(result, 1, infectious)), maximum(tally(result, 2, infectious)), maximum(both_infected(result))]
+    end
+    cell(i) = rpad(string(round(mean(run[i] for run in scenario_runs); digits = 1), " +/- ", round(1.96 * std(run[i] for run in scenario_runs) / sqrt(30); digits = 1)), 18)
+    println(rpad(name, 18), cell(1), cell(2), cell(3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-order"
+label = "Order of Arrival"
+desc = "Strain 1 first, strain 2 first and both together, the second arriving 30 steps later, over 30 runs each"
+models = ["two"]
+code = '''
+function run_in_order(first_strain, second_strain)
+    population = Population([Individual(2, rand(0:40)) for _ in 1:hosts])
+    infect!(population, first_strain, {{first-cases}})
+    start = simulate(population, parameters(interactions, 31, :{{mixing}}))
+    middle = start[end]
+    infect!(middle, second_strain, {{first-cases}})
+    vcat(start, simulate(middle, parameters(interactions, steps - 30, :{{mixing}}))[2:end])
+end
+scenarios = ["Together" => () -> run_two(interactions), "Strain 1 first" => () -> run_in_order(1, 2), "Strain 2 first" => () -> run_in_order(2, 1)]
+println(rpad("Arrival", 18), rpad("Peak strain 1", 16), rpad("Peak strain 2", 16), "Peak coinfected")
+for (name, simulate_order) in scenarios
+    order_runs = map(1:30) do s
+        Random.seed!(s)
+        result = simulate_order()
+        [maximum(tally(result, 1, infectious)), maximum(tally(result, 2, infectious)), maximum(both_infected(result))]
+    end
+    println(rpad(name, 18), rpad(round(mean(run[1] for run in order_runs); digits = 1), 16), rpad(round(mean(run[2] for run in order_runs); digits = 1), 16), round(mean(run[3] for run in order_runs); digits = 1))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-mixing"
+label = "Frequency- or Density-Dependent"
+desc = "The two kinds of transmission, which agree at the start and part as the number of hosts changes"
+models = ["two"]
+code = '''
+using Plots
+
+p = plot(; xlabel = "Time step", ylabel = "Infected with strain 1", title = "Two kinds of transmission")
+for (name, mixing) in (("Frequency-Dependent", :frequency), ("Density-Dependent", :density))
+    Random.seed!({{seed}})
+    curve = tally(run_two(interactions; mixing), 1, infectious)
+    plot!(p, 0:steps-1, curve; label = name)
+    println(rpad(name, 20), "peak ", maximum(curve), " at step ", argmax(curve))
+end
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "compare-communities"
+label = "Compare Communities"
+desc = "No interaction, mostly competitive and mostly facilitative matrices, 20 draws of each"
+models = ["community"]
+code = '''
+scenarios = ["No interaction", "Mostly competitive", "Mostly facilitative"]
+for (name, facilitative, strength) in zip(scenarios, [0.5, 0.1, 0.9], [0.0, {{strength}}, {{strength}}])
+    results = map(1:20) do s
+        Random.seed!(s)
+        table = (interaction_strength = [strength], cf_ratio = [facilitative], priority_effects = [{{priority}}], strains = [strains])  # any Tables.jl table
+        result = run_community(only(create_interaction_matrix(table)))
+        [sum(infected_by_strain(result)) / strains, maximum(coinfected_hosts(result))]
+    end
+    println(rpad(name, 22), "infected host-steps per strain ", rpad(round(Int, mean(run[1] for run in results)), 8), "peak hosts with two or more ", round(mean(run[2] for run in results); digits = 1))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-priority"
+label = "With and Without Priority Effects"
+desc = "Asymmetric and symmetric matrices of the same strength, with staggered arrivals, 20 draws of each"
+models = ["community"]
+code = '''
+for (name, asymmetric) in (("Priority effects on", true), ("Priority effects off", false))
+    spreads = map(1:20) do s
+        Random.seed!(s)
+        matrix = create_interaction_matrix(strains, asymmetric, {{strength}}; cf_ratio = {{facilitation}})
+        population = Population([Individual(strains, rand(0:40)) for _ in 1:hosts])
+        result = simulate(population, SimulationParameters(models, matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :random, steps, :{{mixing}}))
+        peaks = vec(maximum(infected_by_strain(result); dims = 1))
+        (spreading = count(>(0.01 * hosts), peaks), unevenness = std(peaks))
+    end
+    println(rpad(name, 22), "strains that spread ", rpad(round(mean(run.spreading for run in spreads); digits = 1), 6), "standard deviation of the peaks ", round(mean(run.unevenness for run in spreads); digits = 1))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-effort"
+label = "Compare Sampling Effort"
+desc = "The same epidemic surveyed with 0.5%, 2%, 5% and 20% of hosts sampled"
+models = ["detection"]
+code = '''
+println(rpad("Share sampled", 16), rpad("Sensitivity", 14), "False detections")
+for share in (0.005, 0.02, 0.05, 0.2)
+    Random.seed!({{seed}})
+    report = sample_populations(populations, SamplingParameters(share, float({{false-positive}}), float({{false-negative}})))
+    println(rpad(share, 16), rpad(round(mean(report[present]); digits = 3), 14), count(report .& .!present), " of ", count(.!present), " steps with the strain absent")
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-errors"
+label = "Compare Test Errors"
+desc = "The same epidemic and effort with better and worse tests"
+models = ["detection"]
+code = '''
+tests = ["No errors" => (0.0, 0.0), "False negatives only" => (0.0, 0.3), "False positives only" => (0.01, 0.0), "Both" => (0.01, 0.3)]
+println(rpad("Test", 24), rpad("Sensitivity", 14), "False detections")
+for (name, (false_positive, false_negative)) in tests
+    Random.seed!({{seed}})
+    report = sample_populations(populations, SamplingParameters(float({{sampled}}), false_positive, false_negative))
+    println(rpad(name, 24), rpad(round(mean(report[present]); digits = 3), 14), count(report .& .!present), " of ", count(.!present), " steps with the strain absent")
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "read-matrix"
+label = "Read the Interactions"
+desc = "The interaction matrix in words"
+models = ["two"]
+code = '''
+for (caught, carried) in ((1, 2), (2, 1))
+    effect = interactions[caught, carried]
+    word = effect > 1 ? "facilitation" : effect < 1 ? "competition" : "no interaction"
+    println("A host infected with strain ", carried, " is ", effect, " times as likely to catch strain ", caught, ": ", word)
+end
+println("The effect needs the other strain in the infectious state: exposed or recovered hosts are not affected")
+'''
+
+[[actionGroups.actions]]
+id = "interaction-effect"
+label = "What the Interactions Change"
+desc = "Infected host-steps of each strain with and without the interactions, over 30 runs"
+models = ["two"]
+code = '''
+function burden(matrix)
+    runs = map(1:30) do s
+        Random.seed!(s)
+        result = run_two(matrix)
+        [sum(tally(result, 1, infectious)), sum(tally(result, 2, infectious))]
+    end
+    mean(runs)
+end
+with_effects = burden(interactions)
+without_effects = burden([1.0 1.0; 1.0 1.0])
+for strain in 1:2
+    println("Strain ", strain, ": ", round(Int, with_effects[strain]), " infected host-steps with the interactions, ", round(Int, without_effects[strain]), " without, a change of ", round(100 * (with_effects[strain] / without_effects[strain] - 1); digits = 1), "%")
+end
+println("Only hosts infectious with both strains at once feel the effect, so it is smaller than the factors entered")
+'''
+
+[[actionGroups.actions]]
+id = "who-gains"
+label = "Which Strains Gain"
+desc = "Whether the strains helped most by the others reached the highest peaks, over 20 runs"
+models = ["community"]
+code = '''
+helped = [mean(interactions[strain, other] for other in 1:strains if other != strain) for strain in 1:strains]  # mean effect of the others on this strain
+peaks = mean(map(1:20) do s
+    Random.seed!(s)
+    vec(maximum(infected_by_strain(run_community(interactions)); dims = 1))
+end)
+for strain in sortperm(helped; rev = true)
+    println("Strain ", rpad(strain, 3), "mean effect of the others ", rpad(round(helped[strain]; digits = 2), 7), "mean peak ", round(peaks[strain]; digits = 1))
+end
+println("Correlation: ", round(cor(helped, peaks); digits = 2), ", from ", strains, " strains: one matrix says little")
+'''
+
+[[actionGroups.actions]]
+id = "coinfection-load"
+label = "Strains per Host"
+desc = "How many hosts carry none, one, two or more strains when coinfection peaks"
+models = ["community"]
+code = '''
+at_peak = populations[argmax(coinfected)]
+carried = [count(host[:, infectious]) for host in at_peak]
+for n in 0:maximum(carried)
+    println("Hosts with ", n, n == 1 ? " strain:  " : " strains: ", count(==(n), carried))
+end
+'''
+
+[[actionGroups.actions]]
+id = "false-positives-add-up"
+label = "False Positives Add Up"
+desc = "Why a small error per test becomes a large error per survey"
+models = ["detection"]
+code = '''
+tested = round(Int, {{sampled}} * hosts)
+chance = 1 - (1 - {{false-positive}})^tested
+println("Hosts tested per step: ", tested)
+println("Chance of at least one false positive per strain and step: ", round(chance; digits = 3))
+println("A strain counts as detected if one test is positive: raising the sample raises this chance as well as the sensitivity")
+'''
+
+[[actionGroups.actions]]
+id = "apparent-cooccurrence"
+label = "Apparent Co-occurrence"
+desc = "How often two strains seem to circulate together in the survey, against the truth"
+models = ["detection"]
+code = '''
+together(matrix) = [mean(matrix[:, a] .& matrix[:, b]) for a in 1:strains for b in (a + 1):strains]
+truth, seen = together(present), together(detected)
+println("Share of steps that a pair of strains circulates together: mean ", round(mean(truth); digits = 3))
+println("Share of steps that a pair is detected together:            mean ", round(mean(seen); digits = 3))
+println("Correlation across pairs: ", round(cor(truth, seen); digits = 2))
+println("Strains seen together need not meet in any host: this is by survey, not by host")
+'''

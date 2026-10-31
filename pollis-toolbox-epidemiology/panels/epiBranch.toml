@@ -1,0 +1,977 @@
+# Branching Processes Webview Configuration
+# This is the declarative source for the webview. The build script generates its data file.
+# Run: npm run gulp compile-toml
+
+[meta]
+title = "Branching Processes"
+viewType = "pollis.epiBranch"
+defaultModel = "contain"
+
+[[packages]]
+name = "EpiBranch.jl"
+# The registered 0.1.0 does not run the package's own pages: they follow 0.2.0 on GitHub, which is what this panel uses
+github = "https://github.com/epiforecasts/EpiBranch.jl"
+fork = true
+
+[[packages]]
+name = "Distributions.jl"
+github = "https://github.com/JuliaStats/Distributions.jl"
+
+[[packages]]
+name = "Turing.jl"
+github = "https://github.com/TuringLang/Turing.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "Plots.jl"
+github = "https://github.com/JuliaPlots/Plots.jl"
+
+[requires]
+packages = ["EpiBranch.jl", "Distributions.jl", "Turing.jl", "Tables.jl", "Plots.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "epi-branch/factsheet.md"
+bundled = true
+
+[[wikis]]
+name = "Overview"
+file = "epi-branch/overview.md"
+bundled = true
+
+[[wikis]]
+name = "Assumptions"
+file = "epi-branch/assumptions.md"
+bundled = true
+
+[[wikis]]
+name = "Diagnostics"
+file = "epi-branch/diagnostics.md"
+bundled = true
+
+[[wikis]]
+name = "Interpretation"
+file = "epi-branch/interpretation.md"
+bundled = true
+
+[[wikis]]
+name = "Decision Guide"
+file = "epi-branch/decision-guide.md"
+bundled = true
+
+[[wikis]]
+separator = true
+label = "Models"
+
+[[wikis]]
+name = "Containment"
+file = "epi-branch/contain.md"
+bundled = true
+
+[[wikis]]
+name = "Superspreading"
+file = "epi-branch/exact.md"
+bundled = true
+
+[[wikis]]
+name = "Estimating R and k"
+file = "epi-branch/fit.md"
+bundled = true
+
+[[wikis]]
+name = "Line Lists"
+file = "epi-branch/cases.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+title = "Turing: A Language for Flexible Probabilistic Inference"
+authors = "Ge, Hong; Xu, Kai; Ghahramani, Zoubin"
+year = 2018
+journal = "Proceedings of Machine Learning Research"
+url = "https://proceedings.mlr.press/v84/ge18b.html"
+openAccess = true
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+title = "Superspreading and the effect of individual variation on disease emergence"
+authors = "Lloyd-Smith, J. O.; Schreiber, S. J.; Kopp, P. E.; Getz, W. M."
+year = 2005
+journal = "Nature"
+doi = "10.1038/nature04153"
+openAccess = false
+
+[[references]]
+title = "Feasibility of controlling COVID-19 outbreaks by isolation of cases and contacts"
+authors = "Hellewell, Joel; Abbott, Sam; Gimma, Amy; Bosse, Nikos I.; Jarvis, Christopher I.; Russell, Timothy W.; Munday, James D.; Kucharski, Adam J.; Edmunds, W. John; Sun, Fiona; Flasche, Stefan; Quilty, Billy J.; Davies, Nicholas; Liu, Yang; Clifford, Samuel; Klepac, Petra; Jit, Mark; Diamond, Charlie; Gibbs, Hamish; van Zandvoort, Kevin; Funk, Sebastian; Eggo, Rosalind M."
+year = 2020
+journal = "The Lancet Global Health"
+doi = "10.1016/S2214-109X(20)30074-7"
+openAccess = true
+
+[[references]]
+title = "Inference of R0 and Transmission Heterogeneity from the Size Distribution of Stuttering Chains"
+authors = "Blumberg, Seth; Lloyd-Smith, James O."
+year = 2013
+journal = "PLoS Computational Biology"
+doi = "10.1371/journal.pcbi.1002993"
+openAccess = true
+
+[[references]]
+title = "Estimating the transmission potential of supercritical processes based on the final size distribution of minor outbreaks"
+authors = "Nishiura, Hiroshi; Yan, Ping; Sleeman, Candace K.; Mode, Charles J."
+year = 2012
+journal = "Journal of Theoretical Biology"
+doi = "10.1016/j.jtbi.2011.10.039"
+openAccess = false
+
+[[references]]
+title = "Factors that make an infectious disease outbreak controllable"
+authors = "Fraser, Christophe; Riley, Steven; Anderson, Roy M.; Ferguson, Neil M."
+year = 2004
+journal = "Proceedings of the National Academy of Sciences"
+doi = "10.1073/pnas.0307506101"
+openAccess = true
+
+[[references]]
+title = "Estimating the overdispersion in COVID-19 transmission using outbreak sizes outside China"
+authors = "Endo, Akira; CMMID COVID-19 Working Group; Abbott, Sam; Kucharski, Adam J.; Funk, Sebastian"
+year = 2020
+journal = "Wellcome Open Research"
+doi = "10.12688/wellcomeopenres.15842.3"
+openAccess = true
+
+[[references]]
+title = "Ebola superspreading"
+authors = "Althaus, Christian L."
+year = 2015
+journal = "The Lancet Infectious Diseases"
+doi = "10.1016/S1473-3099(15)70135-0"
+openAccess = false
+
+[[references]]
+title = "The No-U-Turn Sampler: Adaptively Setting Path Lengths in Hamiltonian Monte Carlo"
+authors = "Hoffman, Matthew D.; Gelman, Andrew"
+year = 2014
+journal = "Journal of Machine Learning Research"
+url = "https://jmlr.org/papers/v15/hoffman14a.html"
+openAccess = true
+
+[[models]]
+id = "contain"
+label = "Containment"
+
+[[models]]
+id = "exact"
+label = "Superspreading"
+
+[[models]]
+id = "fit"
+label = "Estimating R and k"
+
+[[models]]
+id = "cases"
+label = "Line Lists"
+
+[[bullets]]
+text = "Containment"
+detail = "simulate many outbreaks from one introduced case under isolation, contact tracing and post-exposure vaccination, and count how often transmission stops"
+
+[[bullets]]
+text = "Superspreading"
+detail = "exact results from the offspring distribution with mean R and dispersion k: the chance that an introduction dies out, the share of transmission from the most infectious cases, the distribution of chain sizes when R is below 1"
+
+[[bullets]]
+text = "Estimating R and k"
+detail = "fit R and k to offspring counts or chain sizes, by maximum likelihood and with the Turing.jl NUTS sampler, on the same exact likelihood"
+
+[[bullets]]
+text = "Line Lists"
+detail = "turn one simulated outbreak into the tables surveillance would hold: one row per case with onset, reporting, admission and outcome dates, and one row per contact"
+
+[[decisionRows]]
+task = "Containment"
+context = "Offspring and delay distributions assumed; measures in force"
+purpose = "Ask how often a set of measures stops an outbreak, and what each measure adds"
+
+[[decisionRows]]
+task = "Superspreading"
+context = "R and k assumed; no control"
+purpose = "Exact answers without simulation: chance of an epidemic, share of transmission from the top cases, chain sizes"
+
+[[decisionRows]]
+task = "Estimating R and k"
+context = "Secondary cases per case, or final cluster sizes"
+purpose = "Estimate R and k with intervals, from counts or from clusters that have finished growing"
+
+[[decisionRows]]
+task = "Line Lists"
+context = "A model with a clinical course"
+purpose = "Produce data shaped like a real outbreak's, to test an analysis before the real data arrive"
+
+[[inputs]]
+id = "R"
+label = "R"
+tooltip = "Reproduction number: the mean number of secondary cases per case with no control."
+default = "2.5"
+models = ["contain", "exact", "cases"]
+
+[[inputs]]
+id = "k"
+label = "Dispersion k"
+tooltip = "Dispersion of the negative binomial offspring distribution. Smaller k means more superspreading: most cases infect nobody and a few infect many."
+default = "0.16"
+models = ["contain", "exact", "cases"]
+
+[[inputs]]
+id = "generation-time"
+label = "Generation Time (days)"
+tooltip = "Time from the infection of an infector to the infection of the person it infects, as a Distributions.jl distribution. LogNormal takes the mean and standard deviation of the log."
+default = "LogNormal(1.6, 0.5)"
+models = ["contain", "cases"]
+
+[[inputs]]
+id = "incubation"
+label = "Incubation Period (days)"
+tooltip = "Time from infection to symptom onset, as a Distributions.jl distribution."
+default = "LogNormal(1.5, 0.5)"
+models = ["contain", "cases"]
+
+[[inputs]]
+id = "measures"
+label = "Measures"
+kind = "select"
+default = "tracing"
+models = ["contain"]
+newRow = true
+tooltip = "The control measures in the model. Next Steps > Compare runs them all."
+
+[[inputs.options]]
+value = "isolation"
+label = "Isolation"
+
+[[inputs.options]]
+value = "tracing"
+label = "Isolation and Contact Tracing"
+
+[[inputs.options]]
+value = "ring"
+label = "Isolation, Tracing and Post-Exposure Vaccination"
+
+[[inputs]]
+id = "isolation-delay"
+label = "Onset to Isolation (days)"
+tooltip = "Mean of the exponential delay from symptom onset to isolation."
+default = "2.0"
+models = ["contain"]
+
+[[inputs]]
+id = "duration"
+label = "Isolation Length (days)"
+tooltip = "How long isolation and quarantine last. A person released while still infectious can transmit again. Inf means never released."
+default = "7.0"
+models = ["contain"]
+
+[[inputs]]
+id = "trace-probability"
+label = "Tracing Probability"
+tooltip = "Probability that each contact of an isolated case is traced."
+default = "0.5"
+models = ["contain"]
+when = "measures=tracing|ring"
+
+[[inputs]]
+id = "trace-delay"
+label = "Isolation to Trace (days)"
+tooltip = "Mean of the exponential delay from the isolation of a case to the tracing of its contact."
+default = "1.5"
+models = ["contain"]
+when = "measures=tracing|ring"
+
+[[inputs]]
+id = "post-exposure"
+label = "Post-Exposure Efficacy"
+tooltip = "Probability that a dose given to a traced contact before symptom onset stops the infection the contact already has."
+default = "0.6"
+models = ["contain"]
+when = "measures=ring"
+
+[[inputs]]
+id = "n-sim"
+label = "Outbreaks"
+tooltip = "Number of outbreaks simulated, each from one introduced case."
+default = "500"
+models = ["contain"]
+newRow = true
+
+[[inputs]]
+id = "max-cases"
+label = "Case Cap"
+tooltip = "An outbreak that reaches this many cases is stopped and counts as not contained."
+default = "5000"
+models = ["contain"]
+
+[[inputs]]
+id = "R-chains"
+label = "R for Chain Sizes"
+tooltip = "Reproduction number for the chain size distribution. It must be below 1, so that every chain ends."
+default = "0.8"
+models = ["exact"]
+
+[[inputs]]
+id = "top-share"
+label = "Top Share of Cases"
+tooltip = "The share of most infectious cases whose part of transmission is reported, between 0 and 1."
+default = "0.2"
+models = ["exact"]
+
+[[inputs]]
+id = "data"
+label = "Data"
+kind = "select"
+default = "offspring"
+models = ["fit"]
+tooltip = "Offspring counts: the secondary cases of each case. Chain sizes: the final number of cases in each cluster, which assumes each cluster has finished growing, so R must be below 1."
+
+[[inputs.options]]
+value = "offspring"
+label = "Offspring Counts"
+
+[[inputs.options]]
+value = "chains"
+label = "Chain Sizes"
+
+[[inputs]]
+id = "true-R"
+label = "True R"
+tooltip = "R of the simulated data."
+default = "0.8"
+models = ["fit"]
+
+[[inputs]]
+id = "true-k"
+label = "True k"
+tooltip = "Dispersion of the simulated data."
+default = "0.5"
+models = ["fit"]
+
+[[inputs]]
+id = "n-obs"
+label = "Observations"
+tooltip = "Number of cases, or of clusters. With few observations the interval for k is wide and often has no upper limit."
+default = "200"
+models = ["fit"]
+
+[[inputs]]
+id = "samples"
+label = "NUTS Samples"
+tooltip = "Posterior draws per chain, after adaptation."
+default = "1000"
+models = ["fit"]
+
+[[inputs]]
+id = "chains"
+label = "Chains"
+tooltip = "Number of MCMC chains, needed for R-hat."
+default = "4"
+models = ["fit"]
+
+[[inputs]]
+id = "size-low"
+label = "Smallest Outbreak"
+tooltip = "Simulation repeats until an outbreak ends with at least this many cases. Outbreaks chosen by size are a selected subset: their R and timing are not typical of the model."
+default = "50"
+models = ["cases"]
+newRow = true
+
+[[inputs]]
+id = "size-high"
+label = "Largest Outbreak"
+tooltip = "The largest outbreak accepted. An outbreak that grows past this is dropped and another is simulated."
+default = "200"
+models = ["cases"]
+
+[[inputs]]
+id = "report-delay"
+label = "Onset to Report (days)"
+tooltip = "Mean of the exponential delay from symptom onset to reporting."
+default = "3.0"
+models = ["cases"]
+
+[[inputs]]
+id = "admission"
+label = "Admission Probability"
+tooltip = "Probability that a case is admitted to hospital."
+default = "0.2"
+models = ["cases"]
+
+[[inputs]]
+id = "death"
+label = "Death Probability"
+tooltip = "Probability that a case is due to die. Recovery competes with it, so that the share who die is lower than this."
+default = "0.05"
+models = ["cases"]
+
+[[inputs]]
+id = "seed"
+label = "Seed"
+tooltip = "Random seed for the simulation and the sampler."
+default = "42"
+
+[[codeBranches]]
+model = "contain"
+code = '''
+using EpiBranch, Distributions, Random  # branching process; delays; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same outbreaks on every run
+n_sim, cap = {{n-sim}}, {{max-cases}}
+
+process = BranchingProcess(NegBin({{R}}, {{k}}), {{generation-time}})  # offspring and generation time
+clinical = clinical_presentation(incubation_period = {{incubation}})  # isolation starts from symptom onset
+
+iso = Isolation(onset_to_isolation_delay = Exponential({{isolation-delay}}), duration = {{duration}})
+{{?measures=tracing|ring}}ct = ContactTracing(probability = {{trace-probability}}, isolation_to_trace_delay = Exponential({{trace-delay}}), action = Quarantine(duration = {{duration}}))
+{{?measures=ring}}rv = RingVaccination(efficacy = 0.0, post_exposure_efficacy = {{post-exposure}})  # a dose to traced contacts, stopping an infection they already have
+{{?measures=isolation}}interventions = [iso]
+{{?measures=tracing}}interventions = [iso, ct]
+{{?measures=ring}}interventions = [iso, ct, rv]
+
+model = ModelSpec(process; interventions, attributes = clinical)
+results = simulate(model, n_sim; max_cases = cap, rng)  # one simulated state per outbreak
+
+contained = containment_probability(results; max_cases = cap)
+uncontrolled = extinction_probability(process)  # exact, with no measures
+println("Contained under the measures: ", round(contained; digits = 3))
+println("Dying out by chance alone:    ", round(uncontrolled; digits = 3))
+'''
+
+[[codeBranches]]
+model = "exact"
+code = '''
+using EpiBranch, Distributions  # exact formulas; offspring distributions
+
+R, k = {{R}}, {{k}}
+offspring = NegBin(R, k)  # mean R, dispersion k
+
+println("Chance one introduction dies out: ", round(extinction_probability(offspring); digits = 3))
+println("Chance it starts an epidemic:     ", round(epidemic_probability(offspring); digits = 3))
+println("Top ", {{top-share}}, " of cases cause ", round(proportion_transmission(R, k; prop_cases = {{top-share}}); digits = 3), " of transmission")
+
+chain_sizes = chain_size_distribution(NegBin({{R-chains}}, k))  # R below 1: every chain ends
+println("With R = ", {{R-chains}}, ": mean chain size ", round(mean(chain_sizes); digits = 2), ", chance of a single case ", round(pdf(chain_sizes, 1); digits = 3))
+'''
+
+[[codeBranches]]
+model = "fit"
+code = '''
+using EpiBranch, Distributions, Turing, Random  # likelihoods; offspring; NUTS; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same data and draws on every run
+R_true, k_true = {{true-R}}, {{true-k}}
+
+# Simulated data (replace with your own vector of integers)
+{{?data=offspring}}data = rand(rng, NegBin(R_true, k_true), {{n-obs}})  # secondary cases of each case
+{{?data=chains}}data = rand(rng, chain_size_distribution(NegBin(R_true, k_true)), {{n-obs}})  # final size of each cluster
+
+@model function outbreak_model(data)
+    R ~ LogNormal(0.0, 1.0)  # prior with median 1
+    k ~ Exponential(1.0)  # prior with mean 1
+{{?data=offspring}}    data ~ offspring_distribution(BranchingProcess(NegBin(R, k)))
+{{?data=chains}}    data ~ chain_size_distribution(BranchingProcess(NegBin(R, k)))
+end
+model = outbreak_model(data)
+
+fit_ml = maximum_likelihood(Xoshiro({{seed}}), model)  # ignores the priors
+est = NamedTuple(fit_ml.params)
+println("Maximum likelihood: R = ", round(est.R; digits = 2), ", k = ", round(est.k; digits = 2), " (true ", R_true, ", ", k_true, ")")
+
+posterior = sample(Xoshiro({{seed}}), model, NUTS(), MCMCSerial(), {{samples}}, {{chains}}; progress = false)
+R_draws, k_draws = vec(posterior[:R]), vec(posterior[:k])
+for (name, draws) in (("R", R_draws), ("k", k_draws))
+    low, mid, high = quantile(draws, [0.025, 0.5, 0.975])
+    println(name, ": posterior median ", round(mid; digits = 2), ", 95% credible interval [", round(low; digits = 2), ", ", round(high; digits = 2), "]")
+end
+'''
+
+[[codeBranches]]
+model = "cases"
+code = '''
+using EpiBranch, Distributions, Dates, Tables, Random  # model; delays; calendar; columns; seed
+
+rng = Xoshiro({{seed}})  # fixed seed: the same outbreak on every run
+start = Date(2024, 1, 1)  # the calendar date of day 0
+
+progression = [
+    Reporting(delay = Exponential({{report-delay}})),
+    Hospitalisation(delay = Exponential(5.0), probability = {{admission}}),
+    Death(delay = Exponential(14.0), probability = {{death}}),
+    Recovery(delay = Exponential(14.0)),
+]
+attributes = [
+    clinical_presentation(incubation_period = {{incubation}}),
+    demographics(age_distribution = Normal(40, 15), prob_female = 0.55),
+]
+model = ModelSpec(BranchingProcess(NegBin({{R}}, {{k}}), {{generation-time}}); progression, attributes)
+
+# Repeat until an outbreak ends within the size range
+outbreak = simulate(model; condition = {{size-low}}:{{size-high}}, max_cases = {{size-high}} + 1, rng)  # the cap above the range: one stopped at the cap has no final size
+
+cases = Tables.columntable(linelist(outbreak; reference_date = start))  # one row per case
+exposed = Tables.columntable(contacts(outbreak; reference_date = start))  # one row per contact
+println(length(cases.id), " cases, ", length(exposed.from), " contacts, ended by itself: ", outbreak.extinct)
+println("Columns: ", join(keys(cases), ", "))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "outbreak-sizes"
+label = "Outbreak Sizes"
+desc = "Histogram of the size of every simulated outbreak, on a log scale"
+models = ["contain"]
+code = '''
+using Plots
+
+sizes = [s.cumulative_cases for s in results]
+p = histogram(log10.(sizes); bins = 30, xlabel = "Cases in the outbreak (log10)", ylabel = "Outbreaks", label = false, title = "Outbreak sizes")
+display(p)
+println(count(>=(cap), sizes), " of ", n_sim, " outbreaks reached the cap of ", cap, " cases")
+'''
+
+[[actionGroups.actions]]
+id = "epidemic-curve-contained"
+label = "Epidemic Curve"
+desc = "Weekly cases by symptom onset in the largest outbreak that ended before the cap"
+models = ["contain"]
+code = '''
+using Plots, Tables
+
+ended = filter(s -> s.extinct && s.cumulative_cases < cap, results)
+largest = ended[argmax([s.cumulative_cases for s in ended])]
+curve = Tables.columntable(weekly_incidence(largest))  # a table of week and cases
+p = bar(curve.week, curve.cases; xlabel = "Week", ylabel = "Cases", label = false, title = "Largest contained outbreak: $(largest.cumulative_cases) cases")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "offspring"
+label = "Offspring Distribution"
+desc = "Secondary cases per case, against a Poisson distribution with the same R"
+models = ["exact"]
+code = '''
+using Plots
+
+counts = 0:10
+p = bar(counts, pdf.(offspring, counts); alpha = 0.5, label = "Negative binomial", xlabel = "Secondary cases", ylabel = "Probability", title = "Offspring distribution, R = $R")
+scatter!(p, counts, pdf.(Poisson(R), counts); color = :black, label = "Poisson")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "transmission-share"
+label = "Share of Transmission"
+desc = "The share of transmission from the most infectious cases, for several values of k"
+models = ["exact"]
+code = '''
+using Plots
+
+shares = 0.01:0.01:0.99
+p = plot(shares, shares; linestyle = :dot, color = :gray, label = "Every case the same", xlabel = "Share of cases, most infectious first", ylabel = "Share of transmission", title = "Who transmits")
+for dispersion in sort(unique([0.05, k, 0.5, 2.0]))
+    plot!(p, shares, [proportion_transmission(R, dispersion; prop_cases = s) for s in shares]; label = "k = $dispersion")
+end
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "chain-sizes"
+label = "Chain Sizes"
+desc = "The distribution of final chain sizes, against Poisson offspring with the same R"
+models = ["exact"]
+code = '''
+using Plots
+
+sizes = 1:50
+p = plot(sizes, pdf.(chain_sizes, sizes); yscale = :log10, label = "Negative binomial, k = $k", xlabel = "Cases in the chain", ylabel = "Probability (log scale)", title = "Chain sizes, R = {{R-chains}}")
+plot!(p, sizes, pdf.(chain_size_distribution(Poisson({{R-chains}})), sizes); label = "Poisson")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "data-against-fit"
+label = "Data Against the Fit"
+desc = "Observed proportions against the distribution at the maximum-likelihood estimates"
+models = ["fit"]
+code = '''
+using Plots
+
+{{?data=offspring}}fitted_dist = NegBin(est.R, est.k)
+{{?data=offspring}}support = 0:min(maximum(data), 30)
+{{?data=chains}}fitted_dist = chain_size_distribution(NegBin(est.R, est.k))
+{{?data=chains}}support = 1:min(maximum(data), 30)
+observed = [count(==(x), data) / length(data) for x in support]
+p = bar(support, observed; alpha = 0.5, label = "Observed", xlabel = "Count", ylabel = "Proportion", title = "Data against the fit")
+scatter!(p, support, pdf.(fitted_dist, support); color = :black, label = "Fitted")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "joint-posterior"
+label = "Posterior of R and k"
+desc = "Posterior draws of R and k together, with the true values"
+models = ["fit"]
+code = '''
+using Plots
+
+p = scatter(R_draws, k_draws; markersize = 1, alpha = 0.3, yscale = :log10, label = "Posterior draws", xlabel = "R", ylabel = "k (log scale)", title = "Posterior of R and k")
+scatter!(p, [R_true], [k_true]; color = :red, markershape = :x, markersize = 6, label = "True values")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "epidemic-curve-cases"
+label = "Epidemic Curve"
+desc = "Weekly cases by symptom onset"
+models = ["cases"]
+code = '''
+using Plots
+
+curve = Tables.columntable(weekly_incidence(outbreak; reference_date = start))
+p = bar(curve.week, curve.cases; xlabel = "Week", ylabel = "Cases", label = false, title = "Epidemic curve by onset")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "generations"
+label = "Generations Over Time"
+desc = "The date of infection of each case against its generation"
+models = ["cases"]
+code = '''
+using Plots
+
+p = scatter(cases.date_infection, cases.generation; markersize = 3, alpha = 0.6, label = false, xlabel = "Date of infection", ylabel = "Generation", title = "Generations over time")
+display(p)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "monte-carlo-error"
+label = "Monte Carlo Error"
+desc = "The standard error of the containment probability, and how many outbreaks each stopping rule ended"
+models = ["contain"]
+code = '''
+se = sqrt(contained * (1 - contained) / n_sim)  # a share estimated from n_sim outbreaks
+println("Containment: ", round(contained; digits = 3), ", standard error ", round(se; digits = 3))
+println("Ended by themselves:     ", count(s -> s.extinct && s.cumulative_cases < cap, results))
+println("Reached the case cap:    ", count(s -> s.cumulative_cases >= cap, results))
+println("Stopped at the generation limit: ", count(s -> !s.extinct && s.cumulative_cases < cap, results))
+'''
+
+[[actionGroups.actions]]
+id = "generation-ratio"
+label = "Generation Ratio"
+desc = "Cases in each generation over cases in the one before, in runs of six generations with no case cap"
+models = ["contain"]
+code = '''
+using Plots, Tables
+
+bounded = simulate(model, 200; max_cases = nothing, max_generations = 6, rng = Xoshiro({{seed}}))  # complete ratios up to the bound
+ratios = [Tables.columntable(generation_R(s)) for s in bounded]
+generations = 0:5
+mean_ratio = [mean(vcat([r.offspring_ratio[r.generation .== g] for r in ratios]...)) for g in generations]
+p = plot(generations, mean_ratio; marker = :circle, label = "Mean over outbreaks still going", xlabel = "Generation", ylabel = "Cases in the next / cases in this", title = "Generation ratio")
+hline!(p, [1.0]; linestyle = :dash, color = :gray, label = "Ratio 1")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "against-simulation"
+label = "Against Simulation"
+desc = "The exact chance of dying out, against the share of simulated outbreaks that die out"
+models = ["exact"]
+code = '''
+using Random
+
+runs = simulate(BranchingProcess(offspring, Exponential(5.0)), 1000; max_cases = 10_000, max_generations = 200, rng = Xoshiro({{seed}}))
+simulated = containment_probability(runs)
+println("Exact:     ", round(extinction_probability(offspring); digits = 3))
+println("Simulated: ", round(simulated; digits = 3), ", standard error ", round(sqrt(simulated * (1 - simulated) / 1000); digits = 3))
+'''
+
+[[actionGroups.actions]]
+id = "convergence"
+label = "Convergence"
+desc = "R-hat and effective sample sizes of R and k"
+models = ["fit"]
+code = '''
+using Turing.FlexiChains: rhat, ess
+
+for name in (:R, :k)
+    println(name, ": R-hat ", round(rhat(posterior[name]); digits = 3), ", bulk ESS ", round(Int, ess(posterior[name]; kind = :bulk)), ", tail ESS ", round(Int, ess(posterior[name]; kind = :tail)))
+end
+println("R-hat should be below 1.01, and each ESS in the hundreds at least")
+'''
+
+[[actionGroups.actions]]
+id = "predictive-check"
+label = "Posterior Predictive Check"
+desc = "The share of the smallest count and the largest value in the data, against datasets drawn from the posterior"
+models = ["fit"]
+code = '''
+draw_rows = rand(Xoshiro({{seed}}), eachindex(R_draws), 500)
+{{?data=offspring}}smallest = 0
+{{?data=offspring}}replicate(i) = rand(NegBin(R_draws[i], k_draws[i]), length(data))
+{{?data=chains}}smallest = 1
+{{?data=chains}}replicate(i) = rand(chain_size_distribution(NegBin(min(R_draws[i], 0.99), k_draws[i])), length(data))  # chain sizes need R below 1
+replicates = [replicate(i) for i in draw_rows]
+share_rep = [mean(==(smallest), r) for r in replicates]
+largest_rep = [maximum(r) for r in replicates]
+println("Share equal to ", smallest, ": data ", round(mean(==(smallest), data); digits = 3), ", 90% predictive interval ", round.(quantile(share_rep, [0.05, 0.95]); digits = 3))
+println("Largest value: data ", maximum(data), ", 90% predictive interval ", round.(Int, quantile(largest_rep, [0.05, 0.95])))
+'''
+
+[[actionGroups.actions]]
+id = "chain-statistics"
+label = "Chains and Offspring"
+desc = "The size of each chain, and the mean and variance of the secondary cases per case in this outbreak"
+models = ["cases"]
+code = '''
+chains = Tables.columntable(chain_statistics(outbreak))
+secondary = [count(isequal(id), cases.parent_id) for id in cases.id]
+println("Chains: ", length(chains.size), ", largest ", maximum(chains.size), " cases, longest ", maximum(chains.length), " generations")
+println("Secondary cases per case: mean ", round(mean(secondary); digits = 2), ", variance ", round(var(secondary); digits = 2))
+println("An outbreak chosen by its size is a selected one: these need not match the R and k of the model")
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "size-if-contained"
+label = "Size of a Contained Outbreak"
+desc = "Quantiles of the size of the outbreaks that ended, and the chance of passing given sizes"
+models = ["contain"]
+code = '''
+ended_sizes = [s.cumulative_cases for s in results if s.extinct && s.cumulative_cases < cap]
+println("Size of a contained outbreak: median ", median(ended_sizes), ", 90th percentile ", quantile(ended_sizes, 0.9), ", largest ", maximum(ended_sizes))
+for threshold in (10, 50, 100, 500)
+    println("Chance of at least ", threshold, " cases: ", round(mean(s.cumulative_cases >= threshold for s in results); digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "introductions"
+label = "Several Introductions"
+desc = "The chance of an epidemic from several independent introductions"
+models = ["exact"]
+code = '''
+q = extinction_probability(offspring)
+for introductions in (1, 2, 5, 10, 20)
+    println(rpad(introductions, 3), " introductions: chance of an epidemic ", round(1 - q^introductions; digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "end-of-outbreak-exact"
+label = "End of an Outbreak"
+desc = "The chance that transmission is over, by days since the last case"
+models = ["exact"]
+code = '''
+using Plots
+
+days = collect(0.0:60.0)
+gt = LogNormal(1.6, 0.5)  # generation time in days, median about 5
+p = plot(days, end_of_outbreak_probability({{R-chains}}, k, gt, days); xlabel = "Days since the last case", ylabel = "Chance no further case follows", label = "One case, R = {{R-chains}}, k = $k", title = "End of an outbreak")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "epidemic-chance"
+label = "Chance of an Epidemic"
+desc = "The posterior of the chance that one new introduction starts an epidemic"
+models = ["fit"]
+code = '''
+chance = [epidemic_probability(r, d; max_iter = 100_000) for (r, d) in zip(R_draws, k_draws)]  # slow to converge with R near 1
+low, mid, high = quantile(chance, [0.025, 0.5, 0.975])
+println("Chance of an epidemic from one introduction: median ", round(mid; digits = 3), ", 95% credible interval [", round(low; digits = 3), ", ", round(high; digits = 3), "]")
+'''
+
+[[actionGroups.actions]]
+id = "end-of-outbreak-cases"
+label = "End of This Outbreak"
+desc = "The chance that this outbreak is over, by days after its last symptom onset"
+models = ["cases"]
+code = '''
+has_onset = findall(!ismissing, cases.date_onset)
+onsets = cases.date_onset[has_onset]
+secondary = [count(isequal(cases.id[i]), cases.parent_id) for i in has_onset]  # known onward cases of each
+for days_after in (7, 14, 21, 28, 42)
+    since_onset = [Float64(Dates.value(maximum(onsets) - d) + days_after) for d in onsets]
+    over = end_of_outbreak_probability(NegBin({{R}}, {{k}}), {{generation-time}}, since_onset, secondary)
+    println(rpad(days_after, 3), " days after the last onset: chance it is over ", round(over; digits = 3))
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "compare-measures"
+label = "Compare Measures"
+desc = "Containment with no measures, with isolation, with tracing, and with post-exposure vaccination"
+models = ["contain"]
+code = '''
+iso_all = Isolation(onset_to_isolation_delay = Exponential({{isolation-delay}}), duration = {{duration}})
+ct_all = ContactTracing(probability = {{trace-probability}}, isolation_to_trace_delay = Exponential({{trace-delay}}), action = Quarantine(duration = {{duration}}))
+rv_all = RingVaccination(efficacy = 0.0, post_exposure_efficacy = {{post-exposure}})
+scenarios = [
+    "No measures" => AbstractIntervention[],
+    "Isolation" => [iso_all],
+    "Isolation and tracing" => [iso_all, ct_all],
+    "Isolation, tracing and vaccination" => [iso_all, ct_all, rv_all],
+]
+for (name, measures) in scenarios
+    spec = ModelSpec(process; interventions = measures, attributes = clinical)
+    share = containment_probability(spec, n_sim; max_cases = cap, rng = Xoshiro({{seed}}))
+    println(rpad(name, 36), round(share; digits = 3), " +/- ", round(1.96 * sqrt(share * (1 - share) / n_sim); digits = 3))
+end
+println("A difference inside the margins is no evidence: raise the outbreaks simulated before reading it")
+'''
+
+[[actionGroups.actions]]
+id = "compare-tracing"
+label = "Compare Tracing Levels"
+desc = "Containment as the tracing probability goes from 0 to 1"
+models = ["contain"]
+code = '''
+using Plots
+
+levels = 0.0:0.2:1.0
+shares = map(levels) do level
+    tracing = ContactTracing(probability = level, isolation_to_trace_delay = Exponential({{trace-delay}}), action = Quarantine(duration = {{duration}}))
+    spec = ModelSpec(process; interventions = [iso, tracing], attributes = clinical)
+    containment_probability(spec, n_sim; max_cases = cap, rng = Xoshiro({{seed}}))
+end
+p = plot(levels, shares; marker = :circle, label = "Isolation and tracing", xlabel = "Tracing probability", ylabel = "Containment probability", title = "How much tracing is enough")
+hline!(p, [uncontrolled]; linestyle = :dash, color = :gray, label = "Dying out by chance alone")
+display(p)
+'''
+
+[[actionGroups.actions]]
+id = "compare-dispersion"
+label = "Compare Dispersion"
+desc = "The chance of dying out and the top share of transmission, for several values of k at the same R"
+models = ["exact"]
+code = '''
+println(rpad("k", 8), rpad("dies out", 11), "top ", {{top-share}}, " of cases")
+for dispersion in (0.01, 0.1, k, 0.5, 1.0, 10.0)
+    println(rpad(dispersion, 8), rpad(round(extinction_probability(R, dispersion); digits = 3), 11), round(proportion_transmission(R, dispersion; prop_cases = {{top-share}}); digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "compare-poisson"
+label = "Poisson or Negative Binomial"
+desc = "AIC of Poisson offspring, with R on a grid, against the negative binomial at the maximum-likelihood estimates"
+models = ["fit"]
+code = '''
+{{?data=offspring}}observed = OffspringCounts(data)
+{{?data=chains}}observed = ChainSizes(data)
+{{?data=offspring}}R_grid = 0.05:0.005:5.0
+{{?data=chains}}R_grid = 0.05:0.005:0.995
+ll_poisson = maximum(loglikelihood(observed, Poisson(r)) for r in R_grid)
+ll_negbin = loglikelihood(observed, NegBin(est.R, est.k))
+println("Poisson:           log-likelihood ", round(ll_poisson; digits = 1), ", AIC ", round(2 - 2 * ll_poisson; digits = 1))
+println("Negative binomial: log-likelihood ", round(ll_negbin; digits = 1), ", AIC ", round(4 - 2 * ll_negbin; digits = 1))
+println("The lower AIC is preferred: a large gap against Poisson is evidence of superspreading")
+'''
+
+[[actionGroups.actions]]
+id = "compare-curves"
+label = "Onset and Reporting Curves"
+desc = "Weekly cases by symptom onset against weekly cases by reporting"
+models = ["cases"]
+code = '''
+using Plots
+
+by_onset = Tables.columntable(weekly_incidence(outbreak; reference_date = start))
+by_report = Tables.columntable(weekly_incidence(outbreak; by = :reporting, reference_date = start))
+p = plot(by_onset.week, by_onset.cases; marker = :circle, label = "By onset", xlabel = "Week", ylabel = "Cases", title = "What the reporting delay does to the curve")
+plot!(p, by_report.week, by_report.cases; marker = :circle, label = "By reporting")
+display(p)
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "what-measures-add"
+label = "What the Measures Add"
+desc = "The containment probability against the chance of dying out with no control"
+models = ["contain"]
+code = '''
+added = contained - uncontrolled
+println("Contained under the measures: ", round(contained; digits = 3))
+println("Dying out with no control:    ", round(uncontrolled; digits = 3))
+println("The measures add ", round(added; digits = 3), ": of the outbreaks that would take off, they stop ", round(added / (1 - uncontrolled); digits = 2))
+println("The rest of the containment is chance, which superspreading makes large")
+'''
+
+[[actionGroups.actions]]
+id = "eighty-twenty"
+label = "Reading the 80/20 Rule"
+desc = "The share of cases behind 80% of transmission, ranked by individual reproduction number and by secondary cases caused"
+models = ["exact"]
+code = '''
+individual = proportion_cases_individual(R, k; prop_transmission = 0.8)
+realised = proportion_cases_offspring(R, k; prop_transmission = 0.8)
+println("Ranked by individual reproduction number: ", round(individual; digits = 3), " of cases cause 80% of transmission")
+println("Ranked by secondary cases caused:         ", round(realised; digits = 3), " of cases cause 80% of transmission")
+println("Published figures use either: say which one a number is")
+'''
+
+[[actionGroups.actions]]
+id = "read-estimates"
+label = "Reading R and k"
+desc = "The chance that R is above 1, and what k says about the share of transmission"
+models = ["fit"]
+code = '''
+println("Chance that R is above 1: ", round(mean(R_draws .> 1); digits = 3))
+shares = [proportion_transmission(r, d; prop_cases = 0.2) for (r, d) in zip(R_draws, k_draws)]
+low, mid, high = quantile(shares, [0.025, 0.5, 0.975])
+println("Top 20% of cases cause ", round(mid; digits = 2), " of transmission, 95% credible interval [", round(low; digits = 2), ", ", round(high; digits = 2), "]")
+println("An interval for k that reaches far upwards means the data cannot rule out little superspreading")
+{{?data=chains}}println("Chain sizes assume each cluster has finished growing and that R is below 1: with growing clusters, R is underestimated")
+'''
+
+[[actionGroups.actions]]
+id = "read-line-list"
+label = "Reading the Line List"
+desc = "Admissions, outcomes and the median delay from onset to report"
+models = ["cases"]
+code = '''
+known_delay = [Dates.value(r - o) for (r, o) in zip(cases.date_reporting, cases.date_onset) if r !== missing && o !== missing]
+println("Median days from onset to report: ", median(known_delay))
+println("Admitted: ", count(isequal(true), cases.admitted), " of ", length(cases.id))
+for outcome in unique(skipmissing(cases.outcome))
+    println(rpad(outcome, 12), count(isequal(outcome), cases.outcome))
+end
+println("Death and recovery compete: the share who die is lower than the probability of death set above, because some recover first")
+'''
