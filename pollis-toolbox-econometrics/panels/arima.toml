@@ -12,6 +12,10 @@ defaultModel = "arima"
 name = "StateSpaceModels.jl"
 github = "https://github.com/LAMPSPUC/StateSpaceModels.jl"
 
+[[packages]]
+name = "Durbyn.jl"
+github = "https://github.com/taf-society/Durbyn.jl"
+
 [requires]
 packages = ["Plots.jl", "HypothesisTests.jl", "StatsBase.jl", "Distributions.jl"]
 
@@ -72,6 +76,61 @@ name = "Decision Guide"
 file = "arima/decision-guide.md"
 bundled = true
 
+[[references]]
+title = "Time Series Analysis: Forecasting and Control"
+authors = "Box, G. E. P.; Jenkins, G. M.; Reinsel, G. C.; Ljung, G. M."
+year = 2015
+journal = "Wiley"
+openAccess = false
+
+[[references]]
+title = "Distribution of the Estimators for Autoregressive Time Series with a Unit Root"
+authors = "Dickey, David A.; Fuller, Wayne A."
+year = 1979
+journal = "Journal of the American Statistical Association"
+doi = "10.1080/01621459.1979.10482531"
+openAccess = false
+
+[[references]]
+title = "Forecasting: Principles and Practice"
+authors = "Hyndman, R. J.; Athanasopoulos, G."
+year = 2021
+journal = "OTexts"
+url = "https://otexts.com/fpp3/"
+openAccess = true
+
+[[references]]
+title = "Automatic Time Series Forecasting: The forecast Package for R"
+authors = "Hyndman, Rob J.; Khandakar, Yeasmin"
+year = 2008
+journal = "Journal of Statistical Software"
+doi = "10.18637/jss.v027.i03"
+openAccess = true
+
+[[references]]
+title = "Regression and time series model selection in small samples"
+authors = "Hurvich, CLIFFORD M.; Tsai, CHIH-LING"
+year = 1989
+journal = "Biometrika"
+doi = "10.1093/biomet/76.2.297"
+openAccess = false
+
+[[references]]
+title = "A Test for Normality of Observations and Regression Residuals"
+authors = "Jarque, Carlos M.; Bera, Anil K."
+year = 1987
+journal = "International Statistical Review / Revue Internationale de Statistique"
+doi = "10.2307/1403192"
+openAccess = false
+
+[[references]]
+title = "On a measure of lack of fit in time series models"
+authors = "Ljung, G. M.; Box, G. E. P."
+year = 1978
+journal = "Biometrika"
+doi = "10.1093/biomet/65.2.297"
+openAccess = false
+
 [[models]]
 id = "arima"
 label = "ARIMA"
@@ -80,6 +139,10 @@ label = "ARIMA"
 id = "sarima"
 label = "Seasonal ARIMA"
 
+[[models]]
+id = "arimax"
+label = "ARIMAX"
+
 [[bullets]]
 text = "ARIMA"
 detail = "integrated autoregressive moving-average model for univariate time series"
@@ -87,6 +150,10 @@ detail = "integrated autoregressive moving-average model for univariate time ser
 [[bullets]]
 text = "Seasonal ARIMA"
 detail = "extends ARIMA with multiplicative seasonal structure"
+
+[[bullets]]
+text = "ARIMAX"
+detail = "regression on exogenous variables with ARIMA errors"
 
 [[decisionRows]]
 task = "ARIMA"
@@ -97,6 +164,11 @@ purpose = "Models the differenced series as autoregressive (p) plus moving-avera
 task = "Seasonal ARIMA"
 context = "Monthly, quarterly or other periodic data with a repeating pattern of period s"
 purpose = "Adds multiplicative seasonal AR (P), differencing (D) and MA (Q) terms at lag s, so the same shock recurs one season later"
+
+[[decisionRows]]
+task = "ARIMAX"
+context = "A series that also responds to other variables, whose future values you know or can assume"
+purpose = "Regresses the series on those variables with ARIMA errors: the effect of each variable, and forecasts given its future values"
 
 [[inputs]]
 id = "yvar"
@@ -153,6 +225,21 @@ default = "12"
 models = ["sarima"]
 
 [[inputs]]
+id = "xvar"
+label = "Regressors"
+tooltip = "The exogenous variables over the sample: a Vector, or a Matrix with one column per variable and one row per observation. With x, the example simulates y, x and xf."
+default = "x"
+models = ["arimax"]
+newRow = true
+
+[[inputs]]
+id = "xfuture"
+label = "Future regressors"
+tooltip = "The values of the same variables over the forecast: a Vector or Matrix with one row per step. Forecasts run for as many steps as it has rows."
+default = "xf"
+models = ["arimax"]
+
+[[inputs]]
 id = "h"
 label = "Horizon"
 tooltip = "Forecast horizon in observations, used by the Predict actions."
@@ -183,6 +270,18 @@ return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"
 	+ '<path d="' + f + '" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>';
 '''
 
+[miniCharts.arimax]
+# Series following a regressor, continued by a forecast
+svg = '''
+var x = [66, 62, 64, 58, 60, 54, 56, 52];
+var y = [50, 46, 48, 42, 44, 38, 40, 36];
+var a = '', b = '';
+for (var i = 0; i < y.length; i++) { a += (i ? 'L' : 'M') + (4 + i * 4.5) + ',' + x[i]; b += (i ? 'L' : 'M') + (4 + i * 4.5) + ',' + y[i]; }
+return '<path d="' + a + '" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>'
+	+ '<path d="' + b + '" fill="none" stroke="currentColor" stroke-width="1.5"/>'
+	+ '<line x1="35.5" y1="36" x2="50" y2="30" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>';
+'''
+
 [[codeBranches]]
 model = "arima"
 code = '''
@@ -211,6 +310,25 @@ fit!(model)  # maximum-likelihood estimation via the Kalman filter
 print_results(model)  # estimates, standard errors, log-likelihood, AIC/BIC
 '''
 
+[[codeBranches]]
+model = "arimax"
+code = '''
+using Durbyn: forecast, NamedMatrix
+using Durbyn.Arima: arima, PDQ
+
+{{?xvar=x}} using Random
+{{?xvar=x}} Random.seed!(1)  # simulated: y moves by 2 with each unit of x, with AR(1) shocks in its differences
+{{?xvar=x}} n = 200; path = cumsum(randn(n + {{h}})) ./ 5 .+ randn(n + {{h}})
+{{?xvar=x}} e = zeros(n); for t in 2:n; e[t] = 0.6e[t-1] + randn(); end
+{{?xvar=x}} x, xf = path[1:n], path[n+1:end]; y = 10 .+ 2 .* x .+ cumsum(e)
+y = Float64.({{yvar}})
+columns(v) = reshape(Float64.(v), size(v, 1), :)  # one column per regressor
+regressors = ["x$j" for j in axes(columns({{xvar}}), 2)]
+X, F = NamedMatrix(columns({{xvar}}), regressors), NamedMatrix(columns({{xfuture}}), regressors)
+order = PDQ({{p}}, {{d}}, {{q}})
+model = arima(y, 1; order=order, xreg=X)  # regression on X with ARIMA({{p}},{{d}},{{q}}) errors
+'''
+
 [[actionGroups]]
 id = "visualise"
 label = "Visualise"
@@ -218,6 +336,7 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "fitted"
 label = "Series and One-Step Fit"
+models = ["arima", "sarima"]
 desc = "The data against the one-step-ahead predictions of the fitted model: where the model tracks the series and where it lags behind turning points"
 code = '''
 using StateSpaceModels, Plots
@@ -231,6 +350,7 @@ plot!(skip+1:length(y), yhat[skip+1:end], lw=1.5, ls=:dash, label="one-step pred
 [[actionGroups.actions]]
 id = "differenced"
 label = "Differenced Series"
+models = ["arima", "sarima"]
 desc = "The series after the differencing the model applies: it should look stationary, with a constant mean and variance and no remaining trend"
 code = '''
 using Plots
@@ -240,6 +360,17 @@ plot(z, lw=1, legend=false, xlabel="t", title="Differenced series")
 hline!([0], c=:gray, ls=:dash)
 '''
 
+[[actionGroups.actions]]
+id = "x-fitted"
+label = "Series and One-Step Fit"
+models = ["arimax"]
+desc = "The data against the one-step predictions of the fitted model, regressors included: where the model tracks the series and where it lags behind turning points"
+code = '''
+using Plots
+plot(y, lw=1.5, label="data", xlabel="t", title="One-step fit")
+plot!(model.fitted, lw=1.5, ls=:dash, label="one-step prediction")
+'''
+
 [[actionGroups]]
 id = "diagnose"
 label = "Diagnose"
@@ -247,6 +378,7 @@ label = "Diagnose"
 [[actionGroups.actions]]
 id = "acf"
 label = "Residual ACF and PACF"
+models = ["arima", "sarima"]
 desc = "Autocorrelation and partial autocorrelation of the standardised residuals with 95% bands: bars outside the bands mean structure the model has missed"
 code = '''
 using StateSpaceModels, StatsBase, Plots
@@ -262,6 +394,7 @@ plot(p1, p2, layout=(2, 1))
 [[actionGroups.actions]]
 id = "ljung-box"
 label = "Ljung-Box and Normality"
+models = ["arima", "sarima"]
 desc = "Ljung-Box test for leftover autocorrelation (degrees of freedom net of the ARMA parameters) and Jarque-Bera test for normal residuals"
 code = '''
 using StateSpaceModels, HypothesisTests
@@ -283,6 +416,35 @@ t0 = ADFTest(y, :constant, lag); t1 = ADFTest(diff(y), :constant, lag)
 (levels_p = pvalue(t0), first_difference_p = pvalue(t1), suggested_d = pvalue(t0) < 0.05 ? 0 : pvalue(t1) < 0.05 ? 1 : 2)
 '''
 
+[[actionGroups.actions]]
+id = "x-acf"
+label = "Residual ACF and PACF"
+models = ["arimax"]
+desc = "Autocorrelation and partial autocorrelation of the residuals with 95% bands: bars outside the bands mean structure that neither the regressors nor the ARIMA errors have explained"
+code = '''
+using StatsBase, Plots
+r = filter(isfinite, model.residuals)
+L = min(24, length(r) ÷ 4); band = 1.96 / sqrt(length(r))
+p1 = bar(1:L, autocor(r, 1:L), legend=false, title="Residual ACF", xlabel="Lag")
+hline!(p1, [-band, band], c=:red, ls=:dash)
+p2 = bar(1:L, pacf(r, 1:L), legend=false, title="Residual PACF", xlabel="Lag")
+hline!(p2, [-band, band], c=:red, ls=:dash)
+plot(p1, p2, layout=(2, 1))
+'''
+
+[[actionGroups.actions]]
+id = "x-ljung-box"
+label = "Ljung-Box and Normality"
+models = ["arimax"]
+desc = "Ljung-Box test for leftover autocorrelation (degrees of freedom net of the ARMA parameters) and Jarque-Bera test for normal residuals"
+code = '''
+using HypothesisTests
+r = filter(isfinite, model.residuals)
+L = min(24, length(r) ÷ 4)
+lb = LjungBoxTest(r, L, {{p}} + {{q}}); jb = JarqueBeraTest(r)
+(ljung_box_lags = L, ljung_box_p = pvalue(lb), jarque_bera_p = pvalue(jb), verdict = pvalue(lb) > 0.05 ? "no leftover autocorrelation" : "residuals still autocorrelated: revise p or q")
+'''
+
 [[actionGroups]]
 id = "predict"
 label = "Predict"
@@ -290,6 +452,7 @@ label = "Predict"
 [[actionGroups.actions]]
 id = "forecast"
 label = "Forecast with Intervals"
+models = ["arima", "sarima"]
 desc = "Point forecasts over the horizon with 80% and 95% prediction intervals"
 code = '''
 using StateSpaceModels, Plots
@@ -300,6 +463,7 @@ plot(model, fc; label="data", title="Forecast, {{h}} steps")
 [[actionGroups.actions]]
 id = "scenarios"
 label = "Simulated Scenarios"
+models = ["arima", "sarima"]
 desc = "500 simulated future paths from the fitted model and their quantile fan: the full distribution of outcomes, not only the mean and variance"
 code = '''
 using StateSpaceModels, Statistics, Plots
@@ -314,6 +478,7 @@ plot!(t, q(0.5), ribbon=(q(0.5) .- q(0.05), q(0.95) .- q(0.5)), fillalpha=0.2, l
 [[actionGroups.actions]]
 id = "backtest"
 label = "Rolling Backtest"
+models = ["arima", "sarima"]
 desc = "Refits the model on expanding windows and scores its forecasts on the data that followed: out-of-sample error by horizon"
 code = '''
 using StateSpaceModels, Statistics, Plots
@@ -327,6 +492,36 @@ display((rmse_by_horizon = round.(vec(sqrt.(mean(err .^ 2, dims=1))), digits=3),
 plot(1:H, vec(sqrt.(mean(err .^ 2, dims=1))), marker=:o, lw=2, legend=false, xlabel="Horizon", ylabel="RMSE", title="Out-of-sample error by horizon")
 '''
 
+[[actionGroups.actions]]
+id = "x-forecast"
+label = "Forecast with Intervals"
+models = ["arimax"]
+desc = "Point forecasts with 80% and 95% prediction intervals, given the future regressors: the intervals leave out any uncertainty about those values"
+code = '''
+using Plots
+fc = forecast(model; h=size(F.data, 1), xreg=F)
+t = length(y) .+ (1:size(F.data, 1))
+plot(y, lw=1.5, c=:black, label="data", xlabel="t", title="Forecast given the future regressors")
+plot!(t, fc.mean, ribbon=(fc.mean .- fc.lower[:, 2], fc.upper[:, 2] .- fc.mean), fillalpha=0.2, lw=2, label="forecast, 95% interval")
+'''
+
+[[actionGroups.actions]]
+id = "x-backtest"
+label = "Rolling Backtest"
+models = ["arimax"]
+desc = "Refits on expanding windows and scores the forecasts on the data that followed, by horizon. It uses the regressors that actually occurred, so it is better than a real forecast would be when they have to be predicted too"
+code = '''
+using Statistics, Plots
+H = min({{h}}, 12); origins = round.(Int, range(0.7 * length(y), length(y) - H, length=6))
+err = zeros(length(origins), H)
+for (k, n) in enumerate(origins)
+    m = arima(y[1:n], 1; order=order, xreg=NamedMatrix(X.data[1:n, :], regressors))
+    err[k, :] = y[n+1:n+H] .- forecast(m; h=H, xreg=NamedMatrix(X.data[n+1:n+H, :], regressors)).mean
+end
+display((rmse_by_horizon = round.(vec(sqrt.(mean(err .^ 2, dims=1))), digits=3),))
+plot(1:H, vec(sqrt.(mean(err .^ 2, dims=1))), marker=:o, lw=2, legend=false, xlabel="Horizon", ylabel="RMSE", title="Out-of-sample error by horizon")
+'''
+
 [[actionGroups]]
 id = "compare"
 label = "Compare"
@@ -334,6 +529,7 @@ label = "Compare"
 [[actionGroups.actions]]
 id = "auto-arima"
 label = "Automatic Order Selection"
+models = ["arima", "sarima"]
 desc = "auto_arima searches over orders (Hyndman-Khandakar stepwise search, AICc) and reports the order it picks next to this model; a seasonal search can take a few minutes"
 code = '''
 using StateSpaceModels
@@ -345,6 +541,7 @@ spec(m) = (order = (m.order.p, m.order.d, m.order.q), seasonal = (m.order.P, m.o
 [[actionGroups.actions]]
 id = "order-grid"
 label = "Order Grid (AICc)"
+models = ["arima", "sarima"]
 desc = "AICc of every (p, q) with p, q in 0..3 at the current differencing: a heat map of how sensitive the fit is to the chosen order (16 fits: about a minute for seasonal models)"
 code = '''
 using StateSpaceModels, Plots
@@ -359,6 +556,16 @@ display((best_p_q = Tuple(argmin(replace(ic, NaN => Inf))) .- 1, current = ({{p}
 heatmap(0:3, 0:3, ic, xlabel="q", ylabel="p", title="AICc by order (d = {{d}})", c=:viridis)
 '''
 
+[[actionGroups.actions]]
+id = "x-without"
+label = "With and Without the Regressors"
+models = ["arimax"]
+desc = "The same ARIMA with and without the regressors: a lower AIC with them means they add more than their parameters cost"
+code = '''
+without = arima(y, 1; order=order)
+(aic_with = round(model.aic, digits=2), aic_without = round(without.aic, digits=2), sigma2_with = round(model.sigma2, digits=4), sigma2_without = round(without.sigma2, digits=4), verdict = model.aic < without.aic ? "the regressors improve the fit" : "the regressors do not pay for their parameters")
+'''
+
 [[actionGroups]]
 id = "interpret"
 label = "Interpret"
@@ -366,6 +573,7 @@ label = "Interpret"
 [[actionGroups.actions]]
 id = "coefficients"
 label = "Coefficient Table"
+models = ["arima", "sarima"]
 desc = "Estimates with standard errors, z statistics and p-values: which AR and MA terms are distinguishable from zero"
 code = '''
 using StateSpaceModels, Distributions
@@ -377,6 +585,7 @@ ct = model.results.coef_table
 [[actionGroups.actions]]
 id = "impulse"
 label = "Impulse Response (Psi Weights)"
+models = ["arima", "sarima"]
 desc = "Effect of a one-off unit shock on the differenced series over the next 24 steps, from the fitted AR and MA polynomials; on the level it accumulates d times"
 code = '''
 using StateSpaceModels, Plots
@@ -389,4 +598,16 @@ for j in 1:24
 end
 level = reduce((l, _) -> cumsum(l), 1:{{d}}; init=psi)  # accumulate over the d differences
 plot(0:24, [psi level], marker=:o, label=["differenced series" "level"], xlabel="Steps after shock", title="Impulse response (non-seasonal part)")
+'''
+
+[[actionGroups.actions]]
+id = "x-coefficients"
+label = "Coefficient Table"
+models = ["arimax"]
+desc = "Estimates with standard errors, z statistics and p-values. A regressor's coefficient is its effect on the series; the AR and MA terms describe the errors around that regression"
+code = '''
+using Distributions, LinearAlgebra
+se = sqrt.(diag(model.var_coef))
+[(parameter = n, estimate = round(c, digits=4), std_error = round(s, digits=4), z = round(c / s, digits=2), p_value = round(2ccdf(Normal(), abs(c / s)), digits=4))
+ for (n, c, s) in zip(model.coef.colnames, vec(model.coef.data), se)]
 '''

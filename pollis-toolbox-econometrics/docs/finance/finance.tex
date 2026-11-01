@@ -1,0 +1,123 @@
+% Toolbox Vignette of the Finance Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("finance.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{1 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Finance Toolbox}
+  {Finance Toolbox}
+  {What its nine panels are for, and when to use each.}
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Finance}, with nine panels. Each has an example you can edit and run, and actions on its results.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{62mm}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Use it when} \\\midrule
+Measuring Volatility & You have daily open, high, low and close prices and want volatility from them. \\
+ARIMAX Models & One series is forecast from its own past, with or without a seasonal pattern or other variables that drive it. \\
+GARCH-Type Models & Volatility clusters and you want it day by day, its forecast, Value-at-Risk or changing correlations. \\
+Regime Switching Models & A relationship seems to change between calm and turbulent periods. \\
+Advanced Time-Series Forecasting & A series has several seasonal periods or many zeros, or you need a hard-to-beat benchmark. \\
+Neural Network Time-Series Forecasting & Several series mix short patterns with long cycles, and a simple forecast is not enough. \\
+Automatic Time-Series Forecasting & You want a forecast without choosing the model by hand. \\
+Bayesian Linear Stochastic Discount Factor & There are many candidate factors and the question is which of them price assets. \\
+Fama-MacBeth Regression & You want the risk premia of a few factors from a set of test assets. \\\bottomrule
+\end{tabularx}}
+
+
+\nmsection{Measuring Volatility}
+Seven estimators from \package{RangeVol}{https://github.com/Trumpingtons/RangeVol.jl}. The panel's title is Range-Based Volatility Estimation. The example simulates 500 days of one-minute prices, with a fifth of the variance overnight; replace them with your own. The efficiencies below are relative to close-to-close, under the conditions each estimator assumes.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{36mm}>{\raggedright\arraybackslash}p{58mm}X@{}}
+\toprule
+\textbf{Estimator} & \textbf{Use it for} & \textbf{What it gives} \\\midrule
+Close-to-Close & Only closing prices, or a baseline & The standard deviation of log-returns \\
+Parkinson & 24-hour markets with little drift & The high-low range of \nmcite{parkinson1980}{Parkinson (1980)}, about 5 times as efficient \\
+Garman-Klass & Full prices, little drift, no overnight gaps & The range and the open-to-close return of \nmcite{garman1980}{Garman and Klass (1980)}, about 7 times \\
+Rogers-Satchell & Trending prices without large gaps & The drift-independent estimator of \nmcite{rogers1991}{Rogers and Satchell (1991)} \\
+GK-Yang-Zhang & An exchange that closes overnight & Garman-Klass plus the overnight jump \\
+Yang-Zhang & Both drift and gaps, the usual case for equities & The minimum-variance blend of \nmcite{yang2000}{Yang and Zhang (2000)}, about 14 times \\
+Alizadeh-Brandt-Diebold & A state-space model of log-volatility & The log range, nearly Gaussian around log-volatility (\nmcite{alizadeh2002}{Alizadeh, Brandt and Diebold 2002}) \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Empirical Efficiency measures the gain on your own data, and Drift and Overnight Gaps checks the assumptions that separate the estimators. Each estimator gives one number for its window, so Volatility Clustering shows when a single full-sample figure is misleading.
+
+\nmsection{ARIMAX Models}
+Three tabs. The panel's title is ARIMA Models. \package{StateSpaceModels}{https://github.com/LAMPSPUC/StateSpaceModels.jl} fits ARIMA, where differencing removes a trend or a drifting level, and Seasonal ARIMA, for data with a repeating period. ARIMAX, with \package{Durbyn}{https://github.com/taf-society/Durbyn.jl}, regresses the series on other variables with ARIMA errors. Forecasting with it needs the future values of those variables, and its intervals leave out any uncertainty about them. Its backtest uses the values that actually occurred, so it scores better than a real forecast would when they have to be predicted too. The actions check the residuals, run an ADF unit root test, and backtest. For the first two tabs they also select the orders by AICc and simulate 500 future paths; for ARIMAX, With and Without the Regressors compares the fit.
+
+\nmsection{GARCH-Type Models}
+\package{ARCHModels}{https://github.com/s-broda/ARCHModels.jl} estimates the conditional volatility of returns, following \nmcite{engle1982}{Engle (1982)}. GARCH is the symmetric form of \nmcite{bollerslev1986}{Bollerslev (1986)}. EGARCH (\nmcite{nelson1991}{Nelson 1991}) and GJR-GARCH (\nmcite{glosten1993}{Glosten, Jagannathan and Runkle 1993}) let bad news raise volatility more than good news of the same size, which the News Impact Curve shows. DCC (\nmcite{engle2002}{Engle 2002}) adds changing correlations across several return series. The actions compare innovation distributions and lag orders, backtest Value-at-Risk, and report persistence and half-life.
+
+\nmsection{Regime Switching Models}
+\package{MarSwitching}{https://github.com/m-dadej/MarSwitching.jl} lets coefficients and variance change with an unobserved regime that follows a Markov chain, as in \nmcite{hamilton1989}{Hamilton (1989)}. Markov-Switching Regression gives one set of coefficients per regime, and Markov-Switching Autoregression one set of autoregressive dynamics. Markov-Switching ARCH lets volatility cluster within each regime. Time-Varying Transitions makes the switching probabilities depend on an indicator (\nmcite{filardo1994}{Filardo 1994}). Regimes are inferred, not observed, so check the estimates with Stability Across Starting Values and the number of regimes with AIC and BIC.
+
+\nmsection{Advanced Time-Series Forecasting}
+Three methods from \package{Durbyn}{https://github.com/taf-society/Durbyn.jl}. BATS and TBATS (\nmcite{delivera2011}{De Livera, Hyndman and Snyder 2011}) handle several or non-integer seasonal periods, such as hourly data with daily and weekly cycles. The Theta Method (\nmcite{assimakopoulos2000}{Assimakopoulos and Nikolopoulos 2000}) is a simple benchmark for monthly or yearly series. Intermittent Demand is for sparse series with many zeros: \nmcite{croston1972}{Croston (1972)} smooths demand sizes and intervals separately, and SBA and SBJ correct its upward bias, SBA being the correction of \nmcite{syntetos2005}{Syntetos and Boylan (2005)}. Demand Pattern classifies a series before you choose, and Holdout Accuracy scores the forecast on data the model has not seen.
+
+\nmsection{Neural Network Time-Series Forecasting}
+Four architectures from \package{FluxArchitectures}{https://github.com/sdobber/FluxArchitectures.jl}, on \package{Flux}{https://github.com/FluxML/Flux.jl}. The package pins Flux 0.13, so the panel runs on that older version. The example forecasts one exchange rate six steps ahead from several, training on the first windows and testing on later ones.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{22mm}>{\raggedright\arraybackslash}p{58mm}X@{}}
+\toprule
+\textbf{Model} & \textbf{Structure} & \textbf{Use it for} \\\midrule
+LSTnet & CNN, GRU, skip connections and AR (\nmcite{lai2018}{Lai, Chang, Yang and Liu 2018}) & Short local patterns mixed with long seasonal cycles \\
+DA-RNN & Dual-stage attention (\nmcite{qin2017}{Qin, Song, Chen, Cheng, Jiang and Cottrell 2017}) & Attention over both the driving series and the time steps \\
+TPA-LSTM & LSTM with temporal pattern attention (\nmcite{shih2019}{Shih, Sun and Lee 2019}) & Many variables with different periodicities \\
+DSANet & Global and local self-attention (\nmcite{huang2019}{Huang, Wang, Wu and Tang 2019}) & Many correlated series, in parallel and with no recurrence \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Run the Naive Baseline action first: a network that does not beat it adds nothing.
+
+\nmsection{Automatic Time-Series Forecasting}
+\package{Durbyn}{https://github.com/taf-society/Durbyn.jl} chooses the model for you. Auto ARIMA sets the differencing by unit-root tests and the orders by a stepwise search, as in \nmcite{hyndman2008}{Hyndman and Khandakar (2008)}. Auto ETS chooses the form of exponential smoothing by information criterion (\nmcite{hyndman2002}{Hyndman, Koehler, Snyder and Grose 2002}). Auto ARARMA applies the memory-shortening filter of \nmcite{parzen1982}{Parzen (1982)} and then a short ARMA, and suits slowly decaying series with no clear seasonal period. Model Race fits them all and keeps the one most accurate on the last observations. Selection Stability shows whether the chosen model changes as the sample does, and Rolling-Origin Accuracy gives a fairer score than a single holdout.
+
+\nmsection{Bayesian Linear Stochastic Discount Factor}
+\package{BayesianFactorZoo}{https://github.com/eohne/BayesianFactorZoo.jl}, the method of \nmcite{bryzgalova2023}{Bryzgalova, Huang and Julliard (2023)}. Bayesian SDF gives the full posterior of risk prices, in Sharpe-ratio units. Spike-and-Slab adds the probability that each factor is included, to select factors, and Spike-and-Slab (Traded) also prices tradable factors as test assets. By default the example simulates 600 months of five factors, of which two earn a premium, and 25 test assets; give it your own matrices to replace them. Results come from MCMC, so read Trace Plots and Effective Sample Size before the Risk Price Table.
+
+\nmsection{Fama-MacBeth Regression}
+Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and MacBeth (1973)}, using \package{BayesianFactorZoo}{https://github.com/eohne/BayesianFactorZoo.jl}. Classical estimates betas over time and then OLS and GLS premia across assets, with the errors-in-variables correction of \nmcite{shanken1992}{Shanken (1992)}; it suits a few established factors with strong betas. Bayesian re-runs the cross-sectional regression on every posterior draw, so a useless factor gets a wide posterior and not a falsely tight estimate, the problem shown by \nmcite{kan1999}{Kan and Zhang (1999)}. The example simulates a market factor, a value factor and a useless one, and Weak Factor Check shows the difference.
+
+\nmsection{References}
+{\footnotesize\sloppy
+\nmref{alizadeh2002}{Alizadeh, S., Brandt, M. W. and Diebold, F. X. (2002). Range-based estimation of stochastic volatility models. \emph{The Journal of Finance} 57(3), 1047--1091. \nmdoi{10.1111/1540-6261.00454}}
+\nmref{assimakopoulos2000}{Assimakopoulos, V. and Nikolopoulos, K. (2000). The theta model: a decomposition approach to forecasting. \emph{International Journal of Forecasting} 16(4), 521--530. \nmdoi{10.1016/S0169-2070(00)00066-2}}
+\nmref{bollerslev1986}{Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. \emph{Journal of Econometrics} 31(3), 307--327. \nmdoi{10.1016/0304-4076(86)90063-1}}
+\nmref{bryzgalova2023}{Bryzgalova, S., Huang, J. and Julliard, C. (2023). Bayesian solutions for the factor zoo: We just ran two quadrillion models. \emph{The Journal of Finance} 78(1), 487--557. \nmdoi{10.1111/jofi.13197}}
+\nmref{croston1972}{Croston, J. D. (1972). Forecasting and stock control for intermittent demands. \emph{Journal of the Operational Research Society} 23(3), 289--303. \nmdoi{10.1057/jors.1972.50}}
+\nmref{delivera2011}{De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. \emph{Journal of the American Statistical Association} 106(496), 1513--1527. \nmdoi{10.1198/jasa.2011.tm09771}}
+\nmref{engle1982}{Engle, R. F. (1982). Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation. \emph{Econometrica} 50(4), 987--1007. \nmdoi{10.2307/1912773}}
+\nmref{engle2002}{Engle, R. (2002). Dynamic conditional correlation: A simple class of multivariate generalized autoregressive conditional heteroskedasticity models. \emph{Journal of Business \& Economic Statistics} 20(3), 339--350. \nmdoi{10.1198/073500102288618487}}
+\nmref{fama1973}{Fama, E. F. and MacBeth, J. D. (1973). Risk, return, and equilibrium: Empirical tests. \emph{Journal of Political Economy} 81(3), 607--636. \nmdoi{10.1086/260061}}
+\nmref{filardo1994}{Filardo, A. J. (1994). Business-cycle phases and their transitional dynamics. \emph{Journal of Business \& Economic Statistics} 12(3), 299--308. \nmdoi{10.1080/07350015.1994.10524545}}
+\nmref{garman1980}{Garman, M. B. and Klass, M. J. (1980). On the estimation of security price volatilities from historical data. \emph{The Journal of Business} 53(1), 67--78. \nmdoi{10.1086/296072}}
+\nmref{glosten1993}{Glosten, L. R., Jagannathan, R. and Runkle, D. E. (1993). On the relation between the expected value and the volatility of the nominal excess return on stocks. \emph{The Journal of Finance} 48(5), 1779--1801. \nmdoi{10.1111/j.1540-6261.1993.tb05128.x}}
+\nmref{hamilton1989}{Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. \emph{Econometrica} 57(2), 357--384. \nmdoi{10.2307/1912559}}
+\nmref{huang2019}{Huang, S., Wang, D., Wu, X. and Tang, A. (2019). DSANet: Dual self-attention network for multivariate time series forecasting. In \emph{Proceedings of the 28th ACM International Conference on Information and Knowledge Management}, 2129--2132. \nmdoi{10.1145/3357384.3358132}}
+\nmref{hyndman2008}{Hyndman, R. J. and Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. \emph{Journal of Statistical Software} 27(3). \nmdoi{10.18637/jss.v027.i03}}
+\nmref{hyndman2002}{Hyndman, R. J., Koehler, A. B., Snyder, R. D. and Grose, S. (2002). A state space framework for automatic forecasting using exponential smoothing methods. \emph{International Journal of Forecasting} 18(3), 439--454. \nmdoi{10.1016/S0169-2070(01)00110-8}}
+\nmref{kan1999}{Kan, R. and Zhang, C. (1999). Two-pass tests of asset pricing models with useless factors. \emph{The Journal of Finance} 54(1), 203--235. \nmdoi{10.1111/0022-1082.00102}}
+\nmref{lai2018}{Lai, G., Chang, W.-C., Yang, Y. and Liu, H. (2018). Modeling long- and short-term temporal patterns with deep neural networks. In \emph{The 41st International ACM SIGIR Conference on Research \& Development in Information Retrieval}, 95--104. \nmdoi{10.1145/3209978.3210006}}
+\nmref{nelson1991}{Nelson, D. B. (1991). Conditional heteroskedasticity in asset returns: A new approach. \emph{Econometrica} 59(2), 347--370. \nmdoi{10.2307/2938260}}
+\nmref{parkinson1980}{Parkinson, M. (1980). The extreme value method for estimating the variance of the rate of return. \emph{The Journal of Business} 53(1), 61--65. \nmdoi{10.1086/296071}}
+\nmref{parzen1982}{Parzen, E. (1982). ARARMA models for time series analysis and forecasting. \emph{Journal of Forecasting} 1(1), 67--82. \nmdoi{10.1002/for.3980010108}}
+\nmref{qin2017}{Qin, Y., Song, D., Chen, H., Cheng, W., Jiang, G. and Cottrell, G. W. (2017). A dual-stage attention-based recurrent neural network for time series prediction. In \emph{Proceedings of the Twenty-Sixth International Joint Conference on Artificial Intelligence}, 2627--2633. \nmdoi{10.24963/ijcai.2017/366}}
+\nmref{rogers1991}{Rogers, L. C. G. and Satchell, S. E. (1991). Estimating variance from high, low and closing prices. \emph{The Annals of Applied Probability} 1(4), 504--512. \nmdoi{10.1214/aoap/1177005835}}
+\nmref{shanken1992}{Shanken, J. (1992). On the estimation of beta-pricing models. \emph{Review of Financial Studies} 5(1), 1--33. \nmdoi{10.1093/rfs/5.1.1}}
+\nmref{shih2019}{Shih, S.-Y., Sun, F.-K. and Lee, H.-y. (2019). Temporal pattern attention for multivariate time series forecasting. \emph{Machine Learning} 108(8--9), 1421--1441. \nmdoi{10.1007/s10994-019-05815-0}}
+\nmref{syntetos2005}{Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. \emph{International Journal of Forecasting} 21(2), 303--314. \nmdoi{10.1016/j.ijforecast.2004.10.001}}
+\nmref{yang2000}{Yang, D. and Zhang, Q. (2000). Drift-independent volatility estimation based on high, low, open, and close prices. \emph{The Journal of Business} 73(3), 477--492. \nmdoi{10.1086/209650}}
+}
+
+\nmcredit
+\end{document}

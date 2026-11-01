@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-robotics",
   "displayName": "Robotics Toolbox",
   "description": "Pollis Robotics Toolbox: rotations, rigid-body kinematics and dynamics, robot control (inverse kinematics, PD joint control, computed torque, impedance control), 3D visualisation with MeshCat and the RobotZoo model library.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

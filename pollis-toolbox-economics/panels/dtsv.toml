@@ -94,24 +94,32 @@ openAccess = false
 title = "Financial returns modelled by the product of two stochastic processes — a study of daily sugar prices 1961–79"
 authors = "Taylor, S. J."
 year = 1982
-journal = ""
-url = "https://doi.org/10.1007/978-94-015-7819-6_9"
+journal = "Reprinted in Stochastic Volatility: Selected Readings, Oxford University Press (2005)"
+url = "https://doi.org/10.1093/oso/9780199257195.003.0003"
 openAccess = false
 
 [[references]]
 title = "Bayesian analysis of stochastic volatility models"
 authors = "Jacquier, E., Polson, N. G., & Rossi, P. E."
 year = 1994
-journal = ""
-url = "https://doi.org/10.1080/01621459.1994.10476873"
+journal = "Journal of Business & Economic Statistics"
+url = "https://doi.org/10.1080/07350015.1994.10524553"
 openAccess = false
 
 [[references]]
-title = "Stochastic volatility with leverage: Fast and efficient likelihood inference"
-authors = "Yu, J."
+title = "On leverage in a stochastic volatility model"
+authors = "Yu, Jun"
 year = 2005
-journal = ""
-url = "https://doi.org/10.1016/j.jeconom.2004.09.014"
+journal = "Journal of Econometrics"
+url = "https://doi.org/10.1016/j.jeconom.2004.08.002"
+openAccess = false
+
+[[references]]
+title = "Stochastic Volatility with Leverage: Fast and Efficient Likelihood Inference"
+authors = "Omori, Y.; Chib, S.; Shephard, N.; Nakajima, J."
+year = 2007
+journal = "Journal of Econometrics"
+doi = "10.1016/j.jeconom.2006.07.008"
 openAccess = false
 
 [[models]]

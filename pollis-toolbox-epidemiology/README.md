@@ -2,7 +2,7 @@
 
 Pollis Epidemiology Toolbox: inference of epidemiological parameters, inference on contact networks, compartmental models (SIR, SIS, SEIR, SIRS, SEIRD), branching processes, epidemics on networks and coinfection.
 
-Installing it adds the **Epidemiology Toolbox** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code, Next Steps and wikis.
+Installing it adds the **Epidemiology** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code, Next Steps and wikis.
 
 ## Panels
 

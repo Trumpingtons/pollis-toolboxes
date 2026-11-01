@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-econometrics",
-  "displayName": "Financial Econometrics Toolbox",
-  "description": "Pollis Financial Econometrics Toolbox: volatility measurement, ARIMAX models, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
-  "version": "1.0.7",
+  "displayName": "Finance Toolbox",
+  "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -19,8 +19,14 @@
     "pollisToolboxes": [
       {
         "id": "econometrics",
-        "title": "Financial Econometrics",
+        "title": "Finance",
         "order": 1,
+        "documents": [
+          {
+            "title": "Finance Toolbox",
+            "source": "docs/finance/finance.tex"
+          }
+        ],
         "panels": [
           { "id": "rvol", "command": "chiara.statistics.rbv", "title": "Range-Based Volatility Estimation", "menuTitle": "Measuring Volatility", "group": "0_et", "order": 1, "data": "panels/rvol.toml", "defaultModel": "yz", "decisionFirstColumn": "Estimator" },
           { "id": "arima", "command": "chiara.statistics.arma.arima", "title": "ARIMA Models", "menuTitle": "ARIMAX Models", "group": "1_et", "order": 1, "data": "panels/arima.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },

@@ -1,0 +1,116 @@
+% Toolbox Vignette of the Economics Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("economics.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{1 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Economics Toolbox}
+  {Economics Toolbox}
+  {What its seven panels are for, and when to use each.}
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Economic Models}, with seven panels. Each has an example you can edit and run, and actions on its results.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{62mm}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Use it when} \\\midrule
+Business Cycle Filters & You want to split a macroeconomic series into trend and cycle. \\
+Stochastic Volatility Macroeconomic Models & You want the path of a latent volatility, with its full posterior uncertainty. \\
+Dynamic Stochastic General Equilibrium (DSGE) & You have a structural model to solve, calibrate or estimate. \\
+VAR/VECM Systems & Several series interact, and you want their joint dynamics or the effect of a shock. \\
+Heterogeneous-Agent Models & Income risk and the wealth distribution matter for equilibrium. \\
+Continuous-Time Macro-Finance & You want to see how long-run risk prices a consumption claim. \\
+Game Theory & Each player's payoff depends on what the others do. \\\bottomrule
+\end{tabularx}}
+
+
+\nmsection{Business Cycle Filters}
+Five ways to separate trend and cycle, all from \package{MacroEconometricModels}{https://github.com/FriedmanJP/MacroEconometricModels.jl}. The filter chosen changes the cycle you get, so run Filter Comparison before reading much into one.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{32mm}X@{}}
+\toprule
+\textbf{Filter} & \textbf{What it does} \\\midrule
+Hodrick-Prescott & Penalises changes in the growth of the trend (\nmcite{hodrick1997}{Hodrick and Prescott 1997}) \\
+Hamilton & An h-step-ahead regression, proposed to avoid the spurious cycles of Hodrick-Prescott (\nmcite{hamilton2018}{Hamilton 2018}) \\
+Beveridge-Nelson & The permanent part is the long-run forecast from an ARIMA, and the rest is the cycle (\nmcite{beveridge1981}{Beveridge and Nelson 1981}) \\
+Baxter-King & An approximate band-pass filter for business-cycle frequencies (\nmcite{baxter1999}{Baxter and King 1999}) \\
+Boosted HP & Repeats Hodrick-Prescott to remove what it leaves behind (\nmcite{phillips2021}{Phillips and Shi 2021}) \\\bottomrule
+\end{tabularx}}
+
+\medskip
+The actions show the power spectrum, the variance ratio, the sensitivity at the end of the sample, turning points and the cross-correlation with GDP.
+
+\nmsection{Stochastic Volatility Macroeconomic Models}
+Bayesian models of latent volatility from \package{MacroEconometricModels}{https://github.com/FriedmanJP/MacroEconometricModels.jl}. The panel's title is Discrete-Time Stochastic Volatility Models. In Basic, log-variance follows a Gaussian AR(1), and the sampler of \nmcite{kim1998}{Kim, Shephard and Chib (1998)} draws the whole path. Leverage correlates the return shock with the next volatility shock, so that falls raise volatility more than rises (\nmcite{yu2005}{Yu 2005}). Student-t gives returns heavy tails with estimated degrees of freedom, so that a single outlier does not inflate the path. Read MCMC Convergence first, then compare the variants and GARCH(1,1).
+
+\nmsection{Dynamic Stochastic General Equilibrium (DSGE)}
+The panel's code uses \package{MacroModelling}{https://github.com/thorek1/MacroModelling.jl}, with Turing for estimation. Choose a model the package ships, or Custom, which starts from a small real business cycle model with a technology shock and a government spending shock.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{30mm}>{\raggedright\arraybackslash}p{42mm}X@{}}
+\toprule
+\textbf{Tab} & \textbf{Needs} & \textbf{What it gives} \\\midrule
+Moments & A calibrated model, no data & Means, volatilities, autocorrelations and variance shares \\
+Estimation & Observable time series & A Bayesian posterior by the Kalman filter and NUTS or HMC (\nmcite{herbst2015}{Herbst and Schorfheide 2015}) \\
+Impulse Responses & A question about a shock & The response of every variable to a structural shock \\\bottomrule
+\end{tabularx}}
+
+\medskip
+The solution is a perturbation of first, second or third order, the second order as in \nmcite{schmittgrohe2004}{Schmitt-Grohé and Uribe (2004)} and the higher orders pruned as in \nmcite{andreasen2018}{Andreasen, Fernández-Villaverde and Rubio-Ramírez (2018)}. The actions check the steady state and saddle-path stability, and compare first and second order.
+
+\nmsection{VAR/VECM Systems}
+\package{MacroEconometricModels}{https://github.com/FriedmanJP/MacroEconometricModels.jl}, on example data that the package ships. VAR is for stationary series that interact. SVAR identifies shocks by recursive, long-run or sign restrictions. FAVAR summarises a large panel of indicators in a few factors inside the VAR. VECM is for non-stationary, cointegrated series, and separates long-run relations from short-run adjustment; Johansen Cointegration Test tells you whether it applies. The actions also cover lag selection, stability, Granger causality and variance and historical decompositions. Transmission Channels, with \package{TransmissionChannelAnalysis}{https://github.com/enweg/TransmissionChannelAnalysis.jl}, splits a response into the part that goes through another variable and the direct part. The restrictions that identify an SVAR are assumptions: the data do not test them.
+
+\nmsection{Heterogeneous-Agent Models}
+Economies of households with uninsured income risk, in continuous time as in \nmcite{achdou2022}{Achdou, Han, Lasry, Lions and Moll (2022)}, solved on a grid with \package{EconPDEs}{https://github.com/matthieugomez/EconPDEs.jl}. Huggett is the bond economy of \nmcite{huggett1993}{Huggett (1993)}, where bonds are in zero net supply. Aiyagari is the production economy of \nmcite{aiyagari1994}{Aiyagari (1994)}, where household wealth equals firm capital. The panel finds the stationary wealth distribution and the interest rate that clears the market. Finer grids are more accurate and slower, so run Convergence Check. Income is one Ornstein-Uhlenbeck process and there are no aggregate shocks.
+
+\nmsection{Continuous-Time Macro-Finance}
+One model, with no tabs: the long-run risk of \nmcite{bansal2004}{Bansal and Yaron (2004)} in continuous time and with constant volatility, solved with \package{EconPDEs}{https://github.com/matthieugomez/EconPDEs.jl}. The unknown is the wealth-consumption ratio as a function of expected growth. Recursive preferences set risk aversion and the elasticity of intertemporal substitution separately, and with power utility the market price of long-run risk is zero. The actions plot the ratio and the risk premium, split into short-run and long-run risk, and give the Sharpe ratio and unconditional moments. The panel prices the consumption claim and not a dividend claim. Any other model means writing its own equations.
+
+\nmsection{Game Theory}
+\package{GameTheory}{https://github.com/QuantEcon/GameTheory.jl} for two players with finitely many actions, and \package{BaryPlots}{https://github.com/datadreamscorp/BaryPlots.jl} for the strategy simplex.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{24mm}>{\raggedright\arraybackslash}p{60mm}X@{}}
+\toprule
+\textbf{Tab} & \textbf{Use it for} & \textbf{What it gives} \\\midrule
+Normal Form & Coordination, entry, pricing and conflict games & All equilibria in the sense of \nmcite{nash1951}{Nash (1951)}, pure and mixed \\
+Zero Sum & One player's gain is the other's loss & The value and the optimal mixed strategies (\nmcite{vonneumann1928}{von Neumann 1928}) \\
+Evolutionary & A large population, with strategies spreading in proportion to their payoff & Replicator dynamics and evolutionary stability (\nmcite{maynardsmith1973}{Maynard Smith and Price 1973}) \\
+Potential & Congestion, network and identical-interest games & Pure equilibria, which always exist here \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Support enumeration finds all equilibria only when a game is nondegenerate. Support vs Vertex Enumeration compares the methods. Nash Verification reports the largest gain from deviating, which is zero at an equilibrium.
+
+\nmsection{References}
+{\footnotesize\sloppy
+\nmref{achdou2022}{Achdou, Y., Han, J., Lasry, J.-M., Lions, P.-L. and Moll, B. (2022). Income and wealth distribution in macroeconomics: A continuous-time approach. \emph{The Review of Economic Studies} 89(1), 45--86. \nmdoi{10.1093/restud/rdab002}}
+\nmref{aiyagari1994}{Aiyagari, S. R. (1994). Uninsured idiosyncratic risk and aggregate saving. \emph{The Quarterly Journal of Economics} 109(3), 659--684. \nmdoi{10.2307/2118417}}
+\nmref{andreasen2018}{Andreasen, M. M., Fernández-Villaverde, J. and Rubio-Ramírez, J. F. (2018). The pruned state-space system for non-linear DSGE models: Theory and empirical applications. \emph{The Review of Economic Studies} 85(1), 1--49. \nmdoi{10.1093/restud/rdx037}}
+\nmref{bansal2004}{Bansal, R. and Yaron, A. (2004). Risks for the long run: A potential resolution of asset pricing puzzles. \emph{The Journal of Finance} 59(4), 1481--1509. \nmdoi{10.1111/j.1540-6261.2004.00670.x}}
+\nmref{baxter1999}{Baxter, M. and King, R. G. (1999). Measuring business cycles: Approximate band-pass filters for economic time series. \emph{Review of Economics and Statistics} 81(4), 575--593. \nmdoi{10.1162/003465399558454}}
+\nmref{beveridge1981}{Beveridge, S. and Nelson, C. R. (1981). A new approach to decomposition of economic time series into permanent and transitory components with particular attention to measurement of the `business cycle'. \emph{Journal of Monetary Economics} 7(2), 151--174. \nmdoi{10.1016/0304-3932(81)90040-4}}
+\nmref{hamilton2018}{Hamilton, J. D. (2018). Why you should never use the Hodrick-Prescott filter. \emph{The Review of Economics and Statistics} 100(5), 831--843. \href{https://doi.org/10.1162/rest_a_00706}{\color{pblue}doi:10.1162/rest\_a\_00706}}
+\nmref{herbst2015}{Herbst, E. P. and Schorfheide, F. (2015). \emph{Bayesian Estimation of DSGE Models}. Princeton University Press. \nmdoi{10.23943/princeton/9780691161082.001.0001}}
+\nmref{hodrick1997}{Hodrick, R. J. and Prescott, E. C. (1997). Postwar U.S. business cycles: An empirical investigation. \emph{Journal of Money, Credit and Banking} 29(1), 1--16. \nmdoi{10.2307/2953682}}
+\nmref{huggett1993}{Huggett, M. (1993). The risk-free rate in heterogeneous-agent incomplete-insurance economies. \emph{Journal of Economic Dynamics and Control} 17(5--6), 953--969. \nmdoi{10.1016/0165-1889(93)90024-M}}
+\nmref{kim1998}{Kim, S., Shephard, N. and Chib, S. (1998). Stochastic volatility: Likelihood inference and comparison with ARCH models. \emph{Review of Economic Studies} 65(3), 361--393. \nmdoi{10.1111/1467-937X.00050}}
+\nmref{maynardsmith1973}{Maynard Smith, J. and Price, G. R. (1973). The logic of animal conflict. \emph{Nature} 246(5427), 15--18. \nmdoi{10.1038/246015a0}}
+\nmref{nash1951}{Nash, J. (1951). Non-cooperative games. \emph{The Annals of Mathematics} 54(2), 286. \nmdoi{10.2307/1969529}}
+\nmref{phillips2021}{Phillips, P. C. B. and Shi, Z. (2021). Boosting: Why you can use the HP filter. \emph{International Economic Review} 62(2), 521--570. \nmdoi{10.1111/iere.12495}}
+\nmref{schmittgrohe2004}{Schmitt-Grohé, S. and Uribe, M. (2004). Solving dynamic general equilibrium models using a second-order approximation to the policy function. \emph{Journal of Economic Dynamics and Control} 28(4), 755--775. \nmdoi{10.1016/S0165-1889(03)00043-5}}
+\nmref{vonneumann1928}{von Neumann, J. (1928). Zur Theorie der Gesellschaftsspiele. \emph{Mathematische Annalen} 100(1), 295--320. \nmdoi{10.1007/BF01448847}}
+\nmref{yu2005}{Yu, J. (2005). On leverage in a stochastic volatility model. \emph{Journal of Econometrics} 127(2), 165--178. \nmdoi{10.1016/j.jeconom.2004.08.002}}
+}
+
+\nmcredit
+\end{document}

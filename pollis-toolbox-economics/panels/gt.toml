@@ -189,9 +189,33 @@ openAccess = false
 [[references]]
 title = "Computing Nash Equilibria by Iterated Polymatrix Approximation"
 authors = "Govindan, Srihari; Wilson, Robert"
-year = 2003
+year = 2004
 journal = "Journal of Economic Dynamics and Control"
-doi = "10.1016/S0165-1889(02)00100-4"
+doi = "10.1016/S0165-1889(03)00108-8"
+openAccess = false
+
+[[references]]
+title = "Equilibrium Points of Bimatrix Games"
+authors = "Lemke, C. E.; Howson, Jr., J. T."
+year = 1964
+journal = "Journal of the Society for Industrial and Applied Mathematics"
+doi = "10.1137/0112033"
+openAccess = false
+
+[[references]]
+title = "Potential Games"
+authors = "Monderer, Dov; Shapley, Lloyd S."
+year = 1996
+journal = "Games and Economic Behavior"
+doi = "10.1006/game.1996.0044"
+openAccess = false
+
+[[references]]
+title = "Evolutionary stable strategies and game dynamics"
+authors = "Taylor, Peter D.; Jonker, Leo B."
+year = 1978
+journal = "Mathematical Biosciences"
+doi = "10.1016/0025-5564(78)90077-9"
 openAccess = false
 
 [[models]]

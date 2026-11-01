@@ -192,6 +192,14 @@ journal = ""
 url = "https://www.bankofcanada.ca/2013/10/technical-report-100/"
 openAccess = true
 
+[[references]]
+title = "The Solution of Linear Difference Models under Rational Expectations"
+authors = "Blanchard, Olivier Jean; Kahn, Charles M."
+year = 1980
+journal = "Econometrica"
+doi = "10.2307/1912186"
+openAccess = false
+
 [[models]]
 id = "mom"
 label = "Moments"

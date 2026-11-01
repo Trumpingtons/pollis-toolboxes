@@ -136,6 +136,30 @@ journal = "Operational Research Quarterly"
 doi = "10.1057/jors.1969.103"
 openAccess = false
 
+[[references]]
+title = "The theta model: a decomposition approach to forecasting"
+authors = "Assimakopoulos, V.; Nikolopoulos, K."
+year = 2000
+journal = "International Journal of Forecasting"
+doi = "10.1016/S0169-2070(00)00066-2"
+openAccess = false
+
+[[references]]
+title = "Another look at measures of forecast accuracy"
+authors = "Hyndman, Rob J.; Koehler, Anne B."
+year = 2006
+journal = "International Journal of Forecasting"
+doi = "10.1016/j.ijforecast.2006.03.001"
+openAccess = false
+
+[[references]]
+title = "Testing the null hypothesis of stationarity against the alternative of a unit root"
+authors = "Kwiatkowski, Denis; Phillips, Peter C.B.; Schmidt, Peter; Shin, Yongcheol"
+year = 1992
+journal = "Journal of Econometrics"
+doi = "10.1016/0304-4076(92)90104-Y"
+openAccess = false
+
 [[models]]
 id = "arima"
 label = "Auto ARIMA"

@@ -82,6 +82,94 @@ name = "Decision Guide"
 file = "var/decision-guide.md"
 bundled = true
 
+[[references]]
+title = "Measuring the Effects of Monetary Policy: A Factor-Augmented Vector Autoregressive (FAVAR) Approach"
+authors = "Bernanke, B. S.; Boivin, J.; Eliasz, P."
+year = 2005
+journal = "The Quarterly Journal of Economics"
+doi = "10.1162/0033553053327452"
+openAccess = false
+
+[[references]]
+title = "Co-Integration and Error Correction: Representation, Estimation, and Testing"
+authors = "Engle, Robert F.; Granger, C. W. J."
+year = 1987
+journal = "Econometrica"
+doi = "10.2307/1913236"
+openAccess = false
+
+[[references]]
+title = "Investigating Causal Relations by Econometric Models and Cross-spectral Methods"
+authors = "Granger, C. W. J."
+year = 1969
+journal = "Econometrica"
+doi = "10.2307/1912791"
+openAccess = false
+
+[[references]]
+title = "Estimation and Hypothesis Testing of Cointegration Vectors in Gaussian Vector Autoregressive Models"
+authors = "Johansen, Soren"
+year = 1991
+journal = "Econometrica"
+doi = "10.2307/2938278"
+openAccess = false
+
+[[references]]
+title = "Structural Vector Autoregressive Analysis"
+authors = "Kilian, Lutz; Lütkepohl, Helmut"
+year = 2017
+journal = "Cambridge University Press"
+doi = "10.1017/9781108164818"
+openAccess = false
+
+[[references]]
+title = "New Introduction to Multiple Time Series Analysis"
+authors = "Lütkepohl, Helmut"
+year = 2005
+journal = "Springer Berlin Heidelberg"
+doi = "10.1007/978-3-540-27752-1"
+openAccess = false
+
+[[references]]
+title = "Structural Vector Autoregressions: Theory of Identification and Algorithms for Inference"
+authors = "Rubio-Ramírez, JUAN F.; Waggoner, DANIEL F.; Zha, TAO"
+year = 2010
+journal = "Review of Economic Studies"
+doi = "10.1111/j.1467-937X.2009.00578.x"
+openAccess = false
+
+[[references]]
+title = "Macroeconomics and Reality"
+authors = "Sims, Christopher A."
+year = 1980
+journal = "Econometrica"
+doi = "10.2307/1912017"
+openAccess = false
+
+[[references]]
+title = "What are the effects of monetary policy on output? Results from an agnostic identification procedure"
+authors = "Uhlig, Harald"
+year = 2005
+journal = "Journal of Monetary Economics"
+doi = "10.1016/j.jmoneco.2004.05.007"
+openAccess = false
+
+[[references]]
+title = "The Dynamic Effects of Aggregate Demand and Supply Disturbances"
+authors = "Blanchard, O. J.; Quah, D."
+year = 1989
+journal = "American Economic Review"
+url = "https://ideas.repec.org/a/aea/aecrev/v79y1989i4p655-73.html"
+openAccess = false
+
+[[references]]
+title = "Transmission Channel Analysis in Dynamic Models"
+authors = "Wegner, E.; Lieb, L.; Smeekes, S.; Wilms, I."
+year = 2024
+journal = "arXiv preprint arXiv:2405.18987"
+url = "https://arxiv.org/abs/2405.18987"
+openAccess = true
+
 [[models]]
 id = "var"
 label = "VAR"

@@ -89,11 +89,11 @@ separator = true
 label = "Textbooks"
 
 [[references]]
-title = "Essentials of Time Series for Financial Applications"
+title = "Markov Switching Models"
 authors = "Guidolin, Massimo; Pedio, Manuela"
 year = 2018
-journal = "Academic Press"
-url = "https://doi.org/10.1016/C2015-0-01944-6"
+journal = "Essentials of Time Series for Financial Applications"
+url = "https://doi.org/10.1016/B978-0-12-813409-2.00009-1"
 openAccess = false
 
 [[references]]

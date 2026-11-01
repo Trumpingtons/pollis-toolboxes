@@ -108,6 +108,14 @@ journal = ""
 url = "https://doi.org/10.1257/aer.20160042"
 openAccess = false
 
+[[references]]
+title = "Consumption Inequality and Partial Insurance"
+authors = "Blundell, Richard; Pistaferri, Luigi; Preston, Ian"
+year = 2008
+journal = "American Economic Review"
+doi = "10.1257/aer.98.5.1887"
+openAccess = false
+
 [[models]]
 id = "huggett"
 label = "Huggett"

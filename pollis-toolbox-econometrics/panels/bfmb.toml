@@ -98,7 +98,7 @@ label = "Original Papers (from packages)"
 
 [[references]]
 title = "Bayesian Solutions for the Factor Zoo: We Just Ran Two Quadrillion Models"
-authors = "Bryzgalova, Huang & Julliard"
+authors = "Bryzgalova, Svetlana; Huang, Jiantao; Julliard, Christian"
 year = 2023
 journal = "Journal of Finance"
 doi = "10.1111/jofi.13197"
@@ -106,7 +106,7 @@ openAccess = false
 
 [[references]]
 title = "Risk, Return, and Equilibrium: Empirical Tests"
-authors = "Fama & MacBeth"
+authors = "Fama, Eugene F.; MacBeth, James D."
 year = 1973
 journal = "Journal of Political Economy"
 doi = "10.1086/260061"
@@ -121,7 +121,7 @@ title = "Two-Pass Tests of Asset Pricing Models with Useless Factors"
 authors = "Kan, Raymond; Zhang, Chu"
 year = 1999
 journal = "Journal of Finance"
-doi = "10.1111/0022-1082.00103"
+doi = "10.1111/0022-1082.00102"
 openAccess = false
 
 [[references]]

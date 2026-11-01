@@ -22,25 +22,43 @@ label = ""
 name = "Quick Start"
 file = "ctmf/tutorial-01-quickstart.ipynb"
 bundled = true
-description = "Solve a habit model and plot the price-dividend ratio and risk premium"
+description = "Solve a one-state long-run risk model with EconPDEs.jl: the wealth-consumption ratio and the expected excess return"
 
 [[notebookSections.notebooks]]
 name = "Long-Run Risk"
 file = "ctmf/tutorial-02-lrr.ipynb"
 bundled = true
-description = "Bansal-Yaron long-run risk model: price-dividend ratio and term structure"
+description = "Bansal-Yaron long-run risk model with two states, adapted from EconPDEs.jl: the wealth-consumption ratio. Added in Pollis: the term structure of real yields and the real perpetuity."
 
 [[notebookSections.notebooks]]
 name = "Habit Formation"
 file = "ctmf/tutorial-03-habit.ipynb"
 bundled = true
-description = "Campbell-Cochrane habit model: equity premium and Sharpe ratio"
+description = "Campbell-Cochrane habit model, adapted from EconPDEs.jl: the price-consumption ratio. Added in Pollis: the equity premium and Sharpe ratio."
 
 [[notebookSections.notebooks]]
 name = "Financial Sector"
 file = "ctmf/tutorial-04-finance.ipynb"
 bundled = true
-description = "Brunnermeier-Sannikov macro-finance model with intermediary balance sheets"
+description = "Brunnermeier-Sannikov model of experts and households, adapted from EconPDEs.jl: the capital price"
+
+[[notebookSections.notebooks]]
+name = "Rare Disasters"
+file = "ctmf/tutorial-05-disasters.ipynb"
+bundled = true
+description = "Wachter model of time-varying disaster risk, adapted from EconPDEs.jl: the wealth-consumption ratio against the disaster intensity"
+
+[[notebookSections.notebooks]]
+name = "Intermediary Asset Pricing"
+file = "ctmf/tutorial-06-intermediary.ipynb"
+bundled = true
+description = "He-Krishnamurthy model of specialist intermediaries, adapted from EconPDEs.jl: the price of risk against their wealth share"
+
+[[notebookSections.notebooks]]
+name = "Uncertainty Shocks"
+file = "ctmf/tutorial-07-uncertainty.ipynb"
+bundled = true
+description = "Di Tella model of balance sheet recessions with two states, adapted from EconPDEs.jl: the capital price, the volatility of the experts' wealth share and relative investment opportunities"
 
 [[wikis]]
 name = "Overview"
@@ -106,6 +124,54 @@ authors = "Merton, R. C."
 year = 1973
 journal = ""
 url = "https://doi.org/10.2307/1913811"
+openAccess = false
+
+[[references]]
+title = "Substitution, Risk Aversion, and the Temporal Behavior of Consumption and Asset Returns: A Theoretical Framework"
+authors = "Epstein, Larry G.; Zin, Stanley E."
+year = 1989
+journal = "Econometrica"
+doi = "10.2307/1913778"
+openAccess = false
+
+[[references]]
+title = "Intermediary Asset Pricing"
+authors = "He, Zhiguo; Krishnamurthy, Arvind"
+year = 2013
+journal = "American Economic Review"
+doi = "10.1257/aer.103.2.732"
+openAccess = false
+
+[[references]]
+title = "Can Time‐Varying Risk of Rare Disasters Explain Aggregate Stock Market Volatility?"
+authors = "Wachter, Jessica A."
+year = 2013
+journal = "The Journal of Finance"
+doi = "10.1111/jofi.12018"
+openAccess = false
+
+[[references]]
+title = "Uncertainty Shocks and Balance Sheet Recessions"
+authors = "Di Tella, Sebastian"
+year = 2017
+journal = "Journal of Political Economy"
+doi = "10.1086/694290"
+openAccess = false
+
+[[references]]
+title = "The Long-Run Risks Model and Aggregate Asset Prices: An Empirical Assessment"
+authors = "Beeler, Jason; Campbell, John Y."
+year = 2012
+journal = "Critical Finance Review"
+doi = "10.1561/104.00000004"
+openAccess = false
+
+[[references]]
+title = "Solving Models with External Habit"
+authors = "Wachter, Jessica A."
+year = 2005
+journal = "Finance Research Letters"
+doi = "10.1016/j.frl.2005.08.001"
 openAccess = false
 
 [[bullets]]

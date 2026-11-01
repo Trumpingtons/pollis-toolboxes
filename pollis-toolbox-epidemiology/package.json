@@ -21,11 +21,10 @@
     "pollisToolboxes": [
       {
         "id": "epidemiology",
-        "title": "Epidemiology Toolbox",
+        "title": "Epidemiology",
         "documents": [
           {
             "title": "Epidemiology Toolbox",
-            "description": "What the panels are for, and when to use each.",
             "source": "docs/epidemiology/epidemiology.tex"
           }
         ],

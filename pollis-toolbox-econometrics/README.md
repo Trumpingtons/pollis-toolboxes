@@ -1,15 +1,15 @@
-# Financial Econometrics Toolbox
+# Finance Toolbox
 
-The Pollis Financial Econometrics Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement, ARIMAX models, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.
+The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement, ARIMAX models, GARCH-type and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.
 
-Installing it adds the **Financial Econometrics** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
+Installing it adds the **Finance** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
 ## Panels
 
 | Panel | What it covers | Powered by |
 |---|---|---|
 | Measuring Volatility | Range-based volatility estimators: close-to-close, Parkinson, Garman-Klass, Rogers-Satchell, Garman-Klass-Yang-Zhang, Yang-Zhang and Alizadeh-Brandt-Diebold | [RangeVol.jl](https://github.com/Trumpingtons/RangeVol.jl) |
-| ARIMAX Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl) |
+| ARIMAX Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl), [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
 | GARCH-Type Models | GARCH, EGARCH, GJR-GARCH and DCC volatility models | [ARCHModels.jl](https://github.com/s-broda/ARCHModels.jl) |
 | Regime Switching Models | Markov-switching regression, autoregression and ARCH, with time-varying transitions | [MarSwitching.jl](https://github.com/m-dadej/MarSwitching.jl) |
 | Advanced Time-Series Forecasting | BATS/TBATS, the Theta method and intermittent demand | [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |

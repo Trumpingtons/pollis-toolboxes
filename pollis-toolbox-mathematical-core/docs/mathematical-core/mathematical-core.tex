@@ -1,0 +1,103 @@
+% Toolbox Vignette of the Mathematical Core Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("mathematical-core.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{1 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Mathematical Core Toolbox}
+  {Mathematical Core Toolbox}
+  {What its seven panels are for, and when to use each.}
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Mathematical Core}, with seven panels. Each has an example you can edit and run, and actions on its results.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{62mm}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Use it when} \\\midrule
+Symbolic Math & You want a formula as the answer, not a number. \\
+Linear Algebra & A problem reduces to a matrix: a system, a fit, stability or rank. \\
+Nonlinear Systems & You need the values that make one or several equations hold. \\
+Numerical Differentiation & You need slopes, gradients, Hessians or Jacobians of a function you can run. \\
+Numerical Integration & You need an area, an expected value or a total, from a formula or from data. \\
+Ordinary Differential Equations & Quantities change over time according to their current values. \\
+Partial Differential Equations & A quantity changes over space, and perhaps over time. \\\bottomrule
+\end{tabularx}}
+
+
+\nmsection{Symbolic Math}
+Exact answers from \package{Symbolics}{https://github.com/JuliaSymbolics/Symbolics.jl}. Algebra simplifies, expands and evaluates an expression, keeping fractions as fractions. Differentiation gives derivatives by rule, and the gradient and Hessian over every variable. Limits and Series uses the algorithm of \nmcite{gruntz1996}{Gruntz (1996)} and gives Taylor polynomials. Equation Solving gives the exact roots of a polynomial, or of an equation that reduces to one. Integration, with \package{SymbolicNumericIntegration}{https://github.com/SciML/SymbolicNumericIntegration.jl}, proposes candidate terms and keeps the combination that fits numerically (\nmcite{iravanian2022}{Iravanian, Martensen, Cheli, Gowda, Jain, Ma and Rackauckas 2022}), so it applies when the antiderivative is itself elementary, and its answer should be verified. Symbolic Check and Numeric Check do that.
+
+\nmsection{Linear Algebra}
+The standard library \package{LinearAlgebra}{https://github.com/JuliaLang/LinearAlgebra.jl}, following \nmcite{trefethen1997}{Trefethen and Bau (1997)}.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{30mm}>{\raggedright\arraybackslash}p{50mm}X@{}}
+\toprule
+\textbf{Task} & \textbf{You have} & \textbf{What it gives} \\\midrule
+Linear Systems & As many equations as unknowns & The solution of $Ax = b$ by the method that suits $A$, and the residual \\
+Factorisations & One matrix, many right-hand sides & LU, QR and Cholesky \\
+Eigenvalues & Dynamics or a quadratic form & Stability, long-run behaviour and curvature \\
+Singular Values & Any matrix & Rank, conditioning and the best low-rank approximation (\nmcite{eckart1936}{Eckart and Young 1936}) \\
+Least Squares & More equations than unknowns & The best fit, by pivoted QR \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Condition Number says how far to trust a result, whatever the residual looks like. Least Squares fits simulated data unless you change the example.
+
+\nmsection{Nonlinear Systems}
+\package{NonlinearSolve}{https://github.com/SciML/NonlinearSolve.jl} (\nmcite{pal2024}{Pal, Holtorf, Larsson, Loman, Utkarsh, Schäfer, Qu, Edelman and Rackauckas 2024}). Scalar Equation starts from a guess: Newton's method, a trust region or a quasi-Newton method such as that of \nmcite{broyden1965}{Broyden (1965)}. It is fast near a root but needs a reasonable start. Bracketing needs an interval where the function changes sign, and then is sure to converge: bisection, or the faster interpolating methods such as that of \nmcite{brent1973}{Brent (1973)} and the ITP method of \nmcite{oliveira2020}{Oliveira and Takahashi (2020)}. System of Equations takes several equations at once, such as market equilibria, first-order conditions or steady states. Starting-Point Sensitivity shows whether another guess finds another solution. Comparative Statics shows how the solution moves with a parameter.
+
+\nmsection{Numerical Differentiation}
+\package{DifferentiationInterface}{https://github.com/JuliaDiff/DifferentiationInterface.jl} runs the same code on several backends: \package{ForwardDiff}{https://github.com/JuliaDiff/ForwardDiff.jl}, \package{Enzyme}{https://github.com/EnzymeAD/Enzyme.jl} and \package{Mooncake}{https://github.com/chalk-lab/Mooncake.jl}, which differentiate automatically (\nmcite{griewank2008}{Griewank and Walther 2008}), FiniteDiff, which is numerical, and Symbolics, which is exact. The tabs are Derivatives, for one function of one variable, Gradients and Hessians, for one function of several, and Jacobians, for several functions of several. Use ForwardDiff for up to about 50 inputs. Use Enzyme or Mooncake for many inputs and one output, such as a likelihood, where the cost of reverse mode does not grow with the inputs. Step-Size Error shows why finite differences lose digits, and Taylor Polynomial uses \package{TaylorSeries}{https://github.com/JuliaDiff/TaylorSeries.jl}.
+
+\nmsection{Numerical Integration}
+Definite Integral handles a formula in one variable, with \package{QuadGK}{https://github.com/JuliaMath/QuadGK.jl}, which refines where the integrand is difficult and allows infinite limits, in the line of QUADPACK (\nmcite{piessens1983}{Piessens, de Doncker-Kapenga, Überhuber and Kahaner 1983}). Fixed rules with $n$ points are also offered, among them Gauss-Legendre from \package{FastGaussQuadrature}{https://github.com/JuliaApproximation/FastGaussQuadrature.jl} (\nmcite{hale2013}{Hale and Townsend 2013}). Multiple Integral works over a box: \package{HCubature}{https://github.com/JuliaMath/HCubature.jl} (\nmcite{genz1980}{Genz and Malik 1980}) is accurate in 2 to about 5 variables, and Monte Carlo, with an error of order $N^{-1/2}$ in any dimension, takes over beyond that. Sampled Data takes values at points, by the trapezoid rule or Simpson's. For the formula of an antiderivative, use the Symbolic Math panel.
+
+\nmsection{Ordinary Differential Equations}
+\package{OrdinaryDiffEq}{https://github.com/SciML/OrdinaryDiffEq.jl}, part of the ecosystem of \nmcite{rackauckas2017}{Rackauckas and Nie (2017)}. First-Order Equation gives the solution curve and its slope field. System of Equations gives trajectories in time and in the phase plane. \package{NonlinearSolve}{https://github.com/SciML/NonlinearSolve.jl} finds the equilibria, and the Jacobian from \package{ForwardDiff}{https://github.com/JuliaDiff/ForwardDiff.jl} classifies them. Second-Order Equation rewrites the problem as a first-order system in position and velocity. Tsit5 (\nmcite{tsitouras2011}{Tsitouras 2011}) is the default for non-stiff problems. When fast and slow time scales force tiny steps, the problem is stiff and calls for an implicit solver such as Rodas5P or FBDF (\nmcite{hairer1996}{Hairer and Wanner 1996}). Step Sizes and Stiffness shows when that happens, and Work-Precision Diagram compares solvers on your equation.
+
+\nmsection{Partial Differential Equations}
+Three equations that behave differently, with the finite differences written out in the code so that you can see them (\nmcite{leveque2007}{LeVeque 2007}).
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{24mm}>{\raggedright\arraybackslash}p{50mm}X@{}}
+\toprule
+\textbf{Equation} & \textbf{Describes} & \textbf{How it is solved} \\\midrule
+Heat & What spreads and smooths: temperature, concentration & Method of lines: a large stiff ODE system, by an implicit or stabilised solver from \package{OrdinaryDiffEq}{https://github.com/SciML/OrdinaryDiffEq.jl} \\
+Wave & What travels without spreading: a string, a pulse & Method of lines, by an explicit solver whose step is limited as in \nmcite{courant1928}{Courant, Friedrichs and Lewy (1928)} \\
+Poisson & A steady state with no time & A sparse linear system, directly or by the conjugate gradients of \nmcite{hestenes1952}{Hestenes and Stiefel (1952)}, with \package{Krylov}{https://github.com/JuliaSmoothOptimizers/Krylov.jl} \\\bottomrule
+\end{tabularx}}
+
+\medskip
+The heat and wave equations are in one space dimension, and Poisson is on a square with $u = 0$ on the edge. Grid Convergence and Exact-Solution Test show how far to trust a grid. For equations written symbolically, or for curved domains, the panel's notebooks show \package{MethodOfLines}{https://github.com/SciML/MethodOfLines.jl} and \package{Gridap}{https://github.com/gridap/Gridap.jl}.
+
+\nmsection{References}
+{\footnotesize\sloppy
+\nmref{brent1973}{Brent, R. P. (1973). \emph{Algorithms for Minimization without Derivatives}. Prentice-Hall.}
+\nmref{broyden1965}{Broyden, C. G. (1965). A class of methods for solving nonlinear simultaneous equations. \emph{Mathematics of Computation} 19(92), 577--593. \nmdoi{10.1090/S0025-5718-1965-0198670-6}}
+\nmref{courant1928}{Courant, R., Friedrichs, K. and Lewy, H. (1928). Über die partiellen Differenzengleichungen der mathematischen Physik. \emph{Mathematische Annalen} 100(1), 32--74. \nmdoi{10.1007/BF01448839}}
+\nmref{eckart1936}{Eckart, C. and Young, G. (1936). The approximation of one matrix by another of lower rank. \emph{Psychometrika} 1(3), 211--218. \nmdoi{10.1007/BF02288367}}
+\nmref{genz1980}{Genz, A. C. and Malik, A. A. (1980). Remarks on algorithm 006: An adaptive algorithm for numerical integration over an N-dimensional rectangular region. \emph{Journal of Computational and Applied Mathematics} 6(4), 295--302. \nmdoi{10.1016/0771-050X(80)90039-X}}
+\nmref{griewank2008}{Griewank, A. and Walther, A. (2008). \emph{Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation}. SIAM. \nmdoi{10.1137/1.9780898717761}}
+\nmref{gruntz1996}{Gruntz, D. (1996). \emph{On Computing Limits in a Symbolic Manipulation System}. PhD thesis, ETH Zurich. \nmdoi{10.3929/ethz-a-001631582}}
+\nmref{hairer1996}{Hairer, E. and Wanner, G. (1996). \emph{Solving Ordinary Differential Equations II: Stiff and Differential-Algebraic Problems}. Springer. \nmdoi{10.1007/978-3-642-05221-7}}
+\nmref{hale2013}{Hale, N. and Townsend, A. (2013). Fast and accurate computation of Gauss-Legendre and Gauss-Jacobi quadrature nodes and weights. \emph{SIAM Journal on Scientific Computing} 35(2), A652--A674. \nmdoi{10.1137/120889873}}
+\nmref{hestenes1952}{Hestenes, M. R. and Stiefel, E. (1952). Methods of conjugate gradients for solving linear systems. \emph{Journal of Research of the National Bureau of Standards} 49(6), 409--436. \nmdoi{10.6028/jres.049.044}}
+\nmref{iravanian2022}{Iravanian, S., Martensen, C. J., Cheli, A., Gowda, S., Jain, A., Ma, Y. and Rackauckas, C. (2022). Symbolic-numeric integration of univariate expressions based on sparse regression. arXiv:2201.12468. \href{https://arxiv.org/abs/2201.12468}{arxiv.org/abs/2201.12468}}
+\nmref{leveque2007}{LeVeque, R. J. (2007). \emph{Finite Difference Methods for Ordinary and Partial Differential Equations}. SIAM. \nmdoi{10.1137/1.9780898717839}}
+\nmref{oliveira2020}{Oliveira, I. F. D. and Takahashi, R. H. C. (2020). An enhancement of the bisection method average performance preserving minmax optimality. \emph{ACM Transactions on Mathematical Software} 47(1), 1--24. \nmdoi{10.1145/3423597}}
+\nmref{pal2024}{Pal, A., Holtorf, F., Larsson, A., Loman, T., Utkarsh, Schäfer, F., Qu, Q., Edelman, A. and Rackauckas, C. (2024). NonlinearSolve.jl: High-performance and robust solvers for systems of nonlinear equations in Julia. arXiv:2403.16341. \href{https://arxiv.org/abs/2403.16341}{arxiv.org/abs/2403.16341}}
+\nmref{piessens1983}{Piessens, R., de Doncker-Kapenga, E., Überhuber, C. W. and Kahaner, D. K. (1983). \emph{QUADPACK: A Subroutine Package for Automatic Integration}. Springer. \nmdoi{10.1007/978-3-642-61786-7}}
+\nmref{rackauckas2017}{Rackauckas, C. and Nie, Q. (2017). DifferentialEquations.jl: A performant and feature-rich ecosystem for solving differential equations in Julia. \emph{Journal of Open Research Software} 5(1), 15. \nmdoi{10.5334/jors.151}}
+\nmref{trefethen1997}{Trefethen, L. N. and Bau, D. (1997). \emph{Numerical Linear Algebra}. SIAM. \nmdoi{10.1137/1.9780898719574}}
+\nmref{tsitouras2011}{Tsitouras, C. (2011). Runge-Kutta pairs of order 5(4) satisfying only the first column simplifying assumption. \emph{Computers \& Mathematics with Applications} 62(2), 770--775. \nmdoi{10.1016/j.camwa.2011.06.002}}
+}
+
+\nmcredit
+\end{document}

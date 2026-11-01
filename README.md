@@ -6,7 +6,7 @@ A toolbox is a data-only extension that adds guided panels, with their wiki page
 
 | Toolbox | What it adds |
 |---|---|
-| [pollis-toolbox-econometrics](pollis-toolbox-econometrics/README.md) | Financial Econometrics, in the Model menu: ARIMAX, GARCH-type and regime switching models, forecasting, Bayesian asset-pricing factor models. |
+| [pollis-toolbox-econometrics](pollis-toolbox-econometrics/README.md) | Finance, in the Model menu: ARIMAX, GARCH-type and regime switching models, forecasting, Bayesian asset-pricing factor models. |
 | [pollis-toolbox-economics](pollis-toolbox-economics/README.md) | Economic Models, in the Simulate menu: business cycle filters, stochastic volatility, DSGE, VAR/VECM, heterogeneous-agent and continuous-time macro-finance models, and game theory. |
 | [pollis-toolbox-learning-and-practice](pollis-toolbox-learning-and-practice/README.md) | Learning and Practice, in the Extend menu: multiple-choice exercises whose data and answers Julia computes, on descriptive statistics, hypothesis tests and linear regression, and a panel to write new ones. |
 | [pollis-toolbox-mathematical-core](pollis-toolbox-mathematical-core/README.md) | Mathematical Core, in the Extend menu: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, ODEs and PDEs. |
@@ -26,7 +26,6 @@ A toolbox can bring its own documentation, listed in **Help > Documentation > To
 "documents": [
   {
     "title": "Finance Toolbox Guide",
-    "description": "The models of the toolbox, how to read their output, and worked examples.",
     "source": "docs/guide/guide.tex"
   }
 ]
