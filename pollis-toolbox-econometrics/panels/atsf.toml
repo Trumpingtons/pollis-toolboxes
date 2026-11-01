@@ -20,50 +20,50 @@ label = ""
 
 [[notebookSections.notebooks]]
 name = "BATS and TBATS"
-file = "tsf/tutorial-03-bats.ipynb"
+file = "atsf/tutorial-01-bats.ipynb"
 bundled = true
 description = "Box-Cox ARMA trend and seasonal forecasting for complex or multiple seasonalities"
 
 [[notebookSections.notebooks]]
 name = "Theta Models"
-file = "tsf/tutorial-04-theta.ipynb"
+file = "atsf/tutorial-02-theta.ipynb"
 bundled = true
 description = "Theta method for univariate decomposition and forecasting"
 
 [[notebookSections.notebooks]]
 name = "Intermittent Demand"
-file = "tsf/tutorial-05-demand.ipynb"
+file = "atsf/tutorial-03-demand.ipynb"
 bundled = true
 description = "Croston SBA and SBJ for sparse, intermittent demand time series"
 
 [[wikis]]
 name = "Overview"
-file = "tsf/overview.md"
+file = "atsf/overview.md"
 bundled = true
 
 [[wikis]]
 name = "Factsheet"
-file = "tsf/factsheet.md"
+file = "atsf/factsheet.md"
 bundled = true
 
 [[wikis]]
 name = "Assumptions"
-file = "tsf/assumptions.md"
+file = "atsf/assumptions.md"
 bundled = true
 
 [[wikis]]
 name = "Diagnostics"
-file = "tsf/diagnostics.md"
+file = "atsf/diagnostics.md"
 bundled = true
 
 [[wikis]]
 name = "Interpretation"
-file = "tsf/interpretation.md"
+file = "atsf/interpretation.md"
 bundled = true
 
 [[wikis]]
 name = "Decision Guide"
-file = "tsf/decision-guide.md"
+file = "atsf/decision-guide.md"
 bundled = true
 
 [[references]]
@@ -111,6 +111,38 @@ authors = "Syntetos, Aris A.; Boylan, John E."
 year = 2005
 journal = "International Journal of Forecasting"
 doi = "10.1016/j.ijforecast.2004.10.001"
+openAccess = false
+
+[[references]]
+title = "Models for Optimising the Theta Method and Their Relationship to State Space Models"
+authors = "Fiorucci, Jose A.; Pellegrini, Tiago R.; Louzada, Francisco; Petropoulos, Fotios; Koehler, Anne B."
+year = 2016
+journal = "International Journal of Forecasting"
+doi = "10.1016/j.ijforecast.2016.02.005"
+openAccess = false
+
+[[references]]
+title = "Forecasting for Intermittent Demand: The Estimation of an Unbiased Average"
+authors = "Shale, E. A.; Boylan, J. E.; Johnston, F. R."
+year = 2006
+journal = "Journal of the Operational Research Society"
+doi = "10.1057/palgrave.jors.2602031"
+openAccess = false
+
+[[references]]
+title = "On the Categorization of Demand Patterns"
+authors = "Syntetos, A. A.; Boylan, J. E.; Croston, J. D."
+year = 2005
+journal = "Journal of the Operational Research Society"
+doi = "10.1057/palgrave.jors.2601841"
+openAccess = false
+
+[[references]]
+title = "Another Look at Measures of Forecast Accuracy"
+authors = "Hyndman, Rob J.; Koehler, Anne B."
+year = 2006
+journal = "International Journal of Forecasting"
+doi = "10.1016/j.ijforecast.2006.03.001"
 openAccess = false
 
 [[models]]

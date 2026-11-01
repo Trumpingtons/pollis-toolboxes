@@ -80,7 +80,7 @@ bundled = true
 
 [[wikis]]
 name = "Comparison of Time-Varying Volatility Models"
-file = "tvm/Time-VaryingVolatilityModels.md"
+file = "vcm/time-varying-volatility-models.md"
 bundled = true
 
 [[references]]

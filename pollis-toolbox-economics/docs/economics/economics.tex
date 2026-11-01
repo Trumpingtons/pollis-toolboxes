@@ -19,7 +19,7 @@ Installing the toolbox adds the submenu \menupath{Extend \gt Economic Models}, w
 \toprule
 \textbf{Panel} & \textbf{Use it when} \\\midrule
 Business Cycle Filters & You want to split a macroeconomic series into trend and cycle. \\
-Stochastic Volatility Macroeconomic Models & You want the path of a latent volatility, with its full posterior uncertainty. \\
+Discrete-Time Stochastic Volatility Models & You want the path of a latent volatility, with its full posterior uncertainty. \\
 Dynamic Stochastic General Equilibrium (DSGE) & You have a structural model to solve, calibrate or estimate. \\
 VAR/VECM Systems & Several series interact, and you want their joint dynamics or the effect of a shock. \\
 Heterogeneous-Agent Models & Income risk and the wealth distribution matter for equilibrium. \\
@@ -46,7 +46,7 @@ Boosted HP & Repeats Hodrick-Prescott to remove what it leaves behind (\nmcite{p
 \medskip
 The actions show the power spectrum, the variance ratio, the sensitivity at the end of the sample, turning points and the cross-correlation with GDP.
 
-\nmsection{Stochastic Volatility Macroeconomic Models}
+\nmsection{Discrete-Time Stochastic Volatility Models}
 Bayesian models of latent volatility from \package{MacroEconometricModels}{https://github.com/FriedmanJP/MacroEconometricModels.jl}. The panel's title is Discrete-Time Stochastic Volatility Models. In Basic, log-variance follows a Gaussian AR(1), and the sampler of \nmcite{kim1998}{Kim, Shephard and Chib (1998)} draws the whole path. Leverage correlates the return shock with the next volatility shock, so that falls raise volatility more than rises (\nmcite{yu2005}{Yu 2005}). Student-t gives returns heavy tails with estimated degrees of freedom, so that a single outlier does not inflate the path. Read MCMC Convergence first, then compare the variants and GARCH(1,1).
 
 \nmsection{Dynamic Stochastic General Equilibrium (DSGE)}
