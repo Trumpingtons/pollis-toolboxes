@@ -34,7 +34,7 @@ description = "Automatic factor selection via continuous_ss_sdf() and posterior 
 name = "Traded Factors Extension"
 file = "blsdf/tutorial-03-traded.ipynb"
 bundled = true
-description = "continuous_ss_sdf_2(): spike-and-slab SDF with tradable factors as additional test assets"
+description = "continuous_ss_sdf_v2(): spike-and-slab SDF with tradable factors as additional test assets"
 
 [[notebookSections.notebooks]]
 name = "Factor Zoo Application"
@@ -105,7 +105,7 @@ text = "continuous_ss_sdf"
 detail = "spike-and-slab prior for automatic factor selection; each loading switches between a spike (near-zero) and a slab (active) component"
 
 [[bullets]]
-text = "continuous_ss_sdf_2"
+text = "continuous_ss_sdf_v2"
 detail = "extends spike-and-slab by treating a subset of tradable factors as additional test assets, imposing their return moments as extra constraints"
 
 [[inputs]]

@@ -12,22 +12,6 @@ defaultModel = "mom"
 name = "MacroModelling.jl"
 github = "https://github.com/thorek1/MacroModelling.jl"
 
-[[packages]]
-name = "Dynare.jl"
-github = "https://github.com/DynareJulia/Dynare.jl"
-
-[[packages]]
-name = "DSGE.jl"
-github = "https://github.com/FRBNY-DSGE/DSGE.jl"
-
-[[packages]]
-name = "SolveDSGE.jl"
-github = "https://github.com/RJDennis/SolveDSGE.jl"
-
-[[packages]]
-name = "StateSpaceEcon.jl"
-github = "https://github.com/bankofcanada/StateSpaceEcon.jl"
-
 [requires]
 packages = ["StatsPlots.jl", "Turing.jl"]
 
@@ -226,7 +210,7 @@ detail = "NUTS and HMC"
 
 [[bullets]]
 text = "Estimate nonlinear models using the inversion filter (higher-order perturbation solutions)"
-detail = ""
+detail = "pruned second order, through the Filter input"
 
 [[bullets]]
 text = "Compute impulse responses, variance decomposition, shock decomposition, and conditional forecasts"
@@ -240,7 +224,7 @@ purpose = "Model-implied means, volatilities, autocorrelations and variance shar
 [[decisionRows]]
 task = "Estimation"
 context = "Observable time series available"
-purpose = "Bayesian posterior for parameters via the Kalman filter and NUTS or HMC"
+purpose = "Bayesian posterior for parameters via the Kalman or inversion filter and NUTS or HMC"
 
 [[decisionRows]]
 task = "Impulse Responses"
@@ -399,6 +383,22 @@ default = "200"
 models = ["est"]
 
 [[inputs]]
+id = "filter"
+label = "Filter"
+tooltip = "Likelihood used for estimation: the Kalman filter on the first-order solution, or the inversion filter on the pruned second-order solution, which captures nonlinear effects and takes longer."
+kind = "select"
+default = "first_order"
+models = ["est"]
+
+[[inputs.options]]
+value = "first_order"
+label = "Kalman (First Order)"
+
+[[inputs.options]]
+value = "pruned_second_order"
+label = "Inversion (Pruned Second Order)"
+
+[[inputs]]
 id = "order"
 label = "Solution Order"
 tooltip = "Perturbation solution used for the moments: first order (linear) or pruned second or third order, which capture nonlinear effects such as precautionary saving."
@@ -493,7 +493,7 @@ autocorr = get_autocorrelation(dsge, algorithm = :{{order}})  # rows: variables;
 model = "est"
 code = '''
 using MacroModelling, StatsPlots, Statistics
-import Turing  # MacroModelling estimates through Turing: priors plus the Kalman filter likelihood
+import Turing  # MacroModelling estimates through Turing: priors plus the filter's likelihood
 
 {{?dsgemodel=custom}} @model {{custom}} begin
 {{?dsgemodel=custom}}     1 / c[0] = (beta / c[1]) * (alpha * exp(z[1]) * k[0]^(alpha - 1) + (1 - delta))
@@ -519,7 +519,7 @@ import Turing  # MacroModelling estimates through Turing: priors plus the Kalman
 {{?dsgemodel!=custom}} dsge = {{dsgemodel}}  # model from the MacroModelling.jl model library
 
 observables = Symbol.(strip.(split("{{obs}}", ",")))  # at most as many observables as shocks
-{{?data=simulated}} data = simulate(dsge, periods = 200)(observables, :, :simulate)  # 200 quarters simulated at the calibration, in levels
+{{?data=simulated}} data = simulate(dsge, periods = 200, algorithm = :{{filter}})(observables, :, :simulate)  # 200 quarters simulated at the calibration, in levels
 {{?data!=simulated}} data = {{data}}(observables, :)  # your KeyedArray: Variables x Periods, in levels
 
 # Parameters to estimate; the rest stay at their calibrated values
@@ -545,7 +545,7 @@ Turing.@model function posterior(priors, data, m, idx)
     theta ~ Turing.product_distribution(priors)
     params = eltype(theta).(m.parameter_values)  # same number type as theta, so gradients flow through
     params[idx] = theta
-    Turing.@addlogprob! get_loglikelihood(m, data, params)  # Kalman filter log likelihood at first order
+    Turing.@addlogprob! get_loglikelihood(m, data, params; algorithm = :{{filter}})  # log likelihood: the Kalman filter at first order, the inversion filter above it
 end
 
 model = posterior(priors, data, dsge, idx)

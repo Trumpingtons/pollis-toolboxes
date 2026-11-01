@@ -1,8 +1,8 @@
-# Mathematical Core Toolbox
+# Core Mathematics Toolbox
 
-The Pollis Mathematical Core Toolbox brings symbolic and numerical mathematics to Pollis: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.
+The Pollis Core Mathematics Toolbox brings symbolic and numerical mathematics to Pollis: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.
 
-Installing it adds the **Mathematical Core** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
+Installing it adds the **Core Mathematics** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
 ## Panels
 

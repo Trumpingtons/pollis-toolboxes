@@ -16,7 +16,7 @@ A DSGE model suits questions about mechanisms and policy changes, because its pa
 
 ## What the DSGE Panel Does Not Cover
 
-Regime changes are not part of the panel, though methods exist for them, as in [Foerster, Rubio-Ramírez, Waggoner and Zha (2016)](#ref-FRWZ2016a). The solution is local to a steady state, so large shocks, occasionally binding constraints and a lower bound on interest rates are outside what a plain perturbation captures. **Estimation** uses the Kalman filter at first order. The inversion filter that MacroModelling.jl offers for higher-order solutions is reachable by editing the code of the likelihood, but no panel input sets it. Heterogeneous households belong to the Heterogeneous-Agent Models panel, and the estimation of unrestricted systems to the VAR Models panel.
+Regime changes are not part of the panel, though methods exist for them, as in [Foerster, Rubio-Ramírez, Waggoner and Zha (2016)](#ref-FRWZ2016a). The solution is local to a steady state, so large shocks, occasionally binding constraints and a lower bound on interest rates are outside what a plain perturbation captures. **Estimation** uses the Kalman filter at first order or, through **Filter**, the inversion filter of MacroModelling.jl at pruned second order. A third-order solution is reachable by editing the code of the likelihood, but no panel input sets it. Heterogeneous households belong to the Heterogeneous-Agent Models panel, and the estimation of unrestricted systems to the VAR Models panel.
 
 ## References
 

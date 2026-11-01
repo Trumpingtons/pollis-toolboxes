@@ -12,7 +12,7 @@ The **Moments** tab needs no data. Means, volatilities, autocorrelations and var
 
 ## The Estimation Tab
 
-The **Estimation** tab draws from the Bayesian posterior of **Estimated Parameters**, leaving the others at their calibrated values. **Data** is either `simulated`, which generates 200 quarters from the model at its calibration so that the true values are known, or a table of your own with one row per variable. **Observables** names the series used. The Kalman filter gives the likelihood at first order, and **Sampler** chooses NUTS or HMC, with **Draws** and **Burn-in**. [Herbst and Schorfheide (2015)](#ref-HS2015a) give a full treatment of Bayesian estimation for these models. Priors are centred on the calibration.
+The **Estimation** tab draws from the Bayesian posterior of **Estimated Parameters**, leaving the others at their calibrated values. **Data** is either `simulated`, which generates 200 quarters from the model at its calibration so that the true values are known, or a table of your own with one row per variable. **Observables** names the series used. **Filter** chooses the likelihood, the Kalman filter at first order or the inversion filter at pruned second order, which takes longer, and **Sampler** chooses NUTS or HMC, with **Draws** and **Burn-in**. [Herbst and Schorfheide (2015)](#ref-HS2015a) give a full treatment of Bayesian estimation for these models. Priors are centred on the calibration.
 
 ## The Impulse Responses Tab
 

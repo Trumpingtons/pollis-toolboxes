@@ -157,7 +157,7 @@ detail = "OHLC estimator; ~7.4× more efficient; assumes zero drift and no overn
 
 [[bullets]]
 text = "Rogers-Satchell"
-detail = "OHLC estimator; drift-independent; ~8× more efficient"
+detail = "OHLC estimator; drift-independent; often cited as about 8× more efficient; about 6× in simulation"
 
 [[bullets]]
 text = "Garman-Klass-Yang-Zhang"
@@ -165,7 +165,7 @@ detail = "extends Garman-Klass to account for overnight price gaps"
 
 [[bullets]]
 text = "Yang-Zhang"
-detail = "minimum-variance combination of overnight, open-to-close, and Rogers-Satchell; ~14× more efficient"
+detail = "minimum-variance combination of overnight, open-to-close, and Rogers-Satchell; often cited as about 14× more efficient; about 6× to 8× in simulation with a 30-day window and 5% to 30% of variance overnight"
 
 [[bullets]]
 text = "Alizadeh-Brandt-Diebold"
@@ -227,7 +227,7 @@ purpose = "Garman-Klass plus the overnight close-to-open jump, so gaps are no lo
 [[decisionRows]]
 task = "Yang-Zhang"
 context = "Full OHLC data with both drift and overnight gaps: the usual case for equities"
-purpose = "Minimum-variance blend of overnight, open-to-close and Rogers-Satchell variances; about 14 times more efficient"
+purpose = "Minimum-variance blend of overnight, open-to-close and Rogers-Satchell variances; often cited as about 14 times more efficient; about 6 to 8 times in simulation with a 30-day window and 5% to 30% of variance overnight"
 
 [[decisionRows]]
 task = "Alizadeh-Brandt-Diebold"
@@ -617,16 +617,16 @@ label = "Compare"
 [[actionGroups.actions]]
 id = "compare-all"
 label = "All Estimators"
-desc = "All seven estimators on the same data with their theoretical efficiency relative to close-to-close; large disagreements point to drift, gaps or bad OHLC rows"
+desc = "All seven estimators on the same data with their usually cited efficiency relative to close-to-close; large disagreements point to drift, gaps or bad OHLC rows"
 code = '''
 using RangeVol, Statistics
 abd(H, L) = exp(mean(filter(isfinite, alizadeh_brandt_diebold(H, L))) - 0.43)
 rows = [("Close-to-Close", close_to_close(C; trading_periods=T), "1 (baseline)"),
         ("Parkinson", parkinson(H, L; trading_periods=T), "about 5.2"),
         ("Garman-Klass", garman_klass(O, H, L, C; trading_periods=T), "about 7.4"),
-        ("Rogers-Satchell", rogers_satchell(O, H, L, C; trading_periods=T), "about 8, drift-free"),
+        ("Rogers-Satchell", rogers_satchell(O, H, L, C; trading_periods=T), "often cited as 8; about 6 in simulation; drift-free"),
         ("GK-Yang-Zhang", garman_klass_yang_zhang(O, H, L, C; trading_periods=T), "Garman-Klass with gaps"),
-        ("Yang-Zhang", yang_zhang(O, H, L, C; trading_periods=T), "about 14"),
+        ("Yang-Zhang", yang_zhang(O, H, L, C; trading_periods=T), "often cited as 14; about 6 to 8 in simulation"),
         ("Alizadeh-Brandt-Diebold", abd(H, L) * sqrt(T), "implied from log-range")]
 [(estimator = e, annualised_pct = round(100v, digits=2), efficiency = k) for (e, v, k) in rows]
 '''

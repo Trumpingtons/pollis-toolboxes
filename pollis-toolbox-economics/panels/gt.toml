@@ -248,7 +248,7 @@ detail = "replicator dynamics for symmetric population games; trajectories throu
 
 [[bullets]]
 text = "Potential"
-detail = "Nash equilibria via best-response iteration; equilibrium coincides with the maximiser of the shared potential function (GameTheory.jl)"
+detail = "Nash equilibria via support enumeration; the pure equilibria are the local maxima of the shared potential function, and its global maximiser is one of them (GameTheory.jl)"
 
 [[decisionRows]]
 task = "Normal Form"
@@ -612,6 +612,20 @@ t_lh = @elapsed lh = lemke_howson(g)
 [(method = "Support enumeration", equilibria = length(se), seconds = t_se),
  (method = "Vertex enumeration", equilibria = length(ve), seconds = t_ve),
  (method = "Lemke-Howson", equilibria = 1, seconds = t_lh, found = round.(lh[1], digits=4))]
+'''
+
+[[actionGroups.actions]]
+id = "compare-solvers"
+label = "Compare Solvers"
+desc = "The equilibria from support enumeration, LRS vertex enumeration in exact arithmetic and homotopy continuation, side by side, with which method found each. On a nondegenerate game the three should agree; on a degenerate one they can differ, and support enumeration is not meant for it"
+models = ["normal"]
+code = '''
+exact(M) = rationalize.(BigInt, M)  # LRS needs exact payoffs
+key((x, y)) = (round.(Float64.(x), digits=4) .+ 0.0, round.(Float64.(y), digits=4) .+ 0.0)  # the same form for all three; adding 0.0 turns -0.0 into 0.0
+se = Set(key.(support_enumeration(g)))
+lrs = Set(key.(lrsnash(NormalFormGame((Player(exact(A1)), Player(exact(Matrix(transpose(A2)))))))))
+hc = Set(key.(hc_solve(g, show_progress=false)))
+[(row = e[1], column = e[2], support_enumeration = e in se, lrs = e in lrs, homotopy = e in hc) for e in sort(collect(se ∪ lrs ∪ hc))]
 '''
 
 [[actionGroups.actions]]

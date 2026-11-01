@@ -140,7 +140,7 @@ detail = "Kim–Shephard–Chib Gibbs sampler; latent log-volatility follows an 
 
 [[bullets]]
 text = "Leverage SV"
-detail = "extends Basic SV with a contemporaneous correlation rho between return innovations epsilont and volatility innovations etat"
+detail = "extends Basic SV with a correlation rho between the return innovation epsilon(t) and the next volatility innovation eta(t+1), so that a fall in prices can raise later volatility"
 
 [[bullets]]
 text = "Student-t SV"

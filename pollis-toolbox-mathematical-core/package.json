@@ -1,7 +1,7 @@
 {
   "name": "pollis-toolbox-mathematical-core",
-  "displayName": "Mathematical Core Toolbox",
-  "description": "Pollis Mathematical Core Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
+  "displayName": "Core Mathematics Toolbox",
+  "description": "Pollis Core Mathematics Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
   "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
@@ -19,12 +19,12 @@
     "pollisToolboxes": [
       {
         "id": "mathematical-core",
-        "title": "Mathematical Core",
+        "title": "Core Mathematics",
         "order": 1,
         "documents": [
           {
-            "title": "Mathematical Core Toolbox",
-            "source": "docs/mathematical-core/mathematical-core.tex"
+            "title": "Core Mathematics Toolbox",
+            "source": "docs/core-mathematics/core-mathematics.tex"
           }
         ],
         "panels": [

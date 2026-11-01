@@ -8,7 +8,7 @@ The **Yang-Zhang** tab offers the most general of the point estimators, robust t
 
 ## How Much Precision Yang-Zhang Gains
 
-Yang-Zhang is usually quoted as about 14 times as efficient as close-to-close, but that is the top of a range. A simulation of a driftless walk with a 30-day window gives a gain of about 8 when a fifth of the variance arises overnight, and about 3.5 when half does, since an overnight return gives only one number each day. The advantage therefore shrinks where gaps dominate. Precise opening prices also matter, because the estimator depends on a clean separation of overnight and intraday moves.
+Yang-Zhang is usually quoted as about 14 times as efficient as close-to-close, but that is the top of a range. A simulation of a driftless walk with a 30-day window gives a gain of about 7.5 when a fifth of the variance arises overnight, and about 3.5 when half does, since an overnight return gives only one number each day. The advantage therefore shrinks where gaps dominate. Precise opening prices also matter, because the estimator depends on a clean separation of overnight and intraday moves.
 
 ## References
 
