@@ -9,9 +9,8 @@ The Extreme Value Risk Measures panel turns a fitted tail model into risk figure
 | **Purpose** | Estimating the size of rare losses from a generalised extreme value (GEV) or generalised Pareto (GP) fit |
 | **Julia stack** | Extremes.jl for the fits; Distributions.jl for the GP quantile; Plots.jl for the exceedance plot |
 | **Models** | **Return Levels**, **Peaks-Over-Threshold** and **Tail Risk** tabs |
-| **Input shape** | **Data series** is a vector of losses as positive numbers; for **Return Levels** it holds block maxima |
+| **Input shape** | **Data series** is a vector of block maxima for **Return Levels**, and a full series of positive values for the two threshold tabs |
 | **Key choice** | The block length or threshold that defines the tail, and how far to extrapolate |
-| **Status** | Under Extremes.jl 1.0.5 the three tabs stop with an error; the Diagnostics wiki of this panel lists the calls concerned |
 
 ## How the Tabs of the Extreme Value Risk Measures Panel Differ
 
@@ -25,19 +24,20 @@ The Extreme Value Risk Measures panel turns a fitted tail model into risk figure
 
 | Input | Tab | Default | Meaning |
 |---|---|---|---|
-| **Data series** | All | `losses` | Losses as positive numbers |
+| **Data series** | **Return Levels** | `maxima` | Block maxima |
+| **Data series** | **Peaks-Over-Threshold**, **Tail Risk** | `rainfall` | The full series, whose excesses over u are fitted |
 | **Estimation method** | All | **Maximum Likelihood** | Or **Probability-Weighted Moments**, or **Bayesian Estimation** |
 | **Return periods** | **Return Levels** | 10 50 100 | Periods T, counted in blocks |
-| **Threshold u** | **Peaks-Over-Threshold**, **Tail Risk** | `quantile(losses, 0.9)` | Each tab keeps its own value |
-| **alpha (level)** | **Tail Risk** | 0.05 | Tail probability, so 0.05 gives the 95 percent VaR |
+| **Threshold u** | **Peaks-Over-Threshold**, **Tail Risk** | 30 | Each tab keeps its own value |
+| **alpha (level)** | **Tail Risk** | 0.001 | Tail probability, so 0.001 gives the 99.9 percent VaR; it must be under the exceedance rate |
 
 ## Which Next Steps the Extreme Value Risk Measures Panel Offers
 
 | Group | Next Step | What it does |
 |---|---|---|
-| Diagnose | **Exceedance Rate Analysis** | Plots the share of losses above a threshold across 50 thresholds |
-| Diagnose | **Return Level Uncertainty** | Asks for 95 percent intervals on the return levels at T = 10, 50 and 100 |
-| Interpret | **Empirical vs Extreme Value Risk** | Prints the empirical VaR and ES beside the Extreme Value ones |
+| Diagnose | **Exceedance Rate Analysis** | On the two threshold tabs, plots the share of values above a threshold across 50 thresholds |
+| Diagnose | **Return Level Uncertainty** | On **Return Levels**, prints a 95 percent interval for each return period |
+| Interpret | **Empirical vs Extreme Value Risk** | On **Tail Risk**, prints the empirical VaR and ES beside the Extreme Value ones |
 
 Run the Diagnose steps before relying on any risk figure from the panel.
 

@@ -80,6 +80,9 @@ label = "Original Papers (from packages)"
 key = "JFGR2024a"
 
 [[references]]
+key = "Col2001a"
+
+[[references]]
 key = "EKM1997a"
 
 [[references]]
@@ -116,8 +119,16 @@ detail = ""
 [[inputs]]
 id = "evtr-data"
 label = "Data series"
-tooltip = ""
-default = "losses"
+tooltip = "Vector of block maxima (e.g., annual maxima of daily losses), e.g. maxima = [maximum(b) for b in blocks]. The default is the annual maximum sea levels at Port Pirie, South Australia, 1923-1987 (65 years, in metres), the first example of Coles (2001), shipped with Extremes.jl."
+default = "maxima"
+models = ["rl"]
+
+[[inputs]]
+id = "evtr-data-pot"
+label = "Data series"
+tooltip = "Full data series from which exceedances above the threshold will be extracted, e.g. daily losses as positive numbers. The default is the daily rainfall in south-west England, 1914-1962 (17,531 days, in millimetres), an example of Coles (2001), shipped with Extremes.jl."
+default = "rainfall"
+models = ["pot", "tr"]
 
 [[inputs]]
 id = "evtr-method"
@@ -148,48 +159,57 @@ models = ["rl"]
 [[inputs]]
 id = "evtr-threshold"
 label = "Threshold u"
-tooltip = "A high threshold: the generalised Pareto describes only the excesses over it. The 90th percentile of the losses is a common start; check it with the mean excess and threshold stability plots."
-default = "quantile(losses, 0.9)"
+tooltip = "A high threshold: the generalised Pareto describes only the excesses over it. The 90th percentile, quantile(y, 0.9), is a common start; check it with the mean excess and threshold stability plots. The default, 30 mm, is the threshold of Coles (2001) for the rainfall: nearly half the days are dry, so its 90th percentile is too low."
+default = "30"
 models = ["pot"]
 
 [[inputs]]
 id = "evtr-threshold-tr"
 label = "Threshold u"
-tooltip = "A high threshold: the generalised Pareto describes only the excesses over it. The 90th percentile of the losses is a common start; check it with the mean excess and threshold stability plots."
-default = "quantile(losses, 0.9)"
+tooltip = "A high threshold: the generalised Pareto describes only the excesses over it. The 90th percentile, quantile(y, 0.9), is a common start; check it with the mean excess and threshold stability plots. The default, 30 mm, is the threshold of Coles (2001) for the rainfall: nearly half the days are dry, so its 90th percentile is too low."
+default = "30"
 models = ["tr"]
 
 [[inputs]]
 id = "evtr-alpha"
 label = "alpha (level)"
-tooltip = ""
-default = "0.05"
+tooltip = "Tail probability: 0.001 gives the 99.9 percent VaR. It must be under the exceedance rate, the share of the data above u, or the VaR formula leaves the fitted tail. The default suits the rainfall, where 152 of the 17,531 days exceed 30 mm, a rate of 0.0087."
+default = "0.001"
 models = ["tr"]
 
 [[codeBranches]]
 model = "rl"
 code = '''
-using Extremes
-
-fm     = gevfit({{evtr-data}}; method = :{{evtr-method}})  # fit GEV to block maxima (e.g. the largest loss of each year), not to every loss
-T_vals = [{{evtr-periods}}]  # return periods, in blocks: with annual maxima, T = 100 is the 1-in-100-year loss
+using Extremes, Statistics
+{{?evtr-data=maxima}} maxima = Extremes.dataset("portpirie").SeaLevel  # annual maximum sea levels (m) at Port Pirie, 1923-1987 (Coles 2001). Replace maxima with your own block maxima.
+y = {{evtr-data}}  # block maxima (e.g. the largest loss of each year), not every loss
+{{?evtr-method=mle}} fm = gevfit(y)  # maximum likelihood
+{{?evtr-method=pwm}} fm = gevfitpwm(y)  # probability-weighted moments
+{{?evtr-method=bayes}} fm = gevfitbayes(y)  # Bayesian (MCMC)
+point(v) = mean(v)  # MLE and PWM: one value; Bayesian: the posterior mean over the draws
+T_vals = [{{evtr-periods}}]  # return periods, in blocks: with annual maxima, T = 100 is the 1-in-100-year level
 rls    = [returnlevel(fm, T) for T in T_vals]  # compute return levels
 for (T, rl) in zip(T_vals, rls)
-    println("Return level (T=", T, "): ", round(rl, digits = 4))
+    println("Return level (T=", T, "): ", round(point(rl.value), digits = 4))
 end
 '''
 
 [[codeBranches]]
 model = "pot"
 code = '''
-using Extremes, Distributions
-
-exceedances        = {{evtr-data}}[{{evtr-data}} .> {{evtr-threshold}}] .- {{evtr-threshold}}  # excesses above threshold
-fm_gp              = gpfit(exceedances; method = :{{evtr-method}})  # fit GP to exceedances
-sigma_hat, xi_hat  = params(fm_gp)  # extract scale and shape
-rate               = length(exceedances) / length({{evtr-data}})  # exceedance rate
-d_gp               = GeneralizedPareto({{evtr-threshold}}, sigma_hat, xi_hat)  # GP distribution
-q99                = quantile(d_gp, 0.99)  # 99th percentile of the losses that exceed u (d_gp is located at u, so this is a loss level, not an excess)
+using Extremes, Distributions, Statistics
+{{?evtr-data-pot=rainfall}} rainfall = Extremes.dataset("rain").Rainfall  # daily rainfall (mm) in south-west England, 1914-1962 (Coles 2001). Replace rainfall with your own series.
+y = {{evtr-data-pot}}  # the full data series
+u = {{evtr-threshold}}  # threshold
+exceedances = y[y .> u] .- u  # excesses above u
+{{?evtr-method=mle}} fm = gpfit(exceedances)  # maximum likelihood
+{{?evtr-method=pwm}} fm = gpfitpwm(exceedances)  # probability-weighted moments
+{{?evtr-method=bayes}} fm = gpfitbayes(exceedances)  # Bayesian (MCMC)
+point(v) = mean(v)  # MLE and PWM: one value; Bayesian: the posterior mean over the draws
+sigma_hat, xi_hat  = point(scale(fm)), point(shape(fm))  # scale and shape
+rate               = length(exceedances) / length(y)  # exceedance rate
+d_gp               = GeneralizedPareto(u, sigma_hat, xi_hat)  # GP distribution
+q99                = quantile(d_gp, 0.99)  # 99th percentile of the values that exceed u (d_gp is located at u, so this is a level, not an excess)
 println("sigma_hat (scale):  ", round(sigma_hat, digits = 6))
 println("xi_hat (shape):     ", round(xi_hat,    digits = 6))
 println("Exceedance rate:    ", round(rate,       digits = 4))
@@ -199,15 +219,19 @@ println("99th pct above u:   ", round(q99,        digits = 4))  # 1% of the loss
 [[codeBranches]]
 model = "tr"
 code = '''
-using Extremes, Distributions
+using Extremes, Distributions, Statistics
+{{?evtr-data-pot=rainfall}} rainfall = Extremes.dataset("rain").Rainfall  # daily rainfall (mm) in south-west England, 1914-1962 (Coles 2001). Replace rainfall with your own series.
+y = {{evtr-data-pot}}  # the full data series
+u = {{evtr-threshold-tr}}  # threshold
+exceedances = y[y .> u] .- u  # excesses above u
+{{?evtr-method=mle}} fm = gpfit(exceedances)  # maximum likelihood
+{{?evtr-method=pwm}} fm = gpfitpwm(exceedances)  # probability-weighted moments
+{{?evtr-method=bayes}} fm = gpfitbayes(exceedances)  # Bayesian (MCMC)
+point(v) = mean(v)  # MLE and PWM: one value; Bayesian: the posterior mean over the draws
+sigma_hat, xi_hat  = point(scale(fm)), point(shape(fm))  # scale and shape
 
-exceedances        = {{evtr-data}}[{{evtr-data}} .> {{evtr-threshold-tr}}] .- {{evtr-threshold-tr}}  # excesses above threshold
-fm_gp              = gpfit(exceedances; method = :{{evtr-method}})  # fit GP to exceedances
-sigma_hat, xi_hat  = params(fm_gp)  # extract scale and shape
-rate               = length(exceedances) / length({{evtr-data}})  # exceedance rate
-
-var_evt = {{evtr-threshold-tr}} + (sigma_hat/xi_hat) * (({{evtr-alpha}} * length({{evtr-data}})/length(exceedances))^(-xi_hat) - 1)  # Extreme Value VaR
-es_evt  = (var_evt + sigma_hat - xi_hat * {{evtr-threshold-tr}}) / (1 - xi_hat)  # Extreme Value Expected Shortfall
+var_evt = u + (sigma_hat/xi_hat) * (({{evtr-alpha}} * length(y)/length(exceedances))^(-xi_hat) - 1)  # Extreme Value VaR
+es_evt  = (var_evt + sigma_hat - xi_hat * u) / (1 - xi_hat)  # Extreme Value Expected Shortfall
 println("VaR (Extreme Value): ", round(var_evt, digits = 4))
 println("ES  (Extreme Value): ", round(es_evt,  digits = 4))
 '''
@@ -220,10 +244,11 @@ label = "Diagnose"
 id = "exceedance_rate"
 label = "Exceedance Rate Analysis"
 desc = "Plot exceedance rate as a function of threshold to validate the POT setup"
+models = ["pot", "tr"]
 code = '''
-using Extremes, Plots
-thresholds = range(minimum({{evtr-data}}), quantile({{evtr-data}}, 0.95); length = 50)  # threshold grid
-rates = [mean({{evtr-data}} .> u) for u in thresholds]  # exceedance rates
+using Statistics, Plots
+thresholds = range(minimum(y), quantile(y, 0.95); length = 50)  # threshold grid, on the data of the main code
+rates = [mean(y .> t) for t in thresholds]  # exceedance rates
 plot(thresholds, rates;
     xlabel = "Threshold u", ylabel = "Exceedance Rate",
     title  = "Exceedance Rate vs Threshold", legend = false)
@@ -232,16 +257,14 @@ plot(thresholds, rates;
 [[actionGroups.actions]]
 id = "return_level_uncertainty"
 label = "Return Level Uncertainty"
-desc = "Profile-likelihood confidence intervals for return levels"
+desc = "95% intervals for the return levels of the main fit"
+models = ["rl"]
 code = '''
 using Extremes
-fm     = gevfit({{evtr-data}})  # fit GEV
-ci_10  = returnlevel(fm, 10;  confidencelevel = 0.95)  # 10-period RL with CI
-ci_50  = returnlevel(fm, 50;  confidencelevel = 0.95)  # 50-period RL with CI
-ci_100 = returnlevel(fm, 100; confidencelevel = 0.95)  # 100-period RL with CI
-println("10-period RL:  ", round(ci_10.estimate, digits=4), " [", round(ci_10.lower, digits=4), ", ", round(ci_10.upper, digits=4), "]")
-println("50-period RL:  ", round(ci_50.estimate, digits=4), " [", round(ci_50.lower, digits=4), ", ", round(ci_50.upper, digits=4), "]")
-println("100-period RL: ", round(ci_100.estimate, digits=4), " [", round(ci_100.lower, digits=4), ", ", round(ci_100.upper, digits=4), "]")
+for (T, rl) in zip(T_vals, rls)  # from the fit of the main code
+    lower, upper = cint(rl)[1]  # 95% interval
+    println("Return level (T=", T, "): ", round(point(rl.value), digits = 4), " [", round(lower, digits = 4), ", ", round(upper, digits = 4), "]")
+end
 '''
 
 [[actionGroups]]
@@ -252,16 +275,12 @@ label = "Interpret"
 id = "risk_comparison"
 label = "Empirical vs Extreme Value Risk"
 desc = "Compare historical empirical VaR/ES against Extreme Value-based estimates"
+models = ["tr"]
 code = '''
-using Extremes, Distributions, Statistics
-exceedances        = {{evtr-data}}[{{evtr-data}} .> {{evtr-threshold-tr}}] .- {{evtr-threshold-tr}}  # excesses above threshold
-fm_gp              = gpfit(exceedances; method = :{{evtr-method}})  # fit GP to exceedances
-sigma_hat, xi_hat  = params(fm_gp)  # extract parameters
-var_emp            = quantile({{evtr-data}}, 1 - {{evtr-alpha}})  # empirical VaR
-es_emp             = mean({{evtr-data}}[{{evtr-data}} .> var_emp])  # empirical ES
-var_evt            = {{evtr-threshold-tr}} + (sigma_hat/xi_hat)*(({{evtr-alpha}}*length({{evtr-data}})/length(exceedances))^(-xi_hat) - 1)  # Extreme Value VaR
-es_evt             = (var_evt + sigma_hat - xi_hat * {{evtr-threshold-tr}}) / (1 - xi_hat)  # Extreme Value Expected Shortfall
-println("Empirical VaR:                   ", round(var_emp, digits = 4))
+using Statistics
+var_emp            = quantile(y, 1 - {{evtr-alpha}})  # empirical VaR
+es_emp             = mean(y[y .> var_emp])  # empirical ES
+println("Empirical VaR:                   ", round(var_emp, digits = 4))  # var_evt and es_evt come from the main code
 println("VaR (Extreme Value):      ", round(var_evt, digits = 4))
 println("Empirical ES:                    ", round(es_emp,  digits = 4))
 println("ES  (Extreme Value):      ", round(es_evt,  digits = 4))

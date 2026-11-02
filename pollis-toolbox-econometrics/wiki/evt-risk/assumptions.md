@@ -10,7 +10,7 @@ The tab cannot tell which it has received. The check is simple: confirm that the
 
 ## What Threshold Models Assume About the Choice of Threshold in Risk Estimates
 
-**Peaks-Over-Threshold** and **Tail Risk** rely on excesses over **Threshold u** being close to GP. A threshold that is too low brings bias into every risk figure, and one that is too high makes them noisy. The panel does not test this, and the default of `quantile(losses, 0.9)` is not a verified choice. The default also names `losses`, so it needs rewriting when **Data series** names another variable.
+**Peaks-Over-Threshold** and **Tail Risk** rely on excesses over **Threshold u** being close to GP. A threshold that is too low brings bias into every risk figure, and one that is too high makes them noisy. The panel does not test this. The default of 30 belongs to the default series, so it needs replacing when **Data series** names another variable, and **alpha (level)** needs checking against the new exceedance rate.
 
 Use the **Threshold Stability** step and the **QQ Plot** tab in the Extreme Value Diagnostics panel to examine the level. A risk figure that shifts widely with a small change of u is a sign that the fit is not settled.
 
