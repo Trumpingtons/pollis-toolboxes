@@ -1,7 +1,7 @@
 {
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
-  "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.",
+  "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
   "version": "0.1.2",
   "publisher": "pollis",
   "author": "Pollis",
@@ -37,11 +37,7 @@
           { "id": "nntsf", "command": "chiara.statistics.nntsf", "title": "Neural Network Time-Series Forecasting", "group": "2_et", "order": 2, "data": "panels/nntsf.toml", "defaultModel": "lstnet", "decisionFirstColumn": "Model" },
           { "id": "autotsf", "command": "chiara.statistics.autotsf", "title": "Automatic Time-Series Forecasting", "group": "2_et", "order": 3, "data": "panels/autotsf.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },
           { "id": "blsdf", "command": "chiara.statistics.eco.blsdf", "title": "Bayesian Linear Stochastic Discount Factor", "group": "3_et", "order": 1, "data": "panels/blsdf.toml", "defaultModel": "sdf", "decisionFirstColumn": "Model" },
-          { "id": "bfmb", "command": "chiara.statistics.eco.bfmb", "title": "Fama-MacBeth Regression", "group": "3_et", "order": 2, "data": "panels/bfmb.toml", "defaultModel": "bayesian", "decisionFirstColumn": "Approach" },
-          { "id": "gev", "command": "chiara.statistics.ev.gev", "title": "Generalized Extreme Value Distribution", "group": "4_et", "order": 1, "data": "panels/gev.toml", "defaultModel": "fit", "decisionFirstColumn": "Model" },
-          { "id": "gp", "command": "chiara.statistics.ev.gp", "title": "Generalized Pareto Distribution", "group": "4_et", "order": 2, "data": "panels/gp.toml", "defaultModel": "fit", "decisionFirstColumn": "Model" },
-          { "id": "evtRisk", "command": "chiara.statistics.ev.riskMeasures", "title": "Extreme Value Risk Measures", "menuTitle": "EVT Risk Measures", "group": "4_et", "order": 3, "data": "panels/evtRisk.toml", "defaultModel": "rl", "decisionFirstColumn": "Model" },
-          { "id": "evtDiag", "command": "chiara.statistics.ev.diagnostics", "title": "Extreme Value Diagnostics", "menuTitle": "EVT Diagnostics", "group": "4_et", "order": 4, "data": "panels/evtDiag.toml", "defaultModel": "me", "decisionFirstColumn": "Model" }
+          { "id": "bfmb", "command": "chiara.statistics.eco.bfmb", "title": "Fama-MacBeth Regression", "group": "3_et", "order": 2, "data": "panels/bfmb.toml", "defaultModel": "bayesian", "decisionFirstColumn": "Approach" }
         ]
       }
     ]
