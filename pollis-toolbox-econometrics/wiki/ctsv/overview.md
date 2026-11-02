@@ -10,7 +10,7 @@ dS = mu S dt + sqrt(v) S dW₁
 
 dv = kappa (theta − v) dt + xi sqrt(v) dW₂
 
-The two Brownian motions have correlation rho. Variance is pulled towards theta at speed kappa, and xi sets how much it moves. A negative rho makes volatility rise as prices fall, which tilts the smile towards low strikes. The original article gives a closed form for option prices, which the **Heston** tab does not use, as it prices by simulation.
+The two Brownian motions have correlation rho. Variance is pulled towards theta at speed kappa, and xi sets how much it moves. A negative rho makes volatility rise as prices fall, which tilts the smile towards low strikes. The original article gives option prices in closed form, which `european_price` computes.
 
 ## How the Bates Model Adds Jumps
 
@@ -24,11 +24,11 @@ dF = sig F^beta dW₁
 
 dsig = nu sig dW₂
 
-The two Brownian motions have correlation rho. The exponent beta sets the backbone, from normal at 0 to log-normal at 1. Volatility has no mean reversion. The model's main appeal is an approximate formula for the implied Black volatility of each strike, which the **SABR** tab implements as `sabr_vol(K)`. That formula is an expansion, and it loses accuracy at low strikes and at long expiries.
+The two Brownian motions have correlation rho. The exponent beta sets the backbone, from normal at 0 to log-normal at 1. Volatility has no mean reversion. The model's main appeal is an approximate formula for the implied Black volatility of each strike, which the **SABR** tab computes with `hagan_implied_vol`. That formula is an expansion, and it loses accuracy at low strikes and at long expiries.
 
 ## How the Panel Simulates and Prices
 
-Each tab draws one path and defines `simulate(n)`, which returns n terminal prices. Next Steps then work from those simulations. **Option Prices by Strike** averages discounted payoffs for five strikes. **Implied Volatility Smile** inverts simulated prices with bisection on the Black formula for **Heston** and **Bates**, and evaluates `sabr_vol` directly for **SABR**. Every Monte Carlo figure changes between runs, since no seed is set and the results carry sampling error.
+Each tab defines `model` and draws one path with `simulate`, and Next Steps then work from `model`. **Option Prices by Strike** sets the closed-form price of five strikes, the Hagan approximation in **SABR**, beside the Monte Carlo average of discounted payoffs and its standard error. **Implied Volatility Smile** inverts closed-form prices with bisection on the Black formula for **Heston** and **Bates**, and evaluates `hagan_implied_vol` directly for **SABR**. Every Monte Carlo figure changes between runs, since no seed is set and the results carry sampling error.
 
 ## References
 

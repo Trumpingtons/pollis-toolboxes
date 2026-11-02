@@ -4,19 +4,19 @@ A simulation can look plausible and still be biased. These checks ask whether th
 
 ## How to Read the Positivity Check
 
-For **Heston** and **Bates**, **Positivity Check** compares 2 kappa theta with xi², and counts the steps of the path at which variance is at or below zero. A failed condition with many such steps is a warning that the scheme is being pushed hard. Raising **kappa (kappa)** or lowering **xi (xi)** restores the condition. For **SABR**, the check reports the minimum forward and whether the path was absorbed at zero, which grows more likely with a low **beta (beta)** and a long **T (expiry)**.
+For **Heston** and **Bates**, **Positivity Check** compares 2 kappa theta with xi², and counts the steps of the path at which variance is zero, which the scheme can reach but not pass. A failed condition with many such steps means that variance spends time at its boundary, so compare the simulated prices with the closed form in **Option Prices by Strike**. Raising **kappa (kappa)** or lowering **xi (xi)** restores the condition. For **SABR**, the check reports the minimum forward and whether the path was absorbed at zero, which grows more likely with a low **beta (beta)** and a long **T (expiry)**.
 
 ## How to Read the Monte Carlo Mean Check
 
-**Monte Carlo Mean Check** compares the mean of 2000 terminal prices with its known value: S₀ exp(mu T) in **Heston** and in **Bates**, where jumps are compensated, and F₀ in **SABR**, as the forward is a martingale. The z value divides the gap by the standard error. A value beyond about 2 points to discretisation bias, though about one run in twenty goes beyond it by chance, so repeat the check before concluding.
+**Monte Carlo Mean Check** compares the mean of 2000 terminal prices with its known value: S₀ exp(mu T) in **Heston** and in **Bates**, where jumps are compensated, and F₀ in **SABR**, as the forward is a martingale. The z value divides the gap by the standard error. A value beyond about 2 points to discretisation bias, though about one run in twenty goes beyond it by chance, so repeat the check before concluding. The scheme of **Heston** and **Bates** sets its drift to hold this mean, wherever the moment that needs exists, so **SABR** is where the check has most to find.
 
 ## Why Discretisation Bias Arises in Square Root Variance
 
-Euler schemes can push the square root process below zero, and any fix for that changes the distribution. [Lord, Koekkoek and van Dijk (2010)](#ref-LKD2010a) compared such fixes and found full truncation to have the smallest bias among the Euler variants they studied. The **Bates** loop uses it, and `HestonProblem` applies the same floor at zero in both its drift and its diffusion. The quadratic-exponential scheme of [Andersen (2008)](#ref-And2008a) is more accurate for a given step, and the panel does not offer it. If the mean check or an option price is sensitive to steps, refine the steps before trusting the result.
+Euler schemes can push the square root process below zero, and any fix for that changes the distribution. [Lord, Koekkoek and van Dijk (2010)](#ref-LKD2010a) compared such fixes and found full truncation to have the smallest bias among the Euler variants they studied. **Heston** and **Bates** use the quadratic-exponential scheme of [Andersen (2008)](#ref-And2008a) instead, which matches the conditional mean and variance of the exact process and never goes negative. A Monte Carlo price more than about two standard errors from the closed form in **Option Prices by Strike** points to bias, as the standard error measures sampling error only. `simulate_terminal` takes `steps` and `scheme`, so refine the steps, or try `FullTruncation()`, before trusting a price that moves with them.
 
-## How to Judge Monte Carlo Noise in a Smile
+## How to Judge Noise in a Smile and in Prices
 
-**Implied Volatility Smile** uses 5000 terminal prices for **Heston** and **Bates**, with strikes from 70% to 130% of the forward. Far from the money, few paths pay off, so implied volatilities are noisy, and a jagged wing is sampling error and not a feature of the model. Run it twice to see how much the wing moves. A value stuck at the bottom of the search range, 0.0001, means that the simulated price was at or below the option's intrinsic value.
+**Implied Volatility Smile** inverts closed-form prices for **Heston** and **Bates**, with strikes from 70% to 130% of the forward, so it has no sampling noise and repeats exactly. A value stuck at the bottom of the search range, 0.0001, means that the price was at or below the option's intrinsic value. Noise lies in the Monte Carlo columns of **Option Prices by Strike**, which use 5000 paths. Far from the money, few paths pay off, so read those prices with their standard errors.
 
 ## How to Compare Realised and Integrated Volatility
 

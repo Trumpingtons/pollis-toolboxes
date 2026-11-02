@@ -16,7 +16,7 @@ Heston has continuous paths, so a large one-day move requires high variance befo
 
 ## What Happens at Zero in the SABR Model
 
-With **beta (beta)** below 1, the forward can reach zero, and the simulation absorbs it there, so the path stays at zero until expiry. The Hagan formula does not treat this boundary, and it can imply a negative probability density at low strikes. Prices from the Monte Carlo paths and from `sabr_vol` should therefore disagree most at low strikes. Absorption also rules out negative rates or forwards in this tab.
+With **beta (beta)** below 1, the forward can reach zero, and the simulation absorbs it there, so the path stays at zero until expiry. The Hagan formula does not treat this boundary, and it can imply a negative probability density at low strikes. Prices from the Monte Carlo paths and from `hagan_implied_vol` should therefore disagree most at low strikes. Absorption also rules out negative rates or forwards in this tab.
 
 ## Which Measure the Panel's Simulations Use
 

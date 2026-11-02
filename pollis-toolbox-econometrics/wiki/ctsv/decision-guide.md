@@ -17,7 +17,7 @@ Add jumps when short-maturity smiles are steeper than the diffusion fit can reac
 
 ## When to Prefer the SABR Formula or Its Simulation
 
-Use `sabr_vol` to fit or quote a smile: it is immediate and has no sampling noise. Use `simulate` when a payoff needs the full distribution, or when strikes are low enough for the formula to be doubtful. Comparing the two on the same strikes is a good test of the parameter set, and a large disagreement at low strikes signals that the expansion is outside its reliable range.
+Use `hagan_implied_vol` to fit or quote a smile: it is immediate and has no sampling noise. Use `simulate_terminal` when a payoff needs the full distribution, or when strikes are low enough for the formula to be doubtful. Comparing the two on the same strikes is a good test of the parameter set, and a large disagreement at low strikes signals that the expansion is outside its reliable range.
 
 ## How to Choose Sensible Parameter Values
 

@@ -1,23 +1,23 @@
 # Continuous-Time Stochastic Volatility Models — Factsheet
 
-The Continuous-Time Stochastic Volatility Models panel simulates price and volatility paths from three standard models and prices options on them by Monte Carlo. The panel does not estimate parameters from data: every parameter is an input.
+The Continuous-Time Stochastic Volatility Models panel simulates price and volatility paths from three standard models with StochasticVolatility.jl, and prices European options on them in closed form and by Monte Carlo. The panel does not estimate parameters from data: every parameter is an input.
 
 ## What the Stochastic Volatility Panel Does
 
 | Item | Description |
 |---|---|
 | **Purpose** | Simulate paths and terminal prices under a chosen volatility model |
-| **Julia stack** | DiffEqFinancial.jl and StochasticDiffEq.jl for Heston; hand-written loops and Distributions.jl for Bates and SABR |
+| **Julia stack** | StochasticVolatility.jl for every tab; Distributions.jl for the Black formula and the normal density |
 | **Models** | **Heston**, **Bates** and **SABR** tabs |
-| **Output** | One path as `t`, `S` and `v`, and `simulate(n)`, which returns n terminal prices |
-| **Not included** | Calibration to option prices, and closed-form option prices |
+| **Output** | `model`, which the Next Steps pass to the functions of the package, and one path as `t`, `S` and `v` |
+| **Not included** | Calibration to option prices, and American prices, which the package gives with `longstaff_schwartz_price` and `finite_difference_price` |
 
 ## How Each Stochastic Volatility Tab Simulates
 
 | Tab | Variance or volatility | Scheme for terminal prices | Drift of the price |
 |---|---|---|---|
-| **Heston** | Mean-reverting square root variance | `EM()` with `dt = 0.01` | **mu (drift)** |
-| **Bates** | Same as Heston, plus log-normal jumps in price | Euler with full truncation, 252 steps | **mu (drift)**, with the jumps compensated |
+| **Heston** | Mean-reverting square root variance | Quadratic-exponential, 252 steps | **mu (drift)** |
+| **Bates** | Same as Heston, plus log-normal jumps in price | Quadratic-exponential, 252 steps | **mu (drift)**, with the jumps compensated |
 | **SABR** | Log-normal volatility, no mean reversion | Euler on the forward, exact step on volatility, 252 steps | None, as the forward is a martingale |
 
 ## Which Inputs Each Stochastic Volatility Tab Uses
