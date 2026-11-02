@@ -16,7 +16,7 @@ Interpretation asks what an equilibrium means for the players and whether that o
 
 ## Reading Long-Run Outcomes and Evolutionary Stability
 
-**Long-Run Outcomes** runs replicator dynamics from 200 random starting states and reports where play ends up and how often, an estimate of the basins of attraction. In a zero-sum game the dynamics cycle, so the action reports the time average, which approaches the equilibrium. **ESS Check** tests the concept of [Maynard Smith and Price (1973)](#ref-SP1973a): a symmetric equilibrium x resists every mutant that would earn less against x, or equally against x but less against itself. In an asymmetric game, only strict equilibria are evolutionarily stable, so mixed equilibria of those games fail the check.
+**Long-Run Outcomes** runs replicator dynamics from 200 random starting states and reports where play ends up and how often, an estimate of the basins of attraction. In a zero-sum game the dynamics cycle, so the action reports the time average, which approaches the equilibrium. **ESS Check** tests the concept of [Smith and Price (1973)](#ref-SP1973a): a symmetric equilibrium x resists every mutant that would earn less against x, or equally against x but less against itself. In an asymmetric game, only strict equilibria are evolutionarily stable, so mixed equilibria of those games fail the check.
 
 ## References
 

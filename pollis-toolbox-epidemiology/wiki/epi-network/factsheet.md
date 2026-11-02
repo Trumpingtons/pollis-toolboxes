@@ -13,7 +13,7 @@ Network epidemic models make each person a node and each contact an edge, and pa
 
 ## When to Use a Network Epidemic Model
 
-A network model suits questions where who meets whom is the point: vaccination aimed at people with many contacts, the effect of hubs on the threshold, or a difference between random and clustered contacts. Reviews of the field are in [Keeling and Eames (2005)](#ref-KE2005a) and [Pastor-Satorras, Castellano, Van Mieghem and Vespignani (2015)](#ref-PCVV2015a), and the textbook treatment is [Kiss, Miller and Simon (2017)](#ref-KMS2017a).
+A network model suits questions where who meets whom is the point: vaccination aimed at people with many contacts, the effect of hubs on the threshold, or a difference between random and clustered contacts. Reviews of the field are in [Keeling and Eames (2005)](#ref-KE2005a) and [Pastor-Satorras, Castellano, Van Mieghem and Vespignani (2015)](#ref-PCMV2015a), and the textbook treatment is [Kiss, Miller and Simon (2017)](#ref-KMS2017a).
 
 ## What a Network Epidemic Model Is Not
 
@@ -25,7 +25,7 @@ A network model here is a simulation on an assumed graph, and does not estimate 
 
 <a id="ref-KMS2017a"></a>Kiss, I. Z., Miller, J. C. and Simon, P. L. (2017). *Mathematics of Epidemics on Networks: From Exact to Approximate Models*. Springer. [doi:10.1007/978-3-319-50806-1](https://doi.org/10.1007/978-3-319-50806-1)
 
-<a id="ref-PCVV2015a"></a>Pastor-Satorras, R., Castellano, C., Van Mieghem, P. and Vespignani, A. (2015). Epidemic processes in complex networks. *Reviews of Modern Physics* 87(3), 925–979. [doi:10.1103/RevModPhys.87.925](https://doi.org/10.1103/RevModPhys.87.925)
+<a id="ref-PCMV2015a"></a>Pastor-Satorras, R., Castellano, C., Van Mieghem, P. and Vespignani, A. (2015). Epidemic processes in complex networks. *Reviews of Modern Physics* 87(3), 925–979. [doi:10.1103/RevModPhys.87.925](https://doi.org/10.1103/RevModPhys.87.925)
 
 ## See Also
 - [Overview](overview.md) · [Decision Guide](decision-guide.md) · [Assumptions](assumptions.md)

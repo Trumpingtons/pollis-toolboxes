@@ -4,7 +4,7 @@ A VAR's few restrictions do not make it assumption-free. Stationarity, the lag s
 
 ## Stationarity and the Stability Condition
 
-Inference in a VAR assumes a stable system: every root of the characteristic polynomial lies outside the unit circle, and shocks die out. Non-stationary series in levels give non-standard distributions for many tests, and impulse responses that do not decay. Differencing restores stationarity but discards long-run information when series are cointegrated, which is what makes the VECM a separate model. [Lütkepohl (2005)](#ref-Lt2005a) covers the conditions. Structural breaks, frequent in macroeconomic samples, can look like unit roots and invalidate a single constant-parameter system.
+Inference in a VAR assumes a stable system: every root of the characteristic polynomial lies outside the unit circle, and shocks die out. Non-stationary series in levels give non-standard distributions for many tests, and impulse responses that do not decay. Differencing restores stationarity but discards long-run information when series are cointegrated, which is what makes the VECM a separate model. [Lütkepohl (2005)](#ref-Lut2005a) covers the conditions. Structural breaks, frequent in macroeconomic samples, can look like unit roots and invalidate a single constant-parameter system.
 
 ## Lag Length and Omitted Variables
 
@@ -24,7 +24,7 @@ A VECM assumes that series are integrated of order one and that a stable linear 
 
 <a id="ref-KL2017a"></a>Kilian, L. and Lütkepohl, H. (2017). Structural Vector Autoregressive Analysis. *Cambridge University Press*. [doi:10.1017/9781108164818](https://doi.org/10.1017/9781108164818)
 
-<a id="ref-Lt2005a"></a>Lütkepohl, H. (2005). New Introduction to Multiple Time Series Analysis. *Springer Berlin Heidelberg*. [doi:10.1007/978-3-540-27752-1](https://doi.org/10.1007/978-3-540-27752-1)
+<a id="ref-Lut2005a"></a>Lütkepohl, H. (2005). New Introduction to Multiple Time Series Analysis. *Springer Berlin Heidelberg*. [doi:10.1007/978-3-540-27752-1](https://doi.org/10.1007/978-3-540-27752-1)
 
 ## See Also
 

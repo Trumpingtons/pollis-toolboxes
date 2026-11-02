@@ -16,7 +16,7 @@ A Croston forecast is a demand rate per period: a value of 0.5 means an average 
 
 ## How the SBA and SBJ Corrections Change a Forecast
 
-Taking the ratio of two smoothed values gives a rate that is too high on average ([Syntetos and Boylan (2005)](#ref-syntetos2005)). SBA multiplies the classic rate by 1 − a/2, where a is the smoothing parameter of the interval. SBJ multiplies by 1 − a/(2 − a), which is a little smaller ([Shale, Boylan and Johnston (2006)](#ref-shale2006)). With small smoothing parameters the three forecasts stay close, and a large gap between them means that the interval is being smoothed heavily.
+Taking the ratio of two smoothed values gives a rate that is too high on average ([Syntetos and Boylan (2005)](#ref-SB2005a)). SBA multiplies the classic rate by 1 − a/2, where a is the smoothing parameter of the interval. SBJ multiplies by 1 − a/(2 − a), which is a little smaller ([Shale, Boylan and Johnston (2006)](#ref-SBJ2006a)). With small smoothing parameters the three forecasts stay close, and a large gap between them means that the interval is being smoothed heavily.
 
 ## How to Read the Prediction Intervals
 
@@ -28,9 +28,9 @@ A low MASE shows that the method beat a naive forecast on one stretch of past da
 
 ## References
 
-<a id="ref-shale2006"></a>Shale, E. A., Boylan, J. E. and Johnston, F. R. (2006). Forecasting for intermittent demand: the estimation of an unbiased average. *Journal of the Operational Research Society* 57(5), 588–592. [doi:10.1057/palgrave.jors.2602031](https://doi.org/10.1057/palgrave.jors.2602031)
+<a id="ref-SBJ2006a"></a>Shale, E. A., Boylan, J. E. and Johnston, F. R. (2006). Forecasting for intermittent demand: the estimation of an unbiased average. *Journal of the Operational Research Society* 57(5), 588–592. [doi:10.1057/palgrave.jors.2602031](https://doi.org/10.1057/palgrave.jors.2602031)
 
-<a id="ref-syntetos2005"></a>Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. *International Journal of Forecasting* 21(2), 303–314. [doi:10.1016/j.ijforecast.2004.10.001](https://doi.org/10.1016/j.ijforecast.2004.10.001)
+<a id="ref-SB2005a"></a>Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. *International Journal of Forecasting* 21(2), 303–314. [doi:10.1016/j.ijforecast.2004.10.001](https://doi.org/10.1016/j.ijforecast.2004.10.001)
 
 ## See Also
 

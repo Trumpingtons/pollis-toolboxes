@@ -16,7 +16,7 @@ Each interpretation action uses the structure of the model, so each result is co
 
 ## Reading Simulations and Conditional Forecasts
 
-**Simulate** draws a fresh path of 100 periods with random shocks, showing what a typical sample from the model looks like. **Conditional Forecast** makes the first observable follow a set path for four quarters, choosing the shocks that deliver the path, and reports where the rest of the system goes. Reading the implied shocks is as useful as reading the forecast: a path requiring large shocks is unlikely under the model. [Del Negro and Schorfheide (2013)](#ref-NS2013a) survey forecasting with these models, including conditioning on external information.
+**Simulate** draws a fresh path of 100 periods with random shocks, showing what a typical sample from the model looks like. **Conditional Forecast** makes the first observable follow a set path for four quarters, choosing the shocks that deliver the path, and reports where the rest of the system goes. Reading the implied shocks is as useful as reading the forecast: a path requiring large shocks is unlikely under the model. [Negro and Schorfheide (2013)](#ref-NS2013a) survey forecasting with these models, including conditioning on external information.
 
 ## References
 

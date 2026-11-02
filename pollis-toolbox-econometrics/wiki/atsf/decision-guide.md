@@ -25,11 +25,11 @@ Choose TBATS through the **Model** input in most cases: non-integer periods, lon
 | DSTM | Fixed at 2 | Updated each period | The trend changes slowly and the series is short |
 | DOTM | Estimated | Updated each period | The trend changes and the series is long |
 
-`auto_theta(y, period)` chooses among the four by in-sample mean squared error and adjusts for seasonality when a test finds it, so it is the better call on a seasonal series. The variants were set out by [Fiorucci, Pellegrini, Louzada, Petropoulos and Koehler (2016)](#ref-fiorucci2016).
+`auto_theta(y, period)` chooses among the four by in-sample mean squared error and adjusts for seasonality when a test finds it, so it is the better call on a seasonal series. The variants were set out by [Fiorucci, Pellegrini, Louzada, Petropoulos and Koehler (2016)](#ref-FPLPK2016a).
 
 ## How to Tell Whether Demand Is Intermittent
 
-**Demand Pattern** computes two numbers: ADI, the average interval between demands, and CV2, the squared coefficient of variation of the demand sizes. The cut-offs of ADI 1.32 and CV2 0.49 come from [Syntetos, Boylan and Croston (2005)](#ref-syntetos2005b).
+**Demand Pattern** computes two numbers: ADI, the average interval between demands, and CV2, the squared coefficient of variation of the demand sizes. The cut-offs of ADI 1.32 and CV2 0.49 come from [Syntetos, Boylan and Croston (2005)](#ref-SBC2005a).
 
 | Pattern | ADI | CV2 | Reading |
 |---|---|---|---|
@@ -40,7 +40,7 @@ Choose TBATS through the **Model** input in most cases: non-integer periods, lon
 
 ## Which Croston Method Should I Choose
 
-Start from `sba`, the default of the **Method** input, which removes most of the upward bias of the classic rate ([Syntetos and Boylan (2005)](#ref-syntetos2005a)). The `classic` method suits a comparison, or a very low smoothing parameter where the bias is small. The `sbj` method applies another correction for the same bias ([Shale, Boylan and Johnston (2006)](#ref-shale2006)), and differs little from `sba` unless the smoothing parameter of the interval is large.
+Start from `sba`, the default of the **Method** input, which removes most of the upward bias of the classic rate ([Syntetos and Boylan (2005)](#ref-SB2005a)). The `classic` method suits a comparison, or a very low smoothing parameter where the bias is small. The `sbj` method applies another correction for the same bias ([Shale, Boylan and Johnston (2006)](#ref-SBJ2006a)), and differs little from `sba` unless the smoothing parameter of the interval is large.
 
 ## When These Methods Are Not the Right Choice
 
@@ -48,13 +48,13 @@ Do not use Croston's method for a product with a clear trend or an end of life, 
 
 ## References
 
-<a id="ref-fiorucci2016"></a>Fiorucci, J. A., Pellegrini, T. R., Louzada, F., Petropoulos, F. and Koehler, A. B. (2016). Models for optimising the theta method and their relationship to state space models. *International Journal of Forecasting* 32(4), 1151–1161. [doi:10.1016/j.ijforecast.2016.02.005](https://doi.org/10.1016/j.ijforecast.2016.02.005)
+<a id="ref-FPLPK2016a"></a>Fiorucci, J. A., Pellegrini, T. R., Louzada, F., Petropoulos, F. and Koehler, A. B. (2016). Models for optimising the theta method and their relationship to state space models. *International Journal of Forecasting* 32(4), 1151–1161. [doi:10.1016/j.ijforecast.2016.02.005](https://doi.org/10.1016/j.ijforecast.2016.02.005)
 
-<a id="ref-shale2006"></a>Shale, E. A., Boylan, J. E. and Johnston, F. R. (2006). Forecasting for intermittent demand: the estimation of an unbiased average. *Journal of the Operational Research Society* 57(5), 588–592. [doi:10.1057/palgrave.jors.2602031](https://doi.org/10.1057/palgrave.jors.2602031)
+<a id="ref-SBJ2006a"></a>Shale, E. A., Boylan, J. E. and Johnston, F. R. (2006). Forecasting for intermittent demand: the estimation of an unbiased average. *Journal of the Operational Research Society* 57(5), 588–592. [doi:10.1057/palgrave.jors.2602031](https://doi.org/10.1057/palgrave.jors.2602031)
 
-<a id="ref-syntetos2005a"></a>Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. *International Journal of Forecasting* 21(2), 303–314. [doi:10.1016/j.ijforecast.2004.10.001](https://doi.org/10.1016/j.ijforecast.2004.10.001)
+<a id="ref-SB2005a"></a>Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. *International Journal of Forecasting* 21(2), 303–314. [doi:10.1016/j.ijforecast.2004.10.001](https://doi.org/10.1016/j.ijforecast.2004.10.001)
 
-<a id="ref-syntetos2005b"></a>Syntetos, A. A., Boylan, J. E. and Croston, J. D. (2005). On the categorization of demand patterns. *Journal of the Operational Research Society* 56(5), 495–503. [doi:10.1057/palgrave.jors.2601841](https://doi.org/10.1057/palgrave.jors.2601841)
+<a id="ref-SBC2005a"></a>Syntetos, A. A., Boylan, J. E. and Croston, J. D. (2005). On the categorization of demand patterns. *Journal of the Operational Research Society* 56(5), 495–503. [doi:10.1057/palgrave.jors.2601841](https://doi.org/10.1057/palgrave.jors.2601841)
 
 ## See Also
 

@@ -16,7 +16,7 @@ Choices concern the model's scale, the order of the solution, and how much of th
 
 ## Which Software Route to Choose
 
-MacroModelling.jl works directly in Julia, differentiates automatically, and supplies gradients for samplers such as NUTS, which is why the panel uses it. Dynare, documented in [Adjemian, Bastani, Juillard, Mihoubi, Perendia, Ratto and Villemot (2011)](#ref-ABJMPRV2011a), remains the standard outside Julia, and its model files can often be translated to the macros used here. For a larger model with many parameters, use **Draws** in the upper part of the suggested range and expect long runtimes. If **HMC** with a fixed step mixes poorly, prefer **NUTS**, which adapts its step during the **Burn-in** draws.
+MacroModelling.jl works directly in Julia, differentiates automatically, and supplies gradients for samplers such as NUTS, which is why the panel uses it. Dynare, documented in [Adjemian, Bastani, Juillard, Mihoubi, Perendia, Ratto and Villemot (2011)](#ref-ABJMP...2011a), remains the standard outside Julia, and its model files can often be translated to the macros used here. For a larger model with many parameters, use **Draws** in the upper part of the suggested range and expect long runtimes. If **HMC** with a fixed step mixes poorly, prefer **NUTS**, which adapts its step during the **Burn-in** draws.
 
 ## When a Different Tool Fits Better
 
@@ -24,7 +24,7 @@ A VAR makes fewer assumptions and is a good starting benchmark: the VAR Models p
 
 ## References
 
-<a id="ref-ABJMPRV2011a"></a>Adjemian, S., Bastani, H., Juillard, M., Mihoubi, F., Perendia, G., Ratto, M. and Villemot, S. (2011). Dynare: Reference Manual. [Link](https://www.dynare.org/wp-repo/dynarewp001.pdf)
+<a id="ref-ABJMP...2011a"></a>Adjemian, S., Bastani, H., Juillard, M., Mihoubi, F., Perendia, G., Ratto, M. and Villemot, S. (2011). Dynare: Reference Manual. [Link](https://www.dynare.org/wp-repo/dynarewp001.pdf)
 
 <a id="ref-AFR2018a"></a>Andreasen, M. M., Fernández-Villaverde, J. and Rubio-Ramírez, J. F. (2018). The pruned state-space system for non-linear DSGE models: Theory and empirical applications. *The Review of Economic Studies* 85(1), 1–49. [doi:10.1093/restud/rdx037](https://doi.org/10.1093/restud/rdx037)
 

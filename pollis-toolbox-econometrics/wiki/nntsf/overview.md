@@ -8,7 +8,7 @@ The **LSTnet** tab builds `LSTnet(inputsize, conv filters, recur size, pool leng
 
 ## The DA-RNN Tab
 
-The **DA-RNN** tab builds `DARNN(inputsize, encoder size, decoder size, pool length, 1)`, in which 1 marks the target series. The dual-stage architecture of [Qin, Song, Chen, Cheng, Jiang and Cottrell (2017)](#ref-QSCCJC2017a) applies attention twice. An input attention stage weighs the driving series at each step before encoding, and a temporal attention stage in the decoder weighs the encoder states across the time steps of the window. The design fits a setting with one clear target and several candidate drivers, where both variable selection and lag selection matter.
+The **DA-RNN** tab builds `DARNN(inputsize, encoder size, decoder size, pool length, 1)`, in which 1 marks the target series. The dual-stage architecture of [Qin, Song, Chen, Cheng, Jiang and Cottrell (2017)](#ref-QSCCJ...2017a) applies attention twice. An input attention stage weighs the driving series at each step before encoding, and a temporal attention stage in the decoder weighs the encoder states across the time steps of the window. The design fits a setting with one clear target and several candidate drivers, where both variable selection and lag selection matter.
 
 ## The TPA-LSTM Tab
 
@@ -33,7 +33,7 @@ The **DSANet** tab builds `DSANet(inputsize, pool length, local length, kernels,
 
 <a id="ref-LCYL2018a"></a>Lai, G., Chang, W., Yang, Y. and Liu, H. (2018). Modeling Long- and Short-Term Temporal Patterns with Deep Neural Networks (LSTNet). *SIGIR*, 95–104. [doi:10.1145/3209978.3210006](https://doi.org/10.1145/3209978.3210006)
 
-<a id="ref-QSCCJC2017a"></a>Qin, Y., Song, D., Chen, H., Cheng, W., Jiang, G. and Cottrell, G. W. (2017). A Dual-Stage Attention-Based Recurrent Neural Network for Time Series Prediction (DA-RNN). *IJCAI*, 2627–2633. [doi:10.24963/ijcai.2017/366](https://doi.org/10.24963/ijcai.2017/366)
+<a id="ref-QSCCJ...2017a"></a>Qin, Y., Song, D., Chen, H., Cheng, W., Jiang, G. and Cottrell, G. W. (2017). A Dual-Stage Attention-Based Recurrent Neural Network for Time Series Prediction (DA-RNN). *IJCAI*, 2627–2633. [doi:10.24963/ijcai.2017/366](https://doi.org/10.24963/ijcai.2017/366)
 
 <a id="ref-SSL2019a"></a>Shih, S., Sun, F. and Lee, H. (2019). Temporal Pattern Attention for Multivariate Time Series Forecasting (TPA-LSTM). *Machine Learning* 108(8-9), 1421–1441. [doi:10.1007/s10994-019-05815-0](https://doi.org/10.1007/s10994-019-05815-0)
 

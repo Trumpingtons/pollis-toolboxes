@@ -12,7 +12,7 @@ The VAR Models panel estimates systems in which several time series explain one 
 
 ## When to Use a Vector Autoregression
 
-A vector autoregression suits several series that may influence each other, with no single dependent variable and no clear exogenous regressor. Forecasts come directly from the reduced form, and with an identifying assumption, the same system can answer causal questions about shocks. [Lütkepohl (2005)](#ref-Lt2005a) is the standard reference for the reduced form, and [Kilian and Lütkepohl (2017)](#ref-KL2017a) for structural analysis. A single equation is a better choice when one series is the clear object of interest and the others are known to be exogenous.
+A vector autoregression suits several series that may influence each other, with no single dependent variable and no clear exogenous regressor. Forecasts come directly from the reduced form, and with an identifying assumption, the same system can answer causal questions about shocks. [Lütkepohl (2005)](#ref-Lut2005a) is the standard reference for the reduced form, and [Kilian and Lütkepohl (2017)](#ref-KL2017a) for structural analysis. A single equation is a better choice when one series is the clear object of interest and the others are known to be exogenous.
 
 ## What the VAR Panel Does Not Cover
 
@@ -22,7 +22,7 @@ The panel's estimates are classical, and coefficients are constant over time. Ti
 
 <a id="ref-KL2017a"></a>Kilian, L. and Lütkepohl, H. (2017). Structural Vector Autoregressive Analysis. *Cambridge University Press*. [doi:10.1017/9781108164818](https://doi.org/10.1017/9781108164818)
 
-<a id="ref-Lt2005a"></a>Lütkepohl, H. (2005). New Introduction to Multiple Time Series Analysis. *Springer Berlin Heidelberg*. [doi:10.1007/978-3-540-27752-1](https://doi.org/10.1007/978-3-540-27752-1)
+<a id="ref-Lut2005a"></a>Lütkepohl, H. (2005). New Introduction to Multiple Time Series Analysis. *Springer Berlin Heidelberg*. [doi:10.1007/978-3-540-27752-1](https://doi.org/10.1007/978-3-540-27752-1)
 
 <a id="ref-Sim1980a"></a>Sims, C. A. (1980). Macroeconomics and Reality. *Econometrica* 48(1), 1. [doi:10.2307/1912017](https://doi.org/10.2307/1912017)
 

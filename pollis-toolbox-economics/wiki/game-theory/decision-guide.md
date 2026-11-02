@@ -21,7 +21,7 @@ Multiplicity is the rule in coordination games, and the theory gives criteria wi
 
 ## Static Equilibrium or Evolutionary Dynamics
 
-A static analysis suits a one-time interaction among informed players. A population view suits repeated, anonymous interactions with imitation or selection, and it was developed for animal contests in [Maynard Smith (1982)](#ref-Smi1982a). The two views are linked: an evolutionarily stable state is a Nash equilibrium, and a stable rest point of the replicator dynamics is one as well. The reverse does not always hold, so an equilibrium may be unreachable under adaptation. Reporting both is often helpful when a game has several equilibria, because adaptation offers one way to select among them.
+A static analysis suits a one-time interaction among informed players. A population view suits repeated, anonymous interactions with imitation or selection, and it was developed for animal contests in [Smith (1982)](#ref-Smi1982a). The two views are linked: an evolutionarily stable state is a Nash equilibrium, and a stable rest point of the replicator dynamics is one as well. The reverse does not always hold, so an equilibrium may be unreachable under adaptation. Reporting both is often helpful when a game has several equilibria, because adaptation offers one way to select among them.
 
 ## References
 

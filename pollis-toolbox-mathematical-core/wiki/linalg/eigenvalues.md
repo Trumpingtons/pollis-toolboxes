@@ -23,7 +23,7 @@ This is the second-order condition of optimisation, applied to the Hessian.
 
 ## Computing Them
 
-Eigenvalues are never found from the characteristic polynomial: its roots are extremely sensitive to rounding in its coefficients. LAPACK reduces $A$ to Hessenberg (or, if symmetric, tridiagonal) form and runs the shifted QR algorithm ([Francis (1961)](#ref-francis1961)), which converges to a triangular matrix with the eigenvalues on its diagonal. In Julia: `eigen(A)`, `eigvals(A)`, and `eigen(Symmetric(A))` for the faster symmetric routine.
+Eigenvalues are never found from the characteristic polynomial: its roots are extremely sensitive to rounding in its coefficients. LAPACK reduces $A$ to Hessenberg (or, if symmetric, tridiagonal) form and runs the shifted QR algorithm ([Francis (1961)](#ref-Fra1961a)), which converges to a triangular matrix with the eigenvalues on its diagonal. In Julia: `eigen(A)`, `eigvals(A)`, and `eigen(Symmetric(A))` for the faster symmetric routine.
 
 ## The Power Method
 
@@ -45,7 +45,7 @@ Every eigenvalue lies in at least one disc centred at a diagonal entry $a_{ii}$ 
 
 ## References
 
-<a id="ref-francis1961"></a>Francis, J. G. F. (1961). The QR transformation: a unitary analogue to the LR transformation, part 1. *The Computer Journal* 4(3), 265–271. [doi:10.1093/comjnl/4.3.265](https://doi.org/10.1093/comjnl/4.3.265)
+<a id="ref-Fra1961a"></a>Francis, J. G. F. (1961). The QR transformation: a unitary analogue to the LR transformation, part 1. *The Computer Journal* 4(3), 265–271. [doi:10.1093/comjnl/4.3.265](https://doi.org/10.1093/comjnl/4.3.265)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

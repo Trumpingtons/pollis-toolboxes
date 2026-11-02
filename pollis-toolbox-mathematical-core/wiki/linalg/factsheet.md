@@ -1,6 +1,6 @@
 # Linear Algebra — Factsheet
 
-Linear algebra is the arithmetic of many quantities at once. Systems of equations, regressions, input-output tables, Markov chains and the curvature of a function of several variables are all matrix problems. This panel uses Julia's standard library **LinearAlgebra**, which calls the LAPACK and BLAS routines of [Anderson, Bai, Bischof, Blackford, Demmel, Dongarra, Du Croz, Greenbaum, Hammarling, McKenney and Sorensen (1999)](#ref-anderson1999) and needs no installation.
+Linear algebra is the arithmetic of many quantities at once. Systems of equations, regressions, input-output tables, Markov chains and the curvature of a function of several variables are all matrix problems. This panel uses Julia's standard library **LinearAlgebra**, which calls the LAPACK and BLAS routines of [Anderson, Bai, Bischof, Blackford, Demmel, Dongarra, Du Croz, Greenbaum, Hammarling, McKenney and Sorensen (1999)](#ref-ABBBD...1999a) and needs no installation.
 
 | | |
 |---|---|
@@ -35,7 +35,7 @@ eigvals(A), svdvals(A), cond(A)
 
 ## References
 
-<a id="ref-anderson1999"></a>Anderson, E., Bai, Z., Bischof, C., Blackford, S., Demmel, J., Dongarra, J., Du Croz, J., Greenbaum, A., Hammarling, S., McKenney, A. and Sorensen, D. (1999). *LAPACK Users' Guide*, 3rd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719604](https://doi.org/10.1137/1.9780898719604)
+<a id="ref-ABBBD...1999a"></a>Anderson, E., Bai, Z., Bischof, C., Blackford, S., Demmel, J., Dongarra, J., Du Croz, J., Greenbaum, A., Hammarling, S., McKenney, A. and Sorensen, D. (1999). *LAPACK Users' Guide*, 3rd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719604](https://doi.org/10.1137/1.9780898719604)
 
 ## See Also
 - [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

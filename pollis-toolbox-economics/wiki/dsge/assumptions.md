@@ -4,7 +4,7 @@ A DSGE result rests on the model's equations as much as on its data, so its assu
 
 ## Rational Expectations and a Correct Model
 
-Agents in the model know its structure and form expectations from it. Forward-looking terms such as `c[1]` are therefore expectations computed by the model itself. A misspecified model gives precise but misleading answers, since the likelihood treats the equations as the true data-generating process. Parameters interpreted as structural may also absorb omitted features. [Del Negro, Giannoni and Schorfheide (2015)](#ref-DGS2015a) show how much the interpretation of an episode can depend on which financial frictions are included in a New Keynesian model, which illustrates the risk.
+Agents in the model know its structure and form expectations from it. Forward-looking terms such as `c[1]` are therefore expectations computed by the model itself. A misspecified model gives precise but misleading answers, since the likelihood treats the equations as the true data-generating process. Parameters interpreted as structural may also absorb omitted features. [Del Negro, Giannoni and Schorfheide (2015)](#ref-NGS2015a) show how much the interpretation of an episode can depend on which financial frictions are included in a New Keynesian model, which illustrates the risk.
 
 ## A Local Solution Around a Steady State
 
@@ -24,7 +24,7 @@ Estimation needs at least as many shocks as observables, or the likelihood is si
 
 <a id="ref-BK1980a"></a>Blanchard, O. J. and Kahn, C. M. (1980). The Solution of Linear Difference Models under Rational Expectations. *Econometrica* 48(5), 1305. [doi:10.2307/1912186](https://doi.org/10.2307/1912186)
 
-<a id="ref-DGS2015a"></a>Del Negro, M., Giannoni, M. P. and Schorfheide, F. (2015). Inflation in the Great Recession and New Keynesian Models. *American Economic Journal: Macroeconomics* 7(1), 168–196. [doi:10.1257/mac.20140097](https://doi.org/10.1257/mac.20140097)
+<a id="ref-NGS2015a"></a>Del Negro, M., Giannoni, M. P. and Schorfheide, F. (2015). Inflation in the Great Recession and New Keynesian Models. *American Economic Journal: Macroeconomics* 7(1), 168–196. [doi:10.1257/mac.20140097](https://doi.org/10.1257/mac.20140097)
 
 <a id="ref-Kle2000a"></a>Klein, P. (2000). Using the generalised Schur form to solve a multivariate linear rational expectations model. *Journal of Economic Dynamics and Control* 24(10), 1405–1423. [doi:10.1016/S0165-1889(99)00045-7](https://doi.org/10.1016/S0165-1889(99)00045-7)
 

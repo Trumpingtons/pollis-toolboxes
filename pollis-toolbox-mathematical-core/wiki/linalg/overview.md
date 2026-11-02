@@ -10,7 +10,7 @@ A matrix $A \in \mathbb{R}^{m \times n}$ is a linear map: it takes a vector $x \
 
 ## Factorise, Then Solve
 
-Numerical linear algebra never inverts a matrix to solve a system. It writes $A$ as a product of matrices that are easy to work with, triangular, orthogonal or diagonal, and solves with those ([Trefethen and Bau (1997)](#ref-trefethen1997); [Golub and Van Loan (2013)](#ref-golub2013)):
+Numerical linear algebra never inverts a matrix to solve a system. It writes $A$ as a product of matrices that are easy to work with, triangular, orthogonal or diagonal, and solves with those ([Trefethen and Bau (1997)](#ref-TB1997a); [Golub and Van Loan (2013)](#ref-GL2013a)):
 
 | Factorisation | Form | Used for |
 |---|---|---|
@@ -24,25 +24,25 @@ A factorisation costs about $n^3$ operations for an $n \times n$ matrix; each so
 
 ## Floating Point
 
-Computers hold about 16 significant decimal digits. Stable algorithms, such as LU with partial pivoting, Householder QR ([Householder (1958)](#ref-householder1958)) and the QR algorithm for eigenvalues ([Francis (1961)](#ref-francis1961)), give the exact answer to a problem within rounding of the one posed ([Higham (2002)](#ref-higham2002)). Whether that answer is close to the true one then depends on the problem alone, through its condition number.
+Computers hold about 16 significant decimal digits. Stable algorithms, such as LU with partial pivoting, Householder QR ([Householder (1958)](#ref-Hou1958a)) and the QR algorithm for eigenvalues ([Francis (1961)](#ref-Fra1961a)), give the exact answer to a problem within rounding of the one posed ([Higham (2002)](#ref-Hig2002b)). Whether that answer is close to the true one then depends on the problem alone, through its condition number.
 
 ## In Julia
 
-Julia's `LinearAlgebra` makes the structure of a matrix part of its type. `Symmetric(A)`, `Diagonal(d)` or `UpperTriangular(A)` send each operation to the method for that structure, and `A \ b` inspects a plain matrix to choose one ([Bezanson, Edelman, Karpinski and Shah (2017)](#ref-bezanson2017)).
+Julia's `LinearAlgebra` makes the structure of a matrix part of its type. `Symmetric(A)`, `Diagonal(d)` or `UpperTriangular(A)` send each operation to the method for that structure, and `A \ b` inspects a plain matrix to choose one ([Bezanson, Edelman, Karpinski and Shah (2017)](#ref-BEKS2017a)).
 
 ## References
 
-<a id="ref-bezanson2017"></a>Bezanson, J., Edelman, A., Karpinski, S. and Shah, V. B. (2017). Julia: a fresh approach to numerical computing. *SIAM Review* 59(1), 65–98. [doi:10.1137/141000671](https://doi.org/10.1137/141000671)
+<a id="ref-BEKS2017a"></a>Bezanson, J., Edelman, A., Karpinski, S. and Shah, V. B. (2017). Julia: a fresh approach to numerical computing. *SIAM Review* 59(1), 65–98. [doi:10.1137/141000671](https://doi.org/10.1137/141000671)
 
-<a id="ref-francis1961"></a>Francis, J. G. F. (1961). The QR transformation: a unitary analogue to the LR transformation, part 1. *The Computer Journal* 4(3), 265–271. [doi:10.1093/comjnl/4.3.265](https://doi.org/10.1093/comjnl/4.3.265)
+<a id="ref-Fra1961a"></a>Francis, J. G. F. (1961). The QR transformation: a unitary analogue to the LR transformation, part 1. *The Computer Journal* 4(3), 265–271. [doi:10.1093/comjnl/4.3.265](https://doi.org/10.1093/comjnl/4.3.265)
 
-<a id="ref-golub2013"></a>Golub, G. H. and Van Loan, C. F. (2013). *Matrix Computations*, 4th edition. Johns Hopkins University Press.
+<a id="ref-GL2013a"></a>Golub, G. H. and Van Loan, C. F. (2013). *Matrix Computations*, 4th edition. Johns Hopkins University Press.
 
-<a id="ref-higham2002"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
+<a id="ref-Hig2002b"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
 
-<a id="ref-householder1958"></a>Householder, A. S. (1958). Unitary triangularization of a nonsymmetric matrix. *Journal of the ACM* 5(4), 339–342. [doi:10.1145/320941.320947](https://doi.org/10.1145/320941.320947)
+<a id="ref-Hou1958a"></a>Householder, A. S. (1958). Unitary triangularization of a nonsymmetric matrix. *Journal of the ACM* 5(4), 339–342. [doi:10.1145/320941.320947](https://doi.org/10.1145/320941.320947)
 
-<a id="ref-trefethen1997"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
+<a id="ref-TB1997a"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

@@ -26,7 +26,7 @@
 
 ## Never `inv(A) * b`
 
-Forming the inverse costs about three times as much as one LU solve and is less accurate ([Higham (2002)](#ref-higham2002)). Use `A \ b`, or keep a factorisation. You rarely need the inverse itself; even its diagonal (for standard errors) comes more cheaply from a factorisation.
+Forming the inverse costs about three times as much as one LU solve and is less accurate ([Higham (2002)](#ref-Hig2002b)). Use `A \ b`, or keep a factorisation. You rarely need the inverse itself; even its diagonal (for standard errors) comes more cheaply from a factorisation.
 
 ## Least Squares: QR, Normal Equations or SVD?
 
@@ -34,7 +34,7 @@ Forming the inverse costs about three times as much as one LU solve and is less 
 |---|---|---|
 | QR (`A \ b`) | $\kappa(A)$ | The default |
 | Normal equations, $(A^\top A)\,x = A^\top b$ | $\kappa(A)^2$ | Only when $A$ is very well conditioned and $m \gg n$ |
-| SVD (`pinv`) | $\kappa(A)$ | Rank-deficient $A$; the minimum-norm solution ([Golub and Kahan (1965)](#ref-golub1965)) |
+| SVD (`pinv`) | $\kappa(A)$ | Rank-deficient $A$; the minimum-norm solution ([Golub and Kahan (1965)](#ref-GK1965a)) |
 
 ## Related Panels
 
@@ -44,9 +44,9 @@ Forming the inverse costs about three times as much as one LU solve and is less 
 
 ## References
 
-<a id="ref-golub1965"></a>Golub, G. H. and Kahan, W. (1965). Calculating the singular values and pseudo-inverse of a matrix. *Journal of the Society for Industrial and Applied Mathematics, Series B: Numerical Analysis* 2(2), 205–224. [doi:10.1137/0702016](https://doi.org/10.1137/0702016)
+<a id="ref-GK1965a"></a>Golub, G. H. and Kahan, W. (1965). Calculating the singular values and pseudo-inverse of a matrix. *Journal of the Society for Industrial and Applied Mathematics, Series B: Numerical Analysis* 2(2), 205–224. [doi:10.1137/0702016](https://doi.org/10.1137/0702016)
 
-<a id="ref-higham2002"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
+<a id="ref-Hig2002b"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md)

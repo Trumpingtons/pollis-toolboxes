@@ -24,15 +24,15 @@ Every tab then calls `forecast(model; h=h)` with the **Horizon** input, and read
 
 ## How the Advanced Forecasting Methods Differ in One Line Each
 
-BATS and TBATS combine a Box-Cox transformation, ARMA errors, a damped trend and several seasonal cycles in one state space model ([De Livera, Hyndman and Snyder (2011)](#ref-delivera2011)). The Theta method splits a series into a long-run line and a short-run line, which behaves like simple exponential smoothing with drift ([Fiorucci, Pellegrini, Louzada, Petropoulos and Koehler (2016)](#ref-fiorucci2016)). Croston's method smooths the size of each demand and the gap between demands separately ([Croston (1972)](#ref-croston1972)).
+BATS and TBATS combine a Box-Cox transformation, ARMA errors, a damped trend and several seasonal cycles in one state space model ([De Livera, Hyndman and Snyder (2011)](#ref-LHS2011a)). The Theta method splits a series into a long-run line and a short-run line, which behaves like simple exponential smoothing with drift ([Fiorucci, Pellegrini, Louzada, Petropoulos and Koehler (2016)](#ref-FPLPK2016a)). Croston's method smooths the size of each demand and the gap between demands separately ([Croston (1972)](#ref-Cro1972a)).
 
 ## References
 
-<a id="ref-croston1972"></a>Croston, J. D. (1972). Forecasting and stock control for intermittent demands. *Operational Research Quarterly* 23(3), 289–303. [doi:10.1057/jors.1972.50](https://doi.org/10.1057/jors.1972.50)
+<a id="ref-Cro1972a"></a>Croston, J. D. (1972). Forecasting and stock control for intermittent demands. *Operational Research Quarterly* 23(3), 289–303. [doi:10.1057/jors.1972.50](https://doi.org/10.1057/jors.1972.50)
 
-<a id="ref-delivera2011"></a>De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. *Journal of the American Statistical Association* 106(496), 1513–1527. [doi:10.1198/jasa.2011.tm09771](https://doi.org/10.1198/jasa.2011.tm09771)
+<a id="ref-LHS2011a"></a>De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. *Journal of the American Statistical Association* 106(496), 1513–1527. [doi:10.1198/jasa.2011.tm09771](https://doi.org/10.1198/jasa.2011.tm09771)
 
-<a id="ref-fiorucci2016"></a>Fiorucci, J. A., Pellegrini, T. R., Louzada, F., Petropoulos, F. and Koehler, A. B. (2016). Models for optimising the theta method and their relationship to state space models. *International Journal of Forecasting* 32(4), 1151–1161. [doi:10.1016/j.ijforecast.2016.02.005](https://doi.org/10.1016/j.ijforecast.2016.02.005)
+<a id="ref-FPLPK2016a"></a>Fiorucci, J. A., Pellegrini, T. R., Louzada, F., Petropoulos, F. and Koehler, A. B. (2016). Models for optimising the theta method and their relationship to state space models. *International Journal of Forecasting* 32(4), 1151–1161. [doi:10.1016/j.ijforecast.2016.02.005](https://doi.org/10.1016/j.ijforecast.2016.02.005)
 
 ## See Also
 

@@ -8,7 +8,7 @@ The **Normal Form** tab takes **Row Payoffs A** and **Column Payoffs B**, two ma
 
 ## The Zero Sum Tab
 
-The **Zero Sum** tab takes one **Payoff Matrix A**, and the column player receives minus that payoff, so each player's gain is the other's loss. The minimax theorem of [von Neumann (1928)](#ref-v1928a) gives such a game a single value, which every equilibrium shares. The **Minimax Solution** action computes security strategies by linear programming. A separate page, Zero-Sum Games, covers the mathematics. Equilibria are also computed by support enumeration in this tab, so the two routes can be compared.
+The **Zero Sum** tab takes one **Payoff Matrix A**, and the column player receives minus that payoff, so each player's gain is the other's loss. The minimax theorem of [von Neumann (1928)](#ref-Neu1928a) gives such a game a single value, which every equilibrium shares. The **Minimax Solution** action computes security strategies by linear programming. A separate page, Zero-Sum Games, covers the mathematics. Equilibria are also computed by support enumeration in this tab, so the two routes can be compared.
 
 ## The Evolutionary Tab
 
@@ -35,7 +35,7 @@ The **Potential** tab takes one matrix, **Potential P**, and gives both players 
 
 <a id="ref-TJ1978a"></a>Taylor, P. D. and Jonker, L. B. (1978). Evolutionary stable strategies and game dynamics. *Mathematical Biosciences* 40(1-2), 145–156. [doi:10.1016/0025-5564(78)90077-9](https://doi.org/10.1016/0025-5564(78)90077-9)
 
-<a id="ref-v1928a"></a>von Neumann, J. (1928). Zur Theorie der Gesellschaftsspiele. *Mathematische Annalen* 100(1), 295–320. [doi:10.1007/BF01448847](https://doi.org/10.1007/BF01448847)
+<a id="ref-Neu1928a"></a>von Neumann, J. (1928). Zur Theorie der Gesellschaftsspiele. *Mathematische Annalen* 100(1), 295–320. [doi:10.1007/BF01448847](https://doi.org/10.1007/BF01448847)
 
 ## See Also
 

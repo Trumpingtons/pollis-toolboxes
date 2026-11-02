@@ -10,7 +10,7 @@ A unique solution exists exactly when $A$ is nonsingular: $\det A \neq 0$, equiv
 
 ## Gaussian Elimination
 
-Elimination subtracts multiples of each row from the rows below until $A$ is upper triangular, then solves from the bottom up. Recorded as a factorisation, it is $PA = LU$: $L$ lower triangular with the multipliers, $U$ upper triangular, $P$ the row swaps. *Partial pivoting* swaps in the largest available entry at each step so the multipliers stay at most 1 in size, which keeps rounding errors small in practice ([Golub and Van Loan (2013)](#ref-golub2013)).
+Elimination subtracts multiples of each row from the rows below until $A$ is upper triangular, then solves from the bottom up. Recorded as a factorisation, it is $PA = LU$: $L$ lower triangular with the multipliers, $U$ upper triangular, $P$ the row swaps. *Partial pivoting* swaps in the largest available entry at each step so the multipliers stay at most 1 in size, which keeps rounding errors small in practice ([Golub and Van Loan (2013)](#ref-GL2013a)).
 
 Solving then takes two triangular solves:
 
@@ -32,7 +32,7 @@ For $n = 1000$, a factorisation takes well under a second; each further right-ha
 
 ## Accuracy
 
-LU with partial pivoting is backward stable in practice: the computed $\hat x$ solves $(A + \Delta A)\hat x = b$ with $\lVert \Delta A \rVert / \lVert A \rVert$ near machine precision ([Higham (2002)](#ref-higham2002)). The forward error is then bounded by the condition number:
+LU with partial pivoting is backward stable in practice: the computed $\hat x$ solves $(A + \Delta A)\hat x = b$ with $\lVert \Delta A \rVert / \lVert A \rVert$ near machine precision ([Higham (2002)](#ref-Hig2002b)). The forward error is then bounded by the condition number:
 
 $$\frac{\lVert \hat x - x \rVert}{\lVert x \rVert} \lesssim \kappa(A) \, \varepsilon_{\text{machine}}.$$
 
@@ -44,9 +44,9 @@ $$\frac{\lVert \hat x - x \rVert}{\lVert x \rVert} \lesssim \kappa(A) \, \vareps
 
 ## References
 
-<a id="ref-golub2013"></a>Golub, G. H. and Van Loan, C. F. (2013). *Matrix Computations*, 4th edition. Johns Hopkins University Press.
+<a id="ref-GL2013a"></a>Golub, G. H. and Van Loan, C. F. (2013). *Matrix Computations*, 4th edition. Johns Hopkins University Press.
 
-<a id="ref-higham2002"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
+<a id="ref-Hig2002b"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

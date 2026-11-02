@@ -20,7 +20,7 @@ $A\hat x$ is the orthogonal projection of $b$ onto the column space of $A$. The 
 | **Normal equations** | Form $A^\top A$, then Cholesky | Depends on $\kappa(A)^2$ |
 | **SVD** | $\hat x = V \Sigma^+ U^\top b$ | Depends on $\kappa(A)$; handles rank deficiency |
 
-Forming $A^\top A$ squares the condition number: with $\kappa(A) = 10^{6}$, the normal equations face $10^{12}$ and can lose twelve of sixteen digits where QR loses six ([Trefethen and Bau (1997)](#ref-trefethen1997), Lecture 19). Julia's `A \ b` on a tall matrix uses QR with column pivoting.
+Forming $A^\top A$ squares the condition number: with $\kappa(A) = 10^{6}$, the normal equations face $10^{12}$ and can lose twelve of sixteen digits where QR loses six ([Trefethen and Bau (1997)](#ref-TB1997a), Lecture 19). Julia's `A \ b` on a tall matrix uses QR with column pivoting.
 
 ## Polynomial Fitting
 
@@ -34,7 +34,7 @@ Ordinary least squares regression is this problem with $A$ the design matrix and
 
 ## References
 
-<a id="ref-trefethen1997"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
+<a id="ref-TB1997a"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

@@ -26,7 +26,7 @@ Keeping the first $k$ terms,
 
 $$A_k = \sum_{i=1}^{k} \sigma_i u_i v_i^\top,$$
 
-gives the closest matrix of rank $k$ to $A$, in both the 2-norm and the Frobenius norm ([Eckart and Young (1936)](#ref-eckart1936)):
+gives the closest matrix of rank $k$ to $A$, in both the 2-norm and the Frobenius norm ([Eckart and Young (1936)](#ref-EY1936a)):
 
 $$\lVert A - A_k \rVert_2 = \sigma_{k+1}, \qquad \lVert A - A_k \rVert_F = \sqrt{\sigma_{k+1}^2 + \dots + \sigma_{\min(m,n)}^2}.$$
 
@@ -34,13 +34,13 @@ This is the basis of principal components, of image and signal compression, of l
 
 ## Computing It
 
-[Golub and Kahan (1965)](#ref-golub1965) reduce $A$ to bidiagonal form with orthogonal transformations, then find the singular values of the bidiagonal matrix; LAPACK uses refinements of this. The cost is about $4mn^2$ for $m \ge n$, several times a QR. In Julia: `svd(A)` for the factors, `svdvals(A)` for the values only.
+[Golub and Kahan (1965)](#ref-GK1965a) reduce $A$ to bidiagonal form with orthogonal transformations, then find the singular values of the bidiagonal matrix; LAPACK uses refinements of this. The cost is about $4mn^2$ for $m \ge n$, several times a QR. In Julia: `svd(A)` for the factors, `svdvals(A)` for the values only.
 
 ## References
 
-<a id="ref-eckart1936"></a>Eckart, C. and Young, G. (1936). The approximation of one matrix by another of lower rank. *Psychometrika* 1(3), 211–218. [doi:10.1007/BF02288367](https://doi.org/10.1007/BF02288367)
+<a id="ref-EY1936a"></a>Eckart, C. and Young, G. (1936). The approximation of one matrix by another of lower rank. *Psychometrika* 1(3), 211–218. [doi:10.1007/BF02288367](https://doi.org/10.1007/BF02288367)
 
-<a id="ref-golub1965"></a>Golub, G. H. and Kahan, W. (1965). Calculating the singular values and pseudo-inverse of a matrix. *Journal of the Society for Industrial and Applied Mathematics, Series B: Numerical Analysis* 2(2), 205–224. [doi:10.1137/0702016](https://doi.org/10.1137/0702016)
+<a id="ref-GK1965a"></a>Golub, G. H. and Kahan, W. (1965). Calculating the singular values and pseudo-inverse of a matrix. *Journal of the Society for Industrial and Applied Mathematics, Series B: Numerical Analysis* 2(2), 205–224. [doi:10.1137/0702016](https://doi.org/10.1137/0702016)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

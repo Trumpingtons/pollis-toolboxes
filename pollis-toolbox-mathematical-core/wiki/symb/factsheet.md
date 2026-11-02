@@ -1,6 +1,6 @@
 # Symbolic Math — Factsheet
 
-The Symbolic Math panel works with expressions as formulas rather than numbers, in the way of a calculus or algebra textbook such as [Apostol (1967)](#ref-Apo1967a) or [Stewart, Clegg and Watson (2020)](#ref-SCW2020a). An answer stays exact, for example a fraction remains a fraction. Symbolics.jl, described in [Gowda, Ma, Cheli, Gwóźzdź, Shah, Edelman and Rackauckas (2022)](#ref-GMCGSER2022a), handles the algebra and derivatives, SymbolicNumericIntegration.jl finds antiderivatives, and Nemo.jl factors polynomials.
+The Symbolic Math panel works with expressions as formulas rather than numbers, in the way of a calculus or algebra textbook such as [Apostol (1967)](#ref-Apo1967a) or [Stewart, Clegg and Watson (2020)](#ref-SCW2020a). An answer stays exact, for example a fraction remains a fraction. Symbolics.jl, described in [Gowda, Ma, Cheli, Gwóźzdź, Shah, Edelman and Rackauckas (2022)](#ref-GMCGS...2022a), handles the algebra and derivatives, SymbolicNumericIntegration.jl finds antiderivatives, and Nemo.jl factors polynomials.
 
 | | |
 |---|---|
@@ -22,7 +22,7 @@ Results are limited by the packages: some integrals have no elementary answer, s
 
 <a id="ref-Apo1967a"></a>Apostol, T. M. (1967). Calculus, Volume 1. *Wiley*.
 
-<a id="ref-GMCGSER2022a"></a>Gowda, S., Ma, Y., Cheli, A., Gwóźzdź, M., Shah, V. B., Edelman, A. and Rackauckas, C. (2022). High-Performance Symbolic-Numerics via Multiple Dispatch. *ACM Communications in Computer Algebra* 55(3), 92–96. [doi:10.1145/3511528.3511535](https://doi.org/10.1145/3511528.3511535)
+<a id="ref-GMCGS...2022a"></a>Gowda, S., Ma, Y., Cheli, A., Gwóźzdź, M., Shah, V. B., Edelman, A. and Rackauckas, C. (2022). High-Performance Symbolic-Numerics via Multiple Dispatch. *ACM Communications in Computer Algebra* 55(3), 92–96. [doi:10.1145/3511528.3511535](https://doi.org/10.1145/3511528.3511535)
 
 <a id="ref-SB1994a"></a>Simon, C. P. and Blume, L. (1994). Mathematics for Economists. *W. W. Norton*.
 

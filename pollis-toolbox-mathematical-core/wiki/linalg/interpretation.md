@@ -29,7 +29,7 @@ The singular values are the lengths of the semi-axes of the ellipse (ellipsoid) 
 - **Rank**: the number of singular values above a tolerance.
 - **Condition number**: $\sigma_1 / \sigma_n$.
 - **Energy**: $\sigma_i^2 / \sum_j \sigma_j^2$ is the share of $\lVert A \rVert_F^2$ carried by component $i$. For a centred data matrix, this is the share of variance explained by the $i$-th principal component.
-- **Low rank**: the error of the best rank-$k$ approximation is $\sigma_{k+1}$ ([Eckart and Young (1936)](#ref-eckart1936)).
+- **Low rank**: the error of the best rank-$k$ approximation is $\sigma_{k+1}$ ([Eckart and Young (1936)](#ref-EY1936a)).
 
 ## Least-Squares Coefficients
 
@@ -37,7 +37,7 @@ Each coefficient is the change in the fitted value per unit change in its column
 
 ## References
 
-<a id="ref-eckart1936"></a>Eckart, C. and Young, G. (1936). The approximation of one matrix by another of lower rank. *Psychometrika* 1(3), 211–218. [doi:10.1007/BF02288367](https://doi.org/10.1007/BF02288367)
+<a id="ref-EY1936a"></a>Eckart, C. and Young, G. (1936). The approximation of one matrix by another of lower rank. *Psychometrika* 1(3), 211–218. [doi:10.1007/BF02288367](https://doi.org/10.1007/BF02288367)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Decision Guide](decision-guide.md)

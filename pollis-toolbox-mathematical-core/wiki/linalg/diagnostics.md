@@ -34,7 +34,7 @@ A small determinant does **not** mean ill-conditioning: $10^{-3} I$ has determin
 
 ## Eigenvalue Sensitivity
 
-For a symmetric matrix, eigenvalues move no more than the perturbation of $A$. For a non-symmetric one, they can move by $\kappa(V)$ times as much, where $V$ holds the eigenvectors ([Golub and Van Loan (2013)](#ref-golub2013)). `cond(V)` near 1 is safe; a large value means the eigenvalues are fragile.
+For a symmetric matrix, eigenvalues move no more than the perturbation of $A$. For a non-symmetric one, they can move by $\kappa(V)$ times as much, where $V$ holds the eigenvectors ([Golub and Van Loan (2013)](#ref-GL2013a)). `cond(V)` near 1 is safe; a large value means the eigenvalues are fragile.
 
 ## Common Failures
 
@@ -44,7 +44,7 @@ For a symmetric matrix, eigenvalues move no more than the perturbation of $A$. F
 
 ## References
 
-<a id="ref-golub2013"></a>Golub, G. H. and Van Loan, C. F. (2013). *Matrix Computations*, 4th edition. Johns Hopkins University Press.
+<a id="ref-GL2013a"></a>Golub, G. H. and Van Loan, C. F. (2013). *Matrix Computations*, 4th edition. Johns Hopkins University Press.
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

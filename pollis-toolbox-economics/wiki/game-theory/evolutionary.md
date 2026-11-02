@@ -8,7 +8,7 @@ Replicator dynamics, formulated by [Taylor and Jonker (1978)](#ref-TJ1978a), sta
 
 ## What Makes a Strategy Evolutionarily Stable
 
-A strategy is evolutionarily stable when, in a population that plays it, a small group of mutants earns less than the incumbents. The definition comes from [Maynard Smith and Price (1973)](#ref-SP1973a) and was developed at length in [Maynard Smith (1982)](#ref-Smi1982a). Formally, x is stable if each mutant y earns less against x, or earns the same against x but less against itself. Stability is stronger than being a Nash equilibrium, and every evolutionarily stable strategy is an asymptotically stable rest point of the replicator dynamics, though the converse can fail. Cyclic games such as rock-paper-scissors illustrate how an interior equilibrium may be stable, neutrally stable or unstable, depending on the size of the win and loss payoffs.
+A strategy is evolutionarily stable when, in a population that plays it, a small group of mutants earns less than the incumbents. The definition comes from [Smith and Price (1973)](#ref-SP1973a) and was developed at length in [Smith (1982)](#ref-Smi1982a). Formally, x is stable if each mutant y earns less against x, or earns the same against x but less against itself. Stability is stronger than being a Nash equilibrium, and every evolutionarily stable strategy is an asymptotically stable rest point of the replicator dynamics, though the converse can fail. Cyclic games such as rock-paper-scissors illustrate how an interior equilibrium may be stable, neutrally stable or unstable, depending on the size of the win and loss payoffs.
 
 ## References
 

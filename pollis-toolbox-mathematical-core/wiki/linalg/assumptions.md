@@ -22,11 +22,11 @@ A matrix written with integers only, such as `[4 1; 1 5]`, holds integers. Most 
 
 ## Well-Posed Problems
 
-The answer is only as good as the data. When $\kappa(A)$ is near $10^{k}$, about $k$ of the 16 digits can be lost, whatever the algorithm ([Higham (2002)](#ref-higham2002)). A matrix with $\kappa(A)$ near $10^{16}$ is singular for practical purposes.
+The answer is only as good as the data. When $\kappa(A)$ is near $10^{k}$, about $k$ of the 16 digits can be lost, whatever the algorithm ([Higham (2002)](#ref-Hig2002b)). A matrix with $\kappa(A)$ near $10^{16}$ is singular for practical purposes.
 
 ## References
 
-<a id="ref-higham2002"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
+<a id="ref-Hig2002b"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)

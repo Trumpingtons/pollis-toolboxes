@@ -4,7 +4,7 @@ A zero-sum game has payoffs that add to zero in every cell, so its analysis need
 
 ## How the Minimax Theorem Gives a Game Value
 
-A player's security level is the best payoff that can be guaranteed whatever the opponent does. [von Neumann (1928)](#ref-v1928a) proved that with mixed strategies, the row player's maximin level equals the column player's minimax level. The common number is the value of the game. Equilibrium strategies are precisely the security strategies, and any pairing of an optimal row strategy with an optimal column strategy is an equilibrium, so players need no coordination. Several equilibria may exist, and all of them have the same value.
+A player's security level is the best payoff that can be guaranteed whatever the opponent does. [von Neumann (1928)](#ref-Neu1928a) proved that with mixed strategies, the row player's maximin level equals the column player's minimax level. The common number is the value of the game. Equilibrium strategies are precisely the security strategies, and any pairing of an optimal row strategy with an optimal column strategy is an equilibrium, so players need no coordination. Several equilibria may exist, and all of them have the same value.
 
 ## How Linear Programming Solves a Zero-Sum Game
 
@@ -12,7 +12,7 @@ Finding a security strategy is a linear programme. The row player chooses probab
 
 ## References
 
-<a id="ref-v1928a"></a>von Neumann, J. (1928). Zur Theorie der Gesellschaftsspiele. *Mathematische Annalen* 100(1), 295–320. [doi:10.1007/BF01448847](https://doi.org/10.1007/BF01448847)
+<a id="ref-Neu1928a"></a>von Neumann, J. (1928). Zur Theorie der Gesellschaftsspiele. *Mathematische Annalen* 100(1), 295–320. [doi:10.1007/BF01448847](https://doi.org/10.1007/BF01448847)
 
 ## See Also
 

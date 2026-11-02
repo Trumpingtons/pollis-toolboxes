@@ -1,6 +1,6 @@
 # Nonlinear Systems — Factsheet
 
-The Nonlinear Systems panel finds values that make one equation, or several equations at once, equal to zero. Root finding underlies market equilibria, first-order conditions, implied volatilities and steady states, as [Judd (1998)](#ref-Jud1998a) shows for economic models. NonlinearSolve.jl, described in [Pal, Holtorf, Larsson, Loman, Utkarsh, Schaefer, Qu, Edelman and Rackauckas (2024)](#ref-PHLLUSQER2024a), supplies the algorithms, with one interface for all of them.
+The Nonlinear Systems panel finds values that make one equation, or several equations at once, equal to zero. Root finding underlies market equilibria, first-order conditions, implied volatilities and steady states, as [Judd (1998)](#ref-Jud1998a) shows for economic models. NonlinearSolve.jl, described in [Pal, Holtorf, Larsson, Loman, Utkarsh, Schaefer, Qu, Edelman and Rackauckas (2024)](#ref-PHLLU...2024a), supplies the algorithms, with one interface for all of them.
 
 | | |
 |---|---|
@@ -22,7 +22,7 @@ The panel finds one solution per run, and repeated solves from different starts 
 
 <a id="ref-Jud1998a"></a>Judd, K. L. (1998). Numerical Methods in Economics. *MIT Press*.
 
-<a id="ref-PHLLUSQER2024a"></a>Pal, A., Holtorf, F., Larsson, A., Loman, T., Utkarsh, Schaefer, F., Qu, Q., Edelman, A. and Rackauckas, C. (2024). NonlinearSolve.jl: High-Performance and Robust Solvers for Systems of Nonlinear Equations in Julia. *arXiv*. [Link](https://arxiv.org/abs/2403.16341)
+<a id="ref-PHLLU...2024a"></a>Pal, A., Holtorf, F., Larsson, A., Loman, T., Utkarsh, Schaefer, F., Qu, Q., Edelman, A. and Rackauckas, C. (2024). NonlinearSolve.jl: High-Performance and Robust Solvers for Systems of Nonlinear Equations in Julia. *arXiv*. [Link](https://arxiv.org/abs/2403.16341)
 
 ## See Also
 

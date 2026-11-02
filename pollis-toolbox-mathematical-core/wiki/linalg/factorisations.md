@@ -21,7 +21,7 @@ It exists exactly when $A$ is symmetric positive definite, so attempting it is a
 
 $$A = QR, \qquad Q^\top Q = I, \quad R \text{ upper triangular}$$
 
-It exists for any $m \times n$ matrix. Julia computes it with Householder reflections ([Householder (1958)](#ref-householder1958)), which are backward stable. Because $Q$ preserves lengths, $\lVert Ax - b \rVert = \lVert Rx - Q^\top b \rVert$, which turns least squares into a triangular solve. The columns of $Q$ are an orthonormal basis for the column space of $A$. With column pivoting, `qr(A, ColumnNorm())`, it also reveals the rank.
+It exists for any $m \times n$ matrix. Julia computes it with Householder reflections ([Householder (1958)](#ref-Hou1958a)), which are backward stable. Because $Q$ preserves lengths, $\lVert Ax - b \rVert = \lVert Rx - Q^\top b \rVert$, which turns least squares into a triangular solve. The columns of $Q$ are an orthonormal basis for the column space of $A$. With column pivoting, `qr(A, ColumnNorm())`, it also reveals the rank.
 
 ## Which One
 
@@ -45,15 +45,15 @@ The factorisation object also gives `det(F)` and `logdet(F)`, the latter safe fr
 
 ## Further Reading
 
-[Trefethen and Bau (1997)](#ref-trefethen1997) treat LU, QR and Cholesky in Lectures 7–11 and 20–23; [Strang (2023)](#ref-strang2023) is a gentler introduction.
+[Trefethen and Bau (1997)](#ref-TB1997a) treat LU, QR and Cholesky in Lectures 7–11 and 20–23; [Strang (2023)](#ref-Str2023a) is a gentler introduction.
 
 ## References
 
-<a id="ref-householder1958"></a>Householder, A. S. (1958). Unitary triangularization of a nonsymmetric matrix. *Journal of the ACM* 5(4), 339–342. [doi:10.1145/320941.320947](https://doi.org/10.1145/320941.320947)
+<a id="ref-Hou1958a"></a>Householder, A. S. (1958). Unitary triangularization of a nonsymmetric matrix. *Journal of the ACM* 5(4), 339–342. [doi:10.1145/320941.320947](https://doi.org/10.1145/320941.320947)
 
-<a id="ref-strang2023"></a>Strang, G. (2023). *Introduction to Linear Algebra*, 6th edition. Wellesley-Cambridge Press.
+<a id="ref-Str2023a"></a>Strang, G. (2023). *Introduction to Linear Algebra*, 6th edition. Wellesley-Cambridge Press.
 
-<a id="ref-trefethen1997"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
+<a id="ref-TB1997a"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)
