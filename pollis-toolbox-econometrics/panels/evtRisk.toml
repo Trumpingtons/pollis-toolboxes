@@ -88,6 +88,55 @@ key = "EKM1997a"
 [[references]]
 key = "MF2000a"
 
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Pic1975a"
+title = "Statistical Inference Using Extreme Order Statistics"
+authors = "Pickands, J."
+year = 1975
+journal = "The Annals of Statistics"
+doi = "10.1214/aos/1176343003"
+openAccess = true
+
+[[references]]
+key = "HW1987a"
+title = "Parameter and Quantile Estimation for the Generalized Pareto Distribution"
+authors = "Hosking, J. R.M.; Wallis, J. R."
+year = 1987
+journal = "Technometrics"
+doi = "10.1080/00401706.1987.10488243"
+openAccess = false
+
+[[references]]
+key = "DS1990a"
+title = "Models for Exceedances Over High Thresholds"
+authors = "Davison, A. C.; Smith, R. L."
+year = 1990
+journal = "Journal of the Royal Statistical Society Series B: Statistical Methodology"
+doi = "10.1111/j.2517-6161.1990.tb01796.x"
+openAccess = false
+
+[[references]]
+key = "ADEH1999a"
+title = "Coherent Measures of Risk"
+authors = "Artzner, Philippe; Delbaen, Freddy; Eber, Jean-Marc; Heath, David"
+year = 1999
+journal = "Mathematical Finance"
+doi = "10.1111/1467-9965.00068"
+openAccess = true
+
+[[references]]
+key = "AT2002a"
+title = "Expected Shortfall: A Natural Coherent Alternative to Value at Risk"
+authors = "Acerbi, Carlo; Tasche, Dirk"
+year = 2002
+journal = "Economic Notes"
+doi = "10.1111/1468-0300.00091"
+openAccess = true
+
 [[models]]
 id = "rl"
 label = "Return Levels"

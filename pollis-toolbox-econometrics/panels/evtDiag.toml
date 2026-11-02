@@ -76,6 +76,122 @@ key = "JFGR2024a"
 [[references]]
 key = "BGST2004a"
 
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Col2001a"
+title = "An Introduction to Statistical Modeling of Extreme Values"
+authors = "Coles, S."
+year = 2001
+journal = "Springer London"
+doi = "10.1007/978-1-4471-3675-0"
+openAccess = false
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "FT1928a"
+title = "Limiting forms of the frequency distribution of the largest or smallest member of a sample"
+authors = "Fisher, R. A.; Tippett, L. H. C."
+year = 1928
+journal = "Mathematical Proceedings of the Cambridge Philosophical Society"
+doi = "10.1017/S0305004100015681"
+openAccess = false
+
+[[references]]
+key = "Gne1943a"
+title = "Sur La Distribution Limite Du Terme Maximum D'Une Serie Aleatoire"
+authors = "Gnedenko, B."
+year = 1943
+journal = "The Annals of Mathematics"
+doi = "10.2307/1968974"
+openAccess = false
+
+[[references]]
+key = "Jen1955a"
+title = "The frequency distribution of the annual maximum (or minimum) values of meteorological elements"
+authors = "Jenkinson, A. F."
+year = 1955
+journal = "Quarterly Journal of the Royal Meteorological Society"
+doi = "10.1002/qj.49708134804"
+openAccess = false
+
+[[references]]
+key = "BH1974a"
+title = "Residual Life Time at Great Age"
+authors = "Balkema, A. A.; de Haan, L."
+year = 1974
+journal = "The Annals of Probability"
+doi = "10.1214/aop/1176996548"
+openAccess = true
+
+[[references]]
+key = "Hil1975a"
+title = "A Simple General Approach to Inference About the Tail of a Distribution"
+authors = "Hill, Bruce M."
+year = 1975
+journal = "The Annals of Statistics"
+doi = "10.1214/aos/1176343247"
+openAccess = true
+
+[[references]]
+key = "Pic1975a"
+title = "Statistical Inference Using Extreme Order Statistics"
+authors = "Pickands, J."
+year = 1975
+journal = "The Annals of Statistics"
+doi = "10.1214/aos/1176343003"
+openAccess = true
+
+[[references]]
+key = "Lea1983a"
+title = "Extremes and local dependence in stationary sequences"
+authors = "Leadbetter, M. R."
+year = 1983
+journal = "Zeitschrift f�r Wahrscheinlichkeitstheorie und Verwandte Gebiete"
+doi = "10.1007/BF00532484"
+openAccess = true
+
+[[references]]
+key = "HWW1985a"
+title = "Estimation of the Generalized Extreme-Value Distribution by the Method of Probability-Weighted Moments"
+authors = "Hosking, J. R. M.; Wallis, J. R.; Wood, E. F."
+year = 1985
+journal = "Technometrics"
+doi = "10.1080/00401706.1985.10488049"
+openAccess = false
+
+[[references]]
+key = "HW1987a"
+title = "Parameter and Quantile Estimation for the Generalized Pareto Distribution"
+authors = "Hosking, J. R.M.; Wallis, J. R."
+year = 1987
+journal = "Technometrics"
+doi = "10.1080/00401706.1987.10488243"
+openAccess = false
+
+[[references]]
+key = "DS1990a"
+title = "Models for Exceedances Over High Thresholds"
+authors = "Davison, A. C.; Smith, R. L."
+year = 1990
+journal = "Journal of the Royal Statistical Society Series B: Statistical Methodology"
+doi = "10.1111/j.2517-6161.1990.tb01796.x"
+openAccess = false
+
+[[references]]
+key = "DRH2000a"
+title = "How to make a Hill plot"
+authors = "Drees, Holger; Resnick, Sidney; de Haan, Laurens"
+year = 2000
+journal = "The Annals of Statistics"
+doi = "10.1214/aos/1016120372"
+openAccess = true
+
 [[models]]
 id = "me"
 label = "Mean Excess"
