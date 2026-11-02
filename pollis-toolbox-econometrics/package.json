@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
   "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

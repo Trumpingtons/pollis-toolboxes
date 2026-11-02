@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-economics",
   "displayName": "Economics Toolbox",
   "description": "Pollis Economics Toolbox: business cycle filters, discrete-time stochastic volatility models, DSGE models, VAR/VECM systems, heterogeneous-agent models, continuous-time macro-finance and game theory.",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
