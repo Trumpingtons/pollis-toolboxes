@@ -1,6 +1,6 @@
 # Finance Toolbox
 
-The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, time-series forecasting, and Bayesian asset-pricing factor models.
+The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.
 
 Installing it adds the **Finance** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
@@ -18,6 +18,10 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | Automatic Time-Series Forecasting | Auto ARIMA, auto ETS, auto ARARMA and a race between models | [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
 | Bayesian Linear Stochastic Discount Factor | Bayesian SDF estimation with spike-and-slab factor selection | [BayesianFactorZoo.jl](https://github.com/eohne/BayesianFactorZoo.jl) |
 | Fama-MacBeth Regression | Bayesian and classical Fama-MacBeth regressions of returns on factors | [BayesianFactorZoo.jl](https://github.com/eohne/BayesianFactorZoo.jl), [FamaFrenchData.jl](https://github.com/tbeason/FamaFrenchData.jl) |
+| Generalized Extreme Value Distribution | Block maxima: GEV fits by maximum likelihood, probability-weighted moments and Bayesian estimation, with return levels | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
+| Generalized Pareto Distribution | Peaks over threshold: threshold selection and GP fits to exceedances | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
+| EVT Risk Measures | Return levels, peaks-over-threshold analysis, and extreme value VaR and expected shortfall | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
+| EVT Diagnostics | Threshold selection and tail index estimation for extreme value models | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
 
 ## Requirements
 
