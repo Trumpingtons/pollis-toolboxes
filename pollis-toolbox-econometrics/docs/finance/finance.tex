@@ -9,9 +9,9 @@
 
 \nmhead{Finance Toolbox}
   {Finance Toolbox}
-  {What its nine panels are for, and when to use each.}
+  {What its panels are for, and when to use each.}
 
-Installing the toolbox adds the submenu \menupath{Extend \gt Finance}, with nine panels. Each has an example you can edit and run, and actions on its results.
+Installing the toolbox adds the submenu \menupath{Extend \gt Finance}, with these panels. Each has an example you can edit and run, and actions on its results.
 
 \medskip
 {\small
@@ -22,6 +22,7 @@ Measuring Volatility & You have daily open, high, low and close prices and want 
 ARIMAX Models & One series is forecast from its own past, with or without a seasonal pattern or other variables that drive it. \\
 GARCH-Type Models & Volatility clusters and you want it day by day, its forecast, Value-at-Risk or changing correlations. \\
 Regime Switching Models & A relationship seems to change between calm and turbulent periods. \\
+Point Processes & Events arrive at random times, such as trades, orders or defaults, and you want their rate, whether they excite one another, or simulated ones. \\
 Advanced Time-Series Forecasting & A series has several seasonal periods or many zeros, or you need a hard-to-beat benchmark. \\
 Neural Network Time-Series Forecasting & Several series mix short patterns with long cycles, and a simple forecast is not enough. \\
 Automatic Time-Series Forecasting & You want a forecast without choosing the model by hand. \\
@@ -59,6 +60,9 @@ Three tabs. The panel's title is ARIMA Models. \package{StateSpaceModels}{https:
 \nmsection{Regime Switching Models}
 \package{MarSwitching}{https://github.com/m-dadej/MarSwitching.jl} lets coefficients and variance change with an unobserved regime that follows a Markov chain, as in \nmcite{hamilton1989}{Hamilton (1989)}. Markov-Switching Regression gives one set of coefficients per regime, and Markov-Switching Autoregression one set of autoregressive dynamics. Markov-Switching ARCH lets volatility cluster within each regime. Time-Varying Transitions makes the switching probabilities depend on an indicator (\nmcite{filardo1994}{Filardo 1994}). Regimes are inferred, not observed, so check the estimates with Stability Across Starting Values and the number of regimes with AIC and BIC.
 
+\nmsection{Point Processes}
+The submenu \menupath{Point Processes} has two panels, Model and Simulate, for events that arrive at random times: trades and orders in high-frequency data, or defaults that spread from one firm to another (\nmcite{bacry2015}{Bacry, Mastromatteo and Muzy 2015}). Both cover five processes. Poisson has a constant rate, Inhomogeneous a rate that changes with time, and Cox a rate that is itself random. Hawkes is self-exciting: each event raises the rate for a while, as in \nmcite{hawkes1971}{Hawkes (1971)}, and its branching ratio, below 1 for a stable process, is the share of events triggered by earlier ones. Network Hawkes lets the events of one series excite the others along the links of a network. Model fits a process to event times with \package{PointProcesses}{https://github.com/JoseKling/PointProcesses.jl}, \package{HawkesProcesses}{https://github.com/dm13450/HawkesProcesses.jl} and \package{NetworkHawkesProcesses}{https://github.com/cswaney/NetworkHawkesProcesses.jl}; the Time-Rescaling Test and its Q-Q Plot check the fit (\nmcite{ogata1988}{Ogata 1988}), and Next Event Time and Expected Count predict. Simulate draws events from a process with the parameters given, and Count vs Theory and Multiple Seeds compare them with what the process should give.
+
 \nmsection{Advanced Time-Series Forecasting}
 Three methods from \package{Durbyn}{https://github.com/taf-society/Durbyn.jl}. BATS and TBATS (\nmcite{delivera2011}{De Livera, Hyndman and Snyder 2011}) handle several or non-integer seasonal periods, such as hourly data with daily and weekly cycles. The Theta Method (\nmcite{assimakopoulos2000}{Assimakopoulos and Nikolopoulos 2000}) is a simple benchmark for monthly or yearly series. Intermittent Demand is for sparse series with many zeros: \nmcite{croston1972}{Croston (1972)} smooths demand sizes and intervals separately, and SBA and SBJ correct its upward bias, SBA being the correction of \nmcite{syntetos2005}{Syntetos and Boylan (2005)}. Demand Pattern classifies a series before you choose, and Holdout Accuracy scores the forecast on data the model has not seen.
 
@@ -92,6 +96,7 @@ Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and Mac
 {\footnotesize\sloppy
 \nmref{alizadeh2002}{Alizadeh, S., Brandt, M. W. and Diebold, F. X. (2002). Range-based estimation of stochastic volatility models. \emph{The Journal of Finance} 57(3), 1047--1091. \nmdoi{10.1111/1540-6261.00454}}
 \nmref{assimakopoulos2000}{Assimakopoulos, V. and Nikolopoulos, K. (2000). The theta model: a decomposition approach to forecasting. \emph{International Journal of Forecasting} 16(4), 521--530. \nmdoi{10.1016/S0169-2070(00)00066-2}}
+\nmref{bacry2015}{Bacry, E., Mastromatteo, I. and Muzy, J.-F. (2015). Hawkes processes in finance. \emph{Market Microstructure and Liquidity} 1, 1550005. \nmdoi{10.1142/S2382626615500057}}
 \nmref{bollerslev1986}{Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. \emph{Journal of Econometrics} 31(3), 307--327. \nmdoi{10.1016/0304-4076(86)90063-1}}
 \nmref{bryzgalova2023}{Bryzgalova, S., Huang, J. and Julliard, C. (2023). Bayesian solutions for the factor zoo: We just ran two quadrillion models. \emph{The Journal of Finance} 78(1), 487--557. \nmdoi{10.1111/jofi.13197}}
 \nmref{croston1972}{Croston, J. D. (1972). Forecasting and stock control for intermittent demands. \emph{Journal of the Operational Research Society} 23(3), 289--303. \nmdoi{10.1057/jors.1972.50}}
@@ -103,12 +108,14 @@ Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and Mac
 \nmref{garman1980}{Garman, M. B. and Klass, M. J. (1980). On the estimation of security price volatilities from historical data. \emph{The Journal of Business} 53(1), 67--78. \nmdoi{10.1086/296072}}
 \nmref{glosten1993}{Glosten, L. R., Jagannathan, R. and Runkle, D. E. (1993). On the relation between the expected value and the volatility of the nominal excess return on stocks. \emph{The Journal of Finance} 48(5), 1779--1801. \nmdoi{10.1111/j.1540-6261.1993.tb05128.x}}
 \nmref{hamilton1989}{Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. \emph{Econometrica} 57(2), 357--384. \nmdoi{10.2307/1912559}}
+\nmref{hawkes1971}{Hawkes, A. G. (1971). Spectra of some self-exciting and mutually exciting point processes. \emph{Biometrika} 58(1), 83--90. \nmdoi{10.1093/biomet/58.1.83}}
 \nmref{huang2019}{Huang, S., Wang, D., Wu, X. and Tang, A. (2019). DSANet: Dual self-attention network for multivariate time series forecasting. In \emph{Proceedings of the 28th ACM International Conference on Information and Knowledge Management}, 2129--2132. \nmdoi{10.1145/3357384.3358132}}
 \nmref{hyndman2008}{Hyndman, R. J. and Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. \emph{Journal of Statistical Software} 27(3). \nmdoi{10.18637/jss.v027.i03}}
 \nmref{hyndman2002}{Hyndman, R. J., Koehler, A. B., Snyder, R. D. and Grose, S. (2002). A state space framework for automatic forecasting using exponential smoothing methods. \emph{International Journal of Forecasting} 18(3), 439--454. \nmdoi{10.1016/S0169-2070(01)00110-8}}
 \nmref{kan1999}{Kan, R. and Zhang, C. (1999). Two-pass tests of asset pricing models with useless factors. \emph{The Journal of Finance} 54(1), 203--235. \nmdoi{10.1111/0022-1082.00102}}
 \nmref{lai2018}{Lai, G., Chang, W.-C., Yang, Y. and Liu, H. (2018). Modeling long- and short-term temporal patterns with deep neural networks. In \emph{The 41st International ACM SIGIR Conference on Research \& Development in Information Retrieval}, 95--104. \nmdoi{10.1145/3209978.3210006}}
 \nmref{nelson1991}{Nelson, D. B. (1991). Conditional heteroskedasticity in asset returns: A new approach. \emph{Econometrica} 59(2), 347--370. \nmdoi{10.2307/2938260}}
+\nmref{ogata1988}{Ogata, Y. (1988). Statistical models for earthquake occurrences and residual analysis for point processes. \emph{Journal of the American Statistical Association} 83(401), 9--27. \nmdoi{10.1080/01621459.1988.10478560}}
 \nmref{parkinson1980}{Parkinson, M. (1980). The extreme value method for estimating the variance of the rate of return. \emph{The Journal of Business} 53(1), 61--65. \nmdoi{10.1086/296071}}
 \nmref{parzen1982}{Parzen, E. (1982). ARARMA models for time series analysis and forecasting. \emph{Journal of Forecasting} 1(1), 67--82. \nmdoi{10.1002/for.3980010108}}
 \nmref{qin2017}{Qin, Y., Song, D., Chen, H., Cheng, W., Jiang, G. and Cottrell, G. W. (2017). A dual-stage attention-based recurrent neural network for time series prediction. In \emph{Proceedings of the Twenty-Sixth International Joint Conference on Artificial Intelligence}, 2627--2633. \nmdoi{10.24963/ijcai.2017/366}}

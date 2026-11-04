@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
-  "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.",
-  "version": "0.1.6",
+  "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.",
+  "version": "0.1.7",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -28,6 +28,7 @@
           }
         ],
         "submenus": [
+          { "id": "pp", "title": "Point Processes", "group": "1_et", "order": 5 },
           { "id": "ev", "title": "Extreme Value and Rare Events", "group": "4_et", "order": 1 }
         ],
         "panels": [
@@ -36,6 +37,8 @@
           { "id": "vcm", "command": "chiara.statistics.vcm", "title": "GARCH-Type Models", "group": "1_et", "order": 3, "data": "panels/vcm.toml", "defaultModel": "garch", "decisionFirstColumn": "Model" },
           { "id": "ctsv", "command": "chiara.statistics.tvm.ctsv", "title": "Continuous-Time Stochastic Volatility Models", "group": "1_et", "order": 3.5, "data": "panels/ctsv.toml", "defaultModel": "heston", "decisionFirstColumn": "Model" },
           { "id": "rsm", "command": "chiara.statistics.rsm", "title": "Regime Switching Models", "group": "1_et", "order": 4, "data": "panels/rsm.toml", "defaultModel": "msm", "decisionFirstColumn": "Model" },
+          { "id": "ptp", "command": "chiara.statistics.pp", "title": "Point Processes", "menuTitle": "Model", "submenu": "pp", "group": "1_pp", "order": 1, "data": "panels/ptp.toml", "defaultModel": "poisson", "decisionFirstColumn": "Model" },
+          { "id": "ptps", "command": "chiara.simulate.pp", "title": "Point Process Simulation", "menuTitle": "Simulate", "submenu": "pp", "group": "1_pp", "order": 2, "data": "panels/ptps.toml", "defaultModel": "poisson", "decisionFirstColumn": "Model" },
           { "id": "atsf", "command": "chiara.statistics.atsf", "title": "Advanced Time-Series Forecasting", "group": "2_et", "order": 1, "data": "panels/atsf.toml", "defaultModel": "bats", "decisionFirstColumn": "Model" },
           { "id": "nntsf", "command": "chiara.statistics.nntsf", "title": "Neural Network Time-Series Forecasting", "group": "2_et", "order": 2, "data": "panels/nntsf.toml", "defaultModel": "lstnet", "decisionFirstColumn": "Model" },
           { "id": "autotsf", "command": "chiara.statistics.autotsf", "title": "Automatic Time-Series Forecasting", "group": "2_et", "order": 3, "data": "panels/autotsf.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },
