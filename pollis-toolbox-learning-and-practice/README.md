@@ -1,8 +1,8 @@
-# Learning and Practice Toolbox
+# Self-Study: Learn and Practise
 
-Pollis Learning and Practice Toolbox: multiple-choice exercises whose data and answers Julia computes, on descriptive statistics, hypothesis tests and linear regression, and a panel to write new ones.
+Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For students, and for teachers preparing their classes.
 
-Installing it adds the **Learning and Practice** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
+Installing it adds the **Self-Study: Learn and Practise** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
 ## Panels
 

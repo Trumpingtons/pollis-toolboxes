@@ -1,0 +1,123 @@
+% Toolbox Guide of the Self-Study: Learn and Practise Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("guide.tex"))'
+\input{guide_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{4 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+% The state of an entry of the toolbox
+\newcommand{\ready}{\leavevmode{\color{agree}\bfseries\faCheck\enspace Ready}}
+\newcommand{\soon}{\leavevmode{\color{deepamber}\bfseries\faHourglassHalf\enspace In preparation}}
+
+\begin{document}
+
+\nmhead{Self-Study: Learn and Practise}
+  {Self-Study Guide}
+  {Turn your slides, notes and PDFs into what helps you study.}
+
+\begin{nbox}{Self-Study: Learn and Practise}
+Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic
+explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For
+students, and for teachers preparing their classes.
+\end{nbox}
+
+Most toolboxes bring a field to Pollis: finance, economics, mathematics. This one brings a way of working.
+It eases the chores of studying, such as finding more exercises, making sense of a dense paragraph or
+getting through a long paper, so that more of your time goes to learning itself. Pollis AI+ is its study companion:
+it writes the problems, the explanations, the summaries and the slides from the material you give it, and
+Julia computes every number that has to be right.
+
+\nmsection{What the Toolbox Does}
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{44mm}X>{\raggedright\arraybackslash}p{27mm}@{}}
+\toprule
+\textbf{Entry} & \textbf{What you get} & \textbf{State} \\\midrule
+Practice & Multiple-choice exercises on descriptive statistics, hypothesis tests and linear regression, with new data for each seed & \ready \\
+Write an Exercise & Your own exercises, computed from data or conceptual, with a version for each seed & \ready \\
+Make More Problems & More problems like those of your slides or notes, with their solutions & \soon \\
+Explain a Topic in Depth & A paragraph or a topic expanded, with each concept detailed & \soon \\
+Summarise a Paper & The summary of a paper in PDF, as a PDF & \soon \\
+Slides into Prose and Audio & Slides turned into continuous text, and an audio version of it & \soon \\
+Text into Slides & A long text turned into a few slides & \soon \\\bottomrule
+\end{tabularx}}
+
+\nmsection{Install the Toolbox}
+\begin{enumerate}[label=\arabic*.]
+  \item Open the Extensions pane, in the activity bar on the left. The \menupath{Toolboxes} section, at the
+    top, lists the toolboxes you have not installed.
+  \item Choose \menupath{Install} beside \menupath{Self-Study: Learn and Practise}, then \menupath{Reload Now}
+    when Pollis asks.
+  \item On the \menupath{Toolbox Panels} page that opens, tick the panels you want and choose
+    \menupath{Publish}. They appear in \menupath{Extend \gt Self-Study: Learn and Practise}.
+\end{enumerate}
+This guide and the toolbox's vignette are in \menupath{Help \gt Documentation \gt Toolboxes}, and Ask Pollis
+answers questions about the toolbox from them.
+
+\nmsection{Practise a Topic}
+\menupath{Extend \gt Self-Study: Learn and Practise \gt Practice} has a tab for each topic:
+\menupath{Descriptive Statistics}, \menupath{Hypothesis Tests} and \menupath{Linear Regression}. Each
+exercise asks one question with four choices. Its data come from a random number generator started from
+the \menupath{Seed}, and its answers are computed from those data, so they are always right. The wrong choices
+are the usual mistakes, such as dividing by $n$ instead of $n-1$, or a one-sided p-value where a two-sided
+one is asked for.
+\begin{enumerate}[label=\arabic*.]
+  \item Choose a tab and an \menupath{Exercise}.
+  \item Run the Example Code: the question and the choices A to D appear in the Julia REPL, and the data stay
+    there, so you can work the answer out in Julia as well as on paper.
+  \item Pick your answer under \menupath{Your Answer}.
+  \item Under Next Steps, \menupath{Check My Answer} says whether it is correct and explains it;
+    \menupath{Show the Answer} explains it without your answer.
+  \item Change the \menupath{Seed} and run again: other data, another order of the choices, the same skill.
+\end{enumerate}
+
+\nmsection{Write Your Own Exercises}
+\menupath{Write an Exercise} turns an exercise of your own into one that Julia computes. An exercise is a Julia
+function: from a random number generator it returns the question, the choices with the correct one first,
+and the explanation.
+\begin{itemize}
+  \item \menupath{Computed from Data} draws the numbers from the seed and computes the choices from them: for a
+    statistic, a p-value or a prediction.
+  \item \menupath{Conceptual} keeps the text fixed and shuffles the choices: for choosing a method or reading a
+    result.
+\end{itemize}
+Give the exercise a \menupath{Title}, a \menupath{First Seed} and the number of \menupath{Versions} to preview.
+Before you use it, three Next Steps check it: \menupath{The Correct Answer Across Versions} shows the range of
+the answer, \menupath{Choices That Coincide} looks for versions where two choices come out the same, and
+\menupath{Try a Version} shows one as a student sees it. The exercises you write are kept in
+\fn{\textasciitilde/.pollis/practice}, and Practice offers them beside its own.
+
+\nmsection{Pollis AI+ as Your Study Companion}
+The five entries below take material you already have and give back material that helps you study. You
+choose the file, Pollis AI+ does the work, and the result is a file of your own, to read, print or edit.
+\begin{pbox}{What you give, what you get}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash\bfseries}p{36mm}>{\raggedright\arraybackslash}p{46mm}X@{}}
+Make More Problems & Slides, notes or a PDF with a few problems, and how many more you want & New problems on the same topic and at the same level, each with its full solution, as a PDF; those computed from data can also become exercises of Write an Exercise \\[3pt]
+Explain a Topic in Depth & A paragraph, an area of a PDF page, or the name of a topic & The concepts of the paragraph detailed one by one, with the steps of each argument and an example, as a PDF \\[3pt]
+Summarise a Paper & A paper in PDF & Its question, data, method, results and limits, with the pages they come from, as a PDF \\[3pt]
+Slides into Prose and Audio & A set of slides, in PDF or LaTeX & The slides as continuous text, as a PDF, and an audio file that reads it \\[3pt]
+Text into Slides & A long text: a PDF, a LaTeX or Markdown file, or a notebook & A few slides with its main points, as a PDF, with their LaTeX source to edit
+\end{tabularx}
+\end{pbox}
+A summary or an explanation is only as good as its source: read it beside the original, and check the
+numbers that matter. The PDF Viewer of Pollis opens both side by side, and its \menupath{Select Area} takes
+the text, a table or a picture of any part of a page.
+
+\nmsection{For Teachers}
+The same entries prepare a class. Write an Exercise gives each seed its own version, with other data and
+another order of the choices, so every student, or every attempt, can get a different one while practising
+the same skill. Make More Problems extends the exercises of a set of slides; Text into Slides and Slides
+into Prose and Audio give a lecture in the form each student prefers to study from.
+
+\nmsection{Coming Next}
+The entries in preparation come in this order, each added to the menu of the toolbox as it is ready:
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Make More Problems}, which builds on Write an Exercise.
+  \item \textbf{Summarise a Paper}, which builds on the PDF Viewer.
+  \item \textbf{Explain a Topic in Depth}, from a paragraph or an area of a page.
+  \item \textbf{Text into Slides}, compiled with PollisTeX, the \LaTeX\ of Pollis.
+  \item \textbf{Slides into Prose and Audio}, with the audio read by a voice model.
+\end{enumerate}
+Each one is described in this guide as it comes, and the toolbox's version tells you which you have.
+
+\nmcredit
+\end{document}

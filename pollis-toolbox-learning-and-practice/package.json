@@ -1,7 +1,7 @@
 {
   "name": "pollis-toolbox-learning-and-practice",
-  "displayName": "Learning and Practice Toolbox",
-  "description": "Pollis Learning and Practice Toolbox: multiple-choice exercises whose data and answers Julia computes, on descriptive statistics, hypothesis tests and linear regression, and a panel to write new ones.",
+  "displayName": "Self-Study: Learn and Practise",
+  "description": "Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For students, and for teachers preparing their classes.",
   "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
@@ -17,7 +17,17 @@
     "pollisToolboxes": [
       {
         "id": "learning",
-        "title": "Learning and Practice",
+        "title": "Self-Study: Learn and Practise",
+        "documents": [
+          {
+            "title": "Self-Study Guide",
+            "source": "docs/guide/guide.tex"
+          },
+          {
+            "title": "Self-Study: Learn and Practise",
+            "source": "docs/self-study/self-study.tex"
+          }
+        ],
         "panels": [
           {
             "id": "learning-and-practice.practice",

@@ -1,0 +1,89 @@
+% Toolbox Vignette of the Self-Study: Learn and Practise Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("self-study.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{4 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Self-Study: Learn and Practise}
+  {Self-Study: Learn and Practise}
+  {Turn your slides, notes and PDFs into what helps you study.}
+
+Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic
+explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For
+students, and for teachers preparing their classes.
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Self-Study: Learn and Practise}. It is a toolbox
+of a way of working rather than of a field: Julia computes what has to be right, and Pollis AI+, its study companion,
+writes from the material you give it.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{50mm}X@{}}
+\toprule
+\textbf{Entry} & \textbf{Use it when} \\\midrule
+Practice & You want to test yourself on a topic, again and again, with new data each time. \\
+Write an Exercise & You have an exercise of your own and want a version of it for each seed. \\
+Make More Problems & The problems of your slides or notes have run out. \\
+Explain a Topic in Depth & A paragraph says too much in too few words. \\
+Summarise a Paper & You need the gist of a paper before, or instead of, reading all of it. \\
+Slides into Prose and Audio & Slides give the points, and you want the argument that joins them, or to listen. \\
+Text into Slides & A long text needs its main points on a few slides. \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Practice and Write an Exercise are ready, and the other five are in preparation. The Self-Study Guide says
+which come next; it is in \menupath{Help \gt Documentation \gt Toolboxes}.
+
+\nmsection{Practice}
+Multiple-choice exercises on three topics, one tab each: \menupath{Descriptive Statistics} (mean, median,
+standard deviation, outliers, correlation), \menupath{Hypothesis Tests} (the $t$ statistic, p-values, the
+decision, choosing a test, the chi-square statistic of a $2\times 2$ table) and \menupath{Linear Regression}
+(slope, intercept, $R^2$, prediction and interpretation). The data are drawn from the \menupath{Seed} with
+\package{Distributions}{https://github.com/JuliaStats/Distributions.jl}, and the answers are computed from
+them, so they are right whatever the numbers. Each wrong choice is a usual mistake computed from the same
+data, so a student who picks it learns which mistake it was. The same seed gives the same exercise again;
+another gives other data and another order of the choices.
+
+\nmsection{Write an Exercise}
+An exercise is a Julia function that takes a random number generator and returns the question, the choices
+with the correct one first, and the explanation.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{30mm}>{\raggedright\arraybackslash}p{58mm}X@{}}
+\toprule
+\textbf{Kind} & \textbf{Data} & \textbf{Use for} \\\midrule
+Computed from Data & Drawn from the seed; the choices are computed from them & A statistic, a p-value, a prediction \\
+Conceptual & None; the text is fixed and only the order of the choices changes & Choosing a method, reading a result \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Two choices that come out the same make a version ambiguous, and extreme data make it harder than intended:
+\menupath{Choices That Coincide} and \menupath{The Correct Answer Across Versions} find both before a student
+does.
+
+\nmsection{Pollis AI+ as Study Companion}
+The five entries in preparation share one pattern: you give a file you already have, and you get a file to
+study from.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{42mm}>{\raggedright\arraybackslash}p{46mm}X@{}}
+\toprule
+\textbf{Entry} & \textbf{You give} & \textbf{You get} \\\midrule
+Make More Problems & Slides, notes or a PDF with a few problems & New problems at the same level, with full solutions \\
+Explain a Topic in Depth & A paragraph, an area of a page, or a topic & Each concept detailed, with the steps and an example \\
+Summarise a Paper & A paper in PDF & Question, data, method, results and limits, as a PDF \\
+Slides into Prose and Audio & Slides, in PDF or LaTeX & Continuous text, as a PDF, and an audio file \\
+Text into Slides & A long text, a notebook or a LaTeX file & A few slides, as a PDF with their LaTeX source \\\bottomrule
+\end{tabularx}}
+
+\medskip
+What Pollis AI+ writes is a draft to study from, not a source to cite: read a summary or an explanation beside
+the original, which the PDF Viewer of Pollis opens side by side.
+
+\nmcredit
+\end{document}
