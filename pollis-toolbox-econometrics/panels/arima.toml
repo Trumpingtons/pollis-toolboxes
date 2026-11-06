@@ -4,7 +4,7 @@
 # Run: npm run gulp compile-toml
 
 [meta]
-title = "ARIMA Models"
+title = "ARIMAX and SARIMA Models"
 viewType = "pollis.arima"
 defaultModel = "arima"
 
@@ -148,12 +148,12 @@ text = "ARIMA"
 detail = "integrated autoregressive moving-average model for univariate time series"
 
 [[bullets]]
-text = "Seasonal ARIMA"
-detail = "extends ARIMA with multiplicative seasonal structure"
-
-[[bullets]]
 text = "ARIMAX"
 detail = "regression on exogenous variables with ARIMA errors"
+
+[[bullets]]
+text = "SARIMA"
+detail = "Seasonal ARIMA extends ARIMA with multiplicative seasonal structure"
 
 [[decisionRows]]
 task = "ARIMA"
@@ -246,52 +246,19 @@ tooltip = "Forecast horizon in observations, used by the Predict actions."
 default = "24"
 newRow = true
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.arima]
-# Drifting series continued by a forecast with a widening band
-svg = '''
-var y = [60, 56, 58, 52, 54, 48, 50, 45];
-var d = '';
-for (var i = 0; i < y.length; i++) { d += (i ? 'L' : 'M') + (4 + i * 4.5) + ',' + y[i]; }
-return '<path d="M35.5,45 L50,38 L50,52 Z" fill="currentColor" opacity="0.2"/>'
-	+ '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>'
-	+ '<line x1="35.5" y1="45" x2="50" y2="45" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>';
-'''
-
-[miniCharts.sarima]
-# Seasonal wave on a trend, continued by a forecast
-svg = '''
-var d = '', f = '';
-for (var i = 0; i <= 32; i++) { d += (i ? 'L' : 'M') + (4 + i) + ',' + (62 - i * 0.5 - 8 * Math.sin(i * Math.PI / 6)).toFixed(1); }
-for (var j = 32; j <= 46; j++) { f += (j === 32 ? 'M' : 'L') + (4 + j) + ',' + (62 - j * 0.5 - 8 * Math.sin(j * Math.PI / 6)).toFixed(1); }
-return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>'
-	+ '<path d="' + f + '" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>';
-'''
-
-[miniCharts.arimax]
-# Series following a regressor, continued by a forecast
-svg = '''
-var x = [66, 62, 64, 58, 60, 54, 56, 52];
-var y = [50, 46, 48, 42, 44, 38, 40, 36];
-var a = '', b = '';
-for (var i = 0; i < y.length; i++) { a += (i ? 'L' : 'M') + (4 + i * 4.5) + ',' + x[i]; b += (i ? 'L' : 'M') + (4 + i * 4.5) + ',' + y[i]; }
-return '<path d="' + a + '" fill="none" stroke="currentColor" stroke-width="1" opacity="0.5"/>'
-	+ '<path d="' + b + '" fill="none" stroke="currentColor" stroke-width="1.5"/>'
-	+ '<line x1="35.5" y1="36" x2="50" y2="30" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>';
-'''
-
 [[codeBranches]]
 model = "arima"
 code = '''
 using StateSpaceModels
 
+{{?yvar=y}} using Random
+{{?yvar=y}} Random.seed!(1)  # simulated: an ARIMA(1,1,0) whose differences are AR(1) with phi = 0.6, so ar_L1 should come out near 0.6. Replace y with your own series.
+{{?yvar=y}} shock = zeros(300); for i in 2:300; shock[i] = 0.6shock[i-1] + randn(); end; y = 10 .+ cumsum(shock)
 y = Float64.({{yvar}})
 seas = (0, 0, 0, 0)  # no seasonal part
-arima(p, d, q) = SARIMA(y; order=(p, d, q))
-model = arima({{p}}, {{d}}, {{q}})  # ARIMA({{p}},{{d}},{{q}})
-fit!(model)  # maximum-likelihood estimation via the Kalman filter
+arima_model(p, d, q) = SARIMA(y; order=(p, d, q))
+model = arima_model({{p}}, {{d}}, {{q}})  # ARIMA({{p}},{{d}},{{q}})
+StateSpaceModels.fit!(model)  # maximum-likelihood estimation via the Kalman filter
 
 print_results(model)  # estimates, standard errors, log-likelihood, AIC/BIC
 '''
@@ -301,11 +268,13 @@ model = "sarima"
 code = '''
 using StateSpaceModels
 
+{{?yvar=y}} using Durbyn: air_passengers
+{{?yvar=y}} y = log.(air_passengers())  # monthly airline passengers, 1949-1960 (Box and Jenkins), in logs: the seasonal swings grow with the level, and in logs they keep one size. Replace y with your own series.
 y = Float64.({{yvar}})
 seas = ({{sp}}, {{sd}}, {{sq}}, {{s}})  # seasonal (P, D, Q, s)
-arima(p, d, q) = SARIMA(y; order=(p, d, q), seasonal_order=seas)
-model = arima({{p}}, {{d}}, {{q}})  # SARIMA({{p}},{{d}},{{q}})({{sp}},{{sd}},{{sq}})_{{s}}
-fit!(model)  # maximum-likelihood estimation via the Kalman filter
+arima_model(p, d, q) = SARIMA(y; order=(p, d, q), seasonal_order=seas)
+model = arima_model({{p}}, {{d}}, {{q}})  # SARIMA({{p}},{{d}},{{q}})({{sp}},{{sd}},{{sq}})_{{s}}
+StateSpaceModels.fit!(model)  # maximum-likelihood estimation via the Kalman filter
 
 print_results(model)  # estimates, standard errors, log-likelihood, AIC/BIC
 '''
@@ -313,20 +282,21 @@ print_results(model)  # estimates, standard errors, log-likelihood, AIC/BIC
 [[codeBranches]]
 model = "arimax"
 code = '''
-using Durbyn: forecast, NamedMatrix
-using Durbyn.Arima: arima, PDQ
+import Durbyn
+using Durbyn: NamedMatrix
+using Durbyn.Arima: PDQ
 
 {{?xvar=x}} using Random
 {{?xvar=x}} Random.seed!(1)  # simulated: y moves by 2 with each unit of x, with AR(1) shocks in its differences
 {{?xvar=x}} n = 200; path = cumsum(randn(n + {{h}})) ./ 5 .+ randn(n + {{h}})
-{{?xvar=x}} e = zeros(n); for t in 2:n; e[t] = 0.6e[t-1] + randn(); end
-{{?xvar=x}} x, xf = path[1:n], path[n+1:end]; y = 10 .+ 2 .* x .+ cumsum(e)
+{{?xvar=x}} shock = zeros(n); for i in 2:n; shock[i] = 0.6shock[i-1] + randn(); end
+{{?xvar=x}} x, xf = path[1:n], path[n+1:end]; y = 10 .+ 2 .* x .+ cumsum(shock)
 y = Float64.({{yvar}})
 columns(v) = reshape(Float64.(v), size(v, 1), :)  # one column per regressor
 regressors = ["x$j" for j in axes(columns({{xvar}}), 2)]
 X, F = NamedMatrix(columns({{xvar}}), regressors), NamedMatrix(columns({{xfuture}}), regressors)
 order = PDQ({{p}}, {{d}}, {{q}})
-model = arima(y, 1; order=order, xreg=X)  # regression on X with ARIMA({{p}},{{d}},{{q}}) errors
+model = Durbyn.Arima.arima(y, 1; order=order, xreg=X)  # regression on X with ARIMA({{p}},{{d}},{{q}}) errors
 '''
 
 [[actionGroups]]
@@ -343,8 +313,8 @@ using StateSpaceModels, Plots
 kf = kalman_filter(model)
 yhat = y .- vec(get_innovations(kf))  # one-step-ahead prediction = data - innovation
 skip = {{d}} + seas[2] * seas[4]  # observations lost to differencing
-plot(y, lw=1.5, label="data", xlabel="t", title="One-step-ahead fit")
-plot!(skip+1:length(y), yhat[skip+1:end], lw=1.5, ls=:dash, label="one-step prediction")
+Plots.plot(y, lw=1.5, label="data", xlabel="t", title="One-step-ahead fit")
+Plots.plot!(skip+1:length(y), yhat[skip+1:end], lw=1.5, ls=:dash, label="one-step prediction")
 '''
 
 [[actionGroups.actions]]
@@ -356,7 +326,7 @@ code = '''
 using Plots
 z = reduce((z, _) -> diff(z), 1:{{d}}; init=y)  # regular differences
 z = reduce((z, _) -> z[seas[4]+1:end] .- z[1:end-seas[4]], 1:seas[2]; init=z)  # seasonal differences
-plot(z, lw=1, legend=false, xlabel="t", title="Differenced series")
+Plots.plot(z, lw=1, legend=false, xlabel="t", title="Differenced series")
 hline!([0], c=:gray, ls=:dash)
 '''
 
@@ -367,8 +337,8 @@ models = ["arimax"]
 desc = "The data against the one-step predictions of the fitted model, regressors included: where the model tracks the series and where it lags behind turning points"
 code = '''
 using Plots
-plot(y, lw=1.5, label="data", xlabel="t", title="One-step fit")
-plot!(model.fitted, lw=1.5, ls=:dash, label="one-step prediction")
+Plots.plot(y, lw=1.5, label="data", xlabel="t", title="One-step fit")
+Plots.plot!(model.fitted, lw=1.5, ls=:dash, label="one-step prediction")
 '''
 
 [[actionGroups]]
@@ -386,9 +356,9 @@ r = filter(isfinite, vec(StateSpaceModels.get_standard_residuals(kalman_filter(m
 L = min(24, length(r) ÷ 4); band = 1.96 / sqrt(length(r))
 p1 = bar(1:L, autocor(r, 1:L), legend=false, title="Residual ACF", xlabel="Lag")
 hline!(p1, [-band, band], c=:red, ls=:dash)
-p2 = bar(1:L, pacf(r, 1:L), legend=false, title="Residual PACF", xlabel="Lag")
+p2 = bar(1:L, StatsBase.pacf(r, 1:L), legend=false, title="Residual PACF", xlabel="Lag")
 hline!(p2, [-band, band], c=:red, ls=:dash)
-plot(p1, p2, layout=(2, 1))
+Plots.plot(p1, p2, layout=(2, 1))
 '''
 
 [[actionGroups.actions]]
@@ -427,9 +397,9 @@ r = filter(isfinite, model.residuals)
 L = min(24, length(r) ÷ 4); band = 1.96 / sqrt(length(r))
 p1 = bar(1:L, autocor(r, 1:L), legend=false, title="Residual ACF", xlabel="Lag")
 hline!(p1, [-band, band], c=:red, ls=:dash)
-p2 = bar(1:L, pacf(r, 1:L), legend=false, title="Residual PACF", xlabel="Lag")
+p2 = bar(1:L, StatsBase.pacf(r, 1:L), legend=false, title="Residual PACF", xlabel="Lag")
 hline!(p2, [-band, band], c=:red, ls=:dash)
-plot(p1, p2, layout=(2, 1))
+Plots.plot(p1, p2, layout=(2, 1))
 '''
 
 [[actionGroups.actions]]
@@ -456,8 +426,8 @@ models = ["arima", "sarima"]
 desc = "Point forecasts over the horizon with 80% and 95% prediction intervals"
 code = '''
 using StateSpaceModels, Plots
-fc = forecast(model, {{h}})
-plot(model, fc; label="data", title="Forecast, {{h}} steps")
+fc = StateSpaceModels.forecast(model, {{h}})
+Plots.plot(model, fc; label="data", title="Forecast, {{h}} steps")
 '''
 
 [[actionGroups.actions]]
@@ -470,9 +440,9 @@ using StateSpaceModels, Statistics, Plots
 S = simulate_scenarios(model, {{h}}, 500)[:, 1, :]  # horizon x scenarios
 t = length(y) .+ (1:{{h}})
 q(a) = [quantile(S[i, :], a) for i in axes(S, 1)]
-p = plot(max(1, length(y) - 4 * {{h}}):length(y), y[max(1, end - 4 * {{h}}):end], lw=1.5, c=:black, label="data", title="Simulated scenarios")
-plot!(t, S[:, 1:20], c=:gray, alpha=0.3, label=false)
-plot!(t, q(0.5), ribbon=(q(0.5) .- q(0.05), q(0.95) .- q(0.5)), fillalpha=0.2, lw=2, label="median, 90% band")
+p = Plots.plot(max(1, length(y) - 4 * {{h}}):length(y), y[max(1, end - 4 * {{h}}):end], lw=1.5, c=:black, label="data", title="Simulated scenarios")
+Plots.plot!(t, S[:, 1:20], c=:gray, alpha=0.3, label=false)
+Plots.plot!(t, q(0.5), ribbon=(q(0.5) .- q(0.05), q(0.95) .- q(0.5)), fillalpha=0.2, lw=2, label="median, 90% band")
 '''
 
 [[actionGroups.actions]]
@@ -486,10 +456,10 @@ H = min({{h}}, 12); origins = round.(Int, range(0.7 * length(y), length(y) - H, 
 err = zeros(length(origins), H)
 for (k, n) in enumerate(origins)
     m = SARIMA(y[1:n]; order=({{p}}, {{d}}, {{q}}), seasonal_order=seas); StateSpaceModels.fit!(m)
-    err[k, :] = y[n+1:n+H] .- vcat(forecast(m, H).expected_value...)
+    err[k, :] = y[n+1:n+H] .- vcat(StateSpaceModels.forecast(m, H).expected_value...)
 end
 display((rmse_by_horizon = round.(vec(sqrt.(mean(err .^ 2, dims=1))), digits=3),))
-plot(1:H, vec(sqrt.(mean(err .^ 2, dims=1))), marker=:o, lw=2, legend=false, xlabel="Horizon", ylabel="RMSE", title="Out-of-sample error by horizon")
+Plots.plot(1:H, vec(sqrt.(mean(err .^ 2, dims=1))), marker=:o, lw=2, legend=false, xlabel="Horizon", ylabel="RMSE", title="Out-of-sample error by horizon")
 '''
 
 [[actionGroups.actions]]
@@ -499,10 +469,10 @@ models = ["arimax"]
 desc = "Point forecasts with 80% and 95% prediction intervals, given the future regressors: the intervals leave out any uncertainty about those values"
 code = '''
 using Plots
-fc = forecast(model; h=size(F.data, 1), xreg=F)
+fc = Durbyn.forecast(model; h=size(F.data, 1), xreg=F)
 t = length(y) .+ (1:size(F.data, 1))
-plot(y, lw=1.5, c=:black, label="data", xlabel="t", title="Forecast given the future regressors")
-plot!(t, fc.mean, ribbon=(fc.mean .- fc.lower[:, 2], fc.upper[:, 2] .- fc.mean), fillalpha=0.2, lw=2, label="forecast, 95% interval")
+Plots.plot(y, lw=1.5, c=:black, label="data", xlabel="t", title="Forecast given the future regressors")
+Plots.plot!(t, fc.mean, ribbon=(fc.mean .- fc.lower[:, 2], fc.upper[:, 2] .- fc.mean), fillalpha=0.2, lw=2, label="forecast, 95% interval")
 '''
 
 [[actionGroups.actions]]
@@ -515,11 +485,11 @@ using Statistics, Plots
 H = min({{h}}, 12); origins = round.(Int, range(0.7 * length(y), length(y) - H, length=6))
 err = zeros(length(origins), H)
 for (k, n) in enumerate(origins)
-    m = arima(y[1:n], 1; order=order, xreg=NamedMatrix(X.data[1:n, :], regressors))
-    err[k, :] = y[n+1:n+H] .- forecast(m; h=H, xreg=NamedMatrix(X.data[n+1:n+H, :], regressors)).mean
+    m = Durbyn.Arima.arima(y[1:n], 1; order=order, xreg=NamedMatrix(X.data[1:n, :], regressors))
+    err[k, :] = y[n+1:n+H] .- Durbyn.forecast(m; h=H, xreg=NamedMatrix(X.data[n+1:n+H, :], regressors)).mean
 end
 display((rmse_by_horizon = round.(vec(sqrt.(mean(err .^ 2, dims=1))), digits=3),))
-plot(1:H, vec(sqrt.(mean(err .^ 2, dims=1))), marker=:o, lw=2, legend=false, xlabel="Horizon", ylabel="RMSE", title="Out-of-sample error by horizon")
+Plots.plot(1:H, vec(sqrt.(mean(err .^ 2, dims=1))), marker=:o, lw=2, legend=false, xlabel="Horizon", ylabel="RMSE", title="Out-of-sample error by horizon")
 '''
 
 [[actionGroups]]
@@ -533,7 +503,7 @@ models = ["arima", "sarima"]
 desc = "auto_arima searches over orders (Hyndman-Khandakar stepwise search, AICc) and reports the order it picks next to this model; a seasonal search can take a few minutes"
 code = '''
 using StateSpaceModels
-best = auto_arima(y; seasonal=seas[4])  # seasonal = 0: non-seasonal search
+best = StateSpaceModels.auto_arima(y; seasonal=seas[4])  # seasonal = 0: non-seasonal search
 spec(m) = (order = (m.order.p, m.order.d, m.order.q), seasonal = (m.order.P, m.order.D, m.order.Q, m.order.s), aicc = m.results.aicc)
 (this_model = spec(model), auto_arima = spec(best))
 '''
@@ -548,7 +518,7 @@ using StateSpaceModels, Plots
 ic = fill(NaN, 4, 4)
 for p in 0:3, q in 0:3
     try
-        m = arima(p, {{d}}, q); StateSpaceModels.fit!(m); ic[p+1, q+1] = m.results.aicc
+        m = arima_model(p, {{d}}, q); StateSpaceModels.fit!(m); ic[p+1, q+1] = m.results.aicc
     catch
     end
 end
@@ -562,7 +532,7 @@ label = "With and Without the Regressors"
 models = ["arimax"]
 desc = "The same ARIMA with and without the regressors: a lower AIC with them means they add more than their parameters cost"
 code = '''
-without = arima(y, 1; order=order)
+without = Durbyn.Arima.arima(y, 1; order=order)
 (aic_with = round(model.aic, digits=2), aic_without = round(without.aic, digits=2), sigma2_with = round(model.sigma2, digits=4), sigma2_without = round(without.sigma2, digits=4), verdict = model.aic < without.aic ? "the regressors improve the fit" : "the regressors do not pay for their parameters")
 '''
 
@@ -590,14 +560,14 @@ desc = "Effect of a one-off unit shock on the differenced series over the next 2
 code = '''
 using StateSpaceModels, Plots
 ct = model.results.coef_table
-coef(prefix) = [ct.coef[i] for i in eachindex(ct.names) if startswith(ct.names[i], prefix)]
-phi, theta = coef("ar_L"), coef("ma_L")
+coefs_of(prefix) = [ct.coef[i] for i in eachindex(ct.names) if startswith(ct.names[i], prefix)]
+phi, theta = coefs_of("ar_L"), coefs_of("ma_L")
 psi = zeros(25); psi[1] = 1.0
 for j in 1:24
     psi[j+1] = (j <= length(theta) ? theta[j] : 0.0) + sum((phi[i] * psi[j+1-i] for i in eachindex(phi) if i <= j); init=0.0)
 end
 level = reduce((l, _) -> cumsum(l), 1:{{d}}; init=psi)  # accumulate over the d differences
-plot(0:24, [psi level], marker=:o, label=["differenced series" "level"], xlabel="Steps after shock", title="Impulse response (non-seasonal part)")
+Plots.plot(0:24, [psi level], marker=:o, label=["differenced series" "level"], xlabel="Steps after shock", title="Impulse response (non-seasonal part)")
 '''
 
 [[actionGroups.actions]]

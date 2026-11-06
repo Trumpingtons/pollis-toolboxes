@@ -9,7 +9,7 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | Panel | What it covers | Powered by |
 |---|---|---|
 | Measuring Volatility | Range-based volatility estimators: close-to-close, Parkinson, Garman-Klass, Rogers-Satchell, Garman-Klass-Yang-Zhang, Yang-Zhang and Alizadeh-Brandt-Diebold | [RangeVol.jl](https://github.com/Trumpingtons/RangeVol.jl) |
-| ARIMAX Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl), [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
+| ARIMAX and SARIMA Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl), [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
 | GARCH-Type Models | GARCH, EGARCH, GJR-GARCH and DCC volatility models | [ARCHModels.jl](https://github.com/s-broda/ARCHModels.jl) |
 | Continuous-Time Stochastic Volatility Models | Simulated paths and European option prices, in closed form and by Monte Carlo, under the Heston, Bates and SABR models | [StochasticVolatility.jl](https://github.com/Trumpingtons/StochasticVolatility.jl), [Distributions.jl](https://github.com/JuliaStats/Distributions.jl) |
 | Regime Switching Models | Markov-switching regression, autoregression and ARCH, with time-varying transitions | [MarSwitching.jl](https://github.com/m-dadej/MarSwitching.jl) |

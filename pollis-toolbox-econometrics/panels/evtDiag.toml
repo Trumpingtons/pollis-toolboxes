@@ -290,6 +290,8 @@ models = ["qq"]
 model = "me"
 code = '''
 using Statistics, Plots
+{{?evtd-data=losses}} using Random, Distributions
+{{?evtd-data=losses}} Random.seed!(1); losses = rand(TDist(3), 5000)  # simulated: 5000 daily losses from a Student t with 3 degrees of freedom, whose tail index is 3 (xi = 1/3). Replace losses with your own losses, as positive numbers.
 
 u_grid  = range(minimum({{evtd-data}}), quantile({{evtd-data}}, {{evtd-max-pct}}); length = {{evtd-n-thresholds}})  # threshold grid up to {{evtd-max-pct}} percentile
 me_vals = [mean({{evtd-data}}[{{evtd-data}} .> u] .- u) for u in u_grid if sum({{evtd-data}} .> u) >= {{evtd-min-obs}}]  # mean excess (skip thresholds with too few obs)
@@ -311,6 +313,8 @@ println("Mean excess at Q90: ", round(mean({{evtd-data}}[{{evtd-data}} .> u90] .
 model = "hill"
 code = '''
 using Statistics, Plots
+{{?evtd-data=losses}} using Random, Distributions
+{{?evtd-data=losses}} Random.seed!(1); losses = rand(TDist(3), 5000)  # simulated: 5000 daily losses from a Student t with 3 degrees of freedom, whose tail index is 3 (xi = 1/3): the Hill plot should level off near 1/3. Replace losses with your own losses, as positive numbers.
 xs      = sort(filter(>(0), {{evtd-data}}); rev = true)  # Hill takes logs of ratios: losses must be positive (the negative ones, gains, are dropped)
 n       = length(xs)  # number of positive losses
 k_vals  = 2:min(n-1, 200)  # order statistic indices (up to 200)
@@ -329,6 +333,9 @@ model = "qq"
 code = '''
 using Extremes, Distributions, Statistics, Plots
 # losses as positive numbers (for returns, use losses = -returns)
+{{?evtd-data=losses}} using Random
+{{?evtd-data=losses}} {{?evtd-dist-select=gev}} Random.seed!(1); losses = [maximum(rand(TDist(3), 21)) for _ in 1:240]  # simulated block maxima: the largest of 21 daily Student t losses (3 degrees of freedom) in each of 240 months, whose GEV shape is xi = 1/3. Replace losses with your own block maxima.
+{{?evtd-data=losses}} {{?evtd-dist-select=gp}} Random.seed!(1); losses = rand(TDist(3), 5000)  # simulated: 5000 daily Student t losses (3 degrees of freedom), whose tail has shape xi = 1/3. Replace losses with your own losses, as positive numbers.
 point(v) = mean(v)  # MLE and PWM: one value; Bayesian: the posterior mean over the draws
 {{?evtd-dist-select=gev}} y = {{evtd-data}}  # must be block maxima (e.g. monthly maximum losses): the GEV describes maxima, not every loss
 {{?evtd-dist-select=gp}} u = {{evtd-threshold-qq}}  # threshold

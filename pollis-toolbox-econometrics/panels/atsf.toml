@@ -307,6 +307,7 @@ model = "bats"
 code = '''
 using Durbyn
 
+{{?yvar=y}} y = air_passengers()  # monthly airline passengers (thousands), 1949-1960 (Box and Jenkins): a trend and a seasonal swing that grows with it. Replace y with your own series.
 y = Float64.({{yvar}})
 {{?kind=tbats}} build(y) = tbats(y, {{periods}})  # trigonometric seasonality, Box-Cox, damping and ARMA errors chosen by AIC
 {{?kind=bats}} build(y) = bats(y, Int.({{periods}}))  # integer seasonal periods with seasonal states
@@ -319,6 +320,7 @@ model = "theta"
 code = '''
 using Durbyn
 
+{{?yvar=y}} y = air_passengers()  # monthly airline passengers (thousands), 1949-1960 (Box and Jenkins): a trend and a seasonal swing that grows with it. Replace y with your own series.
 y = Float64.({{yvar}})
 build(y) = theta(y, {{period}}; model_type={{ttype}})  # {{ttype}} theta model, period {{period}}
 model = build(y)
@@ -330,6 +332,9 @@ model = "demand"
 code = '''
 using Durbyn
 
+{{?yvar=y}} using Random
+{{?yvar=y}} Random.seed!(1)  # simulated: 120 periods, demand in about 3 of 10, of 1 to 10 units; zero otherwise. Replace y with your own series.
+{{?yvar=y}} y = [rand() < 0.3 ? rand(1:10) : 0 for _ in 1:120]
 y = Float64.({{yvar}})
 build(y) = croston_{{method}}(y)  # smooths demand sizes and inter-demand intervals separately
 model = build(y)

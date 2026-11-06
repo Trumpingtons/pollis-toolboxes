@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
   "description": "Pollis Finance Toolbox: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -33,7 +33,7 @@
         ],
         "panels": [
           { "id": "rvol", "command": "chiara.statistics.rbv", "title": "Range-Based Volatility Estimation", "menuTitle": "Measuring Volatility", "group": "0_et", "order": 1, "data": "panels/rvol.toml", "defaultModel": "yz", "decisionFirstColumn": "Estimator" },
-          { "id": "arima", "command": "chiara.statistics.arma.arima", "title": "ARIMA Models", "menuTitle": "ARIMAX Models", "group": "1_et", "order": 1, "data": "panels/arima.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },
+          { "id": "arima", "command": "chiara.statistics.arma.arima", "title": "ARIMAX and SARIMA Models", "menuTitle": "ARIMAX and SARIMA Models", "group": "1_et", "order": 1, "data": "panels/arima.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },
           { "id": "vcm", "command": "chiara.statistics.vcm", "title": "GARCH-Type Models", "group": "1_et", "order": 3, "data": "panels/vcm.toml", "defaultModel": "garch", "decisionFirstColumn": "Model" },
           { "id": "ctsv", "command": "chiara.statistics.tvm.ctsv", "title": "Continuous-Time Stochastic Volatility Models", "group": "1_et", "order": 3.5, "data": "panels/ctsv.toml", "defaultModel": "heston", "decisionFirstColumn": "Model" },
           { "id": "rsm", "command": "chiara.statistics.rsm", "title": "Regime Switching Models", "group": "1_et", "order": 4, "data": "panels/rsm.toml", "defaultModel": "msm", "decisionFirstColumn": "Model" },

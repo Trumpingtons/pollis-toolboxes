@@ -292,6 +292,7 @@ code = '''
 using MarSwitching, Random
 
 Random.seed!(0)  # the likelihood has local maxima: fix the seed for reproducible starts
+{{?yvar=y}} y, regime, _ = generate_msm([0.5, -1.0], [0.8, 2.0], [0.95 0.10; 0.05 0.90], 500)  # simulated: regime 1 calm (mean 0.5, sd 0.8), regime 2 turbulent (mean -1.0, sd 2.0), each staying with probability 0.95 and 0.90. Replace y with your own series.
 yt = Float64.({{yvar}})
 fitms(k; kw...) = MSModel(yt, k;
     intercept = "{{intercept}}",
@@ -310,6 +311,9 @@ code = '''
 using MarSwitching, Random
 
 Random.seed!(0)  # the likelihood has local maxima: fix the seed for reproducible starts
+{{?yvar=y}} P = [0.95 0.10; 0.05 0.90]  # simulated: P[i, j] is the probability of regime i tomorrow, given regime j today
+{{?yvar=y}} regime = [1]; for i in 2:500; push!(regime, rand() < P[1, regime[end]] ? 1 : 2); end
+{{?yvar=y}} y = zeros(500); for i in 2:500; y[i] = regime[i] == 1 ? 0.5 + 0.6y[i-1] + 0.8randn() : -1.0 + 0.2y[i-1] + 2.0randn(); end  # regime 1: intercept 0.5, AR 0.6, sd 0.8; regime 2: intercept -1.0, AR 0.2, sd 2.0. Replace y with your own series.
 X = add_lags(Float64.({{yvar}}), {{p}})  # column 1 = y_t, then y_(t-1) ... y_(t-{{p}})
 yt = X[:, 1]
 fitms(k; kw...) = MSModel(yt, k;
@@ -328,6 +332,7 @@ code = '''
 using MarSwitching, Random
 
 Random.seed!(0)  # the likelihood has local maxima: fix the seed for reproducible starts
+{{?yvar=y}} y, regime, _ = generate_msm([0.2, -0.3], [0.2, 1.0], [[0.3], [0.5]], [0.95 0.10; 0.05 0.90], 1000)  # simulated: regime 1 mean 0.2, variance 0.2 + 0.3 times the last squared shock; regime 2 mean -0.3, variance 1.0 + 0.5 times it. Replace y with your own series.
 yt = Float64.({{yvar}})
 fitms(k; kw...) = MSARCHModel(yt, k, {{q}};
     intercept = "{{intercept}}",
@@ -346,6 +351,10 @@ code = '''
 using MarSwitching, Random
 
 Random.seed!(0)  # the likelihood has local maxima: fix the seed for reproducible starts
+{{?yvar=y}} {{?ztvtp=z}} z = 1 .+ 0.5 .* randn(500)  # simulated: a driver of the transitions. Replace y and z with your own series.
+{{?yvar=y}} {{?ztvtp=z}} stay1(z) = 1 / (1 + exp(-(2.5 + 0.5z))); enter1(z) = 1 / (1 + exp(-(-2.0 + 1.0z)))  # chance of regime 1 tomorrow, after regime 1 and after regime 2
+{{?yvar=y}} {{?ztvtp=z}} regime = [1]; for i in 2:500; push!(regime, rand() < (regime[end] == 1 ? stay1(z[i-1]) : enter1(z[i-1])) ? 1 : 2); end
+{{?yvar=y}} {{?ztvtp=z}} y = [regime[i] == 1 ? 0.5 + 0.8randn() : -1.0 + 2.0randn() for i in 1:500]  # regime 1: mean 0.5, sd 0.8; regime 2: mean -1.0, sd 2.0
 yt = Float64.({{yvar}})
 Z = [ones(length(yt)) {{ztvtp}}]  # constant + drivers of the transition probabilities
 fitms(k; kw...) = MSModel(yt, k;

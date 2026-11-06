@@ -339,6 +339,7 @@ model = "arima"
 code = '''
 using Durbyn
 
+{{?yvar=y}} y = air_passengers()  # monthly airline passengers (thousands), 1949-1960 (Box and Jenkins): a trend and a seasonal swing that grows with it. Replace y with your own series.
 y = Float64.({{yvar}})
 {{?stepwise=true}} build(y) = auto_arima(y, {{m}}; seasonal={{m}} > 1, ic={{ic}})  # tests pick d and D, stepwise search picks p, q, P, Q
 {{?stepwise=false}} build(y) = auto_arima(y, {{m}}; seasonal={{m}} > 1, ic={{ic}}, stepwise=false, approximation=false)  # every model within the order limits
@@ -351,6 +352,7 @@ model = "ets"
 code = '''
 using Durbyn
 
+{{?yvar=y}} y = air_passengers()  # monthly airline passengers (thousands), 1949-1960 (Box and Jenkins): a trend and a seasonal swing that grows with it. Replace y with your own series.
 y = Float64.({{yvar}})
 build(y) = ets(y, {{m}}, "ZZZ"; ic={{ic}}, damped={{damped}}, lambda={{lambda}})  # Z = choose error, trend and seasonal form automatically
 model = build(y)
@@ -362,6 +364,7 @@ model = "ararma"
 code = '''
 using Durbyn
 
+{{?yvar=y}} y = air_passengers()  # monthly airline passengers (thousands), 1949-1960 (Box and Jenkins): a trend and a seasonal swing that grows with it. Replace y with your own series.
 y = Float64.({{yvar}})
 build(y) = auto_ararma(y; max_p={{maxp}}, max_q={{maxq}}, crit={{crit}})  # memory-shortening filter, then the best ARMA(p, q)
 model = build(y)
@@ -373,6 +376,7 @@ model = "race"
 code = '''
 using Durbyn, Statistics
 
+{{?yvar=y}} y = air_passengers()  # monthly airline passengers (thousands), 1949-1960 (Box and Jenkins): a trend and a seasonal swing that grows with it. Replace y with your own series.
 y = Float64.({{yvar}})
 m = {{m}}
 H = min({{h}}, length(y) ÷ 5)  # holdout: the last H observations

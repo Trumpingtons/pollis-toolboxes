@@ -254,6 +254,7 @@ default = "returns"
 model = "garch"
 code = '''
 using ARCHModels
+{{?data=returns}} returns = BG96  # daily returns (%) of the Deutschmark against the British pound, 1974 days, from Bollerslev and Ghysels (1996), shipped with ARCHModels. Replace returns with your own returns.
 
 spec = GARCH{{{p}}, {{q}}}  # {{p}} lagged variances, {{q}} lagged squared shocks
 am = fit(spec, {{data}}; dist={{dist}})
@@ -266,6 +267,7 @@ predict(am, :volatility)  # one-step volatility forecast
 model = "egarch"
 code = '''
 using ARCHModels
+{{?data=returns}} returns = BG96  # daily returns (%) of the Deutschmark against the British pound, 1974 days, from Bollerslev and Ghysels (1996), shipped with ARCHModels. Replace returns with your own returns.
 
 spec = EGARCH{{{o}}, {{p}}, {{q}}}  # {{o}} asymmetry terms, {{p}} lagged log variances, {{q}} magnitude terms
 am = fit(spec, {{data}}; dist={{dist}})
@@ -278,6 +280,7 @@ predict(am, :volatility)  # one-step volatility forecast
 model = "gjr"
 code = '''
 using ARCHModels
+{{?data=returns}} returns = BG96  # daily returns (%) of the Deutschmark against the British pound, 1974 days, from Bollerslev and Ghysels (1996), shipped with ARCHModels. Replace returns with your own returns.
 
 spec = TGARCH{{{o}}, {{p}}, {{q}}}  # GJR-GARCH: {{o}} threshold terms, {{p}} lagged variances, {{q}} lagged squared shocks
 am = fit(spec, {{data}}; dist={{dist}})
@@ -290,6 +293,7 @@ predict(am, :volatility)  # one-step volatility forecast
 model = "dcc"
 code = '''
 using ARCHModels
+{{?data=returns}} returns = DOW29  # daily returns of 29 stocks of the Dow Jones Industrial Average, shipped with ARCHModels: one column per stock. Replace returns with your own returns.
 
 am = fit(DCC{{{dcc-p}}, {{dcc-q}}, GARCH{{{p}}, {{q}}}}, {{data}})  # DCC({{dcc-p}}, {{dcc-q}}) on GARCH({{p}}, {{q}}) volatilities, one column per asset
 coeftable(am)  # estimated parameters
