@@ -197,24 +197,16 @@ id = "irf"
 label = "Impulse Responses"
 
 [[bullets]]
-text = "Define DSGE models symbolically using @model and @parameters macros; solved via perturbation to 1st, 2nd, or 3rd order"
-detail = ""
+text = "Moments"
+detail = "the calibrated model, solved by perturbation at the chosen order, gives the standard deviation of every variable, its autocorrelations at lags 1 to 5 and the share of each shock in its variance, without data"
 
 [[bullets]]
-text = "Calibrate parameters against non-stochastic steady state relationships; match model moments using pruned higher-order solutions"
-detail = ""
+text = "Estimation"
+detail = "the posterior of the chosen parameters from observed series, with priors centred on the calibration, the likelihood of the Kalman filter at first order or the inversion filter above it, and draws from NUTS or HMC"
 
 [[bullets]]
-text = "Estimate on data with the Kalman filter (1st order) using gradient-based Bayesian samplers"
-detail = "NUTS and HMC"
-
-[[bullets]]
-text = "Estimate nonlinear models using the inversion filter (higher-order perturbation solutions)"
-detail = "pruned second order, through the Filter input"
-
-[[bullets]]
-text = "Compute impulse responses, variance decomposition, shock decomposition, and conditional forecasts"
-detail = ""
+text = "Impulse Responses"
+detail = "the path of every variable after one structural shock, over the chosen number of periods, plotted and returned as variables by periods"
 
 [[decisionRows]]
 task = "Moments"
