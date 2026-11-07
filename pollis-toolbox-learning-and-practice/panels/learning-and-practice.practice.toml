@@ -220,12 +220,15 @@ rng = Xoshiro({{seed}})  # another seed, other data
 {{?model=ht}}{{?htex=paired}}choices = ["A paired t test on the 15 differences", "A two-sample t test comparing the before and after groups", "A chi-square test of independence", "A one-sample t test on the after values only"]
 {{?model=ht}}{{?htex=paired}}explanation = "Each patient is measured twice, so the two samples are not independent. The paired t test works on the differences, one per patient, and removes the variation between patients; the two-sample test ignores the pairing and loses power."
 {{?model=ht}}{{?htex=chisq}}o = [rand(rng, 15:45) rand(rng, 15:45); rand(rng, 15:45) rand(rng, 15:45)]
+{{?model=ht}}{{?htex=chisq}}while abs(o[1, 1] - sum(o[1, :]) * sum(o[:, 1]) / sum(o)) < 1.5  # a table close to independence would give choices that round alike
+{{?model=ht}}{{?htex=chisq}}    global o = [rand(rng, 15:45) rand(rng, 15:45); rand(rng, 15:45) rand(rng, 15:45)]
+{{?model=ht}}{{?htex=chisq}}end
 {{?model=ht}}{{?htex=chisq}}e = sum(o; dims = 2) * sum(o; dims = 1) / sum(o)
 {{?model=ht}}{{?htex=chisq}}chi2 = sum((o .- e) .^ 2 ./ e)
 {{?model=ht}}{{?htex=chisq}}yates = sum((abs.(o .- e) .- 0.5) .^ 2 ./ e)
 {{?model=ht}}{{?htex=chisq}}question = "In a survey, $(o[1, 1]) of the $(o[1, 1] + o[1, 2]) men and $(o[2, 1]) of the $(o[2, 1] + o[2, 2]) women prefer the morning shift; the rest prefer the evening shift. What is the Pearson chi-square statistic for independence of sex and preference (without continuity correction)?"
-{{?model=ht}}{{?htex=chisq}}choices = [fmt(chi2, 3), fmt(yates, 3), fmt(sum((o .- e) .^ 2 ./ o), 3), fmt(sum(abs.(o .- e) ./ e), 3)]
-{{?model=ht}}{{?htex=chisq}}explanation = "The expected count of each cell is its row total times its column total divided by $(sum(o)), here $(fmt(e[1, 1], 2)) men and $(fmt(e[2, 1], 2)) women for the morning shift, $(fmt(e[1, 2], 2)) men and $(fmt(e[2, 2], 2)) women for the evening shift. The statistic adds (observed - expected)^2 / expected over the four cells: $(fmt(chi2, 3)), with 1 degree of freedom. The Yates continuity correction gives $(fmt(yates, 3))."
+{{?model=ht}}{{?htex=chisq}}choices = [fmt(chi2, 3), fmt(yates, 3), fmt(sum((o .- sum(o) / 4) .^ 2 ./ (sum(o) / 4)), 3), fmt(sum(abs.(o .- e) ./ e), 3)]
+{{?model=ht}}{{?htex=chisq}}explanation = "The expected count of each cell is its row total times its column total divided by $(sum(o)), here $(fmt(e[1, 1], 2)) men and $(fmt(e[2, 1], 2)) women for the morning shift, $(fmt(e[1, 2], 2)) men and $(fmt(e[2, 2], 2)) women for the evening shift. The statistic adds (observed - expected)^2 / expected over the four cells: $(fmt(chi2, 3)), with 1 degree of freedom. The Yates continuity correction gives $(fmt(yates, 3)); a quarter of the total as every expected count tests whether the four cells are equal, not independence."
 {{?model=lr}}{{?lrex=slope}}x = sort(round.(rand(rng, Uniform(1, 12), 6); digits = 1))
 {{?model=lr}}{{?lrex=slope}}y = round.(rand(rng, 1:5) .+ rand(rng, 0.5:0.25:2.5) .* x .+ rand(rng, Normal(0, 1.5), 6); digits = 1)
 {{?model=lr}}{{?lrex=slope}}b1 = cov(x, y) / var(x)
