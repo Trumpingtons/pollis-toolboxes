@@ -422,9 +422,9 @@ using Plots
 {{?model=bracket}} Plots.vspan!([{{a}}, {{b}}], alpha=0.1, label="initial bracket")
 {{?model=scalar|bracket}} Plots.scatter!([sol.u], [0], ms=6, label="root = $(round(sol.u, sigdigits=10))")
 {{?model=system}} length(u0) == 2 || error("the curve plot needs exactly two unknowns")
-{{?model=system}} g = range({{lo}}, {{hi}}, length=300)
-{{?model=system}} p = Plots.contour(g, g, (x, y) -> f([x, y], nothing)[1], levels=[0], c=:blue, lw=2, colorbar=false, aspect_ratio=:equal, xlabel="u[1]", ylabel="u[2]", title="blue: equation 1, red: equation 2")
-{{?model=system}} Plots.contour!(g, g, (x, y) -> f([x, y], nothing)[2], levels=[0], c=:red, lw=2)
+{{?model=system}} ugrid = range({{lo}}, {{hi}}, length=300)
+{{?model=system}} p = Plots.contour(ugrid, ugrid, (x, y) -> f([x, y], nothing)[1], levels=[0], c=:blue, lw=2, colorbar=false, aspect_ratio=:equal, xlabel="u[1]", ylabel="u[2]", title="blue: equation 1, red: equation 2")
+{{?model=system}} Plots.contour!(ugrid, ugrid, (x, y) -> f([x, y], nothing)[2], levels=[0], c=:red, lw=2)
 {{?model=system}} Plots.scatter!([u0[1]], [u0[2]], m=:x, ms=6, c=:gray, label="start"); Plots.scatter!([sol.u[1]], [sol.u[2]], ms=6, c=:black, label="solution")
 p
 '''
@@ -496,14 +496,14 @@ desc = "Solves the equation again with its right-hand side (the first equation's
 code = '''
 using ForwardDiff
 cs = (-0.5, -0.1, 0.1, 0.5)
-{{?model=scalar|bracket}} g(x, c) = f(x, nothing) - c
+{{?model=scalar|bracket}} shifted(x, c) = f(x, nothing) - c
 {{?model=scalar|bracket}} lin = 1 / ForwardDiff.derivative(x -> f(x, nothing), sol.u)
-{{?model=scalar}} [(c = c, exact = solve(NonlinearProblem(g, sol.u, c), alg).u, linear_prediction = sol.u + lin * c) for c in cs]
-{{?model=bracket}} [(c = c, exact = solve(IntervalNonlinearProblem(g, start0, c), alg).u, linear_prediction = sol.u + lin * c) for c in cs]
+{{?model=scalar}} [(c = c, exact = solve(NonlinearProblem(shifted, sol.u, c), alg).u, linear_prediction = sol.u + lin * c) for c in cs]
+{{?model=bracket}} [(c = c, exact = solve(IntervalNonlinearProblem(shifted, start0, c), alg).u, linear_prediction = sol.u + lin * c) for c in cs]
 {{?model=system}} e1 = [1.0; zeros(length(u0) - 1)]
-{{?model=system}} g(u, c) = f(u, nothing) .- c .* e1
+{{?model=system}} shifted(u, c) = f(u, nothing) .- c .* e1
 {{?model=system}} lin = ForwardDiff.jacobian(u -> f(u, nothing), sol.u) \ e1
-{{?model=system}} [(c = c, exact = solve(NonlinearProblem(g, sol.u, c), alg).u, linear_prediction = sol.u .+ lin .* c) for c in cs]
+{{?model=system}} [(c = c, exact = solve(NonlinearProblem(shifted, sol.u, c), alg).u, linear_prediction = sol.u .+ lin .* c) for c in cs]
 '''
 
 [[actionGroups]]

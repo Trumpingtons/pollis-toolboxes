@@ -313,8 +313,8 @@ using Symbolics, SymbolicNumericIntegration
 @variables {{vars}}
 v = {{var}}
 f = {{expr}}
-F, unsolved, err = integrate(f, v; symbolic=true)  # antiderivative, the part left unintegrated, numerical error
-area = integrate(f, (v, {{a}}, {{b}}); symbolic=true, detailed=false)  # definite integral from {{a}} to {{b}} (nothing if it failed)
+F, unsolved, err = SymbolicNumericIntegration.integrate(f, v; symbolic=true)  # antiderivative, the part left unintegrated, numerical error
+area = SymbolicNumericIntegration.integrate(f, (v, {{a}}, {{b}}); symbolic=true, detailed=false)  # definite integral from {{a}} to {{b}} (nothing if it failed)
 (antiderivative = F, unsolved = unsolved, definite_integral = area)
 '''
 
