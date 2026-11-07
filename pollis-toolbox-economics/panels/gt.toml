@@ -312,37 +312,6 @@ tooltip = "Potential P[i, j]; both players receive P[i, j] (identical interests)
 default = "[4.0 0.0 1.0; 0.0 3.0 0.0; 1.0 0.0 2.0]"
 models = ["potential"]
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.normal]
-# 2 x 2 payoff grid with equilibrium cells marked
-svg = '''
-return '<rect x="9" y="25" width="36" height="36" fill="none" stroke="currentColor" stroke-width="2"/><line x1="27" y1="25" x2="27" y2="61" stroke="currentColor"/><line x1="9" y1="43" x2="45" y2="43" stroke="currentColor"/>'
-	+ '<circle cx="18" cy="34" r="3" fill="currentColor"/><circle cx="36" cy="52" r="3" fill="currentColor"/>';
-'''
-
-[miniCharts.zerosum]
-# Saddle: maximin meets minimax
-svg = '''
-return '<path d="M6,34 Q27,62 48,34" fill="none" stroke="currentColor" stroke-width="2"/><path d="M6,56 Q27,28 48,56" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3,2"/>'
-	+ '<circle cx="27" cy="45" r="3" fill="currentColor"/>';
-'''
-
-[miniCharts.evo]
-# Simplex with a spiral trajectory
-svg = '''
-return '<path d="M27,22 L50,64 L4,64 Z" fill="none" stroke="currentColor" stroke-width="2"/>'
-	+ '<path d="M12,58 Q40,60 34,46 Q28,36 22,48 Q24,54 28,50" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3,2"/><circle cx="27" cy="50" r="2.5" fill="currentColor"/>';
-'''
-
-[miniCharts.potential]
-# Potential landscape with two peaks
-svg = '''
-return '<path d="M4,66 Q14,24 22,48 Q30,64 38,38 Q44,26 50,66" fill="none" stroke="currentColor" stroke-width="2"/>'
-	+ '<circle cx="15" cy="37" r="2.5" fill="currentColor"/><circle cx="41" cy="33" r="2.5" fill="currentColor"/>';
-'''
-
 [[codeBranches]]
 model = "normal"
 code = '''

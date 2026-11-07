@@ -192,33 +192,6 @@ tooltip = "Number of periods ahead to forecast the variance."
 default = "20"
 newRow = true
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.basic]
-# Returns whose spread follows a smooth latent volatility path
-svg = '''
-var s = '', v = '';
-for (var i = 0; i <= 44; i += 2) { var w = 4 + 10 * Math.pow(Math.sin(i / 9), 2); v += (i ? 'L' : 'M') + (5 + i) + ',' + (43 - w).toFixed(1); s += '<line x1="' + (5 + i) + '" y1="43" x2="' + (5 + i) + '" y2="' + (43 + (i % 4 ? -1 : 1) * w * 0.8).toFixed(1) + '" stroke="currentColor" stroke-width="1"/>'; }
-return s + '<path d="' + v + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
-[miniCharts.lev]
-# A fall followed by a volatility burst
-svg = '''
-var s = '', v = '';
-for (var i = 0; i <= 44; i += 2) { var w = i < 16 ? 3 : 3 + 12 * Math.exp(-(i - 16) / 10); v += (i ? 'L' : 'M') + (5 + i) + ',' + (43 - w).toFixed(1); var d = i === 16 ? 16 : (i % 4 ? -1 : 1) * w * 0.8; s += '<line x1="' + (5 + i) + '" y1="43" x2="' + (5 + i) + '" y2="' + (43 + d).toFixed(1) + '" stroke="currentColor" stroke-width="1"/>'; }
-return s + '<path d="' + v + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
-[miniCharts.stut]
-# Heavy-tailed density against a normal one
-svg = '''
-var n = '', t = '';
-for (var i = 0; i <= 44; i++) { var x = (i - 22) / 6; var yn = Math.exp(-x * x / 2); var yt = Math.pow(1 + x * x / 3, -2); n += (i ? 'L' : 'M') + (5 + i) + ',' + (62 - 34 * yn).toFixed(1); t += (i ? 'L' : 'M') + (5 + i) + ',' + (62 - 30 * yt).toFixed(1); }
-return '<line x1="5" y1="62" x2="49" y2="62" stroke="currentColor" stroke-width="0.8"/><path d="' + n + '" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3,2"/><path d="' + t + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
 [[codeBranches]]
 model = "basic"
 code = '''

@@ -418,41 +418,6 @@ label = "Pruned Second Order"
 value = "pruned_third_order"
 label = "Pruned Third Order"
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.mom]
-# Bars of model-implied standard deviations
-svg = '''
-var h = [30, 18, 38, 24, 12];
-var s = '<line x1="4" y1="66" x2="50" y2="66" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>';
-for (var i = 0; i < h.length; i++) { s += '<rect x="' + (7 + i * 9) + '" y="' + (66 - h[i]) + '" width="6" height="' + h[i] + '" fill="currentColor" opacity="' + (i === 2 ? 0.9 : 0.5) + '"/>'; }
-return s;
-'''
-
-[miniCharts.est]
-# Prior (faint) updated to a sharper posterior density
-svg = '''
-function curve(mu, sd, amp) {
-	var d = '';
-	for (var i = 0; i <= 44; i++) { var x = 5 + i; d += (i ? 'L' : 'M') + x + ',' + (66 - amp * Math.exp(-0.5 * Math.pow((x - mu) / sd, 2))).toFixed(1); }
-	return d;
-}
-return '<path d="' + curve(27, 11, 16) + '" fill="none" stroke="currentColor" stroke-width="1" opacity="0.4" stroke-dasharray="2,2"/><path d="' + curve(31, 4.5, 40) + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
-[miniCharts.irf]
-# Response to a shock decaying back to steady state
-svg = '''
-var s = '<line x1="4" y1="56" x2="50" y2="56" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.6"/>';
-var d = '', e = '';
-for (var i = 0; i <= 40; i++) {
-	d += (i ? 'L' : 'M') + (7 + i) + ',' + (56 - 32 * Math.exp(-i / 8)).toFixed(1);
-	e += (i ? 'L' : 'M') + (7 + i) + ',' + (56 - 18 * (Math.exp(-i / 14) - Math.exp(-i / 3))).toFixed(1);
-}
-return s + '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="' + e + '" fill="none" stroke="currentColor" stroke-width="1.2" opacity="0.5"/>';
-'''
-
 [[codeBranches]]
 model = "mom"
 code = '''

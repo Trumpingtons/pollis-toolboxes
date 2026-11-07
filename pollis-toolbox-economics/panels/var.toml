@@ -296,59 +296,6 @@ tooltip = "Cointegrating rank: the number of long-run relations, between 1 and n
 default = "1"
 models = ["vecm"]
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.var]
-# Two interacting series moving together
-svg = '''
-var a = [40, 34, 38, 30, 34, 26, 30, 24, 28];
-var b = [56, 52, 58, 50, 54, 46, 52, 44, 48];
-var da = '', db = '';
-for (var i = 0; i < a.length; i++) {
-	da += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + a[i];
-	db += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + b[i];
-}
-return '<path d="' + da + '" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="' + db + '" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>';
-'''
-
-[miniCharts.svar]
-# Impulse response decaying back to zero
-svg = '''
-var s = '<line x1="4" y1="50" x2="50" y2="50" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.6"/>';
-var d = '';
-for (var i = 0; i <= 40; i++) { d += (i ? 'L' : 'M') + (7 + i) + ',' + (50 - 30 * Math.exp(-i / 9) * Math.cos(i / 5)).toFixed(1); }
-s += '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-return s;
-'''
-
-[miniCharts.favar]
-# Many faint indicator lines summarised by one bold factor
-svg = '''
-var s = '';
-for (var k = 0; k < 5; k++) {
-	var d = '';
-	for (var i = 0; i < 9; i++) { d += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + (44 + 10 * Math.sin(i / 1.6 + k) - k * 2 + (i % 2 ? 3 : -3)).toFixed(1); }
-	s += '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.3"/>';
-}
-var f = '';
-for (var j = 0; j < 9; j++) { f += (j ? 'L' : 'M') + (6 + j * 5.3) + ',' + (40 + 10 * Math.sin(j / 1.6 + 2)).toFixed(1); }
-return s + '<path d="' + f + '" fill="none" stroke="currentColor" stroke-width="1.8"/>';
-'''
-
-[miniCharts.vecm]
-# Two trending series held together by a long-run relation
-svg = '''
-var a = [66, 60, 56, 52, 44, 40, 34, 30, 22];
-var b = [58, 54, 46, 44, 38, 32, 28, 22, 18];
-var da = '', db = '';
-for (var i = 0; i < a.length; i++) {
-	da += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + a[i];
-	db += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + b[i];
-}
-return '<path d="' + da + '" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="' + db + '" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.5"/>';
-'''
-
 [[codeBranches]]
 model = "var"
 code = '''
