@@ -389,7 +389,7 @@ scores = map(cands) do (name, make)
     (method = name, holdout_mase = round(mase, digits=3))
 end
 best = argmin([s.holdout_mase for s in scores])
-build = last(cands[best])  # the winner, refitted on the full series
+build(x) = last(cands[best])(x)  # the winner, refitted on the full series
 model = build(y)
 fc = forecast(model; h={{h}})
 '''

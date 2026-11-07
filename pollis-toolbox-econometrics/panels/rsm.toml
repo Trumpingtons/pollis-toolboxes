@@ -12,8 +12,12 @@ defaultModel = "msm"
 name = "MarSwitching.jl"
 github = "https://github.com/m-dadej/MarSwitching.jl"
 
+[[packages]]
+name = "MarkovRegimes.jl"
+github = "https://github.com/Trumpingtons/MarkovRegimes.jl"
+
 [requires]
-packages = ["MarSwitching.jl", "Plots.jl", "HypothesisTests.jl", "StatsBase.jl"]
+packages = ["MarSwitching.jl", "MarkovRegimes.jl", "Plots.jl", "HypothesisTests.jl", "StatsBase.jl"]
 
 [[notebookSections]]
 label = ""
@@ -114,6 +118,14 @@ authors = "Kim, Chang-Jin"
 year = 1994
 journal = "Journal of Econometrics"
 doi = "10.1016/0304-4076(94)90036-1"
+openAccess = false
+
+[[references]]
+title = "Optimal Test for Markov Switching Parameters"
+authors = "Carrasco, Marine; Hu, Liang; Ploberger, Werner"
+year = 2014
+journal = "Econometrica"
+doi = "10.3982/ECTA8609"
 openAccess = false
 
 [[references]]
@@ -399,6 +411,7 @@ scatter!(1:length(yt), yt, group=["regime $i" for i in s], ms=2.5, msw=0)
 [[actionGroups.actions]]
 id = "variance"
 label = "Conditional Variance by Regime"
+models = ["msarch"]
 desc = "The ARCH conditional variance of each regime over time (Markov-Switching ARCH only): how volatility clusters inside each regime"
 code = '''
 using MarSwitching, Plots
@@ -417,7 +430,7 @@ label = "Residual Checks"
 desc = "Residuals from the probability-weighted fit: Ljung-Box on the residuals and their squares, Jarque-Bera for normality, and the residual ACF. A rough check: these residuals mix the regimes, so they are not i.i.d. even when the model is right; read clear departures, not borderline p-values"
 code = '''
 using MarSwitching, HypothesisTests, StatsBase, Plots
-r = yt .- predict(model, true)  # instantaneous fit: regime means weighted by filtered probabilities
+r = yt .- vec(first(MarSwitching.predict(model, true)))  # qualified: StatsBase also exports predict; the first of its results is the instantaneous fit: regime means weighted by filtered probabilities
 # not i.i.d. under the true model either (regime mixing): the tests below are indicative, not exact
 L = min(20, div(length(r), 4)); band = 1.96 / sqrt(length(r))
 display((ljung_box_p = pvalue(LjungBoxTest(r, L)), ljung_box_squared_p = pvalue(LjungBoxTest(r .^ 2, L)), jarque_bera_p = pvalue(JarqueBeraTest(r))))
@@ -445,7 +458,7 @@ label = "One-Step-Ahead Forecasts"
 desc = "One-step-ahead predictions (regime probabilities are projected forward through the transition matrix, so there is no look-ahead) against the data"
 code = '''
 using MarSwitching, Statistics, Plots
-yhat = predict(model, false)  # forecasts for t = 2..T
+yhat = vec(first(MarSwitching.predict(model, false)))  # qualified: StatsBase also exports predict; the first of its results: forecasts for t = 2..T
 e = yt[2:end] .- yhat
 display((rmse = sqrt(mean(e .^ 2)), mae = mean(abs.(e))))
 plot(2:length(yt), [yt[2:end] yhat], lw=[1 1.5], ls=[:solid :dash], label=["data" "one-step forecast"], xlabel="t", title="One-step-ahead forecasts")
@@ -470,7 +483,7 @@ label = "Compare"
 [[actionGroups.actions]]
 id = "k-select"
 label = "Number of Regimes (AIC and BIC)"
-desc = "Refits the model with 2, 3 and 4 regimes and compares information criteria from the log-likelihood and parameter count. A heuristic: the extra regime has parameters that are unidentified when it is absent, so the usual likelihood-ratio and information-criterion theory does not apply; simulation studies find BIC a reasonable guide, AIC prone to too many regimes"
+desc = "Refits the model with 2, 3 and 4 regimes and compares information criteria from the log-likelihood and parameter count. A heuristic: the extra regime has parameters that are unidentified when it is absent, so the usual likelihood-ratio and information-criterion theory does not apply; simulation studies find BIC a reasonable guide, AIC prone to too many regimes, and One Regime Against Two tests one regime against two. On Markov-Switching ARCH and Time-Varying Transitions the refits take several minutes"
 code = '''
 using MarSwitching
 function ic(m)
@@ -482,8 +495,29 @@ println("Heuristic only: under k regimes the parameters of a (k+1)th regime are 
 '''
 
 [[actionGroups.actions]]
+id = "one-vs-two"
+label = "One Regime Against Two"
+models = ["msm", "msar"]
+desc = "Carrasco, Hu and Ploberger's supTS and expTS tests of one regime against two (MarkovRegimes.jl): the model without switching against parameters that switch with persistent regimes (rho from 0 to 0.99), with p-values from 3,000 bootstrap series, drawn from Gaussian errors and from the residuals. The residuals keep fat tails, and also the spread of the two regimes, so a switch in the variance shows only through its persistence: a low Gaussian p-value with a high residual one means fat tails, which regimes of the variance and fat-tailed errors both give. A valid test where information criteria are only a guide; for a series without regressors or an autoregression"
+code = '''
+using MarkovRegimes
+{{?xs!=}} error("The test of one regime against two takes the series alone: clear Switching regressors, or use the Markov-switching AR model")
+{{?xns!=}} error("The test of one regime against two takes the series alone: clear Non-switching regressors, or use the Markov-switching AR model")
+x = Float64.({{yvar}})
+{{?model=msm}} p = 0  # no autoregressive lags
+{{?model=msar}} p = {{p}}  # the AR lags of the model
+{{?switchvar=true}} switching = [:mean, :variance]  # the mean and the variance of the errors switch, as in the model
+{{?switchvar=false}} switching = [:mean]  # the mean switches, as in the model
+map((:gaussian, :residuals)) do errors
+    t = chpbootstrap(x; p, switching, errors, bound = 0.99, lower = 0.0)  # runs on all the threads of Julia
+    (bootstrap = errors, supTS = round(t.supTS, digits=2), supTS_pvalue = t.supP, expTS = round(t.expTS, digits=2), expTS_pvalue = round(t.expP, digits=3))
+end
+'''
+
+[[actionGroups.actions]]
 id = "grid"
 label = "Specification Search"
+models = ["msm", "msar"]
 desc = "grid_search_msm searches regimes, intercept type, switching of each regressor and of the variance, and keeps the best model by AIC (the same caveat as the regime count applies to k); it needs switching regressors (or the autoregression lags) and does not cover Markov-Switching ARCH or time-varying transitions"
 code = '''
 using MarSwitching
@@ -501,12 +535,27 @@ label = "Interpret"
 [[actionGroups.actions]]
 id = "transitions"
 label = "Transition Matrix and Durations"
+models = ["msm", "msar", "msarch"]
 desc = "The left-stochastic transition matrix, the expected duration of each regime and the long-run (ergodic) share of time spent in each"
 code = '''
 using MarSwitching
 transition_mat(model)  # column j: probabilities of moving from regime j
 {{?model!=tvtp}} display((expected_duration = expected_duration(model), long_run_share = ergodic_probs(model)))
 {{?model=tvtp}} display(expected_duration(model, Z))  # T x k: expected duration at each date, given the drivers
+'''
+
+[[actionGroups.actions]]
+id = "dates"
+label = "Regime Dates"
+desc = "The spells of the two regimes in turn, each with its first and last period and its length, from the smoothed probabilities: a period belongs to regime 2 when its probability exceeds 0.5, the rule of Hamilton (1989). regime_spells of MarkovRegimes.jl, for a model of two regimes"
+code = '''
+using MarSwitching, MarkovRegimes
+S = smoothed_probs(model)  # one column per regime: the probability of each, given all the data
+size(S, 2) == 2 || error("Regime Dates covers two regimes: set Regimes k to 2")
+{{?model!=msar}} periods = 1:size(S, 1)  # the periods of the series. Replace with its dates, one for each period
+{{?model=msar}} periods = (1:size(S, 1)) .+ {{p}}  # the periods of the series, after its first {{p}}, its lags. Replace with its dates
+spells = regime_spells(S; dates = periods)  # A: regime 1 of the model, B: regime 2
+[(regime = r == "A" ? 1 : 2, first = a, last = b, length = n) for (r, a, b, n) in zip(spells.regime, spells.start, spells.stop, spells.periods)]
 '''
 
 [[actionGroups.actions]]

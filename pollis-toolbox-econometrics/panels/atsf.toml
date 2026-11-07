@@ -351,7 +351,7 @@ label = "Forecast Plot"
 desc = "The series, the in-sample fit and the forecast with its 80% and 95% prediction intervals (point forecast only for intermittent demand)"
 code = '''
 using Plots
-fit_in = fitted(model)
+fit_in = Durbyn.fitted(model)  # qualified: StatsBase also exports fitted
 p = Plots.plot(y, lw=1.5, c=:black, label="data", xlabel="t", title="Forecast, {{h}} steps")
 Plots.plot!(fit_in, lw=1, ls=:dash, label="fitted")
 tf = length(y) .+ (1:{{h}})

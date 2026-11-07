@@ -296,7 +296,8 @@ using ARCHModels
 {{?data=returns}} returns = DOW29  # daily returns of 29 stocks of the Dow Jones Industrial Average, shipped with ARCHModels: one column per stock. Replace returns with your own returns.
 
 am = fit(DCC{{{dcc-p}}, {{dcc-q}}, GARCH{{{p}}, {{q}}}}, {{data}})  # DCC({{dcc-p}}, {{dcc-q}}) on GARCH({{p}}, {{q}}) volatilities, one column per asset
-coeftable(am)  # estimated parameters
+b, se = coef(am), stderror(am)  # the DCC equation's parameters, then each asset's GARCH and mean
+CoefTable(hcat(b, se, b ./ se), ["Estimate", "Std. Error", "z value"], coefnames(am))  # estimated parameters
 R = correlations(am)  # conditional correlation matrix at each date
 '''
 
@@ -320,6 +321,7 @@ using ARCHModels, Plots
 [[actionGroups.actions]]
 id = "news-impact"
 label = "News Impact Curve"
+models = ["garch", "egarch", "gjr"]
 desc = "Next-period variance as a function of today's shock, with past variances held at their sample average: a lopsided curve is the leverage effect"
 code = '''
 using ARCHModels, Statistics, Plots
@@ -355,6 +357,7 @@ hline!([-band, band], c=:red, ls=:dash)
 [[actionGroups.actions]]
 id = "qq"
 label = "QQ Plot Against the Fitted Distribution"
+models = ["garch", "egarch", "gjr"]
 desc = "Standardised residuals against the quantiles of the fitted innovation distribution: points off the line in the tails mean the distribution misses the fat tails"
 code = '''
 using ARCHModels, Plots
@@ -373,6 +376,7 @@ label = "Predict"
 [[actionGroups.actions]]
 id = "vol-path"
 label = "Volatility Forecast Path"
+models = ["garch", "gjr", "dcc"]
 desc = "Volatility forecasts 1 to 20 steps ahead converging to the long-run level (GARCH and GJR-GARCH; DCC shows the one-step covariance matrix). For GJR, ARCHModels sets future shocks to 0 in the threshold term, so the path levels off below the dashed line, which includes gamma / 2"
 code = '''
 using ARCHModels, Plots
@@ -389,6 +393,7 @@ using ARCHModels, Plots
 [[actionGroups.actions]]
 id = "var-backtest"
 label = "Value-at-Risk Backtest"
+models = ["garch", "egarch", "gjr"]
 desc = "In-sample 5% Value-at-Risk against the returns: the number of exceedances against the 5% expected, the dynamic quantile test and next period's VaR"
 code = '''
 using ARCHModels, Plots
@@ -409,6 +414,7 @@ label = "Compare"
 [[actionGroups.actions]]
 id = "distributions"
 label = "Innovation Distributions"
+models = ["garch", "egarch", "gjr"]
 desc = "Refits the same volatility model with Gaussian, Student's t, GED and skewed t shocks: the lowest AIC and BIC point to the best tail shape"
 code = '''
 using ARCHModels
@@ -420,6 +426,7 @@ fits = [d => fit(spec, {{data}}; dist=d) for d in (StdNormal, StdT, StdGED, StdS
 [[actionGroups.actions]]
 id = "orders"
 label = "Lag Order Selection"
+models = ["garch", "egarch", "gjr"]
 desc = "Searches all lag orders up to 2 by BIC and compares the best with this fit"
 code = '''
 using ARCHModels
