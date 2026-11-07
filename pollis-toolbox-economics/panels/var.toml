@@ -191,7 +191,7 @@ text = "VAR"
 detail = "vector autoregression for joint modelling of multiple time series"
 
 [[bullets]]
-text = "Structural VAR"
+text = "SVAR"
 detail = "VAR with recursive, long-run or sign identification restrictions"
 
 [[bullets]]

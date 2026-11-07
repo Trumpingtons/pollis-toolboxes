@@ -135,16 +135,16 @@ id = "stut"
 label = "Student-t"
 
 [[bullets]]
-text = "Basic SV"
+text = "Basic"
 detail = "Kim–Shephard–Chib Gibbs sampler; latent log-volatility follows an AR(1) with Gaussian shocks, approximated via mixture of normals"
 
 [[bullets]]
-text = "Leverage SV"
-detail = "extends Basic SV with a correlation rho between the return innovation epsilon(t) and the next volatility innovation eta(t+1), so that a fall in prices can raise later volatility"
+text = "Leverage"
+detail = "extends Basic with a correlation rho between the return innovation epsilon(t) and the next volatility innovation eta(t+1), so that a fall in prices can raise later volatility"
 
 [[bullets]]
-text = "Student-t SV"
-detail = "heavy-tailed return distribution; degrees of freedom nu estimated from the data via a Gamma prior, improving robustness to outliers"
+text = "Student-t"
+detail = "heavy-tailed return shocks, whose degrees of freedom nu are estimated from the data under an exponential prior with mean 10 above 2, so that single outliers do not inflate the volatility path"
 
 [[decisionRows]]
 task = "Basic"

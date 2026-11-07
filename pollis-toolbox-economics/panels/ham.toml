@@ -125,19 +125,15 @@ id = "aiyagari"
 label = "Aiyagari"
 
 [[bullets]]
-text = "Solves Hamilton-Jacobi-Bellman (HJB) equations and Kolmogorov Forward Equations (KFE) for heterogeneous-agent models using finite difference methods"
-detail = ""
+text = "Huggett"
+detail = "an endowment economy: income follows an Ornstein-Uhlenbeck process, and households save or borrow in a bond down to the limit phi; the bond market clears at zero net supply"
 
 [[bullets]]
-text = "Handles Huggett (bond economy) and Aiyagari (production economy) models with idiosyncratic income risk and incomplete asset markets"
-detail = ""
+text = "Aiyagari"
+detail = "a production economy: households save in capital, and a Cobb-Douglas firm pays the wage and the rental rate r + delta; the market clears where household wealth equals the firm's capital"
 
 [[bullets]]
-text = "Computes the stationary wealth distribution and equilibrium interest rate from the market-clearing condition: zero net bond supply (Huggett) or household wealth equal to firm capital (Aiyagari)"
-detail = ""
-
-[[bullets]]
-text = "State space is discretised on a grid; finer grids improve accuracy at the cost of computation time"
+text = "On both tabs, the Hamilton-Jacobi-Bellman (HJB) equation, solved by finite differences on an income and wealth grid, gives consumption and saving, and the Kolmogorov forward equation the stationary wealth distribution; finer grids are more accurate and slower"
 detail = ""
 
 [[inputs]]
