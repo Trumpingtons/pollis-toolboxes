@@ -507,15 +507,15 @@ susceptible, exposed, infectious, recovered = 1, 2, 3, 4  # the columns of a hos
 {{?disease=sir}}model_of(transmission) = SIRModel(transmission, {{mortality}}, {{recovery}})
 {{?disease=seir}}model_of(transmission) = SEIRModel(transmission, {{mortality}}, {{recovery}}, {{latency}})
 {{?disease=seirs}}model_of(transmission) = SEIRSModel(transmission, {{mortality}}, {{recovery}}, {{latency}}, {{immunity-loss}})
-{{?mixing=frequency}}models = fill(model_of({{transmission}}), strains)
-{{?mixing=density}}models = fill(model_of({{transmission}} / hosts), strains)  # per infected host: both kinds agree at the start
+{{?mixing=frequency}}strain_models = fill(model_of({{transmission}}), strains)
+{{?mixing=density}}strain_models = fill(model_of({{transmission}} / hosts), strains)  # per infected host: both kinds agree at the start
 
 # Row i, column j: multiplies the chance of catching strain i for a host infected with strain j
 interactions = create_interaction_matrix(strains, {{priority}}, {{strength}}; cf_ratio = {{facilitation}})
 
 function run_community(matrix)
     population = Population([Individual(strains, rand(0:40)) for _ in 1:hosts])
-    simulate(population, SimulationParameters(models, matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :{{arrival}}, steps, :{{mixing}}))
+    simulate(population, SimulationParameters(strain_models, matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :{{arrival}}, steps, :{{mixing}}))
 end
 
 tally(runs, strain, state) = [count(host -> host[strain, state], population) for population in runs]
@@ -545,14 +545,14 @@ susceptible, exposed, infectious, recovered = 1, 2, 3, 4  # the columns of a hos
 {{?disease=sir}}model_of(transmission) = SIRModel(transmission, {{mortality}}, {{recovery}})
 {{?disease=seir}}model_of(transmission) = SEIRModel(transmission, {{mortality}}, {{recovery}}, {{latency}})
 {{?disease=seirs}}model_of(transmission) = SEIRSModel(transmission, {{mortality}}, {{recovery}}, {{latency}}, {{immunity-loss}})
-{{?mixing=frequency}}models = fill(model_of({{transmission}}), strains)
-{{?mixing=density}}models = fill(model_of({{transmission}} / hosts), strains)  # per infected host: both kinds agree at the start
+{{?mixing=frequency}}strain_models = fill(model_of({{transmission}}), strains)
+{{?mixing=density}}strain_models = fill(model_of({{transmission}} / hosts), strains)  # per infected host: both kinds agree at the start
 
 # Row i, column j: multiplies the chance of catching strain i for a host infected with strain j
 interactions = create_interaction_matrix(strains, {{priority}}, {{strength}}; cf_ratio = {{facilitation}})
 
 population = Population([Individual(strains, rand(0:40)) for _ in 1:hosts])
-populations = simulate(population, SimulationParameters(models, interactions, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :{{arrival}}, steps, :{{mixing}}))
+populations = simulate(population, SimulationParameters(strain_models, interactions, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :{{arrival}}, steps, :{{mixing}}))
 
 tally(runs, strain, state) = [count(host -> host[strain, state], population) for population in runs]
 infected = reduce(hcat, [tally(populations, strain, infectious) for strain in 1:strains])
@@ -886,7 +886,7 @@ for (name, asymmetric) in (("Priority effects on", true), ("Priority effects off
         Random.seed!(s)
         matrix = create_interaction_matrix(strains, asymmetric, {{strength}}; cf_ratio = {{facilitation}})
         population = Population([Individual(strains, rand(0:40)) for _ in 1:hosts])
-        result = simulate(population, SimulationParameters(models, matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :random, steps, :{{mixing}}))
+        result = simulate(population, SimulationParameters(strain_models, matrix, float({{base-mortality}}), float({{fecundity}}), {{maturity}}, :random, steps, :{{mixing}}))
         peaks = vec(maximum(infected_by_strain(result); dims = 1))
         (spreading = count(>(0.01 * hosts), peaks), unevenness = std(peaks))
     end

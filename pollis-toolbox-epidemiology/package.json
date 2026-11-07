@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-epidemiology",
   "displayName": "Epidemiology Toolbox",
   "description": "Pollis Epidemiology Toolbox: inference of epidemiological parameters, inference on contact networks, compartmental models (SIR, SIS, SEIR, SIRS, SEIRD), branching processes, epidemics on networks and coinfection.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

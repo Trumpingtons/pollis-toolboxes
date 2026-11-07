@@ -13,7 +13,7 @@ name = "DifferentialEquations.jl"
 github = "https://docs.sciml.ai/DiffEqDocs/stable/"
 
 [requires]
-packages = ["DifferentialEquations.jl", "GLMakie.jl", "Plots.jl", "Roots.jl"]
+packages = ["DifferentialEquations.jl", "Plots.jl", "Roots.jl"]
 
 [[notebookSections]]
 label = ""
@@ -335,6 +335,8 @@ u0  = [{{N}} - 1.0, 1.0, 0.0]  # S0, I0, R0
 tspan = (0.0, {{T}})  # time span in days
 prob = ODEProblem(sir!, u0, tspan, (beta, gamma))
 sol  = solve(prob, Tsit5())
+labels = ["S", "I", "R"]  # compartments, in the order of u
+infected_index, recovered_index = 2, 3  # rows of I and R in sol
 
 R0 = beta / gamma  # basic reproduction number
 println("R0 = ", round(R0; digits=2), "  Peak I = ", round(maximum(sol[2,:]); digits=0))  # epidemic summary
@@ -358,6 +360,8 @@ end
 u0    = [{{N}} - 1.0, 1.0]  # S0, I0
 prob  = ODEProblem(sis!, u0, (0.0, {{T}}), (beta, gamma))
 sol   = solve(prob, Tsit5())
+labels = ["S", "I"]  # compartments, in the order of u
+infected_index = 2  # row of I in sol; SIS has no R
 
 R0    = beta / gamma  # basic reproduction number
 I_end = R0 > 1 ? (1 - 1/R0) * {{N}} : 0.0  # endemic equilibrium
@@ -385,6 +389,8 @@ end
 u0   = [{{N}}-1.0, 0.0, 1.0, 0.0]  # S0, E0, I0, R0
 prob = ODEProblem(seir!, u0, (0.0, {{T}}), (beta, sigma, gamma))
 sol  = solve(prob, Tsit5())
+labels = ["S", "E", "I", "R"]  # compartments, in the order of u
+infected_index, recovered_index = 3, 4  # rows of I and R in sol
 
 R0 = beta / gamma  # basic reproduction number
 println("R0 = ", round(R0;digits=2), "  Peak I = ", round(maximum(sol[3,:]);digits=0))  # SEIR summary
@@ -410,6 +416,8 @@ end
 u0   = [{{N}}-1.0, 1.0, 0.0]  # S0, I0, R0
 prob = ODEProblem(sirs!, u0, (0.0, {{T}}), (beta, gamma, xi))
 sol  = solve(prob, Tsit5())
+labels = ["S", "I", "R"]  # compartments, in the order of u
+infected_index, recovered_index = 2, 3  # rows of I and R in sol
 
 R0 = beta / gamma  # basic reproduction number
 println("R0 = ", round(R0;digits=2), "  Endemic equilibrium (reached through damped oscillations): ", R0 > 1)  # SIRS summary
@@ -438,8 +446,11 @@ end
 u0   = [{{N}}-1.0, 0.0, 1.0, 0.0, 0.0]  # S0, E0, I0, R0, D0
 prob = ODEProblem(seird!, u0, (0.0, {{T}}), (beta, sigma, gamma, mu))
 sol  = solve(prob, Tsit5())
+labels = ["S", "E", "I", "R", "D"]  # compartments, in the order of u
+infected_index, recovered_index = 3, 4  # rows of I and R in sol
 
-println("Peak I = ", round(maximum(sol[3,:]);digits=0), "  Total deaths = ", round(sol[5,end];digits=0))  # SEIRD summary
+R0 = beta / (gamma + mu)  # basic reproduction number: an infectious person leaves I by recovery or death
+println("R0 = ", round(R0;digits=2), "  Peak I = ", round(maximum(sol[3,:]);digits=0), "  Total deaths = ", round(sol[5,end];digits=0))  # SEIRD summary
 '''
 
 [[actionGroups]]
@@ -449,34 +460,22 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "epidemic-curve"
 label = "Epidemic Curve"
-desc = "Plot the S, I and R trajectories over time of the SIR model at the chosen beta, gamma and N"
+desc = "Plot every compartment of the tab's model over time, at the chosen beta, gamma and N"
 code = '''
-using DifferentialEquations, GLMakie
-
-function sir!(du,u,p,t); S,I,R=u; b,g=p; du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-g*I; du[3]=g*I; end
-sol = solve(ODEProblem(sir!,[{{N}}-1.0,1.0,0.0],(0.0,{{T}}),({{beta}},{{gamma}})),Tsit5())
-
-fig,ax=Figure(),Axis(fig[1,1],xlabel="Days",ylabel="People",title="SIR Epidemic Curve")
-lines!(ax,sol.t,sol[1,:],label="S",color=:blue)
-lines!(ax,sol.t,sol[2,:],label="I",color=:red)
-lines!(ax,sol.t,sol[3,:],label="R",color=:green)
-axislegend(ax); display(fig)
+using Plots
+p = plot(sol; label = permutedims(labels), lw = 2, xlabel = "Days", ylabel = "People", title = "Epidemic curve")
+display(p)
 '''
 
 [[actionGroups.actions]]
 id = "phase-portrait"
 label = "Phase Portrait"
-desc = "Plot the S-I phase plane trajectory of the SIR model to visualise the epidemic path from initial seed to final state"
+desc = "Plot the path of the epidemic in the S-I plane, from the first case (dot) to the end of the time span"
 code = '''
-using DifferentialEquations, GLMakie
-
-function sir!(du,u,p,t); S,I,R=u; b,g=p; du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-g*I; du[3]=g*I; end
-sol = solve(ODEProblem(sir!,[{{N}}-1.0,1.0,0.0],(0.0,{{T}}),({{beta}},{{gamma}})),Tsit5())
-
-fig,ax=Figure(),Axis(fig[1,1],xlabel="S",ylabel="I",title="SIR Phase Portrait")
-lines!(ax, sol[1,:], sol[2,:], color=:red)
-scatter!(ax, [sol[1,1]], [sol[2,1]], color=:blue, markersize=10)  # initial state
-display(fig)
+using Plots
+p = plot(sol[1, :], sol[infected_index, :]; lw = 2, label = "Path", xlabel = "S", ylabel = "I", title = "Phase portrait")
+scatter!(p, [sol[1, 1]], [sol[infected_index, 1]]; label = "Start")
+display(p)
 '''
 
 [[actionGroups]]
@@ -486,31 +485,25 @@ label = "Diagnose"
 [[actionGroups.actions]]
 id = "r0"
 label = "Basic R0"
-desc = "Compute R0 = beta/gamma and the herd immunity threshold for all five compartmental models"
+desc = "R0 of the tab's model, whether an epidemic can start, and the herd immunity threshold 1 - 1/R0"
 code = '''
-R0  = {{beta}} / {{gamma}}  # basic reproduction number (SIR/SIS/SEIR/SIRS)
-HIT = 1 - 1 / R0  # herd immunity threshold
-
-println("R0 = ", round(R0; digits=3))
+println("R0 = ", round(R0; digits = 3))
 println("Epidemic occurs: ", R0 > 1)
-println("Herd immunity threshold: ", round(HIT * 100; digits=1), "%")
-println("Note: SEIRD R0 = beta / (gamma + mu)")  # adjust for mortality
+R0 > 1 && println("Herd immunity threshold: ", round((1 - 1 / R0) * 100; digits = 1), "%")
 '''
 
 [[actionGroups.actions]]
 id = "final-size"
 label = "Final Epidemic Size"
-desc = "Solve the implicit final-size equation for SIR to find the total fraction of the population infected"
+desc = "Solve the final-size equation z = 1 - exp(-R0 z) for the share ever infected, and compare it with the simulation"
+models = ["sir", "seir", "seird"]
 code = '''
 using Roots
-
-R0 = {{beta}} / {{gamma}}  # basic reproduction number
-f  = z -> z + exp(-R0 * z) - 1  # implicit final-size equation
-z  = find_zero(f, 0.5)  # final infected fraction
-
-println("R0                  = ", round(R0; digits=3))
-println("Final size fraction = ", round(z; digits=4))
-println("Peak I fraction     = ", round(1 - 1/R0 - log(R0)/R0; digits=4))
+z = R0 > 1 ? find_zero(z -> z + exp(-R0 * z) - 1, (1e-9, 1.0)) : 0.0  # share ever infected, for one case in a large population
+println("R0                          = ", round(R0; digits = 3))
+println("Final size from the equation = ", round(z; digits = 4))
+println("Share infected by day ", sol.t[end], "  = ", round(1 - sol[1, end] / N; digits = 4), " (lower if the epidemic has not ended)")
+{{?model=sir}} println("Peak share infectious        = ", round(1 - 1 / R0 - log(R0) / R0; digits = 4), " (simulation ", round(maximum(sol[infected_index, :]) / N; digits = 4), ")")
 '''
 
 [[actionGroups]]
@@ -520,40 +513,32 @@ label = "Predict"
 [[actionGroups.actions]]
 id = "beta-sweep"
 label = "Transmission Sweep"
-desc = "Sweep transmission rate beta and plot the recovered fraction at day T to identify the epidemic threshold (near the threshold the epidemic is slow, so this can be below the final size)"
+desc = "Solve the tab's model for transmission rates from 0.01 to 0.5 and plot the share no longer susceptible at day T, with the threshold where R0 = 1 (near the threshold the epidemic is slow, so the share can be below the final size)"
 code = '''
-using DifferentialEquations, GLMakie
-
-function sir!(du,u,p,t); S,I,R=u; b,g=p; du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-g*I; du[3]=g*I; end
-betas    = 0.01:0.01:0.5  # sweep range
-R_finals = Float64[]  # store final R fraction
-for b in betas
-    sol = solve(ODEProblem(sir!,[{{N}}-1.0,1.0,0.0],(0.0,{{T}}),(b,{{gamma}})),Tsit5())
-    push!(R_finals, sol[3,end]/{{N}})  # recovered fraction at day T
-end
-
-fig,ax=Figure(),Axis(fig[1,1],xlabel="beta",ylabel="R fraction at day T",title="Epidemic Threshold")
-lines!(ax,collect(betas),R_finals,color=:red)
-vlines!(ax,[{{gamma}}],linestyle=:dash,color=:gray,label="beta = gamma")  # threshold
-axislegend(ax); display(fig)
+using Plots
+betas = 0.01:0.01:0.5
+shares = [1 - solve(remake(prob; p = (b, Base.tail(prob.p)...)), Tsit5())[1, end] / N for b in betas]  # beta comes first in p
+p = plot(betas, shares; lw = 2, label = "Share not susceptible at day T", xlabel = "beta", ylabel = "Share of N", title = "Epidemic threshold")
+vline!(p, [beta / R0]; ls = :dash, c = :gray, label = "R0 = 1")
+display(p)
 '''
 
 [[actionGroups.actions]]
 id = "vaccination"
 label = "Vaccination Impact"
-desc = "Model a vaccination campaign that moves a fraction of susceptibles to recovered at t=0 and compare outbreak size"
+desc = "Move 0%, 30%, 60% and 80% of the susceptibles to the recovered at day 0 and compare the infectious curves"
+models = ["sir", "seir", "sirs", "seird"]
 code = '''
-using DifferentialEquations, GLMakie
-
-function sir!(du,u,p,t); S,I,R=u; b,g=p; du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-g*I; du[3]=g*I; end
-vax_levels = [0.0, 0.3, 0.6, 0.8]  # vaccination fractions
-fig,ax=Figure(),Axis(fig[1,1],xlabel="Days",ylabel="Infected",title="Vaccination Impact")
-for v in vax_levels
-    S0 = {{N}} * (1-v) - 1.0; R0_init = {{N}} * v
-    sol = solve(ODEProblem(sir!,[S0,1.0,R0_init],(0.0,{{T}}),({{beta}},{{gamma}})),Tsit5())
-    lines!(ax,sol.t,sol[2,:],label=string(Int(round(v*100)),"%"))
+using Plots
+p = plot(xlabel = "Days", ylabel = "Infectious", title = "Vaccination impact")
+for v in (0.0, 0.3, 0.6, 0.8)
+    u0v = copy(prob.u0)
+    u0v[1] -= v * N; u0v[recovered_index] += v * N  # vaccinated at day 0
+    s = solve(remake(prob; u0 = u0v), Tsit5())
+    plot!(p, s.t, s[infected_index, :]; lw = 2, label = string(round(Int, 100 * v), "% vaccinated"))
 end
-axislegend(ax,title="Coverage"); display(fig)
+display(p)
+println("Herd immunity threshold 1 - 1/R0 = ", round(100 * max(0, 1 - 1 / R0); digits = 1), "%")
 '''
 
 [[actionGroups]]
@@ -563,47 +548,34 @@ label = "Compare"
 [[actionGroups.actions]]
 id = "model-comparison"
 label = "Model Comparison"
-desc = "Compare peak infected and final epidemic size across SIR, SEIR and SEIRD at identical beta and gamma"
+desc = "Peak infectious and share ever infected of SIR, SEIR and SEIRD at the same beta, gamma and N, with a 5-day latent period and a death rate of 0.01"
 code = '''
-using DifferentialEquations, Statistics
-
-p_sir   = ({{beta}}, {{gamma}})  # SIR parameters
-p_seir  = ({{beta}}, 1.0/5.0, {{gamma}})  # SEIR: beta, sigma, gamma
-p_seird = ({{beta}}, 1.0/5.0, {{gamma}}, 0.01)  # SEIRD: adds mu mortality
-
-function sir!(du,u,p,t);   S,I,R=u;       b,g=p;       du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-g*I;       du[3]=g*I;             end
-function seir!(du,u,p,t);  S,E,I,R=u;     b,s,g=p;     du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-s*E; du[3]=s*E-g*I; du[4]=g*I;     end
-function seird!(du,u,p,t); S,E,I,R,D=u;   b,s,g,m=p;   du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-s*E; du[3]=s*E-(g+m)*I; du[4]=g*I; du[5]=m*I; end
-
-s1=solve(ODEProblem(sir!,[{{N}}-1.0,1.0,0.0],(0.0,{{T}}),p_sir),Tsit5())
-s2=solve(ODEProblem(seir!,[{{N}}-1.0,0.0,1.0,0.0],(0.0,{{T}}),p_seir),Tsit5())
-s3=solve(ODEProblem(seird!,[{{N}}-1.0,0.0,1.0,0.0,0.0],(0.0,{{T}}),p_seird),Tsit5())
-
-println("SIR   peak I = ",round(maximum(s1[2,:]);digits=0))  # SIR peak
-println("SEIR  peak I = ",round(maximum(s2[3,:]);digits=0))  # SEIR peak (delayed)
-println("SEIRD peak I = ",round(maximum(s3[3,:]);digits=0),"  deaths = ",round(s3[5,end];digits=0))  # SEIRD peak and mortality
-println("Epidemic size at day T: SIR ",round(s1[3,end]/{{N}};digits=3),"  SEIR ",round(s2[4,end]/{{N}};digits=3),"  SEIRD ",round((s3[4,end]+s3[5,end])/{{N}};digits=3))  # share ever infected and removed
+rhs_sir(u, p, t) = (b = beta * u[1] * u[2] / N; [-b, b - gamma * u[2], gamma * u[2]])
+rhs_seir(u, p, t) = (b = beta * u[1] * u[3] / N; [-b, b - u[2] / 5, u[2] / 5 - gamma * u[3], gamma * u[3]])
+rhs_seird(u, p, t) = (b = beta * u[1] * u[3] / N; [-b, b - u[2] / 5, u[2] / 5 - (gamma + 0.01) * u[3], gamma * u[3], 0.01 * u[3]])
+span = (0.0, float({{T}}))
+runs = (("SIR", solve(ODEProblem(rhs_sir, [N - 1.0, 1.0, 0.0], span), Tsit5()), 2),
+        ("SEIR", solve(ODEProblem(rhs_seir, [N - 1.0, 0.0, 1.0, 0.0], span), Tsit5()), 3),
+        ("SEIRD", solve(ODEProblem(rhs_seird, [N - 1.0, 0.0, 1.0, 0.0, 0.0], span), Tsit5()), 3))
+for (name, s, i) in runs
+    println(rpad(name, 6), " peak I = ", round(maximum(s[i, :]); digits = 0), " on day ", round(s.t[argmax(s[i, :])]; digits = 1), ", share ever infected by day T = ", round(1 - s[1, end] / N; digits = 3))
+end
+println("SEIRD deaths by day T = ", round(runs[3][2][5, end]; digits = 0))
 '''
 
 [[actionGroups.actions]]
 id = "intervention-timing"
 label = "Intervention Timing"
-desc = "Compare epidemic outcomes when a 50% contact reduction is applied at days 0, 20, 40 and 60"
+desc = "Halve the transmission rate of the tab's model from day 0, 20, 40 or 60 and compare the infectious curves"
 code = '''
-using DifferentialEquations, GLMakie
-
-function sir_intervention!(du,u,p,t)
-    S,I,R=u; b0,g,t_int=p
-    b = t >= t_int ? b0 * 0.5 : b0  # 50% reduction after intervention
-    du[1]=-b*S*I/{{N}}; du[2]=b*S*I/{{N}}-g*I; du[3]=g*I
+using Plots
+p = plot(sol.t, sol[infected_index, :]; lw = 2, c = :black, label = "No intervention", xlabel = "Days", ylabel = "Infectious", title = "Intervention timing")
+for day in (0.0, 20.0, 40.0, 60.0)
+    halved = ODEProblem((du, u, q, t) -> prob.f(du, u, (t >= day ? beta / 2 : beta, Base.tail(prob.p)...), t), prob.u0, prob.tspan)  # beta halved from day on
+    s = solve(halved, Tsit5(); tstops = [day])
+    plot!(p, s.t, s[infected_index, :]; lw = 2, label = string("From day ", round(Int, day)))
 end
-
-fig,ax=Figure(),Axis(fig[1,1],xlabel="Days",ylabel="Infected",title="Intervention Timing")
-for t_int in [0, 20, 40, 60]
-    sol=solve(ODEProblem(sir_intervention!,[{{N}}-1.0,1.0,0.0],(0.0,{{T}}),({{beta}},{{gamma}},float(t_int))),Tsit5())
-    lines!(ax,sol.t,sol[2,:],label="day "*string(t_int))
-end
-axislegend(ax,title="Intervention"); display(fig)
+display(p)
 '''
 
 [[actionGroups]]
@@ -613,31 +585,26 @@ label = "Interpret"
 [[actionGroups.actions]]
 id = "r0-interpretation"
 label = "R0 Interpretation"
-desc = "Compute R0 and interpret the epidemic trajectory: will it grow, plateau or fade?"
+desc = "What R0 says about the epidemic of the tab's model: whether it grows or fades, and the immune share that stops it"
 code = '''
-R0  = {{beta}} / {{gamma}}  # basic reproduction number
-HIT = 1.0 - 1.0 / R0  # herd immunity threshold
-
-println("R0 = ", round(R0; digits=2))
+println("R0 = ", round(R0; digits = 2))
 if R0 > 1
-    println("Epidemic grows: each case generates ", round(R0;digits=2), " secondary cases")  # growing phase
-    println("Herd immunity requires ", round(HIT*100;digits=1), "% immune")  # threshold
+    println("The epidemic grows: in a fully susceptible population, each case causes ", round(R0; digits = 2), " new cases")
+    println("Growth stops once ", round(100 * (1 - 1 / R0); digits = 1), "% of the population is immune")
 else
-    println("R0 < 1: epidemic cannot sustain -- each case infects < 1 person")  # subcritical
+    println("R0 <= 1: each case causes at most one new case, and the epidemic fades")
 end
 '''
 
 [[actionGroups.actions]]
 id = "endemic-interpretation"
 label = "Endemic Equilibrium"
-desc = "For SIS and SIRS, compute and interpret the endemic infected fraction at long-run equilibrium"
+desc = "The long-run infectious share of the tab's model, from its equilibrium, against the value the simulation reaches by day T"
+models = ["sis", "sirs"]
 code = '''
-R0     = {{beta}} / {{gamma}}  # basic reproduction number
-I_star = R0 > 1 ? 1.0 - 1.0/R0 : 0.0  # SIS endemic infected fraction
-xi     = 1.0/180.0  # waning rate (180-day immunity for SIRS)
-I_sirs = R0 > 1 ? (1.0 - 1.0/R0) * xi / (gamma + xi) : 0.0  # SIRS endemic fraction (exact equilibrium)
-
-println("R0 = ", round(R0; digits=2))
-println("SIS  endemic I* = ", round(I_star * 100; digits=1), "%")
-println("SIRS endemic I* ~ ", round(I_sirs * 100; digits=1), "% (waning immunity)")
+{{?model=sis}} I_star = R0 > 1 ? (1 - 1 / R0) * N : 0.0  # S* = N / R0, and S + I = N
+{{?model=sirs}} I_star = R0 > 1 ? (1 - 1 / R0) * xi / (gamma + xi) * N : 0.0  # S* = N / R0, and R* = gamma I* / xi
+println("R0 = ", round(R0; digits = 2))
+println("Endemic I* = ", round(I_star; digits = 0), " (", round(100 * I_star / N; digits = 1), "% of N)")
+println("I at day ", sol.t[end], " = ", round(sol[infected_index, end]; digits = 0), " (the simulation approaches I* over time)")
 '''

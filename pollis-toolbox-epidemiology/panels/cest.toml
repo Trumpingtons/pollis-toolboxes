@@ -381,14 +381,14 @@ end
 [[codeBranches]]
 model = "sir"
 code = '''
-using Pathogen, Random, Plots  # Pathogen re-exports Distributions and DataFrames (Population takes a DataFrame)
+using Pathogen, Random, Plots  # Pathogen re-exports Distributions
 
 Random.seed!({{seed}})  # reproducible simulation and MCMC
 n = {{N}}  # individuals
 tmax = Float64({{T}})  # end of the observation window (days)
 
 # Spatial population: random positions and their Euclidean distances
-risks = DataFrame(x = rand(Uniform(0, 15), n), y = rand(Uniform(0, 30), n))
+risks = (x = rand(Uniform(0, 15), n), y = rand(Uniform(0, 30), n))  # any Tables.jl table, read as risks.x[i]
 dists = [hypot(risks.x[i] - risks.x[k], risks.y[i] - risks.y[k]) for i in 1:n, k in 1:n]
 pop = Population(risks, dists)
 
@@ -400,11 +400,11 @@ constant_rate(p, pop, i) = p[1]
 rf = RiskFunctions{SIR}(spark_risk, one_risk, powerlaw, one_risk, constant_rate)
 rp_true = RiskParameters{SIR}([0.0001], Float64[], [4.0], Float64[], [0.1])  # true sparks, kernel power, removal rate
 
-# Simulate an outbreak from one index case, then observe onsets and removals 0.5 to 2.5 days late
+# Simulate an outbreak from one index case, then observe onsets up to 2 days late (never after the removal) and removals 0.5 to 2.5 days late
 starting = [State_I; fill(State_S, n - 1)]
 sim = Simulation(pop, starting, rf, rp_true)
 simulate!(sim; tmax = tmax)
-obs = observe(sim, Uniform(0.5, 2.5), Uniform(0.5, 2.5); force = true)
+obs = observe(sim, Uniform(0.0, 2.0), Uniform(0.5, 2.5); force = true)
 println(count(!isnan, obs.infection), " of ", n, " individuals infected by day ", tmax)
 
 # MCMC: parameters, true event times and the transmission network are updated in turn
@@ -427,14 +427,14 @@ end
 [[codeBranches]]
 model = "seir"
 code = '''
-using Pathogen, Random, Plots  # Pathogen re-exports Distributions and DataFrames (Population takes a DataFrame)
+using Pathogen, Random, Plots  # Pathogen re-exports Distributions
 
 Random.seed!({{seed}})  # reproducible simulation and MCMC
 n = {{N}}  # individuals
 tmax = Float64({{T}})  # end of the observation window (days)
 
 # Spatial population: random positions and their Euclidean distances
-risks = DataFrame(x = rand(Uniform(0, 15), n), y = rand(Uniform(0, 30), n))
+risks = (x = rand(Uniform(0, 15), n), y = rand(Uniform(0, 30), n))  # any Tables.jl table, read as risks.x[i]
 dists = [hypot(risks.x[i] - risks.x[k], risks.y[i] - risks.y[k]) for i in 1:n, k in 1:n]
 pop = Population(risks, dists)
 
@@ -446,11 +446,11 @@ constant_rate(p, pop, i) = p[1]
 rf = RiskFunctions{SEIR}(spark_risk, one_risk, powerlaw, one_risk, constant_rate, constant_rate)
 rp_true = RiskParameters{SEIR}([0.0001], Float64[], [4.0], Float64[], [0.2], [0.1])  # true sparks, kernel power, latency rate, removal rate
 
-# Simulate an outbreak from one index case, then observe onsets and removals 0.5 to 2.5 days late
+# Simulate an outbreak from one index case, then observe onsets up to 2 days late (never after the removal) and removals 0.5 to 2.5 days late
 starting = [State_I; fill(State_S, n - 1)]
 sim = Simulation(pop, starting, rf, rp_true)
 simulate!(sim; tmax = tmax)
-obs = observe(sim, Uniform(0.5, 2.5), Uniform(0.5, 2.5); force = true)
+obs = observe(sim, Uniform(0.0, 2.0), Uniform(0.5, 2.5); force = true)
 println(count(!isnan, obs.infection), " of ", n, " individuals infected by day ", tmax)
 
 # MCMC: parameters, true event times and the transmission network are updated in turn
@@ -667,7 +667,7 @@ code = '''
 {{?model=sir|seir}} iterate!(mcmc2, {{iter}}, 1.0; condition_on_network = true, event_batches = 5)
 {{?model=sir|seir}} draws2 = [rp for mc in mcmc2.markov_chains for rp in mc.risk_parameters[({{burnin}} + 1):20:end]]
 {{?model=sir|seir}} function predictive(rf, ds)  # observed final size and last onset of 200 re-simulated outbreaks
-{{?model=sir|seir}}     sims = [observe(outbreak(rf, rp), Uniform(0.5, 2.5), Uniform(0.5, 2.5); force = true) for rp in rand(ds, 200)]
+{{?model=sir|seir}}     sims = [observe(outbreak(rf, rp), Uniform(0.0, 2.0), Uniform(0.5, 2.5); force = true) for rp in rand(ds, 200)]
 {{?model=sir|seir}}     return [count(!isnan, o.infection) for o in sims], [maximum(filter(isfinite, o.infection); init = 0.0) for o in sims]
 {{?model=sir|seir}} end
 {{?model=sir|seir}} results = (predictive(rf, draws), predictive(rf2, draws2))
