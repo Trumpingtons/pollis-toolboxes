@@ -228,7 +228,7 @@ openAccess = false
 
 [[models]]
 id = "ito"
-label = "It&ocirc; Calculus"
+label = "Itô Calculus"
 
 [[models]]
 id = "strat"
@@ -247,12 +247,12 @@ id = "stiff"
 label = "Stiff SDEs"
 
 [[bullets]]
-text = "It&ocirc; Calculus"
-detail = "It&ocirc;'s lemma for F(X) when dX = f(X) dt + g(X) dW, found symbolically and checked on one Brownian path against the ordinary chain rule"
+text = "Itô Calculus"
+detail = "Itô's lemma for F(X) when dX = f(X) dt + g(X) dW, found symbolically and checked on one Brownian path against the ordinary chain rule"
 
 [[bullets]]
 text = "Stratonovich"
-detail = "dX = f(X) dt + g(X) &#8728; dW, solved with EulerHeun and compared on the same path with its It&ocirc; form, whose drift is f + g g'/2"
+detail = "dX = f(X) dt + g(X) ∘ dW, solved with EulerHeun and compared on the same path with its Itô form, whose drift is f + g g'/2"
 
 [[bullets]]
 text = "Exact Solutions"
@@ -267,14 +267,14 @@ text = "Stiff SDEs"
 detail = "A fast pull towards a moving target, where explicit Euler-Maruyama blows up at a step that implicit solvers take in their stride"
 
 [[decisionRows]]
-task = "It&ocirc; Calculus"
+task = "Itô Calculus"
 context = "A quantity defined as a function of a diffusion: log-prices, energies, transformed states"
 purpose = "The SDE that F(X) follows, and how far the ordinary chain rule goes wrong"
 
 [[decisionRows]]
 task = "Stratonovich"
 context = "Noise that is smooth on a short time scale and idealised as white, as in physics and engineering"
-purpose = "The Stratonovich solution and its It&ocirc; equivalent on one Brownian path"
+purpose = "The Stratonovich solution and its Itô equivalent on one Brownian path"
 
 [[decisionRows]]
 task = "Exact Solutions"
@@ -308,7 +308,7 @@ models = ["ito"]
 [[inputs]]
 id = "F"
 label = "Function F(X)"
-tooltip = "The function of X whose SDE It&ocirc;'s lemma gives, e.g. log(X), X^2, exp(X)."
+tooltip = "The function of X whose SDE Itô's lemma gives, e.g. log(X), X^2, exp(X)."
 default = "log(X)"
 models = ["ito"]
 
@@ -443,7 +443,7 @@ newRow = true
 [[inputs]]
 id = "alg"
 label = "Solver"
-tooltip = "EM: Euler-Maruyama, strong order 1/2 (1 with additive noise), weak order 1. LambaEM: EM with an adaptive step. RKMil: Milstein, strong order 1 for scalar noise. SRIW1 and SOSRI: stochastic Runge-Kutta, strong order 3/2 and weak order 2, for diagonal noise. Only EM and LambaEM take the non-diagonal noise of It&ocirc; Calculus and of General noise."
+tooltip = "EM: Euler-Maruyama, strong order 1/2 (1 with additive noise), weak order 1. LambaEM: EM with an adaptive step. RKMil: Milstein, strong order 1 for scalar noise. SRIW1 and SOSRI: stochastic Runge-Kutta, strong order 3/2 and weak order 2, for diagonal noise. Only EM and LambaEM take the non-diagonal noise of Itô Calculus and of General noise."
 kind = "select"
 default = "em"
 models = ["ito", "exact", "system"]
@@ -688,7 +688,7 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "solution-plot"
 label = "Solution Plot"
-desc = "The path of the main code against time. It&ocirc; Calculus adds F(X(t)), which Y follows and Z drifts away from; Exact Solutions adds the exact solution on the same Brownian path"
+desc = "The path of the main code against time. Itô Calculus adds F(X(t)), which Y follows and Z drifts away from; Exact Solutions adds the exact solution on the same Brownian path"
 code = '''
 using Plots
 {{?model=ito}} p = Plots.plot(sol, lw=1.5, label=permutedims(labels), xlabel="t", title="F(X) by Ito's lemma and by the chain rule")
@@ -772,8 +772,8 @@ label = "Compare"
 
 [[actionGroups.actions]]
 id = "ito-vs-strat"
-label = "It&ocirc; vs Stratonovich"
-desc = "Solves the same f and g on one Brownian path as an It&ocirc; equation (EM), as a Stratonovich equation (EulerHeun), and as an It&ocirc; equation with drift f + g g'/2, which should follow the Stratonovich path"
+label = "Itô vs Stratonovich"
+desc = "Solves the same f and g on one Brownian path as an Itô equation (EM), as a Stratonovich equation (EulerHeun), and as an Itô equation with drift f + g g'/2, which should follow the Stratonovich path"
 models = ["ito", "strat", "exact", "stiff"]
 code = '''
 using StochasticDiffEq, Plots
