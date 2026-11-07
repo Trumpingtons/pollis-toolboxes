@@ -1,4 +1,4 @@
-# Differentiation — Diagnostics
+# Numerical Differentiation — Diagnostics
 
 ## Step-Size Error
 

@@ -1,4 +1,4 @@
-# Integration — Diagnostics
+# Numerical Integration — Diagnostics
 
 ## Convergence Study
 

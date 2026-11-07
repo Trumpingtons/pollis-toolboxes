@@ -1,10 +1,10 @@
-# Integration Webview Configuration
+# Numerical Integration Webview Configuration
 # This is the declarative source for the webview. The build script generates:
 # - src/vs/workbench/contrib/model/browser/webviews/integ.data.ts
 # Run: npm run gulp compile-toml
 
 [meta]
-title = "Integration"
+title = "Numerical Integration"
 viewType = "pollis.integ"
 defaultModel = "def"
 

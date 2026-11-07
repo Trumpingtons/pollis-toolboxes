@@ -1,4 +1,4 @@
-# Differentiation — Assumptions
+# Numerical Differentiation — Assumptions
 
 ## Mathematical
 

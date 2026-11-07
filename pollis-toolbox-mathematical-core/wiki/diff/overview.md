@@ -1,4 +1,4 @@
-# Differentiation — Overview
+# Numerical Differentiation — Overview
 
 ## The Derivative
 

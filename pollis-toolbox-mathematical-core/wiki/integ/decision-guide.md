@@ -1,4 +1,4 @@
-# Integration — Decision Guide
+# Numerical Integration — Decision Guide
 
 ## Which Method?
 

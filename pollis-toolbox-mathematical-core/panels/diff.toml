@@ -1,10 +1,10 @@
-# Differentiation Webview Configuration
+# Numerical Differentiation Webview Configuration
 # This is the declarative source for the webview. The build script generates:
 # - src/vs/workbench/contrib/model/browser/webviews/diff.data.ts
 # Run: npm run gulp compile-toml
 
 [meta]
-title = "Differentiation"
+title = "Numerical Differentiation"
 viewType = "pollis.diff"
 defaultModel = "deriv"
 
@@ -277,7 +277,7 @@ detail = "several functions of several variables: the matrix of all first partia
 
 [[bullets]]
 text = "Backends"
-detail = "DifferentiationInterface runs the same code on ForwardDiff, Enzyme, Mooncake (automatic), FiniteDiff (numerical) or Symbolics (exact)"
+detail = "<span class=\"yellow\">DifferentiationInterface</span> runs the same code on <span class=\"yellow\">ForwardDiff</span>, <span class=\"yellow\">Enzyme</span>, <span class=\"yellow\">Mooncake</span> (automatic), <span class=\"yellow\">FiniteDiff</span> (numerical) or <span class=\"yellow\">Symbolics</span> (exact)"
 
 [[decisionRows]]
 task = "Derivatives"

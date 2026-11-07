@@ -1,4 +1,4 @@
-# Integration — Factsheet
+# Numerical Integration — Factsheet
 
 The definite integral adds up a rate over a range: total cost from marginal cost, total revenue from a price path, consumer surplus from a demand curve, a present value from an income stream, a probability from a density. This panel computes integrals numerically in Julia and shows how accurate each method is.
 

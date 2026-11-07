@@ -1,4 +1,4 @@
-# Differentiation — Decision Guide
+# Numerical Differentiation — Decision Guide
 
 ## Which Task?
 

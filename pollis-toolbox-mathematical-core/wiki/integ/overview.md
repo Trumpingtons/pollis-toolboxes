@@ -1,4 +1,4 @@
-# Integration — Overview
+# Numerical Integration — Overview
 
 ## Area and Accumulation
 

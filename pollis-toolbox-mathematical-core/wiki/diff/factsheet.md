@@ -1,4 +1,4 @@
-# Differentiation — Factsheet
+# Numerical Differentiation — Factsheet
 
 The derivative measures how fast a function changes. In economics it is the **marginal** quantity: marginal cost, marginal utility, the marginal product of labour. This panel computes derivatives, gradients, Hessians and Jacobians in Julia through **DifferentiationInterface.jl**, one interface over several **backends**.
 

@@ -1,4 +1,4 @@
-# Integration — Interpretation
+# Numerical Integration — Interpretation
 
 ## Signed Area and Total Area
 

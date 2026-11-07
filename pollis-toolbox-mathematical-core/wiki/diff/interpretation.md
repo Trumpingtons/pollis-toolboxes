@@ -1,4 +1,4 @@
-# Differentiation — Interpretation
+# Numerical Differentiation — Interpretation
 
 ## Slope and Curvature
 

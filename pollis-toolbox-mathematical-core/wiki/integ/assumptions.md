@@ -1,4 +1,4 @@
-# Integration — Assumptions
+# Numerical Integration — Assumptions
 
 ## The Integral Must Exist
 
