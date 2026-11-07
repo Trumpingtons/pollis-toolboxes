@@ -8,7 +8,7 @@ Build the toolbox with the Pollis Agents skills (**Compose > Pollis Agents** in 
 
 ## By hand
 
-1. Fork this repository and add your toolbox as one folder, `pollis-toolbox-<name>/`, laid out like the others: `package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/`, `README.md` and, optionally, `icon.png` and `docs/<document>/`, the LaTeX sources of its documentation (see [Documentation](README.md#documentation) in the README). Add its row to the table in this repository's `README.md`.
+1. Fork this repository and add your toolbox as one folder, `pollis-toolbox-<name>/`, laid out like the others: `package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/`, `julia/Project.toml` (see [Julia environment](README.md#julia-environment) in the README), `README.md` and, optionally, `icon.png` and `docs/<document>/`, the LaTeX sources of its documentation (see [Documentation](README.md#documentation) in the README). Add its row to the table in this repository's `README.md`.
 2. Open a pull request to `main`, one toolbox per pull request.
 
 ## What is checked
@@ -21,6 +21,7 @@ Every push to a pull request runs `scripts/checkToolboxes.ts`, and the result is
 - its toolbox ids, panel ids and commands are not used by another toolbox;
 - only `.toml`, `.md`, `.json`, `.ipynb`, `.txt`, `.png`, `.svg`, `.jpg`, `.tex` and `.bib` files, each at most 1 MB and 5 MB in all; notebooks saved without outputs;
 - every document names, as its `source`, a `.tex` file that exists inside the toolbox folder;
+- `julia/Project.toml`, and `julia/<name>/Project.toml` for a panel that names an environment, list every package their panels use, with a `[compat]` bound for each one from a registry, the forks in `[sources]` with their `url`, and `julia = "1.11"` or later;
 - every panel passes the panel validator of the Pollis Agents skills (`validatePanel.mjs`), which reads it with Pollis' own parser;
 - the toolboxes still package.
 

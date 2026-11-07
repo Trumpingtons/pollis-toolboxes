@@ -20,6 +20,9 @@
 //   - the toolbox ids, panel ids and commands are not used by another toolbox, and every panel's TOML exists
 //   - only text, notebook and image files (.toml .md .json .ipynb .txt .png .svg), each at most 1 MB,
 //     5 MB in all; a README.md; notebooks saved without outputs
+//   - julia/Project.toml, and julia/<environment>/Project.toml for a panel that names one, list every package
+//     their panels use, with a [compat] bound for each one from a registry, forks in [sources] with their url,
+//     and julia 1.11 or later (a toolbox without a julia folder gets a warning)
 //   - every panel TOML passes validatePanel.mjs (its warnings are shown, not counted as errors)
 //   - the toolboxes package (scripts/packageToolboxes.ts)
 // Writes a report to the standard output and, on GitHub, to the job summary.
@@ -56,10 +59,129 @@ interface ToolboxManifest {
 	readonly contributes?: {
 		readonly pollisToolboxes?: readonly {
 			readonly id?: string;
-			readonly panels?: readonly { readonly id?: string; readonly command?: string; readonly data?: string }[];
+			readonly panels?: readonly { readonly id?: string; readonly command?: string; readonly data?: string; readonly environment?: string }[];
 			readonly documents?: readonly { readonly title?: string; readonly source?: string }[];
 		}[];
 	};
+}
+
+/** The standard libraries of Julia: their versions follow Julia's, so they need no [compat] bound. */
+const JULIA_STDLIBS = new Set(['Base64', 'Dates', 'DelimitedFiles', 'Distributed', 'FileWatching', 'InteractiveUtils', 'LinearAlgebra', 'Logging', 'Markdown', 'Printf', 'Random', 'Serialization', 'SharedArrays', 'Sockets', 'SparseArrays', 'Statistics', 'Test', 'TOML', 'UUIDs', 'Unicode']);
+/** The oldest Julia that reads the [sources] of a Project.toml, which a toolbox's forks need. */
+const MIN_JULIA = '1.11';
+
+/** The tables of a Julia Project.toml that the check reads: each entry's value, a string or an inline table of strings. */
+interface JuliaProject {
+	readonly deps: Map<string, string>;
+	readonly compat: Map<string, string>;
+	readonly sources: Map<string, Record<string, string>>;
+}
+
+/** Reads the [deps], [compat] and [sources] of a Julia Project.toml, one entry a line, as Pkg writes them. */
+function readJuliaProject(file: string): JuliaProject {
+	const project: JuliaProject = { deps: new Map(), compat: new Map(), sources: new Map() };
+	let table: keyof JuliaProject | undefined;
+	for (const line of fs.readFileSync(file, 'utf-8').split('\n')) {
+		const header = /^\[(?<name>[A-Za-z]+)\]\s*$/.exec(line)?.groups;
+		if (header) {
+			table = header.name === 'deps' || header.name === 'compat' || header.name === 'sources' ? header.name : undefined;
+			continue;
+		}
+		const entry = /^(?<key>[A-Za-z0-9_]+)\s*=\s*(?<value>.+?)\s*$/.exec(line)?.groups;
+		if (!table || !entry) {
+			continue;
+		}
+		if (table === 'sources') {
+			const fields: Record<string, string> = {};
+			for (const field of entry.value.matchAll(/(?<name>[a-z]+)\s*=\s*"(?<text>[^"]*)"/g)) {
+				fields[field.groups!.name] = field.groups!.text;
+			}
+			project.sources.set(entry.key, fields);
+		} else {
+			project[table].set(entry.key, entry.value.replace(/^"|"$/g, ''));
+		}
+	}
+	return project;
+}
+
+/** The Julia packages of a panel TOML, without `.jl`: those of its [[packages]], with their link and whether each is a fork, and those of its [requires]. */
+function panelJuliaPackages(text: string): { name: string; github?: string; fork: boolean }[] {
+	const packages: { name: string; github?: string; fork: boolean }[] = [];
+	for (const block of text.split(/^\[\[packages\]\]\s*$/m).slice(1)) {
+		const own = block.split(/^\[(?!\[packages\.)/m)[0];
+		const name = /^name = "(?<name>[^"]+)"/m.exec(own)?.groups?.name;
+		if (name) {
+			packages.push({ name: name.replace(/\.jl$/, ''), github: /^github = "(?<url>[^"]+)"/m.exec(own)?.groups?.url, fork: /^fork = true/m.test(own) });
+		}
+	}
+	const requires = /^\[requires\]\s*\n(?:[^[].*\n)*?packages = \[(?<list>[^\]]*)\]/m.exec(text)?.groups?.list ?? '';
+	for (const required of requires.matchAll(/"(?<name>[^"]+)"/g)) {
+		const name = required.groups!.name.replace(/\.jl$/, '');
+		if (!packages.some(p => p.name === name)) {
+			packages.push({ name, fork: false });
+		}
+	}
+	return packages;
+}
+
+/**
+ * Checks the Julia environments of a toolbox: `julia/Project.toml`, where its panels run, and `julia/<environment>/Project.toml`
+ * for a panel that names one. Each lists every package its panels use, with a [compat] bound for each one from a registry,
+ * a fork or a package from GitHub in [sources] with its `url`, and Julia 1.11 or later. A toolbox without a `julia` folder
+ * gets a warning: its panels install their packages into the user's environment.
+ */
+function checkEnvironments(folder: string, panels: readonly { readonly id: string; readonly data: string; readonly environment?: string }[], report: Report): void {
+	const julia = path.join(ROOT, folder, 'julia');
+	if (!fs.existsSync(julia)) {
+		report.warnings.push('there is no julia/Project.toml: the panels install their packages into the user\'s own Julia environment, where they can clash with other toolboxes');
+		return;
+	}
+	const used = new Map<string, string[]>();
+	for (const panel of panels) {
+		const environment = panel.environment ?? '';
+		if (environment && !/^[a-z0-9-]+$/.test(environment)) {
+			report.errors.push(`the panel ${panel.id} names the environment "${environment}": use lower-case letters, digits and hyphens`);
+			continue;
+		}
+		used.set(environment, [...used.get(environment) ?? [], panel.id]);
+	}
+	for (const [environment, ids] of used) {
+		const relative = environment ? `julia/${environment}/Project.toml` : 'julia/Project.toml';
+		const file = path.join(ROOT, folder, relative);
+		if (!fs.existsSync(file)) {
+			report.errors.push(`${relative}, the environment of ${ids.join(', ')}, does not exist`);
+			continue;
+		}
+		const project = readJuliaProject(file);
+		const juliaCompat = project.compat.get('julia');
+		if (!juliaCompat || compareVersions(juliaCompat.replace(/^[\^~=]/, '').split(/[ ,-]/)[0], MIN_JULIA) < 0) {
+			report.errors.push(`${relative} needs julia = "${MIN_JULIA}" or later in [compat], since Julia reads its [sources] from ${MIN_JULIA} on`);
+		}
+		for (const id of ids) {
+			const panel = panels.find(p => p.id === id)!;
+			for (const pkg of panelJuliaPackages(fs.readFileSync(path.join(ROOT, folder, panel.data), 'utf-8'))) {
+				if (!project.deps.has(pkg.name)) {
+					report.errors.push(`the panel ${id} uses ${pkg.name}, which ${relative} does not list in [deps]`);
+				} else if (pkg.fork && !project.sources.get(pkg.name)?.url) {
+					report.errors.push(`the panel ${id} uses the fork ${pkg.name}, which ${relative} must take from its link, in [sources] with its url`);
+				}
+			}
+		}
+		for (const name of project.deps.keys()) {
+			const source = project.sources.get(name);
+			if (source && !source.url) {
+				report.errors.push(`${relative}: ${name} in [sources] needs a url: a path exists only on your computer`);
+			}
+			if (!source && !JULIA_STDLIBS.has(name) && !project.compat.has(name)) {
+				report.errors.push(`${relative}: ${name} has no [compat] bound: give the version the panels were run with`);
+			}
+		}
+	}
+	for (const entry of fs.readdirSync(julia, { withFileTypes: true })) {
+		if (entry.isDirectory() && !used.has(entry.name)) {
+			report.warnings.push(`julia/${entry.name} is the environment of no panel`);
+		}
+	}
 }
 
 /** The findings about one toolbox. */
@@ -196,6 +318,7 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 	// Ids, commands and the panel files
 	const used = usedIds(folder);
 	const panelTomls: string[] = [];
+	const panelEntries: { id: string; data: string; environment?: string }[] = [];
 	for (const toolbox of toolboxes) {
 		if (!toolbox.id) {
 			error('a pollisToolboxes entry has no "id"');
@@ -217,6 +340,7 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 				error(`the panel ${panel.id} names ${panel.data}, which does not exist`);
 			} else {
 				panelTomls.push(path.join(ROOT, folder, panel.data));
+				panelEntries.push({ id: panel.id, data: panel.data, environment: panel.environment });
 			}
 		}
 		// The documents of Help > Documentation > Toolboxes: a main .tex file inside the toolbox folder
@@ -233,6 +357,9 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 			}
 		}
 	}
+
+	// The Julia environments of the panels
+	checkEnvironments(folder, panelEntries, report);
 
 	// The files
 	const files = listFiles(path.join(ROOT, folder));

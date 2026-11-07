@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-mathematical-core",
   "displayName": "Core Mathematics Toolbox",
   "description": "Pollis Core Mathematics Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
