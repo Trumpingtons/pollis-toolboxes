@@ -160,7 +160,7 @@ text = "Rogers-Satchell"
 detail = "OHLC estimator; drift-independent; often cited as about 8× more efficient; about 6× in simulation"
 
 [[bullets]]
-text = "Garman-Klass-Yang-Zhang"
+text = "GK-Yang-Zhang"
 detail = "extends Garman-Klass to account for overnight price gaps"
 
 [[bullets]]

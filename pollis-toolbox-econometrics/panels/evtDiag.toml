@@ -205,16 +205,16 @@ id = "qq"
 label = "QQ Plot"
 
 [[bullets]]
-text = "Mean excess plot: assess linearity to guide threshold selection"
-detail = ""
+text = "Mean Excess"
+detail = "the mean of the excesses over each threshold: where it is linear in the threshold, a Generalized Pareto fits, which guides the choice of threshold"
 
 [[bullets]]
-text = "Hill plot: tail index estimation across order statistics"
-detail = ""
+text = "Hill Plot"
+detail = "the Hill estimate of xi = 1 / alpha from the k largest losses, across k: a flat stretch shows the k to use"
 
 [[bullets]]
-text = "QQ plot: compare empirical and theoretical quantiles for Generalized Extreme Value or Generalized Pareto fit"
-detail = ""
+text = "QQ Plot"
+detail = "the empirical quantiles against those of a fitted Generalized Extreme Value or Generalized Pareto distribution, on a 45-degree line"
 
 [[inputs]]
 id = "evtd-data"

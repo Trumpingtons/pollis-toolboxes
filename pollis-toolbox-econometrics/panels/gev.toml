@@ -89,19 +89,19 @@ id = "sample"
 label = "Sample"
 
 [[bullets]]
-text = "Fit GEV distribution to block maxima by maximum likelihood, probability-weighted moments or Bayesian estimation"
-detail = ""
+text = "Fit"
+detail = "the Generalized Extreme Value distribution fitted to block maxima by maximum likelihood, probability-weighted moments or Bayesian estimation"
 
 [[bullets]]
-text = "Evaluate pdf, cdf and quantiles for specified parameters"
-detail = ""
+text = "Evaluate"
+detail = "the pdf, cdf and quantiles for given parameters"
 
 [[bullets]]
-text = "Generate random samples from the GEV distribution"
-detail = ""
+text = "Sample"
+detail = "random draws from the distribution, with their mean and standard deviation"
 
 [[bullets]]
-text = "Supports Gumbel (xi=0), Fréchet (xi>0) and Weibull (xi<0) tail types"
+text = "The shape xi sets the tail type: Gumbel (xi = 0), Fréchet (xi > 0) or Weibull (xi < 0)"
 detail = ""
 
 [[inputs]]

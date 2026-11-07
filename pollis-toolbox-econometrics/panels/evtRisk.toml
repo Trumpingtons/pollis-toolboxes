@@ -150,20 +150,16 @@ id = "tr"
 label = "Tail Risk"
 
 [[bullets]]
-text = "Return levels: GEV-based T-period return level estimates"
-detail = ""
+text = "Return Levels"
+detail = "the T-block return levels of a Generalized Extreme Value fit to block maxima"
 
 [[bullets]]
-text = "Peaks-Over-Threshold: GP distribution fit to exceedances above a threshold"
-detail = ""
+text = "Peaks-Over-Threshold"
+detail = "a Generalized Pareto fit to the excesses over a threshold, with the exceedance rate, the tail index and the 99th percentile of the values above the threshold"
 
 [[bullets]]
-text = "Tail risk: Extreme Value-based Value at Risk and Expected Shortfall"
-detail = ""
-
-[[bullets]]
-text = "Exceedance rate, tail index and extreme quantile estimation"
-detail = ""
+text = "Tail Risk"
+detail = "the Value at Risk and Expected Shortfall of the Generalized Pareto tail above the threshold"
 
 [[inputs]]
 id = "evtr-data"

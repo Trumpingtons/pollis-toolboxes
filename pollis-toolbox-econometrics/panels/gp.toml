@@ -89,19 +89,19 @@ id = "sample"
 label = "Sample"
 
 [[bullets]]
-text = "Fit GP distribution to threshold exceedances by maximum likelihood, probability-weighted moments or Bayesian estimation"
-detail = ""
+text = "Fit"
+detail = "the Generalized Pareto distribution fitted to the excesses over a threshold by maximum likelihood, probability-weighted moments or Bayesian estimation"
 
 [[bullets]]
-text = "Evaluate pdf, cdf and quantiles for specified parameters"
-detail = ""
+text = "Evaluate"
+detail = "the pdf, cdf and quantiles for given parameters"
 
 [[bullets]]
-text = "Generate random samples from the GP distribution"
-detail = ""
+text = "Sample"
+detail = "random draws from the distribution, with their mean and standard deviation"
 
 [[bullets]]
-text = "Used in Peaks-Over-Threshold (POT) analysis for modelling tail events"
+text = "The Generalized Pareto distribution models the tail in Peaks-Over-Threshold (POT) analysis"
 detail = ""
 
 [[inputs]]

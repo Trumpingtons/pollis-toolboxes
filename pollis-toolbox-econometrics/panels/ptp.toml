@@ -350,11 +350,11 @@ id = "network"
 label = "Network Hawkes"
 
 [[bullets]]
-text = "Homogeneous Poisson"
+text = "Poisson"
 detail = "constant rate lambda; fit(MultivariatePoissonProcess{Float64}, history) from PointProcesses.jl gives the MLE N/T, with an exact (Garwood) interval"
 
 [[bullets]]
-text = "Inhomogeneous Poisson"
+text = "Inhomogeneous"
 detail = "time-varying rate lambda(t), estimated without a parametric form by a KernelDensity.jl kernel estimate with Diggle's edge correction"
 
 [[bullets]]

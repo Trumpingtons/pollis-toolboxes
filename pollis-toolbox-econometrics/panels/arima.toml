@@ -148,12 +148,12 @@ text = "ARIMA"
 detail = "integrated autoregressive moving-average model for univariate time series"
 
 [[bullets]]
-text = "ARIMAX"
-detail = "regression on exogenous variables with ARIMA errors"
+text = "Seasonal ARIMA"
+detail = "extends ARIMA with a multiplicative seasonal structure"
 
 [[bullets]]
-text = "SARIMA"
-detail = "Seasonal ARIMA extends ARIMA with multiplicative seasonal structure"
+text = "ARIMAX"
+detail = "regression on exogenous variables with ARIMA errors"
 
 [[decisionRows]]
 task = "ARIMA"

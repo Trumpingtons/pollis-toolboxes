@@ -97,16 +97,16 @@ id = "css2"
 label = "Spike-and-Slab (Traded)"
 
 [[bullets]]
-text = "BayesianSDF"
-detail = "full posterior inference on SDF loadings b with a Gaussian prior; yields risk prices lambda = Sigmaf b and maximum Sharpe ratio"
+text = "Bayesian SDF"
+detail = "full posterior inference on SDF loadings b with a Gaussian prior, by <code>BayesianSDF</code>; yields risk prices lambda = Sigmaf b and the maximum Sharpe ratio"
 
 [[bullets]]
-text = "continuous_ss_sdf"
-detail = "spike-and-slab prior for automatic factor selection; each loading switches between a spike (near-zero) and a slab (active) component"
+text = "Spike-and-Slab"
+detail = "a spike-and-slab prior for automatic factor selection, by <code>continuous_ss_sdf</code>; each loading switches between a spike (near zero) and a slab (active) component"
 
 [[bullets]]
-text = "continuous_ss_sdf_v2"
-detail = "extends spike-and-slab by treating a subset of tradable factors as additional test assets, imposing their return moments as extra constraints"
+text = "Spike-and-Slab (Traded)"
+detail = "extends Spike-and-Slab by treating the tradable factors as additional test assets, imposing their return moments as extra constraints, by <code>continuous_ss_sdf_v2</code>"
 
 [[inputs]]
 id = "data"

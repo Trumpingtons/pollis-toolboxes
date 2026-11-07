@@ -192,6 +192,26 @@ label = "TPA-LSTM"
 id = "dsanet"
 label = "DSANet"
 
+[[bullets]]
+text = "LSTnet"
+detail = "a convolution for short local patterns, a GRU, a skip GRU over long seasonal cycles and an autoregressive part"
+
+[[bullets]]
+text = "DA-RNN"
+detail = "dual-stage attention: the encoder weights the driving series, and the decoder the past time steps"
+
+[[bullets]]
+text = "TPA-LSTM"
+detail = "an LSTM with temporal pattern attention, which weights the variables by the patterns in their hidden states, for variables with different periodicities"
+
+[[bullets]]
+text = "DSANet"
+detail = "global and local self-attention over the series, with no recurrence, for many correlated series"
+
+[[bullets]]
+text = "Every tab forecasts the first series of the exchange-rate data 6 steps after a window of past values, trained on the first 700 windows and tested on the later ones"
+detail = ""
+
 [[decisionRows]]
 task = "LSTnet"
 context = "CNN + GRU + skip + AR"
