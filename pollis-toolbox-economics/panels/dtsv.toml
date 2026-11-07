@@ -222,8 +222,9 @@ return '<line x1="5" y1="62" x2="49" y2="62" stroke="currentColor" stroke-width=
 [[codeBranches]]
 model = "basic"
 code = '''
-using MacroEconometricModels, Statistics
+using MacroEconometricModels, Random, Statistics
 
+{{?y=y}} y = dgp_sv(MersenneTwister(1); mu=-0.5, phi=0.95, sigma_eta=0.2, T=1500).y  # simulated: 1,500 daily returns whose log-variance is an AR(1) with mean -0.5, persistence 0.95 and shock sd 0.2, the values the posterior should come near. Replace y with your own returns.
 yv = Float64.({{y}})
 estimate(y) = estimate_sv(y; n_samples={{draws}}, burnin={{burnin}}, seed={{seed}})  # KSC Gibbs sampler, Gaussian shocks
 result = estimate(yv)
@@ -232,8 +233,9 @@ result = estimate(yv)
 [[codeBranches]]
 model = "lev"
 code = '''
-using MacroEconometricModels, Statistics
+using MacroEconometricModels, Random, Statistics
 
+{{?y=y}} y = dgp_sv(MersenneTwister(1); mu=-0.5, phi=0.95, sigma_eta=0.2, rho_lev=-0.5, T=1500).y  # simulated: 1,500 daily returns as in Basic, with a correlation of -0.5 between the return and volatility shocks: falls raise the volatility. Replace y with your own returns.
 yv = Float64.({{y}})
 estimate(y) = estimate_sv(y; n_samples={{draws}}, burnin={{burnin}}, seed={{seed}}, leverage=true)  # return and volatility shocks correlated
 result = estimate(yv)
@@ -242,8 +244,9 @@ result = estimate(yv)
 [[codeBranches]]
 model = "stut"
 code = '''
-using MacroEconometricModels, Statistics
+using MacroEconometricModels, Random, Statistics
 
+{{?y=y}} y = dgp_sv(MersenneTwister(1); mu=-0.5, phi=0.95, sigma_eta=0.2, nu=5.0, T=1500).y  # simulated: 1,500 daily returns as in Basic, with Student t return shocks of 5 degrees of freedom. Replace y with your own returns.
 yv = Float64.({{y}})
 estimate(y) = estimate_sv(y; n_samples={{draws}}, burnin={{burnin}}, seed={{seed}}, dist=:studentt)  # heavy-tailed return shocks
 result = estimate(yv)

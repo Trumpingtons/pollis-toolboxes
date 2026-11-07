@@ -454,9 +454,11 @@ id = "cross_correlation"
 label = "Cross-Correlation with GDP"
 desc = "Lead and lag correlations of the extracted cycle with the cycle of a reference series (for example 100 x log real GDP) filtered the same way"
 code = '''
-using Statistics
+using Random, Statistics
 
-@isdefined(gdp) || error("Define gdp, the reference series, in the same units and on the same dates as the input series")
+if !@isdefined(gdp)  # no reference loaded: simulate one, the input series two quarters later plus noise, so the peak is at lag 2
+    global gdp = [fill(y_obs[1], 2); y_obs[1:end-2]] .+ 0.3 .* randn(MersenneTwister(2), length(y_obs))
+end
 ref_res = run_filter(Float64.(gdp))  # reference series filtered with the selected filter
 ref_idx = hasproperty(ref_res, :valid_range) ? ref_res.valid_range : (1:length(gdp))
 common  = intersect(idx, ref_idx)  # dates covered by both cycles

@@ -367,7 +367,7 @@ function equilibrium_rate(lo, hi; tol = 1e-5)  # bisection: excess supply rises 
 end
 
 {{?model=huggett}}r_eq = equilibrium_rate({{rho}} - 0.05, {{rho}} - 0.001)  # equilibrium r lies below rho: precautionary saving
-{{?model=aiyagari}}r_eq = equilibrium_rate(max({{rho}} - 0.05, -delta + 0.01), {{rho}} - 0.001)  # r below rho (precautionary saving) and above -delta (positive rental rate)
+{{?model=aiyagari}}r_eq = equilibrium_rate(max({{rho}} - 0.05, -delta + 0.01), {{rho}} - 0.0001)  # r below rho (precautionary saving) and above -delta (positive rental rate); with little income risk it lies close to rho
 println("Equilibrium interest rate: ", round(r_eq, digits = 5), " (rho = ", {{rho}}, ")")
 {{?model=aiyagari}}println("Capital: ", round(capital_demand(r_eq), digits = 4), "   wage: ", round(wage(r_eq), digits = 4), "   output: ", round(capital_demand(r_eq)^alpha, digits = 4))
 '''

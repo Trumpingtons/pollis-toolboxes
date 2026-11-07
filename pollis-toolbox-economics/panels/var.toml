@@ -483,6 +483,7 @@ label = "Diagnose"
 [[actionGroups.actions]]
 id = "johansen"
 label = "Johansen Cointegration Test"
+models = ["var", "svar", "vecm"]
 desc = "Trace and max-eigenvalue tests for the number of cointegrating vectors among I(1) series"
 code = '''
 using MacroEconometricModels
@@ -552,23 +553,23 @@ label = "Compare"
 [[actionGroups.actions]]
 id = "var-vs-vecm"
 label = "VAR vs VECM"
+models = ["var", "svar", "vecm"]
 desc = "AIC and BIC of the VAR in levels and of a VECM at every rank, on the same sample"
 code = '''
 using MacroEconometricModels, LinearAlgebra
 
-{{?model=favar}}println("VAR vs VECM needs several I(1) series in levels; a FAVAR system is stationary by construction.")
-{{?model!=favar}}n = size({{yvar}}, 2)
-{{?model!=favar}}levels = estimate_var({{yvar}}, {{p}}; check_stability = false)  # unrestricted VAR({{p}}) = VECM with full rank n
-{{?model!=favar}}Teff = size(levels.U, 1)  # T - p, the same sample as every VECM below
-{{?model!=favar}}# Same formula for both: log det of the ML residual covariance plus a penalty on the free parameters.
-{{?model!=favar}}# VAR: n(1 + n p). VECM rank r: n constants + n^2 (p - 1) Gamma + r(2n - r) for alpha and beta (net of normalisation).
-{{?model!=favar}}crit(S, k) = (round(logdet(S) + 2k / Teff, digits = 3), round(logdet(S) + k * log(Teff) / Teff, digits = 3))
-{{?model!=favar}}println("model         AIC, BIC")
-{{?model!=favar}}for rk in 1:(n - 1)
-{{?model!=favar}}     m = estimate_vecm({{yvar}}, {{p}}; rank = rk, deterministic = :constant)
-{{?model!=favar}}     println(rpad("VECM r = $rk", 14), crit(m.Sigma, n + n^2 * ({{p}} - 1) + rk * (2n - rk)))
-{{?model!=favar}}end
-{{?model!=favar}}println(rpad("VAR (r = $n)", 14), crit(levels.Sigma, n * (1 + n * {{p}})))
+n = size({{yvar}}, 2)
+levels = estimate_var({{yvar}}, {{p}}; check_stability = false)  # unrestricted VAR({{p}}) = VECM with full rank n
+Teff = size(levels.U, 1)  # T - p, the same sample as every VECM below
+# Same formula for both: log det of the ML residual covariance plus a penalty on the free parameters.
+# VAR: n(1 + n p). VECM rank r: n constants + n^2 (p - 1) Gamma + r(2n - r) for alpha and beta (net of normalisation).
+crit(S, k) = (round(logdet(S) + 2k / Teff, digits = 3), round(logdet(S) + k * log(Teff) / Teff, digits = 3))
+println("model         AIC, BIC")
+for rk in 1:(n - 1)
+     m = estimate_vecm({{yvar}}, {{p}}; rank = rk, deterministic = :constant)
+     println(rpad("VECM r = $rk", 14), crit(m.Sigma, n + n^2 * ({{p}} - 1) + rk * (2n - rk)))
+end
+println(rpad("VAR (r = $n)", 14), crit(levels.Sigma, n * (1 + n * {{p}})))
 '''
 
 [[actionGroups]]
@@ -601,47 +602,47 @@ display_plot(plot_result(hd))
 [[actionGroups.actions]]
 id = "transmission-channels"
 label = "Transmission Channels"
+models = ["var", "svar"]
 desc = "Split the response of variable 2 to the last shock into the part that goes through variable 1 and the direct part (TransmissionChannelAnalysis.jl)"
 code = '''
-{{?model=favar|vecm}}println("Transmission channels are set up for the VAR and SVAR (rate, output gap, inflation); not for this model.")
-{{?model=var|svar}}using MacroEconometricModels, TransmissionChannelAnalysis, LinearAlgebra, Logging, Statistics
-{{?model=var|svar}}
-{{?model=var|svar}}# Transmission channel analysis (Wegner, Lieb, Smeekes and Wilms 2024). With the default y:
-{{?model=var|svar}}# shock 3 (monetary policy), channel = variable 1 (output gap), outcome = variable 2 (inflation).
-{{?model=var|svar}}# The transmission order puts the rate first, then the channel, then the outcome.
-{{?model=var|svar}}shock, channel, outcome = 3, 1, 2
-{{?model=var|svar}}n, p, H = nvars(model), model.p, 16  # quarters 0 to 16
-{{?model=var|svar}}order = [shock; channel; outcome; setdiff(1:n, [shock, channel, outcome])]
-{{?model=var|svar}}As = extract_ar_coefficients(model.B, n, p)  # reduced-form lag matrices A_1 ... A_p
-{{?model=var|svar}}Sigma = Matrix(Symmetric(model.Sigma))
-{{?model=var|svar}}direct_q = not_through(channel, 0:H, order)  # paths that never pass through the channel
-{{?model=var|svar}}rows = [map_y_to_x(outcome, h, n, order) for h in 0:H]  # the outcome at each horizon in the systems form
-{{?model=var|svar}}
-{{?model=var|svar}}# Impact matrix of the identified shocks: one for recursive or long-run identification,
-{{?model=var|svar}}# one per accepted rotation for sign restrictions (the median response is not itself a model).
-{{?model=var|svar}}impacts = if ident.method === :sign
-{{?model=var|svar}}    set = identify_sign(model, H + 1, ident.check_func; max_draws = ident.max_draws, store_all = true)
-{{?model=var|svar}}    [set.irf_draws[d, 1, :, :] for d in 1:set.n_accepted]
-{{?model=var|svar}}else
-{{?model=var|svar}}    [irf(model, 1; ident...).values[1, :, :]]
-{{?model=var|svar}}end
-{{?model=var|svar}}
-{{?model=var|svar}}effects = with_logger(NullLogger()) do  # transmission() logs the method on every call
-{{?model=var|svar}}    map(impacts) do Phi0
-{{?model=var|svar}}        B, Omega = make_systems_form(Phi0, As, Matrix{Float64}[], Sigma, order, H)  # x = B x + Omega e
-{{?model=var|svar}}        total = ((I - B) \ Omega[:, shock])[rows]
-{{?model=var|svar}}        direct = transmission(shock, B, Omega, direct_q; method = :BOmega)[rows]
-{{?model=var|svar}}        (; total, direct, through = total .- direct)
-{{?model=var|svar}}    end
-{{?model=var|svar}}end
-{{?model=var|svar}}
-{{?model=var|svar}}vn = model.varnames
-{{?model=var|svar}}println("Response of $(vn[outcome]) to shock $shock: through $(vn[channel]) vs direct", length(effects) > 1 ? " (median over $(length(effects)) rotations)" : "")
-{{?model=var|svar}}cell(f, h) = round(median(getfield(e, f)[h + 1] for e in effects); digits = 3)
-{{?model=var|svar}}println(rpad("h", 5), rpad("total", 10), rpad("through", 10), "direct")
-{{?model=var|svar}}for h in [0, 1, 2, 4, 8, 12, 16]
-{{?model=var|svar}}    println(rpad(h, 5), rpad(cell(:total, h), 10), rpad(cell(:through, h), 10), cell(:direct, h))
-{{?model=var|svar}}end
+using MacroEconometricModels, TransmissionChannelAnalysis, LinearAlgebra, Logging, Statistics
+
+# Transmission channel analysis (Wegner, Lieb, Smeekes and Wilms 2024). With the default y:
+# shock 3 (monetary policy), channel = variable 1 (output gap), outcome = variable 2 (inflation).
+# The transmission order puts the rate first, then the channel, then the outcome.
+shock, channel, outcome = 3, 1, 2
+n, p, H = nvars(model), model.p, 16  # quarters 0 to 16
+order = [shock; channel; outcome; setdiff(1:n, [shock, channel, outcome])]
+As = extract_ar_coefficients(model.B, n, p)  # reduced-form lag matrices A_1 ... A_p
+Sigma = Matrix(Symmetric(model.Sigma))
+direct_q = not_through(channel, 0:H, order)  # paths that never pass through the channel
+rows = [map_y_to_x(outcome, h, n, order) for h in 0:H]  # the outcome at each horizon in the systems form
+
+# Impact matrix of the identified shocks: one for recursive or long-run identification,
+# one per accepted rotation for sign restrictions (the median response is not itself a model).
+impacts = if ident.method === :sign
+    set = identify_sign(model, H + 1, ident.check_func; max_draws = ident.max_draws, store_all = true)
+    [set.irf_draws[d, 1, :, :] for d in 1:set.n_accepted]
+else
+    [irf(model, 1; ident...).values[1, :, :]]
+end
+
+effects = with_logger(NullLogger()) do  # transmission() logs the method on every call
+    map(impacts) do Phi0
+        B, Omega = make_systems_form(Phi0, As, Matrix{Float64}[], Sigma, order, H)  # x = B x + Omega e
+        total = ((I - B) \ Omega[:, shock])[rows]
+        direct = transmission(shock, B, Omega, direct_q; method = :BOmega)[rows]
+        (; total, direct, through = total .- direct)
+    end
+end
+
+vn = model.varnames
+println("Response of $(vn[outcome]) to shock $shock: through $(vn[channel]) vs direct", length(effects) > 1 ? " (median over $(length(effects)) rotations)" : "")
+cell(f, h) = round(median(getfield(e, f)[h + 1] for e in effects); digits = 3)
+println(rpad("h", 5), rpad("total", 10), rpad("through", 10), "direct")
+for h in [0, 1, 2, 4, 8, 12, 16]
+    println(rpad(h, 5), rpad(cell(:total, h), 10), rpad(cell(:through, h), 10), cell(:direct, h))
+end
 '''
 
 [[actionGroups.actions]]
