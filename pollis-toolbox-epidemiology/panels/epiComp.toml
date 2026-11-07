@@ -259,12 +259,24 @@ id = "seird"
 label = "SEIRD"
 
 [[bullets]]
-text = "Compartmental models divide a population into discrete health states"
-detail = "susceptible (S), exposed (E), infectious (I), recovered (R), or dead (D) — and describe transmission dynamics via ordinary differential equations. The choice of variant controls which transitions are modelled."
+text = "SIR"
+detail = "S → I → R: recovery gives lasting immunity, so a single wave runs until too few susceptibles remain, with R0 = beta / gamma"
 
 [[bullets]]
-text = "Best suited to large, well-mixed populations where average-rate assumptions hold: national-level influenza forecasting, endemic disease modelling, and policy evaluation."
-detail = ""
+text = "SIS"
+detail = "S → I → S: recovery gives no immunity, so the infection settles at an endemic level of (1 - 1/R0) N"
+
+[[bullets]]
+text = "SEIR"
+detail = "S → E → I → R: a 5-day latent period before infectiousness delays and flattens the wave, which ends at the same final size as SIR"
+
+[[bullets]]
+text = "SIRS"
+detail = "S → I → R → S: immunity wanes after about 180 days, so the infection returns in damped waves towards an endemic level"
+
+[[bullets]]
+text = "SEIRD"
+detail = "S → E → I → R or D: infectious people die at rate mu as well as recover, so R0 = beta / (gamma + mu) and the deaths are counted"
 
 [[decisionRows]]
 task = "SIR"
