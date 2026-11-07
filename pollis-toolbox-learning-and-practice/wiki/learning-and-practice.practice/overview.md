@@ -6,7 +6,7 @@ Multiple-choice exercises whose data and answers Julia computes. Each topic is a
 
 - **The data** come from a random number generator started from the **Seed**. The same seed gives the same exercise again; another seed gives other data.
 - **The answers** are computed from those data, so they are always right, whatever the numbers.
-- **The wrong choices** are the usual mistakes: dividing by $n$ instead of $n - 1$, the variance instead of the standard deviation, the one-sided instead of the two-sided p-value, the slope of the wrong regression.
+- **The wrong choices** are the usual mistakes: dividing by n instead of n - 1, the variance instead of the standard deviation, the one-sided instead of the two-sided p-value, the slope of the wrong regression.
 - **The order of the choices** is shuffled, so the correct one is not always in the same place.
 
 ## A Practice Session
