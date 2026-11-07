@@ -1,0 +1,866 @@
+# Stochastic Differential Equations Webview Configuration
+# This is the declarative source for the webview, read by the Core Mathematics Toolbox.
+
+[meta]
+title = "Stochastic Differential Equations"
+viewType = "pollis.sdes"
+defaultModel = "ito"
+
+[[packages]]
+name = "StochasticDiffEq.jl"
+github = "https://github.com/SciML/StochasticDiffEq.jl"
+
+[[packages]]
+name = "DiffEqNoiseProcess.jl"
+github = "https://github.com/SciML/DiffEqNoiseProcess.jl"
+
+[[packages]]
+name = "Symbolics.jl"
+github = "https://github.com/JuliaSymbolics/Symbolics.jl"
+
+[[packages]]
+name = "DiffEqDevTools.jl"
+github = "https://github.com/SciML/DiffEqDevTools.jl"
+
+[requires]
+packages = ["StochasticDiffEq.jl", "DiffEqNoiseProcess.jl", "Symbolics.jl", "DiffEqDevTools.jl", "OrdinaryDiffEq.jl", "Plots.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "sdes/factsheet.md"
+bundled = true
+description = "The five tasks at a glance (Itô calculus, Stratonovich, exact solutions, systems, stiff equations) with the solvers of each"
+
+[[wikis]]
+name = "Overview"
+file = "sdes/overview.md"
+bundled = true
+description = "The Itô and Stratonovich integrals, Itô's lemma, discretisation schemes and their orders, noise structures and stiffness"
+
+[[wikis]]
+name = "Assumptions"
+file = "sdes/assumptions.md"
+bundled = true
+description = "Existence and uniqueness, the choice of calculus, noise structures each solver accepts, and the stability of explicit steps"
+
+[[wikis]]
+name = "Diagnostics"
+file = "sdes/diagnostics.md"
+bundled = true
+description = "Convergence orders against exact solutions, step-size stability, solver comparisons on a shared Brownian path"
+
+[[wikis]]
+name = "Interpretation"
+file = "sdes/interpretation.md"
+bundled = true
+description = "The Itô correction, Itô against Stratonovich, strong and weak error, moments and their equations"
+
+[[wikis]]
+name = "Decision Guide"
+file = "sdes/decision-guide.md"
+bundled = true
+description = "Which calculus, which solver for which noise, explicit or implicit, and which step or tolerance"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RN2017a"
+title = "DifferentialEquations.jl: A Performant and Feature-Rich Ecosystem for Solving Differential Equations in Julia"
+authors = "Rackauckas, Christopher; Nie, Qing"
+year = 2017
+journal = "Journal of Open Research Software"
+doi = "10.5334/jors.151"
+openAccess = true
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "KP1992a"
+title = "Numerical Solution of Stochastic Differential Equations"
+authors = "Kloeden, Peter E.; Platen, Eckhard"
+year = 1992
+journal = "Springer"
+doi = "10.1007/978-3-662-12616-5"
+openAccess = false
+
+[[references]]
+key = "Oks2003a"
+title = "Stochastic Differential Equations: An Introduction with Applications"
+authors = "Øksendal, Bernt"
+year = 2003
+journal = "Springer"
+doi = "10.1007/978-3-642-14394-6"
+openAccess = false
+
+[[references]]
+key = "SS2019a"
+title = "Applied Stochastic Differential Equations"
+authors = "Särkkä, Simo; Solin, Arno"
+year = 2019
+journal = "Cambridge University Press"
+doi = "10.1017/9781108186735"
+openAccess = false
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Ito1944a"
+title = "Stochastic Integral"
+authors = "Itô, Kiyosi"
+year = 1944
+journal = "Proceedings of the Japan Academy, Series A, Mathematical Sciences"
+doi = "10.3792/pia/1195572786"
+openAccess = true
+
+[[references]]
+key = "Mar1955a"
+title = "Continuous Markov Processes and Stochastic Equations"
+authors = "Maruyama, Gisiro"
+year = 1955
+journal = "Rendiconti del Circolo Matematico di Palermo"
+doi = "10.1007/BF02846028"
+openAccess = false
+
+[[references]]
+key = "WZ1965a"
+title = "On the Convergence of Ordinary Integrals to Stochastic Integrals"
+authors = "Wong, Eugene; Zakai, Moshe"
+year = 1965
+journal = "The Annals of Mathematical Statistics"
+doi = "10.1214/aoms/1177699916"
+openAccess = true
+
+[[references]]
+key = "Str1966a"
+title = "A New Representation for Stochastic Integrals and Equations"
+authors = "Stratonovich, R. L."
+year = 1966
+journal = "SIAM Journal on Control"
+doi = "10.1137/0304028"
+openAccess = false
+
+[[references]]
+key = "Mil1975a"
+title = "Approximate Integration of Stochastic Differential Equations"
+authors = "Mil’shtejn, G. N."
+year = 1975
+journal = "Theory of Probability and Its Applications"
+doi = "10.1137/1119062"
+openAccess = false
+
+[[references]]
+key = "Kam1981a"
+title = "Itô versus Stratonovich"
+authors = "van Kampen, N. G."
+year = 1981
+journal = "Journal of Statistical Physics"
+doi = "10.1007/BF01007642"
+openAccess = false
+
+[[references]]
+key = "Hig2000a"
+title = "Mean-Square and Asymptotic Stability of the Stochastic Theta Method"
+authors = "Higham, Desmond J."
+year = 2000
+journal = "SIAM Journal on Numerical Analysis"
+doi = "10.1137/S003614299834736X"
+openAccess = false
+
+[[references]]
+key = "Hig2001a"
+title = "An Algorithmic Introduction to Numerical Simulation of Stochastic Differential Equations"
+authors = "Higham, Desmond J."
+year = 2001
+journal = "SIAM Review"
+doi = "10.1137/S0036144500378302"
+openAccess = false
+
+[[references]]
+key = "Ros2010a"
+title = "Runge–Kutta Methods for the Strong Approximation of Solutions of Stochastic Differential Equations"
+authors = "Rößler, Andreas"
+year = 2010
+journal = "SIAM Journal on Numerical Analysis"
+doi = "10.1137/09076636X"
+openAccess = false
+
+[[references]]
+key = "HJK2011a"
+title = "Strong and Weak Divergence in Finite Time of Euler's Method for Stochastic Differential Equations with Non-Globally Lipschitz Continuous Coefficients"
+authors = "Hutzenthaler, Martin; Jentzen, Arnulf; Kloeden, Peter E."
+year = 2011
+journal = "Proceedings of the Royal Society A"
+doi = "10.1098/rspa.2010.0348"
+openAccess = true
+
+[[references]]
+key = "Rob2012a"
+title = "Modify the Improved Euler Scheme to Integrate Stochastic Differential Equations"
+authors = "Roberts, A. J."
+year = 2012
+journal = "arXiv"
+doi = "10.48550/arXiv.1210.0933"
+openAccess = true
+
+[[references]]
+key = "RN2017b"
+title = "Adaptive Methods for Stochastic Differential Equations via Natural Embeddings and Rejection Sampling with Memory"
+authors = "Rackauckas, Christopher; Nie, Qing"
+year = 2017
+journal = "Discrete and Continuous Dynamical Systems - B"
+doi = "10.3934/dcdsb.2017133"
+openAccess = false
+
+[[references]]
+key = "RN2020a"
+title = "Stability-Optimized High Order Methods and Stiffness Detection for Pathwise Stiff Stochastic Differential Equations"
+authors = "Rackauckas, Chris; Nie, Qing"
+year = 2020
+journal = "2020 IEEE High Performance Extreme Computing Conference (HPEC)"
+doi = "10.1109/hpec43674.2020.9286178"
+openAccess = false
+
+[[models]]
+id = "ito"
+label = "It&ocirc; Calculus"
+
+[[models]]
+id = "strat"
+label = "Stratonovich"
+
+[[models]]
+id = "exact"
+label = "Exact Solutions"
+
+[[models]]
+id = "system"
+label = "Systems of SDEs"
+
+[[models]]
+id = "stiff"
+label = "Stiff SDEs"
+
+[[bullets]]
+text = "It&ocirc; Calculus"
+detail = "It&ocirc;'s lemma for F(X) when dX = f(X) dt + g(X) dW, found symbolically and checked on one Brownian path against the ordinary chain rule"
+
+[[bullets]]
+text = "Stratonovich"
+detail = "dX = f(X) dt + g(X) &#8728; dW, solved with EulerHeun and compared on the same path with its It&ocirc; form, whose drift is f + g g'/2"
+
+[[bullets]]
+text = "Exact Solutions"
+detail = "Four equations with closed-form solutions, so every solve reports its error and the strong and weak orders can be measured"
+
+[[bullets]]
+text = "Systems of SDEs"
+detail = "du = A u dt + noise for a vector u: diagonal, general or correlated noise, which decides the solvers that apply"
+
+[[bullets]]
+text = "Stiff SDEs"
+detail = "A fast pull towards a moving target, where explicit Euler-Maruyama blows up at a step that implicit solvers take in their stride"
+
+[[decisionRows]]
+task = "It&ocirc; Calculus"
+context = "A quantity defined as a function of a diffusion: log-prices, energies, transformed states"
+purpose = "The SDE that F(X) follows, and how far the ordinary chain rule goes wrong"
+
+[[decisionRows]]
+task = "Stratonovich"
+context = "Noise that is smooth on a short time scale and idealised as white, as in physics and engineering"
+purpose = "The Stratonovich solution and its It&ocirc; equivalent on one Brownian path"
+
+[[decisionRows]]
+task = "Exact Solutions"
+context = "Testing a solver, a step size or a tolerance before trusting it on an equation without a closed form"
+purpose = "Errors against the exact solution, convergence orders and work against precision"
+
+[[decisionRows]]
+task = "Systems of SDEs"
+context = "Several states driven by several Brownian motions, which may be mixed or correlated"
+purpose = "Paths of the system, and the mean and covariance from the moment equations"
+
+[[decisionRows]]
+task = "Stiff SDEs"
+context = "Fast relaxation next to slow change: strong mean reversion, chemical kinetics, fast-slow systems"
+purpose = "Which steps explicit solvers survive, and what implicit solvers buy"
+
+[[inputs]]
+id = "f"
+label = "Drift f(X)"
+tooltip = "The drift of X as a Julia expression in X, e.g. 0.1 * X (growth), 1 - X (mean reversion to 1)."
+default = "0.1 * X"
+models = ["ito"]
+
+[[inputs]]
+id = "g"
+label = "Diffusion g(X)"
+tooltip = "The diffusion of X as a Julia expression in X, e.g. 0.4 * X (proportional noise), 0.3 (constant noise), 0.2 * sqrt(X)."
+default = "0.4 * X"
+models = ["ito"]
+
+[[inputs]]
+id = "F"
+label = "Function F(X)"
+tooltip = "The function of X whose SDE It&ocirc;'s lemma gives, e.g. log(X), X^2, exp(X)."
+default = "log(X)"
+models = ["ito"]
+
+[[inputs]]
+id = "fs"
+label = "Drift f(X)"
+tooltip = "The drift of the Stratonovich equation as a Julia expression in X."
+default = "0.1 * X"
+models = ["strat"]
+
+[[inputs]]
+id = "gs"
+label = "Diffusion g(X)"
+tooltip = "The diffusion of the Stratonovich equation as a Julia expression in X. With a g that does not depend on X, the two calculi give the same equation."
+default = "0.4 * X"
+models = ["strat"]
+
+[[inputs]]
+id = "eq"
+label = "Equation"
+tooltip = "Geometric Brownian motion: dX = a X dt + b X dW. Additive: dX = (b / sqrt(1 + t) - X / (2(1 + t))) dt + a b / sqrt(1 + t) dW. Wave: dX = -sin(X) cos(X)^3 / 100 dt + cos(X)^2 / 10 dW. Cubic: dX = X^(1/3) / 3 dt + X^(2/3) dW. Each has a solution written in t and W(t) (Kloeden and Platen 1992, section 4.4)."
+kind = "select"
+default = "gbm"
+models = ["exact"]
+
+[[inputs.options]]
+value = "gbm"
+label = "Geometric Brownian Motion"
+
+[[inputs.options]]
+value = "additive"
+label = "Additive Noise"
+
+[[inputs.options]]
+value = "wave"
+label = "Wave"
+
+[[inputs.options]]
+value = "cubic"
+label = "Cubic"
+
+[[inputs]]
+id = "a"
+label = "Parameter a"
+tooltip = "Geometric Brownian motion: the growth rate a. Additive: the factor a of the noise. The Wave and Cubic equations have no parameters."
+default = "1.5"
+models = ["exact"]
+
+[[inputs]]
+id = "b"
+label = "Parameter b"
+tooltip = "Geometric Brownian motion: the volatility b. Additive: the scale b of the drift and the noise."
+default = "0.5"
+models = ["exact"]
+
+[[inputs]]
+id = "A"
+label = "Drift Matrix A"
+tooltip = "The drift of du = A u dt + noise, one row per state, e.g. [-1.0 0.5; 0.0 -2.0]."
+default = "[-1.0 0.5; 0.0 -2.0]"
+models = ["system"]
+
+[[inputs]]
+id = "S"
+label = "Noise Matrix S"
+tooltip = "Diagonal noise uses the diagonal of S, one independent Brownian motion per state. General noise uses all of S: column j is the effect of Brownian motion j on each state. Correlated noise uses the diagonal of S with correlated Brownian motions."
+default = "[0.3 0.1; 0.0 0.2]"
+models = ["system"]
+
+[[inputs]]
+id = "noise"
+label = "Noise Structure"
+tooltip = "Diagonal: each state has its own Brownian motion. General: a matrix S mixes the Brownian motions (non-diagonal noise). Correlated: each state has its own Brownian motion, correlated with the others at Correlation rho."
+kind = "select"
+default = "general"
+models = ["system"]
+
+[[inputs.options]]
+value = "diagonal"
+label = "Diagonal"
+
+[[inputs.options]]
+value = "general"
+label = "General (Non-Diagonal)"
+
+[[inputs.options]]
+value = "correlated"
+label = "Correlated"
+
+[[inputs]]
+id = "rho"
+label = "Correlation rho"
+tooltip = "The correlation between every pair of Brownian motions when Noise Structure is Correlated."
+default = "0.5"
+models = ["system"]
+
+[[inputs]]
+id = "uv0"
+label = "Initial State u(t0)"
+tooltip = "One starting value per state, e.g. [1.0, 1.0]."
+default = "[1.0, 1.0]"
+models = ["system"]
+
+[[inputs]]
+id = "lam"
+label = "Rate lambda"
+tooltip = "How fast X is pulled towards sin(t): dX = -lambda (X - sin(t)) dt + sigma dW. Explicit Euler-Maruyama needs a step below 2 / lambda."
+default = "50.0"
+models = ["stiff"]
+
+[[inputs]]
+id = "sig"
+label = "Noise sigma"
+tooltip = "The constant size of the noise."
+default = "1.0"
+models = ["stiff"]
+
+[[inputs]]
+id = "X0"
+label = "Initial Value X0"
+tooltip = "The value of X at the start of the time span."
+default = "1.0"
+models = ["ito", "strat", "exact", "stiff"]
+
+[[inputs]]
+id = "tspan"
+label = "Time Span"
+tooltip = "Start and end times as a tuple, e.g. (0.0, 5.0)."
+default = "(0.0, 5.0)"
+newRow = true
+
+[[inputs]]
+id = "alg"
+label = "Solver"
+tooltip = "EM: Euler-Maruyama, strong order 1/2 (1 with additive noise), weak order 1. LambaEM: EM with an adaptive step. RKMil: Milstein, strong order 1 for scalar noise. SRIW1 and SOSRI: stochastic Runge-Kutta, strong order 3/2 and weak order 2, for diagonal noise. Only EM and LambaEM take the non-diagonal noise of It&ocirc; Calculus and of General noise."
+kind = "select"
+default = "em"
+models = ["ito", "exact", "system"]
+
+[[inputs.options]]
+value = "em"
+label = "EM (Euler-Maruyama)"
+
+[[inputs.options]]
+value = "lambaem"
+label = "LambaEM (Adaptive)"
+
+[[inputs.options]]
+value = "rkmil"
+label = "RKMil (Milstein)"
+models = ["exact"]
+
+[[inputs.options]]
+value = "sriw1"
+label = "SRIW1 (Strong 3/2)"
+models = ["exact"]
+
+[[inputs.options]]
+value = "sriw1"
+label = "SRIW1 (Strong 3/2)"
+models = ["system"]
+when = "noise!=general"
+
+[[inputs.options]]
+value = "sosri"
+label = "SOSRI (Stability-Optimised)"
+models = ["exact"]
+
+[[inputs]]
+id = "algStrat"
+label = "Solver"
+tooltip = "Solvers that read the Stratonovich integral. EulerHeun: fixed step, strong order 1 for scalar noise. LambaEulerHeun: EulerHeun with an adaptive step. RKMil: Milstein in its Stratonovich form."
+kind = "select"
+default = "eulerheun"
+models = ["strat"]
+
+[[inputs.options]]
+value = "eulerheun"
+label = "EulerHeun"
+
+[[inputs.options]]
+value = "lambaeulerheun"
+label = "LambaEulerHeun (Adaptive)"
+
+[[inputs.options]]
+value = "rkmil"
+label = "RKMil (Stratonovich)"
+
+[[inputs]]
+id = "algStiff"
+label = "Solver"
+tooltip = "SKenCarp: implicit-explicit and adaptive, for additive noise. ImplicitEM: the drift-implicit Euler-Maruyama. SOSRA: explicit, with a stability region stretched for stiff additive noise. EM: explicit Euler-Maruyama, unstable once the step exceeds 2 / lambda."
+kind = "select"
+default = "skencarp"
+models = ["stiff"]
+
+[[inputs.options]]
+value = "skencarp"
+label = "SKenCarp (Implicit, Adaptive)"
+
+[[inputs.options]]
+value = "implicitem"
+label = "ImplicitEM (Implicit)"
+
+[[inputs.options]]
+value = "sosra"
+label = "SOSRA (Explicit, Stabilised)"
+
+[[inputs.options]]
+value = "em"
+label = "EM (Explicit)"
+
+[[inputs]]
+id = "dt"
+label = "Step dt"
+tooltip = "The step of fixed-step solvers and the first step of adaptive ones."
+default = "0.01"
+
+[[inputs]]
+id = "seed"
+label = "Seed"
+tooltip = "The seed of the Brownian path, so that a run can be repeated."
+default = "1"
+
+[[codeBranches]]
+model = "ito"
+code = '''
+using StochasticDiffEq, Symbolics, Random
+
+@variables X
+drift_X = {{f}}  # f(X), the drift of X
+noise_X = {{g}}  # g(X), the diffusion of X
+F_X = {{F}}  # the function of X whose SDE Ito's lemma gives
+DX = Differential(X)
+F1 = expand_derivatives(DX(F_X)); F2 = expand_derivatives(DX(F1))
+drift_F = simplify(F1 * drift_X + F2 * noise_X^2 / 2)  # Ito's lemma: dF = (F' f + F'' g^2 / 2) dt + F' g dW
+noise_F = simplify(F1 * noise_X)
+chain_F = simplify(F1 * drift_X)  # the ordinary chain rule leaves out F'' g^2 / 2
+fun(e) = build_function(e, X; expression=Val(false))
+fX, gX, FX, fF, gF, cF = fun.((drift_X, noise_X, F_X, drift_F, noise_F, chain_F))
+drift(x, t) = fX(x); noise(x, t) = gX(x)  # the scalar equation, for the Next Steps
+
+# One Brownian motion drives X, Y by Ito's lemma and Z by the chain rule: u = [X, Y, Z], noise matrix 3 x 1
+f3!(du, u, p, t) = (du[1] = fX(u[1]); du[2] = fF(u[1]); du[3] = cF(u[1]); nothing)
+g3!(du, u, p, t) = (du[1, 1] = gX(u[1]); du[2, 1] = gF(u[1]); du[3, 1] = gF(u[1]); nothing)
+X0 = float({{X0}})
+tspan = float.({{tspan}})
+prob = SDEProblem(f3!, g3!, [X0, FX(X0), FX(X0)], tspan; noise_rate_prototype=zeros(3, 1))
+labels = ["X", "Y, by Ito's lemma", "Z, by the chain rule"]
+algs = Dict("em" => EM(), "lambaem" => LambaEM())  # solvers for non-diagonal noise
+fresh(p, s) = remake(p; seed=UInt64(s))  # the problem with the Brownian path of seed s
+solve_with(name; problem=prob, dt={{dt}}, seed={{seed}}, kw...) = solve(fresh(problem, seed), algs[name]; dt, kw...)
+paths(N; name=alg, kw...) = solve(EnsembleProblem(prob; prob_func=(p, ctx) -> fresh(p, ctx.sim_id)), algs[name], EnsembleThreads(); trajectories=N, dt={{dt}}, kw...)
+alg = "{{alg}}"
+sol = solve_with(alg)
+XT, YT, ZT = sol.u[end]
+(ito_drift_of_F = drift_F, ito_diffusion_of_F = noise_F, chain_rule_drift = chain_F, F_of_X_at_end = FX(XT), Y_at_end = YT, Z_at_end = ZT, gap_Y = YT - FX(XT), gap_Z = ZT - FX(XT))
+'''
+
+[[codeBranches]]
+model = "strat"
+code = '''
+using StochasticDiffEq, Symbolics, Random
+
+@variables X
+drift_X = {{fs}}  # f(X), the drift of the Stratonovich equation
+noise_X = {{gs}}  # g(X), its diffusion
+ito_drift = simplify(drift_X + expand_derivatives(Differential(X)(noise_X)) * noise_X / 2)  # the Ito equation with the same solution has drift f + g g' / 2
+fun(e) = build_function(e, X; expression=Val(false))
+fX, gX, fI = fun.((drift_X, noise_X, ito_drift))
+drift(x, t) = fX(x); noise(x, t) = gX(x)  # the scalar equation, for the Next Steps
+
+X0 = float({{X0}})
+tspan = float.({{tspan}})
+prob = SDEProblem((u, p, t) -> fX(u), (u, p, t) -> gX(u), X0, tspan)
+labels = ["X"]
+algs = Dict("eulerheun" => EulerHeun(), "lambaeulerheun" => LambaEulerHeun(), "rkmil" => RKMil(interpretation=SciMLBase.AlgorithmInterpretation.Stratonovich))
+fresh(p, s) = remake(p; seed=UInt64(s))  # the problem with the Brownian path of seed s
+solve_with(name; problem=prob, dt={{dt}}, seed={{seed}}, kw...) = solve(fresh(problem, seed), algs[name]; dt, kw...)
+paths(N; name=alg, kw...) = solve(EnsembleProblem(prob; prob_func=(p, ctx) -> fresh(p, ctx.sim_id)), algs[name], EnsembleThreads(); trajectories=N, dt={{dt}}, kw...)
+alg = "{{algStrat}}"
+sol = solve_with(alg; save_noise=true)  # keeps the Brownian path
+ito_form = solve(SDEProblem((u, p, t) -> fI(u), (u, p, t) -> gX(u), X0, tspan; noise=NoiseWrapper(sol.W)), EM(); dt={{dt}})  # the Ito form on the same path
+(ito_drift_equivalent = ito_drift, stratonovich_at_end = sol.u[end], ito_form_at_end = ito_form.u[end], gap = ito_form.u[end] - sol.u[end])
+'''
+
+[[codeBranches]]
+model = "exact"
+code = '''
+using StochasticDiffEq, Random
+
+a, b = float({{a}}), float({{b}})
+{{?eq=gbm}} fexact(u, p, t) = a * u
+{{?eq=gbm}} gexact(u, p, t) = b * u
+{{?eq=gbm}} exact(u0, p, t, W) = u0 * exp((a - b^2 / 2) * t + b * W)  # geometric Brownian motion
+{{?eq=additive}} fexact(u, p, t) = b / sqrt(1 + t) - u / (2 * (1 + t))
+{{?eq=additive}} gexact(u, p, t) = a * b / sqrt(1 + t)
+{{?eq=additive}} exact(u0, p, t, W) = u0 / sqrt(1 + t) + b * (t + a * W) / sqrt(1 + t)
+{{?eq=wave}} fexact(u, p, t) = -sin(u) * cos(u)^3 / 100
+{{?eq=wave}} gexact(u, p, t) = cos(u)^2 / 10
+{{?eq=wave}} exact(u0, p, t, W) = atan(W / 10 + tan(u0))
+{{?eq=cubic}} fexact(u, p, t) = cbrt(u) / 3
+{{?eq=cubic}} gexact(u, p, t) = cbrt(u)^2
+{{?eq=cubic}} exact(u0, p, t, W) = (cbrt(u0) + W / 3)^3
+drift(x, t) = fexact(x, nothing, t); noise(x, t) = gexact(x, nothing, t)  # the scalar equation, for the Next Steps
+
+X0 = float({{X0}})
+tspan = float.({{tspan}})
+prob = SDEProblem(SDEFunction(fexact, gexact; analytic=exact), X0, tspan)  # every solve also computes the exact solution on its own path
+labels = ["X"]
+algs = Dict("em" => EM(), "lambaem" => LambaEM(), "rkmil" => RKMil(), "sriw1" => SRIW1(), "sosri" => SOSRI())
+fresh(p, s) = remake(p; seed=UInt64(s))  # the problem with the Brownian path of seed s
+solve_with(name; problem=prob, dt={{dt}}, seed={{seed}}, kw...) = solve(fresh(problem, seed), algs[name]; dt, kw...)
+paths(N; name=alg, kw...) = solve(EnsembleProblem(prob; prob_func=(p, ctx) -> fresh(p, ctx.sim_id)), algs[name], EnsembleThreads(); trajectories=N, dt={{dt}}, kw...)
+alg = "{{alg}}"
+sol = solve_with(alg)
+(value_at_end = sol.u[end], exact_value_at_end = sol.u_analytic[end], error_at_end = sol.errors[:final], largest_error = maximum(abs.(sol.u .- sol.u_analytic)), steps = length(sol.t) - 1, solver = alg)
+'''
+
+[[codeBranches]]
+model = "system"
+code = '''
+using StochasticDiffEq, LinearAlgebra, Random
+
+A = float.({{A}})  # du = A u dt + noise
+S = float.({{S}})
+u0 = float.({{uv0}}); n = length(u0)
+tspan = float.({{tspan}})
+drift_sys!(du, u, p, t) = mul!(du, A, u)
+{{?noise=diagonal}} B = Diagonal(diag(S)); Gam = Matrix(1.0I, n, n)  # one independent Brownian motion per state, of size S[i, i]
+{{?noise=diagonal}} noise_sys!(du, u, p, t) = (du .= diag(S))
+{{?noise=diagonal}} fresh(p, s) = remake(p; seed=UInt64(s))  # the problem with the Brownian path of seed s
+{{?noise=diagonal}} prob = SDEProblem(drift_sys!, noise_sys!, u0, tspan)
+{{?noise=general}} B = S; Gam = Matrix(1.0I, size(S, 2), size(S, 2))  # size(S, 2) independent Brownian motions, mixed by S
+{{?noise=general}} noise_sys!(du, u, p, t) = (du .= S)
+{{?noise=general}} fresh(p, s) = remake(p; seed=UInt64(s))  # the problem with the Brownian path of seed s
+{{?noise=general}} prob = SDEProblem(drift_sys!, noise_sys!, u0, tspan; noise_rate_prototype=zeros(n, size(S, 2)))
+{{?noise=correlated}} B = Diagonal(diag(S)); Gam = [i == j ? 1.0 : float({{rho}}) for i in 1:n, j in 1:n]  # Brownian motions with correlation rho
+{{?noise=correlated}} noise_sys!(du, u, p, t) = (du .= diag(S))
+{{?noise=correlated}} fresh(p, s) = remake(p; noise=CorrelatedWienerProcess(Gam, p.tspan[1], zeros(n); rng=Xoshiro(s)))  # a new correlated path for seed s
+{{?noise=correlated}} prob = fresh(SDEProblem(drift_sys!, noise_sys!, u0, tspan), {{seed}})
+Q = B * Gam * transpose(B)  # covariance rate of the noise: Cov(noise over dt) = Q dt
+labels = ["u[$i]" for i in 1:n]
+algs = Dict("em" => EM(), "lambaem" => LambaEM(), "sriw1" => SRIW1())  # SRIW1 takes diagonal and correlated noise only
+solve_with(name; problem=prob, dt={{dt}}, seed={{seed}}, kw...) = solve(fresh(problem, seed), algs[name]; dt, kw...)
+paths(N; name=alg, kw...) = solve(EnsembleProblem(prob; prob_func=(p, ctx) -> fresh(p, ctx.sim_id)), algs[name], EnsembleThreads(); trajectories=N, dt={{dt}}, kw...)
+alg = "{{alg}}"
+sol = solve_with(alg)
+(state_at_end = sol.u[end], steps = length(sol.t) - 1, noise_structure = "{{noise}}", noise_covariance_rate = Q, retcode = sol.retcode)
+'''
+
+[[codeBranches]]
+model = "stiff"
+code = '''
+using StochasticDiffEq, Random
+
+lam, sig = float({{lam}}), float({{sig}})
+drift(x, t) = -lam * (x - sin(t))  # a fast pull towards sin(t)
+noise(x, t) = sig
+X0 = float({{X0}})
+tspan = float.({{tspan}})
+prob = SDEProblem((u, p, t) -> drift(u, t), (u, p, t) -> noise(u, t), X0, tspan)
+labels = ["X"]
+algs = Dict("skencarp" => SKenCarp(), "implicitem" => ImplicitEM(), "sosra" => SOSRA(), "em" => EM())
+fresh(p, s) = remake(p; seed=UInt64(s))  # the problem with the Brownian path of seed s
+solve_with(name; problem=prob, dt={{dt}}, seed={{seed}}, kw...) = solve(fresh(problem, seed), algs[name]; dt, kw...)
+paths(N; name=alg, kw...) = solve(EnsembleProblem(prob; prob_func=(p, ctx) -> fresh(p, ctx.sim_id)), algs[name], EnsembleThreads(); trajectories=N, dt={{dt}}, kw...)
+alg = "{{algStiff}}"
+sol = solve_with(alg)
+(value_at_end = sol.u[end], steps = length(sol.t) - 1, retcode = sol.retcode, explicit_step_limit = 2 / lam, step = {{dt}}, solver = alg)
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "solution-plot"
+label = "Solution Plot"
+desc = "The path of the main code against time. It&ocirc; Calculus adds F(X(t)), which Y follows and Z drifts away from; Exact Solutions adds the exact solution on the same Brownian path"
+code = '''
+using Plots
+{{?model=ito}} p = Plots.plot(sol, lw=1.5, label=permutedims(labels), xlabel="t", title="F(X) by Ito's lemma and by the chain rule")
+{{?model=ito}} Plots.plot!(p, sol.t, [FX(u[1]) for u in sol.u], ls=:dash, c=:black, label="F(X(t))")
+{{?model=exact}} p = Plots.plot(sol.t, [sol.u sol.u_analytic], lw=[2 1], ls=[:solid :dash], label=["$alg" "exact solution"], xlabel="t", title="Numerical and exact solution on one Brownian path")
+{{?model=strat|system|stiff}} p = Plots.plot(sol, lw=1.5, label=permutedims(labels), xlabel="t", title="One path by $alg")
+p
+'''
+
+[[actionGroups.actions]]
+id = "sample-paths"
+label = "Sample Paths"
+desc = "Twenty paths of the first state from the seeds 1 to 20, to show how far paths spread"
+code = '''
+using Plots
+ens = paths(20)
+Plots.plot(ens, idxs=1, alpha=0.5, lw=1, label="", xlabel="t", ylabel=labels[1], title="20 paths by $alg")
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "convergence"
+label = "Strong and Weak Convergence Orders"
+desc = "Errors against the exact solution over one unit of time as the fixed step halves from 1/32 to 1/512: the strong error on 1000 paths, the weak error of the mean on 10000, and the order of each as the slope of log error on log step"
+models = ["exact"]
+code = '''
+using DiffEqDevTools, Random
+dts = 1 ./ 2 .^ (9:-1:5)
+slope(e) = ([ones(length(dts)) log.(dts)] \ log.(e))[2]  # least-squares slope of log error on log step
+prob1 = remake(prob; tspan=(tspan[1], tspan[1] + 1.0))
+Random.seed!({{seed}})
+strong = test_convergence(dts, prob1, algs[alg], EnsembleSerial(); trajectories=1000, save_everystep=false)
+weak = test_convergence(dts, prob1, algs[alg], EnsembleSerial(); trajectories=10000, save_everystep=false)
+expected = Dict("em" => (0.5, 1.0), "lambaem" => (0.5, 1.0), "rkmil" => (1.0, 1.0), "sriw1" => (1.5, 2.0), "sosri" => (1.5, 2.0))[alg]
+(steps = dts, strong_errors = strong.errors[:final], strong_order = slope(strong.errors[:final]), weak_errors = weak.errors[:weak_final], weak_order = slope(weak.errors[:weak_final]), expected_strong_and_weak = expected, note = "with noise that does not depend on X, EM and LambaEM reach strong order 1")
+'''
+
+[[actionGroups.actions]]
+id = "step-stability"
+label = "Step-Size Stability"
+desc = "Solves on one Brownian path with an explicit solver and its drift-implicit counterpart as the step doubles five times from Step dt, and reports the largest state each reaches: an explicit run that explodes while the implicit one stays bounded marks a step beyond the explicit stability limit"
+code = '''
+using LinearAlgebra
+{{?model=strat}} explicit, implicit = EulerHeun(), ImplicitEulerHeun()
+{{?model!=strat}} explicit, implicit = EM(), ImplicitEM()
+map({{dt}} .* 2.0 .^ (0:5)) do h
+    e = solve(fresh(prob, {{seed}}), explicit; dt=h, adaptive=false)
+    i = solve(fresh(prob, {{seed}}), implicit; dt=h, adaptive=false)
+    (step = h, explicit_largest = maximum(norm.(e.u)), implicit_largest = maximum(norm.(i.u)), explicit_retcode = string(e.retcode))
+end
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "moments"
+label = "Moments over Time"
+desc = "Mean and standard deviation of the first state over 1000 paths, at 101 times; Exact Solutions adds the mean of the exact solutions on the same paths, so the gap is the weak error of the solver"
+code = '''
+using Statistics, Plots
+ts = range(tspan[1], tspan[2], length=101)
+{{?model!=exact}} ens = paths(1000; saveat=ts)
+{{?model=exact}} ens = paths(1000; save_noise=true)
+U = [first(s(t)) for s in ens.u, t in ts]  # paths in rows, times in columns
+m = vec(mean(U; dims=1)); sd = vec(std(U; dims=1))
+p = Plots.plot(ts, m, ribbon=sd, fillalpha=0.2, lw=2, label="mean, and one standard deviation", xlabel="t", ylabel=labels[1], title="Moments over 1000 paths")
+{{?model=exact}} Ue = [exact(X0, nothing, t, first(s.W(t)[1])) for s in ens.u, t in ts]  # the exact solution on the recorded Brownian path
+{{?model=exact}} Plots.plot!(p, ts, vec(mean(Ue; dims=1)), ls=:dash, c=:black, lw=2, label="mean of the exact solutions")
+display(p)
+[(t = ts[k], mean = m[k], sd = sd[k]) for k in 1:25:101]
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "ito-vs-strat"
+label = "It&ocirc; vs Stratonovich"
+desc = "Solves the same f and g on one Brownian path as an It&ocirc; equation (EM), as a Stratonovich equation (EulerHeun), and as an It&ocirc; equation with drift f + g g'/2, which should follow the Stratonovich path"
+models = ["ito", "strat", "exact", "stiff"]
+code = '''
+using StochasticDiffEq, Plots
+h = 1e-6
+dnoise(x, t) = (noise(x + h, t) - noise(x - h, t)) / (2h)  # dg/dX by a central difference
+pI = SDEProblem((u, p, t) -> drift(u, t), (u, p, t) -> noise(u, t), X0, tspan; seed=UInt64({{seed}}))
+ito_path = solve(pI, EM(); dt={{dt}}, save_noise=true)  # f and g read as Ito; keeps the Brownian path
+strat_path = solve(remake(pI; noise=NoiseWrapper(ito_path.W)), EulerHeun(); dt={{dt}})  # the same f and g read as Stratonovich
+corrected = solve(remake(pI; f=(u, p, t) -> drift(u, t) + noise(u, t) * dnoise(u, t) / 2, noise=NoiseWrapper(ito_path.W)), EM(); dt={{dt}})  # Ito with drift f + g g' / 2
+p = Plots.plot(ito_path, lw=1.5, label="Ito", xlabel="t", ylabel="X", title="One Brownian path, two calculi")
+Plots.plot!(p, strat_path, lw=1.5, label="Stratonovich")
+Plots.plot!(p, corrected, lw=1, ls=:dash, c=:black, label="Ito with drift f + g g'/2")
+display(p)
+(ito_at_end = ito_path.u[end], stratonovich_at_end = strat_path.u[end], corrected_ito_at_end = corrected.u[end], ito_minus_stratonovich = ito_path.u[end] - strat_path.u[end], corrected_minus_stratonovich = corrected.u[end] - strat_path.u[end])
+'''
+
+[[actionGroups.actions]]
+id = "compare-solvers"
+label = "Compare Solvers"
+desc = "Every solver of the tab on one Brownian path: error at the end against a reference run at a step 1000 times smaller, steps and time (timed on a second run, after compilation)"
+code = '''
+using StochasticDiffEq, LinearAlgebra
+{{?model=strat}} ref = solve(fresh(prob, {{seed}}), EulerHeun(); dt={{dt}} / 1000, save_noise=true)  # reference; keeps the Brownian path
+{{?model!=strat}} ref = solve(fresh(prob, {{seed}}), EM(); dt={{dt}} / 1000, save_noise=true)  # reference; keeps the Brownian path
+map(sort(collect(keys(algs)))) do name
+    replay() = solve(remake(prob; noise=NoiseWrapper(ref.W)), algs[name]; dt={{dt}})
+    try
+        replay()  # compile
+        t = @elapsed s = replay()
+        (solver = name, error_at_end = norm(s.u[end] - ref.u[end]), steps = length(s.t) - 1, seconds = round(t, sigdigits=3), retcode = string(s.retcode))
+    catch e
+        (solver = name, error_at_end = missing, steps = missing, seconds = missing, retcode = first(sprint(showerror, e), 120))
+    end
+end
+'''
+
+[[actionGroups.actions]]
+id = "work-precision"
+label = "Work-Precision Diagram"
+desc = "Mean error at the end against the mean number of drift and diffusion evaluations, over 100 paths, as the fixed step halves from 1/8 to 1/512, for EM, RKMil, SRIW1 and SOSRI. Lower and further left is better"
+models = ["exact"]
+code = '''
+using Statistics, Plots
+hs = 1 ./ 2 .^ (3:9)
+p = Plots.plot(xscale=:log10, yscale=:log10, xlabel="drift and diffusion evaluations", ylabel="mean error at the end (100 paths)", title="Work against precision", legend=:bottomleft)
+for name in ["em", "rkmil", "sriw1", "sosri"]
+    runs = [[solve(fresh(prob, i), algs[name]; dt=h, adaptive=false) for i in 1:100] for h in hs]
+    work = [mean(s.stats.nf + s.stats.nf2 for s in r) for r in runs]
+    errs = [mean(s.errors[:final] for s in r) for r in runs]
+    Plots.plot!(p, work, errs, m=:circle, lw=2, label=name)
+end
+p
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "moment-equations"
+label = "Moment Equations"
+desc = "For du = A u dt + noise, the mean solves m' = A m and the covariance P' = A P + P A^T + Q. Solves both as ordinary differential equations and compares them with 2000 paths"
+models = ["system"]
+code = '''
+using OrdinaryDiffEq, Statistics, Plots
+mom(v, p, t) = (P = reshape(v[n+1:end], n, n); [A * v[1:n]; vec(A * P + P * transpose(A) + Q)])  # mean, then the covariance by columns
+mo = solve(ODEProblem(mom, [u0; zeros(n * n)], tspan), Tsit5(); reltol=1e-8, abstol=1e-10)
+ts = range(tspan[1], tspan[2], length=51)
+ens = paths(2000; saveat=ts)
+U = [s.u[k][1] for s in ens.u, k in eachindex(ts)]
+p = Plots.plot(ts, [mo(t)[1] for t in ts], lw=2, label="mean of u[1], moment equations", xlabel="t", title="Moment equations and 2000 paths")
+Plots.plot!(p, ts, vec(mean(U; dims=1)), ls=:dash, label="mean of u[1], paths")
+Plots.plot!(p, ts, [mo(t)[n + 1] for t in ts], lw=2, label="variance of u[1], moment equations")
+Plots.plot!(p, ts, vec(var(U; dims=1)), ls=:dash, label="variance of u[1], paths")
+display(p)
+UT = reduce(hcat, [s.u[end] for s in ens.u])
+(mean_at_end = mo.u[end][1:n], paths_mean_at_end = vec(mean(UT; dims=2)), covariance_at_end = reshape(mo.u[end][n+1:end], n, n), paths_covariance_at_end = cov(transpose(UT)))
+'''
+
+[[actionGroups.actions]]
+id = "path-summary"
+label = "Path Summary"
+desc = "For each state of the main path: its first and last values, minimum, maximum, the time of the maximum and the average over the time span"
+code = '''
+ts = range(tspan[1], tspan[2], length=1001); V = sol.(ts)
+map(eachindex(labels)) do i
+    x = [v[i] for v in V]
+    (state = labels[i], first = x[1], last = x[end], minimum = minimum(x), maximum = maximum(x), time_of_maximum = ts[argmax(x)], average_over_time = sum(x) / length(x))
+end
+'''

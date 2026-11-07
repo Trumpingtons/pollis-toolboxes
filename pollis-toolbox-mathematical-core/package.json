@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-mathematical-core",
   "displayName": "Core Mathematics Toolbox",
   "description": "Pollis Core Mathematics Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -34,7 +34,8 @@
           { "id": "diff", "command": "chiara.toolboxes.diff", "title": "Differentiation", "menuTitle": "Numerical Differentiation", "group": "2_at", "order": 1, "data": "panels/diff.toml", "defaultModel": "deriv", "decisionFirstColumn": "Task" },
           { "id": "integ", "command": "chiara.toolboxes.integ", "title": "Integration", "menuTitle": "Numerical Integration", "group": "2_at", "order": 2, "data": "panels/integ.toml", "defaultModel": "def", "decisionFirstColumn": "Task" },
           { "id": "odes", "command": "chiara.toolboxes.ode", "title": "Ordinary Differential Equations", "group": "3_at", "order": 1, "data": "panels/odes.toml", "defaultModel": "scalar", "decisionFirstColumn": "Task" },
-          { "id": "pdes", "command": "chiara.toolboxes.pde", "title": "Partial Differential Equations", "group": "3_at", "order": 2, "data": "panels/pdes.toml", "defaultModel": "heat", "decisionFirstColumn": "Task" }
+          { "id": "pdes", "command": "chiara.toolboxes.pde", "title": "Partial Differential Equations", "group": "3_at", "order": 2, "data": "panels/pdes.toml", "defaultModel": "heat", "decisionFirstColumn": "Task" },
+          { "id": "sdes", "command": "chiara.toolboxes.sde", "title": "Stochastic Differential Equations", "group": "3_at", "order": 3, "data": "panels/sdes.toml", "defaultModel": "ito", "decisionFirstColumn": "Task" }
         ]
       }
     ]

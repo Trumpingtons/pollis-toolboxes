@@ -1,6 +1,6 @@
 # Core Mathematics Toolbox
 
-The Pollis Core Mathematics Toolbox brings symbolic and numerical mathematics to Pollis: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.
+The Pollis Core Mathematics Toolbox brings symbolic and numerical mathematics to Pollis: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary, partial and stochastic differential equations.
 
 Installing it adds the **Core Mathematics** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
@@ -15,6 +15,7 @@ Installing it adds the **Core Mathematics** submenu to the end of the **Extend**
 | Numerical Integration | Definite and multiple integrals, and integration of sampled data | [QuadGK.jl](https://github.com/JuliaMath/QuadGK.jl), [HCubature.jl](https://github.com/JuliaMath/HCubature.jl), [FastGaussQuadrature.jl](https://github.com/JuliaApproximation/FastGaussQuadrature.jl), [SymbolicNumericIntegration.jl](https://github.com/SciML/SymbolicNumericIntegration.jl) |
 | Ordinary Differential Equations | First-order equations, systems and second-order equations | [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl), [NonlinearSolve.jl](https://github.com/SciML/NonlinearSolve.jl), [ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) |
 | Partial Differential Equations | Heat, wave and Poisson equations | [OrdinaryDiffEq.jl](https://github.com/SciML/OrdinaryDiffEq.jl), [MethodOfLines.jl](https://github.com/SciML/MethodOfLines.jl), [Krylov.jl](https://github.com/JuliaSmoothOptimizers/Krylov.jl), [Gridap.jl](https://github.com/gridap/Gridap.jl) |
+| Stochastic Differential Equations | Itô and Stratonovich calculus, exact solutions, systems with general or correlated noise, and stiff equations | [StochasticDiffEq.jl](https://github.com/SciML/StochasticDiffEq.jl), [DiffEqNoiseProcess.jl](https://github.com/SciML/DiffEqNoiseProcess.jl), [Symbolics.jl](https://github.com/JuliaSymbolics/Symbolics.jl), [DiffEqDevTools.jl](https://github.com/SciML/DiffEqDevTools.jl) |
 
 ## Requirements
 
