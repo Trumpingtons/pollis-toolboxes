@@ -15,20 +15,8 @@ New toolboxes are welcome, as pull requests: see [CONTRIBUTING.md](CONTRIBUTING.
 
 ## Layout
 
-- `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/`, `julia/Project.toml`, the Julia environment of its panels, and, optionally, `docs/<document>/`, the LaTeX sources of the toolbox's documentation (see below).
-- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
-- `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
+- `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/` and, optionally, `docs/<document>/`, the LaTeX sources of the toolbox's documentation (see below).
 - A toolbox folder with a `DEFERRED.md` stays on `main` but is not published: the packaging leaves it out until the file is deleted.
-
-## Julia environment
-
-Each toolbox has a Julia environment of its own, `julia/Project.toml`, so that its packages, and the versions its panels were run with, never clash with another toolbox's or with the user's own. It lists:
-
-- in `[deps]`, every package its panels use;
-- in `[compat]`, the version each one was run with, as the lower bound, and `julia = "1.11"`;
-- in `[sources]`, the forks and the packages that no registry has, each with its `url` and, for a fork, the branch (`rev`).
-
-A panel whose packages cannot share that environment names one of its own in `package.json`, `"environment": "<name>"`, and its packages go in `julia/<name>/Project.toml`. `Pkg` writes these files: `julia --project=julia -e 'using Pkg; Pkg.add("Distributions")'` adds a package with its UUID.
 
 ## Documentation
 
@@ -44,6 +32,8 @@ A toolbox can bring its own documentation, listed in **Help > Documentation > To
 ```
 
 `source` is the main `.tex` file, relative to the toolbox folder; its name is letters, digits, `-` and `_`. The document's other `.tex` files and its `.bib` files go in the same folder, and its images (`.png`, `.jpg`) in a `resources/` folder beside them. Write the sources for XeTeX: `fontspec` rather than `inputenc`, and no shell escape.
+- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
+- `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
 
 ## For developers
 

@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-economics",
   "displayName": "Economics Toolbox",
   "description": "Pollis Economics Toolbox: business cycle filters, discrete-time stochastic volatility models, DSGE models, VAR/VECM systems, heterogeneous-agent models, continuous-time macro-finance and game theory.",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -30,10 +30,10 @@
         "panels": [
           { "id": "bcf", "command": "chiara.statistics.macro.hpf", "title": "Business Cycle Filters", "group": "4_mt", "order": 1, "data": "panels/bcf.toml", "defaultModel": "hp", "decisionFirstColumn": "Model" },
           { "id": "dtsv", "command": "chiara.statistics.macro.dtsvm", "title": "Discrete-Time Stochastic Volatility Models", "group": "4_mt", "order": 2, "data": "panels/dtsv.toml", "defaultModel": "basic", "decisionFirstColumn": "Model" },
-          { "id": "dsge", "command": "chiara.statistics.macro.dsge", "title": "DSGE Models", "menuTitle": "Dynamic Stochastic General Equilibrium (DSGE)", "group": "4_mt", "order": 3, "data": "panels/dsge.toml", "environment": "dsge", "defaultModel": "mom", "decisionFirstColumn": "Mode" },
+          { "id": "dsge", "command": "chiara.statistics.macro.dsge", "title": "DSGE Models", "menuTitle": "Dynamic Stochastic General Equilibrium (DSGE)", "group": "4_mt", "order": 3, "data": "panels/dsge.toml", "defaultModel": "mom", "decisionFirstColumn": "Mode" },
           { "id": "var", "command": "chiara.statistics.arma.varModels", "title": "VAR Models", "menuTitle": "VAR/VECM Systems", "group": "4_mt", "order": 4, "data": "panels/var.toml", "defaultModel": "var", "decisionFirstColumn": "Model" },
-          { "id": "ham", "command": "chiara.statistics.macro.ham", "title": "Heterogeneous-Agent Models", "group": "4_mt", "order": 5, "data": "panels/ham.toml", "environment": "econpdes", "defaultModel": "main", "decisionFirstColumn": "Model" },
-          { "id": "ctmf", "command": "chiara.statistics.macro.ctmf", "title": "Continuous-Time Macro-Finance", "group": "4_mt", "order": 6, "data": "panels/ctmf.toml", "environment": "econpdes", "defaultModel": "main", "decisionFirstColumn": "Model" },
+          { "id": "ham", "command": "chiara.statistics.macro.ham", "title": "Heterogeneous-Agent Models", "group": "4_mt", "order": 5, "data": "panels/ham.toml", "defaultModel": "main", "decisionFirstColumn": "Model" },
+          { "id": "ctmf", "command": "chiara.statistics.macro.ctmf", "title": "Continuous-Time Macro-Finance", "group": "4_mt", "order": 6, "data": "panels/ctmf.toml", "defaultModel": "main", "decisionFirstColumn": "Model" },
           { "id": "gt", "command": "chiara.statistics.macro.gt", "title": "Game Theory", "group": "5_gt", "order": 1, "data": "panels/gt.toml", "defaultModel": "normal", "decisionFirstColumn": "Game" }
         ]
       }
