@@ -20,20 +20,20 @@ id = "concept"
 label = "Conceptual"
 
 [[bullets]]
-text = "One Function"
-detail = "An exercise is a Julia function: from a random number generator it returns the question, the choices with the correct one first, and the explanation"
+text = "Computed from Data"
+detail = "the numbers are drawn from the seed and the choices computed from them, for calculations such as a statistic, a p-value or a prediction; make each wrong choice a usual mistake, computed from the same data, so that a student who picks it learns which mistake it was"
 
 [[bullets]]
-text = "Wrong Choices"
-detail = "Make each wrong choice a usual mistake, computed from the same data, so that a student who picks it learns which mistake it was"
+text = "Conceptual"
+detail = "the text is fixed and only the order of the choices changes, for concepts such as choosing a method or reading a result"
 
 [[bullets]]
-text = "Versions"
-detail = "Each seed gives a version with other data and another order of the choices; preview a few before you use the exercise"
+text = "An exercise is a Julia function: from a random number generator it returns the question, the choices with the correct one first, and the explanation"
+detail = ""
 
 [[bullets]]
-text = "Check the Choices"
-detail = "Two choices that come out the same make a version ambiguous: Choices That Coincide looks for them in many versions"
+text = "Each seed gives a version with other data and another order of the choices; preview a few, and run Choices That Coincide, which looks in many versions for two choices that come out the same"
+detail = ""
 
 [[decisionRows]]
 task = "Computed from Data"

@@ -24,20 +24,24 @@ id = "lr"
 label = "Linear Regression"
 
 [[bullets]]
-text = "Multiple Choice"
-detail = "Each exercise asks one question with four choices; the wrong choices are the usual mistakes"
+text = "Descriptive Statistics"
+detail = "five exercises: the mean of a sample, the median of an even number of values, the sample standard deviation, a measure that resists outliers and the correlation coefficient"
 
 [[bullets]]
-text = "Computed by Julia"
-detail = "The data and the answers come from Julia, so they are always right"
+text = "Hypothesis Tests"
+detail = "five exercises: the one-sample t statistic, a two-sided p-value, reading a p-value, choosing a test and the chi-square statistic of a 2 x 2 table"
 
 [[bullets]]
-text = "New Data"
-detail = "Another seed gives other data and another order of the choices; the same seed gives the same exercise again"
+text = "Linear Regression"
+detail = "five exercises: the least-squares slope, the intercept from the means, R-squared from the correlation, a prediction from the fitted line and what the slope means"
 
 [[bullets]]
-text = "Check Your Answer"
-detail = "Run the Example Code, pick your answer under Your Answer, then Check My Answer under Next Steps for the explanation"
+text = "Each exercise asks one question with four choices, the wrong ones the usual mistakes, with the data and the answers computed by Julia; another seed gives other data and another order of the choices, and the same seed the same exercise again"
+detail = ""
+
+[[bullets]]
+text = "Run the Example Code, pick your answer under Your Answer, then Check My Answer under Next Steps for the explanation"
+detail = ""
 
 [[decisionRows]]
 task = "Descriptive Statistics"
