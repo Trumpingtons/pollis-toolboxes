@@ -1,197 +1,82 @@
 # Numerical Differentiation Webview Configuration
-# This is the declarative source for the webview. The build script generates:
-# - src/vs/workbench/contrib/model/browser/webviews/diff.data.ts
-# Run: npm run gulp compile-toml
+# This is the declarative source for the webview, read by the Core Mathematics Toolbox.
 
 [meta]
 title = "Numerical Differentiation"
 viewType = "pollis.diff"
-defaultModel = "deriv"
+defaultModel = "fd"
 
 [[packages]]
-name = "DifferentiationInterface.jl"
-github = "https://github.com/JuliaDiff/DifferentiationInterface.jl"
-
-[[packages.videos]]
-title = "Gradients for Everyone: A Quick Guide to Autodiff in Julia"
-description = "Guillaume Dalle and Adrian Hill introduce DifferentiationInterface and how to pick a backend (JuliaCon 2024)"
-url = "https://www.youtube.com/watch?v=ww3ntpyxNtI"
+name = "FiniteDifferences.jl"
+github = "https://github.com/JuliaDiff/FiniteDifferences.jl"
 
 [[packages.videos]]
 title = "Essence of Calculus"
 description = "3Blue1Brown's visual series on derivatives, the chain rule, integrals and Taylor series"
 url = "https://www.youtube.com/playlist?list=PLZHQObOWTQDMsr9K-rj53DwVRMYO3t5Yr"
 
-[[packages.videos]]
-title = "Taylor Series"
-description = "3Blue1Brown, Essence of Calculus chapter 11: approximating a function by the derivatives at one point"
-url = "https://www.youtube.com/watch?v=3d6DsjIBzJ4"
+[[packages]]
+name = "Symbolics.jl"
+github = "https://github.com/JuliaSymbolics/Symbolics.jl"
 
 [[packages]]
-name = "ForwardDiff.jl"
-github = "https://github.com/JuliaDiff/ForwardDiff.jl"
-
-[[packages.videos]]
-title = "Forward-Mode Automatic Differentiation via High Dimensional Algebras"
-description = "Chris Rackauckas, MIT 18.337: dual numbers and why forward mode costs one pass per input"
-url = "https://www.youtube.com/watch?v=zHPXGBiTM5A"
-
-[[packages]]
-name = "Enzyme.jl"
-github = "https://github.com/EnzymeAD/Enzyme.jl"
-
-[[packages.videos]]
-title = "Enzyme.jl: Reverse-Mode Differentiation on LLVM IR for Julia"
-description = "William Moses on differentiating compiled code, including mutation and loops (JuliaCon 2021)"
-url = "https://www.youtube.com/watch?v=gFfePK44ICk"
-
-[[packages]]
-name = "Mooncake.jl"
-github = "https://github.com/chalk-lab/Mooncake.jl"
-
-[[packages.videos]]
-title = "Algorithmic Differentiation with Mooncake.jl"
-description = "Will Tebbutt on a reverse-mode AD that works on Julia's intermediate representation (JuliaCon Local Paris 2025)"
-url = "https://www.youtube.com/watch?v=jOMDd2Kba1I"
-
-[[packages]]
-name = "TaylorSeries.jl"
-github = "https://github.com/JuliaDiff/TaylorSeries.jl"
+name = "DifferentiationInterface.jl"
+github = "https://github.com/JuliaDiff/DifferentiationInterface.jl"
 
 [requires]
-packages = ["DifferentiationInterface.jl", "ForwardDiff.jl", "FiniteDiff.jl", "Enzyme.jl", "Mooncake.jl", "Symbolics.jl", "TaylorSeries.jl", "Plots.jl"]
+packages = ["FiniteDifferences.jl", "Symbolics.jl", "DifferentiationInterface.jl", "Plots.jl"]
 
 [[notebookSections]]
 label = ""
 
 [[notebookSections.notebooks]]
-name = "Derivatives and Tangent Lines"
-file = "diff/tutorial-01-derivatives.ipynb"
-bundled = true
-description = "The derivative as the slope of the tangent, first and second derivatives, and the shape of a function"
-
-[[notebookSections.notebooks]]
 name = "Finite Differences and the Step Size"
-file = "diff/tutorial-02-finite-differences.ipynb"
+file = "diff/tutorial-01-finite-differences.ipynb"
 bundled = true
 description = "Forward, central and complex-step differences: truncation error, rounding error and the best step"
-
-[[notebookSections.notebooks]]
-name = "Automatic Differentiation with DifferentiationInterface"
-file = "diff/tutorial-03-automatic-differentiation.ipynb"
-bundled = true
-description = "One interface, many backends: ForwardDiff, Enzyme, Mooncake, FiniteDiff and Symbolics; forward vs reverse mode"
-
-[[notebookSections.notebooks]]
-name = "Gradients, Hessians and Optima"
-file = "diff/tutorial-04-gradients-hessians.ipynb"
-bundled = true
-description = "First- and second-order conditions: stationary points and classifying them with Hessian eigenvalues"
-
-[[notebookSections.notebooks]]
-name = "Jacobians, Elasticities and Comparative Statics"
-file = "diff/tutorial-05-jacobians-elasticities.ipynb"
-bundled = true
-description = "Marginal products, elasticities, returns to scale and the implicit function theorem"
 
 [[wikis]]
 name = "Factsheet"
 file = "diff/factsheet.md"
 bundled = true
-description = "The three tasks at a glance (derivatives, gradients and Hessians, Jacobians) with a minimal example"
+description = "The five tabs at a glance, the formulas they use and a minimal example with FiniteDifferences"
 
 [[wikis]]
 name = "Overview"
 file = "diff/overview.md"
 bundled = true
-description = "The derivative, several variables, the three ways to compute one, forward and reverse mode, and DifferentiationInterface"
-
-[[wikis]]
-name = "Automatic Differentiation"
-file = "diff/automatic-differentiation.md"
-bundled = true
-description = "What AD is, its history from Leibniz's chain rule to Enzyme and Mooncake, and forward vs reverse mode worked by hand"
+description = "Difference quotients, stencils of any order, complex steps and Richardson extrapolation, and how each tab works"
 
 [[wikis]]
 name = "Assumptions"
 file = "diff/assumptions.md"
 bundled = true
-description = "The mathematical and computational conditions a derivative needs to exist and be computed reliably"
+description = "What a function must satisfy for a difference quotient to approach its derivative, and what the complex step needs"
 
 [[wikis]]
 name = "Diagnostics"
 file = "diff/diagnostics.md"
 bundled = true
-description = "Step-size error, checking against an exact derivative, and the warning signs of a wrong result"
+description = "Truncation and rounding error, the best step, checking against the exact derivative, and the warning signs"
 
 [[wikis]]
 name = "Interpretation"
 file = "diff/interpretation.md"
 bundled = true
-description = "Reading slope and curvature, gradients and Hessians, elasticities, Jacobians and Taylor polynomials"
+description = "Reading an estimate, its error and its correct digits, the weights of a stencil, and the cost in evaluations"
 
 [[wikis]]
 name = "Decision Guide"
 file = "diff/decision-guide.md"
 bundled = true
-description = "Which task and which backend for your problem, and why Zygote is not offered"
-
-[[references]]
-separator = true
-label = "Software"
-
-[[references]]
-title = "A Common Interface for Automatic Differentiation"
-authors = "Dalle, Guillaume; Hill, Adrian"
-year = 2026
-journal = "Journal of Machine Learning Research"
-url = "https://www.jmlr.org/papers/v27/25-1024.html"
-openAccess = true
-
-[[references]]
-title = "Forward-Mode Automatic Differentiation in Julia"
-authors = "Revels, Jarrett; Lubin, Miles; Papamarkou, Theodore"
-year = 2016
-journal = "arXiv"
-url = "https://arxiv.org/abs/1607.07892"
-openAccess = true
-
-[[references]]
-title = "Instead of Rewriting Foreign Code for Machine Learning, Automatically Synthesize Fast Gradients"
-authors = "Moses, William S.; Churavy, Valentin"
-year = 2020
-journal = "Advances in Neural Information Processing Systems 33"
-url = "https://arxiv.org/abs/2010.01709"
-openAccess = true
-
-[[references]]
-title = "Julia: A Fresh Approach to Numerical Computing"
-authors = "Bezanson, Jeff; Edelman, Alan; Karpinski, Stefan; Shah, Viral B."
-year = 2017
-journal = "SIAM Review"
-doi = "10.1137/141000671"
-openAccess = true
+description = "Which formula, stencil and step for your function, and when automatic differentiation is the better choice"
 
 [[references]]
 separator = true
 label = "Textbooks"
 
 [[references]]
-title = "Evaluating Derivatives: Principles and Techniques of Algorithmic Differentiation"
-authors = "Griewank, Andreas; Walther, Andrea"
-year = 2008
-journal = "SIAM"
-doi = "10.1137/1.9780898717761"
-openAccess = false
-
-[[references]]
-title = "Essential Mathematics for Economic Analysis"
-authors = "Sydsaeter, Knut; Hammond, Peter; Strom, Arne; Carvajal, Andres"
-year = 2021
-journal = "Pearson"
-openAccess = false
-
-[[references]]
+key = "NW2006a"
 title = "Numerical Optimization"
 authors = "Nocedal, Jorge; Wright, Stephen J."
 year = 2006
@@ -200,26 +85,29 @@ doi = "10.1007/978-0-387-40065-5"
 openAccess = false
 
 [[references]]
+key = "Hig2002b"
+title = "Accuracy and Stability of Numerical Algorithms"
+authors = "Higham, Nicholas J."
+year = 2002
+journal = "SIAM"
+doi = "10.1137/1.9780898718027"
+openAccess = false
+
+[[references]]
 separator = true
 label = "Original Papers"
 
 [[references]]
-title = "A Simple Automatic Derivative Evaluation Program"
-authors = "Wengert, R. E."
-year = 1964
-journal = "Communications of the ACM"
-doi = "10.1145/355586.364791"
+key = "Ric1911a"
+title = "The Approximate Arithmetical Solution by Finite Differences of Physical Problems Involving Differential Equations, with an Application to the Stresses in a Masonry Dam"
+authors = "Richardson, Lewis Fry"
+year = 1911
+journal = "Philosophical Transactions of the Royal Society of London, Series A"
+doi = "10.1098/rsta.1911.0009"
 openAccess = false
 
 [[references]]
-title = "Taylor Expansion of the Accumulated Rounding Error"
-authors = "Linnainmaa, Seppo"
-year = 1976
-journal = "BIT Numerical Mathematics"
-doi = "10.1007/BF01931367"
-openAccess = false
-
-[[references]]
+key = "LM1967a"
 title = "Numerical Differentiation of Analytic Functions"
 authors = "Lyness, J. N.; Moler, C. B."
 year = 1967
@@ -228,203 +116,292 @@ doi = "10.1137/0704019"
 openAccess = false
 
 [[references]]
+key = "For1988a"
+title = "Generation of Finite Difference Formulas on Arbitrarily Spaced Grids"
+authors = "Fornberg, Bengt"
+year = 1988
+journal = "Mathematics of Computation"
+doi = "10.1090/S0025-5718-1988-0935077-0"
+openAccess = true
+
+[[references]]
+key = "ST1998a"
 title = "Using Complex Variables to Estimate Derivatives of Real Functions"
 authors = "Squire, William; Trapp, George"
 year = 1998
 journal = "SIAM Review"
 doi = "10.1137/S003614459631241X"
-openAccess = false
+openAccess = true
 
 [[references]]
-title = "Learning Representations by Back-Propagating Errors"
-authors = "Rumelhart, David E.; Hinton, Geoffrey E.; Williams, Ronald J."
-year = 1986
-journal = "Nature"
-doi = "10.1038/323533a0"
-openAccess = false
-
-[[references]]
-title = "Automatic Differentiation in Machine Learning: A Survey"
-authors = "Baydin, Atilim Gunes; Pearlmutter, Barak A.; Radul, Alexey Andreyevich; Siskind, Jeffrey Mark"
-year = 2018
-journal = "Journal of Machine Learning Research"
-url = "https://arxiv.org/abs/1502.05767"
+key = "MSA2003a"
+title = "The Complex-Step Derivative Approximation"
+authors = "Martins, Joaquim R. R. A.; Sturdza, Peter; Alonso, Juan J."
+year = 2003
+journal = "ACM Transactions on Mathematical Software"
+doi = "10.1145/838250.838251"
 openAccess = true
 
 [[models]]
-id = "deriv"
-label = "Derivatives"
+id = "fd"
+label = "Finite Differences"
 
 [[models]]
-id = "grad"
-label = "Gradients and Hessians"
+id = "hd"
+label = "Higher Derivatives"
 
 [[models]]
-id = "jac"
-label = "Jacobians"
+id = "jh"
+label = "Jacobians, Hessians"
+
+[[models]]
+id = "cs"
+label = "Complex Step"
+
+[[models]]
+id = "ss"
+label = "Step Size and Error"
 
 [[bullets]]
-text = "Derivatives"
-detail = "one function of one variable: the first and second derivative at a point, i.e. slope and curvature"
+text = "Finite Differences"
+detail = "forward, backward and central difference quotients at a step h, and central stencils of 3 to 9 points whose step <span class=\"yellow\">FiniteDifferences</span> chooses"
 
 [[bullets]]
-text = "Gradients and Hessians"
-detail = "one function of several variables: the vector of partial derivatives and the matrix of second partials"
+text = "Higher Derivatives"
+detail = "second, third and fourth derivatives from the weights of a central stencil"
 
 [[bullets]]
-text = "Jacobians"
-detail = "several functions of several variables: the matrix of all first partial derivatives"
+text = "Jacobians, Hessians"
+detail = "gradients, Hessians and Jacobians from difference quotients, with the number of function evaluations each one costs"
 
 [[bullets]]
-text = "Backends"
-detail = "<span class=\"yellow\">DifferentiationInterface</span> runs the same code on <span class=\"yellow\">ForwardDiff</span>, <span class=\"yellow\">Enzyme</span>, <span class=\"yellow\">Mooncake</span> (automatic), <span class=\"yellow\">FiniteDiff</span> (numerical) or <span class=\"yellow\">Symbolics</span> (exact)"
+text = "Complex Step"
+detail = "the imaginary part of f(x0 + ih) / h: no subtraction, so the step can be as small as 1e-20"
+
+[[bullets]]
+text = "Step Size and Error"
+detail = "truncation error falls with the step and rounding error grows: the best step, and Richardson extrapolation over a sequence of steps"
 
 [[decisionRows]]
-task = "Derivatives"
-context = "A function of one variable: marginal cost, marginal revenue, the slope of a demand curve"
-purpose = "The first derivative gives the rate of change and the direction; the second tells whether the function is convex or concave there"
+task = "Finite Differences"
+context = "A function known only through its values: a simulation, an external program, a model solved numerically"
+purpose = "A difference quotient needs nothing but evaluations of f; the central difference is more accurate than the forward one for the same step"
 
 [[decisionRows]]
-task = "Gradients and Hessians"
-context = "A function of several variables: a production, utility or likelihood function"
-purpose = "The gradient holds the marginal products and points uphill; the Hessian's eigenvalues say whether a stationary point is a maximum, minimum or saddle"
+task = "Higher Derivatives"
+context = "Curvature, convexity or a third derivative, for a function given by its values"
+purpose = "A stencil of more points estimates a derivative of higher order; its weights come from the Taylor expansions of f around x0"
 
 [[decisionRows]]
-task = "Jacobians"
-context = "Several functions of several variables: a system of demand or supply equations, the right-hand side of a dynamic model"
-purpose = "The Jacobian is the best linear approximation to the system; its determinant decides local invertibility and it drives Newton's method and comparative statics"
+task = "Jacobians, Hessians"
+context = "A function of several variables, or several functions, given by their values"
+purpose = "One difference quotient per variable for a gradient or a Jacobian, and per pair of variables for a Hessian: the cost grows with the number of variables"
+
+[[decisionRows]]
+task = "Complex Step"
+context = "A function written as code that accepts complex numbers"
+purpose = "The first derivative to machine precision with one evaluation, since nothing is subtracted"
+
+[[decisionRows]]
+task = "Step Size and Error"
+context = "Any difference quotient, before relying on its digits"
+purpose = "The error is lowest at a step that balances truncation against rounding; Richardson extrapolation combines several steps into a better estimate"
 
 [[inputs]]
 id = "f1"
 label = "Function f(x)"
-tooltip = "A Julia expression in x, e.g. x^2 * exp(-x) or log(1 + x)."
+tooltip = "A Julia expression in x, e.g. x^2 * exp(-x) or log(1 + x). The Complex Step tab needs it to accept complex numbers."
 default = "x^2 * exp(-x)"
-models = ["deriv"]
+models = ["fd", "hd", "cs", "ss"]
 
 [[inputs]]
 id = "x0"
 label = "Point x0"
-tooltip = "The point at which the derivatives are evaluated."
+tooltip = "The point at which the derivative is estimated."
 default = "1.0"
-models = ["deriv"]
+models = ["fd", "hd", "cs", "ss"]
+
+[[inputs]]
+id = "h"
+label = "Step h"
+tooltip = "The step of the forward, backward and central differences."
+default = "1e-5"
+models = ["fd"]
+
+[[inputs]]
+id = "hc"
+label = "Step h"
+tooltip = "The step of the complex step: it can be tiny, since nothing is subtracted."
+default = "1e-20"
+models = ["cs"]
+
+[[inputs]]
+id = "q"
+label = "Derivative Order"
+tooltip = "The order of the derivative: 2 for curvature. The stencil needs more points than the order."
+kind = "select"
+default = "2"
+models = ["hd"]
+
+[[inputs.options]]
+value = "2"
+label = "2"
+
+[[inputs.options]]
+value = "3"
+label = "3"
+
+[[inputs.options]]
+value = "4"
+label = "4"
+
+[[inputs]]
+id = "p"
+label = "Stencil Points"
+tooltip = "The number of points of the central stencil: more points cancel more terms of the Taylor expansion."
+kind = "select"
+default = "5"
+models = ["fd", "hd"]
+
+[[inputs.options]]
+value = "3"
+label = "3"
+
+[[inputs.options]]
+value = "5"
+label = "5"
+
+[[inputs.options]]
+value = "7"
+label = "7"
+
+[[inputs.options]]
+value = "9"
+label = "9"
 
 [[inputs]]
 id = "fn"
 label = "Function f(x)"
-tooltip = "A Julia expression in the variables x[1], x[2], ... returning one number. The default is a Cobb-Douglas production function with capital share 0.3."
+tooltip = "A Julia expression in the variables x[1], x[2], ... returning one number: its gradient and Hessian are estimated. The default is a Cobb-Douglas production function with capital share 0.3."
 default = "x[1]^0.3 * x[2]^0.7"
-models = ["grad"]
+models = ["jh"]
 
 [[inputs]]
 id = "F"
 label = "Functions F(x)"
-tooltip = "A vector with one Julia expression per output, in the variables x[1], x[2], ... The number of outputs need not equal the number of variables."
+tooltip = "A vector with one Julia expression per output, in the variables x[1], x[2], ...: its Jacobian is estimated. The number of outputs need not equal the number of variables."
 kind = "textarea"
 default = '''
 [x[1]^2 * x[2],
  5x[1] + sin(x[2]),
  x[1] * exp(-x[2])]
 '''
-models = ["jac"]
+models = ["jh"]
 
 [[inputs]]
 id = "xv"
 label = "Point x0"
-tooltip = "The point at which the derivatives are evaluated, one value per variable."
+tooltip = "The point at which the derivatives are estimated, one value per variable."
 default = "[1.0, 2.0]"
-models = ["grad", "jac"]
-
-[[inputs]]
-id = "backend"
-label = "Backend"
-tooltip = "ForwardDiff: forward-mode AD with dual numbers, best for few inputs. Enzyme: reverse-mode AD on compiled code, best for many inputs. Mooncake: reverse-mode AD on Julia's IR. FiniteDiff: numerical differences, an approximation. Symbolics: exact formulas, then evaluated."
-kind = "select"
-default = "forwarddiff"
-newRow = true
-
-[[inputs.options]]
-value = "forwarddiff"
-label = "ForwardDiff"
-
-[[inputs.options]]
-value = "enzyme"
-label = "Enzyme"
-
-[[inputs.options]]
-value = "mooncake"
-label = "Mooncake"
-
-[[inputs.options]]
-value = "finitediff"
-label = "FiniteDiff"
-
-[[inputs.options]]
-value = "symbolics"
-label = "Symbolics"
-
-[[inputs]]
-id = "order"
-label = "Taylor Order"
-tooltip = "Highest power kept by the Taylor Polynomial action."
-default = "4"
+models = ["jh"]
 
 [[inputs]]
 id = "w"
 label = "Plot Half-Width"
-tooltip = "The plots show x0 plus or minus this amount (in every variable)."
+tooltip = "The plots show x0 plus or minus this amount."
 default = "1.0"
+newRow = true
 
 [[codeBranches]]
-model = "deriv"
+model = "fd"
 code = '''
-using DifferentiationInterface
-{{?backend=forwarddiff}} import ForwardDiff; backend = AutoForwardDiff(); backend2 = backend
-{{?backend=enzyme}} import Enzyme; backend = AutoEnzyme(); backend2 = SecondOrder(AutoEnzyme(mode=Enzyme.Forward), AutoEnzyme(mode=Enzyme.Reverse))
-{{?backend=mooncake}} import Mooncake; backend = AutoMooncake(; config=nothing); backend2 = SecondOrder(AutoMooncakeForward(; config=nothing), AutoMooncake(; config=nothing))
-{{?backend=finitediff}} import FiniteDiff; backend = AutoFiniteDiff(); backend2 = backend
-{{?backend=symbolics}} import Symbolics; backend = AutoSymbolics(); backend2 = backend
+using FiniteDifferences
+import Symbolics
 
 f(x) = {{f1}}
-x0 = {{x0}}
-dcalc(b) = derivative(f, b, x0)  # first derivative with any backend
-d1 = dcalc(backend)
-d2 = second_derivative(f, backend2, x0)
-(x0 = x0, value = f(x0), first_derivative = d1, second_derivative = d2)
+x0 = float({{x0}})
+h = {{h}}  # the step of the three difference quotients
+fwd = (f(x0 + h) - f(x0)) / h  # forward difference: error of order h
+bwd = (f(x0) - f(x0 - h)) / h  # backward difference: error of order h
+cen = (f(x0 + h) - f(x0 - h)) / (2h)  # central difference: error of order h^2
+m = central_fdm({{p}}, 1)  # a central stencil of {{p}} points
+hstep, err = estimate_step(m, f, x0)  # the step FiniteDifferences chooses, and its estimate of the error
+d1 = m(f, x0)
+Symbolics.@variables t
+exact = Symbolics.build_function(Symbolics.expand_derivatives(Symbolics.Differential(t)(f(t))), t; expression=Val{false})(x0)  # the exact derivative, from the formula
+(x0 = x0, exact = exact, forward = fwd, backward = bwd, central = cen, stencil = d1, stencil_step = hstep, stencil_error_estimate = err, errors = (forward = abs(fwd - exact), backward = abs(bwd - exact), central = abs(cen - exact), stencil = abs(d1 - exact)))
 '''
 
 [[codeBranches]]
-model = "grad"
+model = "hd"
 code = '''
-using DifferentiationInterface
-{{?backend=forwarddiff}} import ForwardDiff; backend = AutoForwardDiff(); backend2 = backend
-{{?backend=enzyme}} import Enzyme; backend = AutoEnzyme(); backend2 = SecondOrder(AutoEnzyme(mode=Enzyme.Forward), AutoEnzyme(mode=Enzyme.Reverse))
-{{?backend=mooncake}} import Mooncake; backend = AutoMooncake(; config=nothing); backend2 = SecondOrder(AutoMooncakeForward(; config=nothing), AutoMooncake(; config=nothing))
-{{?backend=finitediff}} import FiniteDiff; backend = AutoFiniteDiff(); backend2 = backend
-{{?backend=symbolics}} import Symbolics; backend = AutoSymbolics(); backend2 = backend
+using FiniteDifferences
+import Symbolics
+
+f(x) = {{f1}}
+x0 = float({{x0}})
+q = {{q}}  # the order of the derivative
+m = central_fdm({{p}}, q)  # a central stencil of {{p}} points
+hstep, err = estimate_step(m, f, x0)  # the step FiniteDifferences chooses, and its estimate of the error
+d = m(f, x0)
+Symbolics.@variables t
+exact = Symbolics.build_function(Symbolics.expand_derivatives((Symbolics.Differential(t)^q)(f(t))), t; expression=Val{false})(x0)  # the exact derivative, from the formula
+(x0 = x0, order = q, estimate = d, exact = exact, error = abs(d - exact), step = hstep, error_estimate = err, grid = collect(m.grid), weights = collect(m.coefs))
+'''
+
+[[codeBranches]]
+model = "jh"
+code = '''
+using FiniteDifferences, DifferentiationInterface
+import Symbolics
 
 f(x) = {{fn}}
+F(x) = {{F}}
 x0 = {{xv}}
-dcalc(b) = gradient(f, b, x0)  # gradient with any backend
-g = dcalc(backend)
-H = hessian(f, backend2, x0)
-(x0 = x0, value = f(x0), gradient = g, hessian = H)
+m = central_fdm(5, 1)  # a central stencil of 5 points
+calls = Ref(0)  # counts the evaluations of f
+fc(x) = (calls[] += 1; f(x))
+g = grad(m, fc, x0)[1]; gradient_calls = calls[]
+calls[] = 0
+H = jacobian(m, x -> grad(m, fc, x)[1], x0)[1]; hessian_calls = calls[]  # the Jacobian of the gradient
+J = jacobian(m, F, x0)[1]  # row i = output i, column j = variable j
+exact_g = gradient(f, AutoSymbolics(), x0); exact_H = hessian(f, AutoSymbolics(), x0); exact_J = jacobian(F, AutoSymbolics(), x0)  # exact, from the formulas
+(gradient = g, hessian = H, jacobian = J, evaluations = (gradient = gradient_calls, hessian = hessian_calls), max_errors = (gradient = maximum(abs, g .- exact_g), hessian = maximum(abs, H .- exact_H), jacobian = maximum(abs, J .- exact_J)), hessian_asymmetry = maximum(abs, H .- transpose(H)))
 '''
 
 [[codeBranches]]
-model = "jac"
+model = "cs"
 code = '''
-using DifferentiationInterface
-{{?backend=forwarddiff}} import ForwardDiff; backend = AutoForwardDiff()
-{{?backend=enzyme}} import Enzyme; backend = AutoEnzyme()
-{{?backend=mooncake}} import Mooncake; backend = AutoMooncake(; config=nothing)
-{{?backend=finitediff}} import FiniteDiff; backend = AutoFiniteDiff()
-{{?backend=symbolics}} import Symbolics; backend = AutoSymbolics()
+import Symbolics
 
-F(x) = {{F}}
-x0 = {{xv}}
-dcalc(b) = jacobian(F, b, x0)  # Jacobian with any backend: row i = output i, column j = variable j
-J = dcalc(backend)
-(x0 = x0, value = F(x0), jacobian = J)
+f(x) = {{f1}}
+x0 = float({{x0}})
+h = {{hc}}  # the complex step can be tiny, since nothing is subtracted
+d1 = imag(f(x0 + im * h)) / h  # complex step: error of order h^2
+hr = cbrt(eps()) * max(1, abs(x0))  # a usual step of the central difference
+cen = (f(x0 + hr) - f(x0 - hr)) / (2hr)
+Symbolics.@variables t
+exact = Symbolics.build_function(Symbolics.expand_derivatives(Symbolics.Differential(t)(f(t))), t; expression=Val{false})(x0)  # the exact derivative, from the formula
+(x0 = x0, exact = exact, complex_step = d1, central = cen, errors = (complex_step = abs(d1 - exact), central = abs(cen - exact)))
+'''
+
+[[codeBranches]]
+model = "ss"
+code = '''
+using FiniteDifferences
+import Symbolics
+
+f(x) = {{f1}}
+x0 = float({{x0}})
+Symbolics.@variables t
+exact = Symbolics.build_function(Symbolics.expand_derivatives(Symbolics.Differential(t)(f(t))), t; expression=Val{false})(x0)  # the exact derivative, from the formula
+hs = 10.0 .^ (-1:-1:-14)  # steps from 0.1 down
+errors = [(h = h, forward = abs((f(x0 + h) - f(x0)) / h - exact), central = abs((f(x0 + h) - f(x0 - h)) / (2h) - exact)) for h in hs]
+best_forward = errors[argmin([e.forward for e in errors])].h
+best_central = errors[argmin([e.central for e in errors])].h
+h = best_central
+d1, richardson_estimate = extrapolate_fdm(central_fdm(2, 1), f, x0)  # Richardson extrapolation over a sequence of steps
+(exact = exact, errors = errors, best_step_forward = best_forward, best_step_central = best_central, richardson = d1, richardson_error = abs(d1 - exact), richardson_error_estimate = richardson_estimate)
 '''
 
 [[actionGroups]]
@@ -432,48 +409,45 @@ id = "visualise"
 label = "Visualise"
 
 [[actionGroups.actions]]
-id = "function-tangent"
-label = "Function and Tangent"
-desc = "One variable: f with its tangent line and quadratic approximation at x0. Two variables: level curves with the gradient, which is perpendicular to them and points uphill. Jacobian: a heat map of the matrix"
+id = "secants-tangent"
+label = "Secants and Tangent"
+desc = "f with its tangent at x0 and the forward and central secants of a step of half the plot half-width: the central secant runs closer to the tangent"
+models = ["fd", "cs", "ss"]
 code = '''
 using Plots
-{{?model=deriv}} xs = range(x0 - {{w}}, x0 + {{w}}, length=400); ys = f.(xs); pad = 0.2 * (maximum(ys) - minimum(ys) + eps())
-{{?model=deriv}} p = Plots.plot(xs, ys, lw=2, c=:black, label="f(x)", xlabel="x", ylims=(minimum(ys) - pad, maximum(ys) + pad))
-{{?model=deriv}} Plots.plot!(xs, f(x0) .+ d1 .* (xs .- x0), lw=2, c=:blue, label="tangent, slope $(round(d1, sigdigits=4))")
-{{?model=deriv}} Plots.plot!(xs, f(x0) .+ d1 .* (xs .- x0) .+ d2 ./ 2 .* (xs .- x0) .^ 2, lw=2, ls=:dash, c=:red, label="quadratic approximation")
-{{?model=deriv}} Plots.scatter!([x0], [f(x0)], ms=6, c=:black, label="")
-{{?model=grad}} length(x0) == 2 || error("the plot needs exactly two variables")
-{{?model=grad}} g1 = range(x0[1] - {{w}}, x0[1] + {{w}}, length=200); g2 = range(x0[2] - {{w}}, x0[2] + {{w}}, length=200)
-{{?model=grad}} p = Plots.contour(g1, g2, (a, b) -> f([a, b]), levels=20, aspect_ratio=:equal, xlabel="x[1]", ylabel="x[2]", title="Level curves and the gradient at x0")
-{{?model=grad}} sc = {{w}} / 2 / sqrt(sum(abs2, g))
-{{?model=grad}} Plots.quiver!([x0[1]], [x0[2]], quiver=([sc * g[1]], [sc * g[2]]), c=:red, lw=2); Plots.scatter!([x0[1]], [x0[2]], c=:black, label="x0")
-{{?model=jac}} lab = vec([(j, i, Plots.text(string(round(J[i, j], sigdigits=3)), 9)) for i in axes(J, 1), j in axes(J, 2)])
-{{?model=jac}} p = Plots.heatmap(J, yflip=true, c=:balance, clims=(-1, 1) .* maximum(abs, J), xlabel="variable j", ylabel="output i", title="Jacobian: dF[i] / dx[j] at x0", annotations=lab)
+hv = {{w}} / 2  # a step large enough to see
+xs = range(x0 - {{w}}, x0 + {{w}}, length=400)
+sf = (f(x0 + hv) - f(x0)) / hv; sc = (f(x0 + hv) - f(x0 - hv)) / (2hv)
+p = Plots.plot(xs, f.(xs), lw=2, c=:black, label="f(x)", xlabel="x")
+Plots.plot!(xs, f(x0) .+ exact .* (xs .- x0), lw=2, c=:blue, label="tangent, slope $(round(exact, sigdigits=4))")
+Plots.plot!(xs, f(x0) .+ sf .* (xs .- x0), lw=2, ls=:dash, c=:red, label="forward secant, slope $(round(sf, sigdigits=4))")
+Plots.plot!(xs, f(x0) .+ sc .* (xs .- x0), lw=2, ls=:dash, c=:green, label="central secant, slope $(round(sc, sigdigits=4))")
+Plots.scatter!([x0 - hv, x0, x0 + hv], f.([x0 - hv, x0, x0 + hv]), ms=5, c=:black, label="")
 p
 '''
 
 [[actionGroups.actions]]
-id = "derivative-plot"
-label = "Derivative Plot"
-desc = "One variable: f, f' and f'' over the window, so you can see where f rises, falls and bends. Two variables: the gradient field. Jacobian: each output along x[1] with the Jacobian slopes at x0"
+id = "stencil-weights"
+label = "Stencil Weights"
+desc = "The weight of each point of the stencil, at its multiple of the step: the estimate is the weighted sum of the values of f there, divided by the step to the power of the order"
+models = ["fd", "hd"]
 code = '''
 using Plots
-{{?model=deriv}} xs = range(x0 - {{w}}, x0 + {{w}}, length=200)
-{{?model=deriv}} prep1 = prepare_derivative(f, backend, x0); prep2 = prepare_second_derivative(f, backend2, x0)  # prepare once, reuse at every point
-{{?model=deriv}} d1s = [derivative(f, prep1, backend, x) for x in xs]; d2s = [second_derivative(f, prep2, backend2, x) for x in xs]
-{{?model=deriv}} p = Plots.plot(xs, [f.(xs) d1s d2s], layout=(3, 1), lw=2, legend=false, title=["f(x)" "f'(x): positive where f rises" "f''(x): positive where f is convex"], xlabel="x", size=(700, 700))
-{{?model=deriv}} foreach(k -> (Plots.hline!(p[k], [0], c=:gray, ls=:dot); Plots.vline!(p[k], [x0], c=:gray, ls=:dash)), 1:3)
-{{?model=grad}} length(x0) == 2 || error("the plot needs exactly two variables")
-{{?model=grad}} r1 = range(x0[1] - {{w}}, x0[1] + {{w}}, length=14)[2:end-1]; r2 = range(x0[2] - {{w}}, x0[2] + {{w}}, length=14)[2:end-1]
-{{?model=grad}} pts = vec([[a, b] for a in r1, b in r2]); G = [gradient(f, backend, q) for q in pts]
-{{?model=grad}} sc = 0.8 * step(r1) / maximum(q -> sqrt(sum(abs2, q)), G)
-{{?model=grad}} p = Plots.contour(r1, r2, (a, b) -> f([a, b]), levels=15, aspect_ratio=:equal, xlabel="x[1]", ylabel="x[2]", title="Gradient field: arrows point uphill")
-{{?model=grad}} Plots.quiver!(first.(pts), last.(pts), quiver=(sc .* first.(G), sc .* last.(G)), c=:red)
-{{?model=jac}} ts = range(-{{w}}, {{w}}, length=200); e1 = [1.0; zeros(length(x0) - 1)]; F0 = F(x0)
-{{?model=jac}} Fs = [F(x0 .+ t .* e1) for t in ts]
-{{?model=jac}} p = Plots.plot(xlabel="t, the change in x[1] from x0", title="Outputs along x[1]; dashed: slope J[i, 1]")
-{{?model=jac}} foreach(i -> (Plots.plot!(ts, getindex.(Fs, i), lw=2, label="F[$i]"); Plots.plot!(ts, F0[i] .+ J[i, 1] .* ts, ls=:dash, c=:gray, label="")), eachindex(F0))
-p
+{{?model=fd}} mm = central_fdm({{p}}, 1); qq = 1
+{{?model=hd}} mm = m; qq = q
+Plots.bar(collect(mm.grid), collect(mm.coefs), xlabel="point of the stencil, in steps from x0", ylabel="weight", title="Central stencil of $(length(mm.grid)) points, derivative of order $qq", legend=false)
+'''
+
+[[actionGroups.actions]]
+id = "error-heat-map"
+label = "Error Heat Map"
+desc = "The absolute error of each entry of the estimated Jacobian against the exact one: the entries a difference quotient estimates worst"
+models = ["jh"]
+code = '''
+using Plots
+E = abs.(J .- exact_J)
+lab = vec([(j, i, Plots.text(string(round(E[i, j], sigdigits=2)), 9)) for i in axes(E, 1), j in axes(E, 2)])
+Plots.heatmap(E, yflip=true, c=:viridis, xlabel="variable j", ylabel="output i", title="Error of the estimated Jacobian at x0", annotations=lab)
 '''
 
 [[actionGroups]]
@@ -483,34 +457,22 @@ label = "Diagnose"
 [[actionGroups.actions]]
 id = "step-size-error"
 label = "Step-Size Error"
-desc = "Error of forward, central and complex-step differences against the AD value as the step h shrinks: truncation error falls, rounding error rises, so finite differences have a best step while AD has neither error"
+desc = "Error against the exact derivative as the step h shrinks: truncation error falls and rounding error rises, so each difference quotient has a best step; the complex step has no rounding error from subtraction"
 code = '''
 using Plots
-{{?model=deriv}} s(t) = f(x0 + t); ds = d1
-{{?model=grad}} s(t) = f(x0 .+ t .* [1.0; zeros(length(x0) - 1)]); ds = g[1]  # slice along x[1]
-{{?model=jac}} s(t) = F(x0 .+ t .* [1.0; zeros(length(x0) - 1)])[1]; ds = J[1, 1]  # first output along x[1]
 hs = 10.0 .^ (-1:-0.5:-15)
-fwd = [abs((s(h) - s(0)) / h - ds) for h in hs]
-cen = [abs((s(h) - s(-h)) / 2h - ds) for h in hs]
-cst = try [abs(imag(s(im * h)) / h - ds) for h in hs] catch; fill(NaN, length(hs)) end  # needs f to accept complex numbers
-p = Plots.plot(hs, max.(fwd, 1e-17), xscale=:log10, yscale=:log10, m=:circle, lw=2, label="forward difference", xlabel="step h", ylabel="error vs AD", title="Finite-difference error by step size", legend=:bottomleft)
-Plots.plot!(hs, max.(cen, 1e-17), m=:square, lw=2, label="central difference")
-Plots.plot!(hs, max.(cst, 1e-17), m=:diamond, lw=2, label="complex step")
+{{?model=fd|cs|ss}} s(t) = f(x0 + t); ds = exact
+{{?model=jh}} s(t) = f(x0 .+ t .* [1.0; zeros(length(x0) - 1)]); ds = exact_g[1]  # slice along x[1]
+{{?model=fd|cs|ss|jh}} fwd_err = [abs((s(h) - s(0)) / h - ds) for h in hs]
+{{?model=fd|cs|ss|jh}} cen_err = [abs((s(h) - s(-h)) / 2h - ds) for h in hs]
+{{?model=fd|cs|ss|jh}} cst_err = try [abs(imag(s(im * h)) / h - ds) for h in hs] catch; fill(NaN, length(hs)) end  # needs f to accept complex numbers
+{{?model=fd|cs|ss|jh}} p = Plots.plot(hs, max.(fwd_err, 1e-17), xscale=:log10, yscale=:log10, m=:circle, lw=2, label="forward difference", xlabel="step h", ylabel="error vs exact", title="Error by step size", legend=:bottomleft)
+{{?model=fd|cs|ss|jh}} Plots.plot!(hs, max.(cen_err, 1e-17), m=:square, lw=2, label="central difference")
+{{?model=fd|cs|ss|jh}} Plots.plot!(hs, max.(cst_err, 1e-17), m=:diamond, lw=2, label="complex step")
+{{?model=hd}} hd_err = [abs(m(f, x0, h) - exact) for h in hs]
+{{?model=hd}} p = Plots.plot(hs, max.(hd_err, 1e-17), xscale=:log10, yscale=:log10, m=:circle, lw=2, label="central, $(length(m.grid)) points", xlabel="step h", ylabel="error vs exact", title="Error of the derivative of order $q by step size", legend=:bottomleft)
 Plots.vline!([sqrt(eps()), cbrt(eps())], c=:gray, ls=:dot, label="sqrt(eps), cbrt(eps)")
 p
-'''
-
-[[actionGroups.actions]]
-id = "check-exact"
-label = "Check Against Exact"
-desc = "Compares the selected backend with the exact symbolic derivative and a finite-difference approximation: AD should match the exact value to machine precision, finite differences to about half the digits"
-code = '''
-import Symbolics, FiniteDiff
-exact = dcalc(AutoSymbolics()); numerical = dcalc(AutoFiniteDiff()); selected = dcalc(backend)
-{{?model=deriv}} second = (selected = d2, exact = second_derivative(f, AutoSymbolics(), x0))
-{{?model=grad}} second = (selected = H, exact = hessian(f, AutoSymbolics(), x0))
-{{?model=jac}} second = nothing
-(selected_backend = selected, exact_symbolic = exact, finite_difference = numerical, max_error_selected = maximum(abs, selected .- exact), max_error_finite_difference = maximum(abs, numerical .- exact), second_order = second)
 '''
 
 [[actionGroups]]
@@ -520,24 +482,11 @@ label = "Predict"
 [[actionGroups.actions]]
 id = "linear-approximation"
 label = "Linear Approximation"
-desc = "Predicts f after a change in x from the derivatives at x0 (first- and, where available, second-order Taylor) and compares with the exact value: good for small changes, worse as they grow"
+desc = "Predicts f after a change in x from the estimated derivatives at x0 (first- and, with a Hessian, second-order Taylor) and compares with the exact value: good for small changes, worse as they grow"
+models = ["fd", "cs", "ss", "jh"]
 code = '''
-{{?model=deriv}} [(dx = dx, exact = f(x0 + dx), linear = f(x0) + d1 * dx, quadratic = f(x0) + d1 * dx + d2 / 2 * dx^2) for dx in (-0.5, -0.1, -0.01, 0.01, 0.1, 0.5)]
-{{?model=grad}} [(change = "$(100r)% in every x", exact = f(x0 .* (1 + r)), linear = f(x0) + g' * (r .* x0), quadratic = f(x0) + g' * (r .* x0) + (r .* x0)' * H * (r .* x0) / 2) for r in (-0.1, -0.01, 0.01, 0.1)]
-{{?model=jac}} [(change = "$(100r)% in every x", exact = F(x0 .* (1 + r)), linear = F(x0) .+ J * (r .* x0)) for r in (-0.1, -0.01, 0.01, 0.1)]
-'''
-
-[[actionGroups.actions]]
-id = "elasticities"
-label = "Elasticities"
-desc = "Percentage change in f per 1% change in each x (derivative times x over f). For a Cobb-Douglas function these are the exponents; their sum is the returns to scale"
-code = '''
-{{?model=deriv}} e = d1 * x0 / f(x0)
-{{?model=deriv}} (elasticity = e, meaning = "a 1% rise in x changes f by about $(round(e, sigdigits=3))%", elastic = abs(e) > 1)
-{{?model=grad}} e = g .* x0 ./ f(x0)
-{{?model=grad}} (elasticities = e, returns_to_scale = sum(e), scale = sum(e) > 1 + 1e-8 ? "increasing" : sum(e) < 1 - 1e-8 ? "decreasing" : "constant", marginal_rate_of_substitution_12 = length(g) > 1 ? g[1] / g[2] : missing)
-{{?model=jac}} E = J .* x0' ./ F(x0)
-{{?model=jac}} (elasticities = E, meaning = "E[i, j]: % change in output i per 1% change in x[j]")
+{{?model=fd|cs|ss}} [(dx = dx, exact = f(x0 + dx), linear = f(x0) + d1 * dx) for dx in (-0.5, -0.1, -0.01, 0.01, 0.1, 0.5)]
+{{?model=jh}} (f = [(change = "$(100r)% in every x", exact = f(x0 .* (1 + r)), linear = f(x0) + transpose(g) * (r .* x0), quadratic = f(x0) + transpose(g) * (r .* x0) + transpose(r .* x0) * H * (r .* x0) / 2) for r in (-0.1, -0.01, 0.01, 0.1)], F = [(change = "$(100r)% in every x", exact = F(x0 .* (1 + r)), linear = F(x0) .+ J * (r .* x0)) for r in (-0.1, -0.01, 0.01, 0.1)])
 '''
 
 [[actionGroups]]
@@ -545,60 +494,25 @@ id = "compare"
 label = "Compare"
 
 [[actionGroups.actions]]
-id = "compare-backends"
-label = "Compare Backends"
-desc = "The same derivative with every backend: result, error against the exact symbolic value and time on a second run (after compilation). Backends that are not installed or cannot handle f show the error"
+id = "compare-methods"
+label = "Compare Methods"
+desc = "The first derivative by forward and central stencils of several sizes, Richardson extrapolation and the complex step: estimate, error against the exact value and the number of evaluations of f each one took"
+models = ["fd", "cs", "ss"]
 code = '''
-for pkg in (:ForwardDiff, :FiniteDiff, :Symbolics, :Enzyme, :Mooncake)
-    try
-        @eval import $pkg
-    catch
-        @warn "$pkg is not installed: its row will show the error"
-    end
+using FiniteDifferences
+calls = Ref(0)  # counts the evaluations of f
+fc(x) = (calls[] += 1; f(x))
+stencils = ["forward, 2 points" => forward_fdm(2, 1), "central, 3 points" => central_fdm(3, 1), "central, 5 points" => central_fdm(5, 1), "central, 9 points" => central_fdm(9, 1)]
+rows = map(stencils) do (name, mm)
+    calls[] = 0
+    v = mm(fc, x0)
+    (method = name, estimate = v, error = abs(v - exact), evaluations = calls[])
 end
-backends = ["ForwardDiff" => AutoForwardDiff(), "Enzyme" => AutoEnzyme(), "Mooncake" => AutoMooncake(; config=nothing), "FiniteDiff" => AutoFiniteDiff(), "Symbolics" => AutoSymbolics()]
-ref = dcalc(AutoSymbolics())
-map(backends) do (name, b)
-    try
-        dcalc(b)  # compile
-        t = @elapsed r = dcalc(b)
-        (backend = name, result = r, max_error = maximum(abs, r .- ref), seconds = round(t, sigdigits=3))
-    catch e
-        (backend = name, result = nothing, max_error = nothing, seconds = nothing, error = first(sprint(showerror, e), 120))
-    end
-end
-'''
-
-[[actionGroups.actions]]
-id = "forward-reverse"
-label = "Forward vs Reverse Mode"
-desc = "Time per gradient of a test function as the number of inputs n grows: forward mode (ForwardDiff) needs work proportional to n, reverse mode (Enzyme, Mooncake) about a constant multiple of one evaluation"
-code = '''
-using Plots
-for pkg in (:ForwardDiff, :Enzyme, :Mooncake)
-    try
-        @eval import $pkg
-    catch
-        @warn "$pkg is not installed"
-    end
-end
-h(x) = sum(abs2, x) / 2 + sum(sin, x)  # a test function of n inputs
-ns = (2, 10, 50, 200, 1000)
-modes = ["ForwardDiff (forward)" => AutoForwardDiff(), "Enzyme (reverse)" => AutoEnzyme(), "Mooncake (reverse)" => AutoMooncake(; config=nothing)]
-rows = vec([begin
-    x = rand(n)
-    t = try
-        prep = prepare_gradient(h, b, x)  # one-off setup, reused below
-        gradient(h, prep, b, x)
-        1e6 * (@elapsed for _ in 1:20; gradient(h, prep, b, x); end) / 20
-    catch
-        NaN
-    end
-    (n = n, backend = name, microseconds = round(t, sigdigits=3))
-end for (name, b) in modes, n in ns])
-p = Plots.plot(xscale=:log10, yscale=:log10, xlabel="number of inputs n", ylabel="microseconds per gradient", title="Gradient cost: forward vs reverse mode", legend=:topleft)
-foreach(name -> Plots.plot!([r.n for r in rows if r.backend == name], [r.microseconds for r in rows if r.backend == name], m=:circle, lw=2, label=name), first.(modes))
-display(p)
+calls[] = 0
+r = extrapolate_fdm(central_fdm(2, 1), fc, x0)[1]
+push!(rows, (method = "Richardson extrapolation", estimate = r, error = abs(r - exact), evaluations = calls[]))
+c = try imag(f(x0 + im * 1e-20)) / 1e-20 catch; NaN end  # needs f to accept complex numbers
+push!(rows, (method = "complex step", estimate = c, error = abs(c - exact), evaluations = 1))
 rows
 '''
 
@@ -607,33 +521,18 @@ id = "interpret"
 label = "Interpret"
 
 [[actionGroups.actions]]
-id = "derivative-summary"
-label = "Derivative Summary"
-desc = "What the derivatives say at x0: rising or falling, convex or concave; for several variables whether x0 is stationary and the Hessian's sign pattern; for a Jacobian its rank and whether F is locally invertible"
+id = "accuracy-summary"
+label = "Accuracy Summary"
+desc = "How many significant digits of each estimate agree with the exact derivative, the step used beside the usual rules, and the most accurate estimate of the tab"
 code = '''
-using LinearAlgebra
-{{?model=deriv}} slope = d1 > 0 ? "increasing" : d1 < 0 ? "decreasing" : "stationary"
-{{?model=deriv}} curve = d2 > 0 ? "convex (bending up)" : d2 < 0 ? "concave (bending down)" : "a possible inflection point"
-{{?model=deriv}} (value = f(x0), slope = d1, curvature = d2, shape = "f is $slope and $curve at x0")
-{{?model=grad}} ev = eigvals(Symmetric(Matrix(H)))
-{{?model=grad}} curve = all(>(0), ev) ? "locally strictly convex" : all(<(0), ev) ? "locally strictly concave" : any(>(0), ev) && any(<(0), ev) ? "saddle-shaped" : "degenerate (a zero eigenvalue): second-order test inconclusive"
-{{?model=grad}} (value = f(x0), gradient_norm = norm(g), stationary = norm(g) < 1e-8, hessian_eigenvalues = ev, shape = curve, steepest_ascent_direction = g / norm(g))
-{{?model=jac}} r = rank(J)
-{{?model=jac}} (outputs = size(J, 1), variables = size(J, 2), rank = r, full_rank = r == minimum(size(J)), determinant = size(J, 1) == size(J, 2) ? det(J) : missing, invertible_near_x0 = size(J, 1) == size(J, 2) && r == size(J, 1), singular_values = svdvals(J))
-'''
-
-[[actionGroups.actions]]
-id = "taylor-polynomial"
-label = "Taylor Polynomial"
-desc = "The Taylor expansion of f around x0 up to the chosen order, computed with TaylorSeries; the coefficients times k! are the higher derivatives, and the polynomial is checked against f at x0 plus the plot half-width"
-code = '''
-import TaylorSeries
-{{?model=deriv}} t = TaylorSeries.taylor_expand(f, x0; order={{order}})  # f(x0 + t) as a polynomial in t
-{{?model=deriv}} (polynomial = t, derivatives_at_x0 = [TaylorSeries.getcoeff(t, k) * prod(1:k; init=1.0) for k in 0:{{order}}], approximation_at_x0_plus_w = t({{w}}), exact_at_x0_plus_w = f(x0 + {{w}}))
-{{?model=grad}} TaylorSeries.variables!("dx"; numvars=length(x0), order={{order}})
-{{?model=grad}} t = TaylorSeries.taylor_expand(f, x0)  # f(x0 + dx) as a polynomial in dx1, dx2, ...
-{{?model=grad}} (polynomial = t, approximation_at_x0_plus_w = t(fill({{w}}, length(x0))), exact_at_x0_plus_w = f(x0 .+ {{w}}))
-{{?model=jac}} TaylorSeries.variables!("dx"; numvars=length(x0), order={{order}})
-{{?model=jac}} t = TaylorSeries.taylor_expand(F, x0)  # one polynomial per output
-{{?model=jac}} (polynomials = t, approximation_at_x0_plus_w = [ti(fill({{w}}, length(x0))) for ti in t], exact_at_x0_plus_w = F(x0 .+ {{w}}))
+digits_left(error, e) = round(-log10(max(error / max(maximum(abs, e), floatmin()), eps())), digits=1)  # significant digits an absolute error leaves
+correct_digits(v, e) = digits_left(maximum(abs, v .- e), e)  # significant digits that agree with the exact value
+step_rules = (forward = sqrt(eps()) * max(1, abs(first(x0))), central = cbrt(eps()) * max(1, abs(first(x0))))
+{{?model=fd}} estimates = (forward = fwd, backward = bwd, central = cen, stencil = d1)
+{{?model=fd}} (exact = exact, correct_digits = map(v -> correct_digits(v, exact), estimates), step = h, stencil_step = hstep, step_rules = step_rules, most_accurate = argmin(map(v -> abs(v - exact), estimates)))
+{{?model=hd}} (exact = exact, estimate = d, correct_digits = correct_digits(d, exact), step = hstep, error_estimate = err, error = abs(d - exact))
+{{?model=cs}} estimates = (complex_step = d1, central = cen)
+{{?model=cs}} (exact = exact, correct_digits = map(v -> correct_digits(v, exact), estimates), step = h, most_accurate = argmin(map(v -> abs(v - exact), estimates)))
+{{?model=ss}} (exact = exact, correct_digits = (best_forward = digits_left(minimum(e.forward for e in errors), exact), best_central = digits_left(minimum(e.central for e in errors), exact), richardson = correct_digits(d1, exact)), best_step_forward = best_forward, best_step_central = best_central, step_rules = step_rules)
+{{?model=jh}} (correct_digits = (gradient = correct_digits(g, exact_g), hessian = correct_digits(H, exact_H), jacobian = correct_digits(J, exact_J)), evaluations = (gradient = gradient_calls, hessian = hessian_calls))
 '''

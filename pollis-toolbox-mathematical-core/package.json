@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-mathematical-core",
   "displayName": "Core Mathematics Toolbox",
-  "description": "Pollis Core Mathematics Toolbox: symbolic math, linear algebra, nonlinear systems, numerical differentiation and integration, and ordinary and partial differential equations.",
-  "version": "0.1.7",
+  "description": "Pollis Core Mathematics Toolbox: symbolic math, linear algebra, nonlinear systems, automatic and numerical differentiation, numerical integration, and ordinary and partial differential equations.",
+  "version": "0.1.10",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -31,8 +31,9 @@
           { "id": "symb", "command": "chiara.toolboxes.symb", "title": "Symbolic Math", "group": "1_at", "order": 1, "data": "panels/symb.toml", "defaultModel": "alg", "decisionFirstColumn": "Task" },
           { "id": "linalg", "command": "chiara.toolboxes.linalg", "title": "Linear Algebra", "group": "1_at", "order": 2, "data": "panels/linalg.toml", "defaultModel": "solve", "decisionFirstColumn": "Task" },
           { "id": "nlin", "command": "chiara.toolboxes.nlin", "title": "Nonlinear Systems", "group": "1_at", "order": 3, "data": "panels/nlin.toml", "defaultModel": "scalar", "decisionFirstColumn": "Task" },
-          { "id": "diff", "command": "chiara.toolboxes.diff", "title": "Numerical Differentiation", "menuTitle": "Numerical Differentiation", "group": "2_at", "order": 1, "data": "panels/diff.toml", "defaultModel": "deriv", "decisionFirstColumn": "Task" },
-          { "id": "integ", "command": "chiara.toolboxes.integ", "title": "Numerical Integration", "menuTitle": "Numerical Integration", "group": "2_at", "order": 2, "data": "panels/integ.toml", "defaultModel": "def", "decisionFirstColumn": "Task" },
+          { "id": "autodiff", "command": "chiara.toolboxes.autodiff", "title": "Automatic Differentiation", "menuTitle": "Automatic Differentiation", "group": "2_at", "order": 1, "data": "panels/autodiff.toml", "defaultModel": "deriv", "decisionFirstColumn": "Task" },
+          { "id": "diff", "command": "chiara.toolboxes.diff", "title": "Numerical Differentiation", "menuTitle": "Numerical Differentiation", "group": "2_at", "order": 2, "data": "panels/diff.toml", "defaultModel": "fd", "decisionFirstColumn": "Task" },
+          { "id": "integ", "command": "chiara.toolboxes.integ", "title": "Numerical Integration", "menuTitle": "Numerical Integration", "group": "2_at", "order": 3, "data": "panels/integ.toml", "defaultModel": "def", "decisionFirstColumn": "Task" },
           { "id": "odes", "command": "chiara.toolboxes.ode", "title": "Ordinary Differential Equations", "group": "3_at", "order": 1, "data": "panels/odes.toml", "defaultModel": "scalar", "decisionFirstColumn": "Task" },
           { "id": "pdes", "command": "chiara.toolboxes.pde", "title": "Partial Differential Equations", "group": "3_at", "order": 2, "data": "panels/pdes.toml", "defaultModel": "heat", "decisionFirstColumn": "Task" },
           { "id": "sdes", "command": "chiara.toolboxes.sde", "title": "Stochastic Differential Equations", "group": "3_at", "order": 3, "data": "panels/sdes.toml", "defaultModel": "ito", "decisionFirstColumn": "Task" }
