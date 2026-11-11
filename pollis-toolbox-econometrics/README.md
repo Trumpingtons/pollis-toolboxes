@@ -1,6 +1,6 @@
 # Finance Toolbox
 
-The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.
+The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, extreme value analysis, and simulated limit order book markets.
 
 Installing it adds the **Finance** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
@@ -26,6 +26,7 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | Generalized Pareto Distribution | Peaks over threshold: threshold selection and GP fits to exceedances | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
 | EVT Risk Measures | Return levels, peaks-over-threshold analysis, and extreme value VaR and expected shortfall | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
 | EVT Diagnostics | Threshold selection and tail index estimation for extreme value models | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
+| Trading Agents | Simulated limit order book markets: fundamentalist, chartist and noise traders after Chiarella and Iori, zero-intelligence order flow, and a live exchange with trading agents, with the spread, depth, fat tails and price impact they produce | [LimitOrderBook.jl](https://github.com/p-casgrain/LimitOrderBook.jl), [Brokerage.jl](https://github.com/aaron-wheeler/Brokerage.jl), [TradingAgents.jl](https://github.com/aaron-wheeler/TradingAgents.jl) |
 
 ## Requirements
 

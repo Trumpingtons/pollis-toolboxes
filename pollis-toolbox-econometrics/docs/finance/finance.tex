@@ -29,7 +29,8 @@ Advanced Time-Series Forecasting & A series has several seasonal periods or many
 Neural Network Time-Series Forecasting & Several series mix short patterns with long cycles, and a simple forecast is not enough. \\
 Automatic Time-Series Forecasting & You want a forecast without choosing the model by hand. \\
 Bayesian Linear Stochastic Discount Factor & There are many candidate factors and the question is which of them price assets. \\
-Fama-MacBeth Regression & You want the risk premia of a few factors from a set of test assets. \\\bottomrule
+Fama-MacBeth Regression & You want the risk premia of a few factors from a set of test assets. \\
+Trading Agents & You want to see how traders' beliefs and the order book itself produce spreads, fat tails and price impact. \\\bottomrule
 \end{tabularx}}
 
 
@@ -101,6 +102,9 @@ Run the Naive Baseline action first: a network that does not beat it adds nothin
 \nmsection{Fama-MacBeth Regression}
 Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and MacBeth (1973)}, using \package{BayesianFactorZoo}{https://github.com/eohne/BayesianFactorZoo.jl}. Classical estimates betas over time and then OLS and GLS premia across assets, with the errors-in-variables correction of \nmcite{shanken1992}{Shanken (1992)}; it suits a few established factors with strong betas. Bayesian re-runs the cross-sectional regression on every posterior draw, so a useless factor gets a wide posterior and not a falsely tight estimate, the problem shown by \nmcite{kan1999}{Kan and Zhang (1999)}. The example simulates a market factor, a value factor and a useless one, and Weak Factor Check shows the difference.
 
+\nmsection{Trading Agents}
+Three simulated markets, each matched through a limit order book. Trading Agents follows \nmcite{chiarella2002}{Chiarella and Iori (2002)} on \package{LimitOrderBook}{https://github.com/p-casgrain/LimitOrderBook.jl}: each period one agent mixes a fundamentalist, a chartist and a noise forecast and sends a one-share order, with mean weights of 10, 1.2 and 1 as in \nmcite{chiarella2009}{Chiarella, Iori and Perell\'{o} (2009)}. Limit Order Book is the zero-intelligence order flow of \nmcite{smith2003}{Smith, Farmer, Gillemot and Krishnamurthy (2003)}, which shows what the book alone does to the spread and to price impact. Market Microstructure runs a live \package{Brokerage}{https://github.com/aaron-wheeler/Brokerage.jl} exchange with \package{TradingAgents}{https://github.com/aaron-wheeler/TradingAgents.jl} traders and a market maker for a session of a few minutes in real time. The actions compare scenarios over 20 seeds, with stronger chartists, without chartists or without fundamentalists, and set the order book against a market that clears at one price. Its agents trade one share with no budget, so a market led by chartists can run away from the fundamental value.
+
 \nmsection{References}
 {\footnotesize\sloppy
 \nmref{alizadeh2002}{Alizadeh, S., Brandt, M. W. and Diebold, F. X. (2002). Range-based estimation of stochastic volatility models. \emph{The Journal of Finance} 57(3), 1047--1091. \nmdoi{10.1111/1540-6261.00454}}
@@ -113,6 +117,8 @@ Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and Mac
 \nmref{baumann2022}{Baumann, S. and Klymak, M. (2022). HighFrequencyCovariance: a Julia package for estimating covariance matrices using high frequency financial data. \emph{Journal of Statistical Software} 103(14). \nmdoi{10.18637/jss.v103.i14}}
 \nmref{bollerslev1986}{Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. \emph{Journal of Econometrics} 31(3), 307--327. \nmdoi{10.1016/0304-4076(86)90063-1}}
 \nmref{bryzgalova2023}{Bryzgalova, S., Huang, J. and Julliard, C. (2023). Bayesian solutions for the factor zoo: We just ran two quadrillion models. \emph{The Journal of Finance} 78(1), 487--557. \nmdoi{10.1111/jofi.13197}}
+\nmref{chiarella2002}{Chiarella, C. and Iori, G. (2002). A simulation analysis of the microstructure of double auction markets. \emph{Quantitative Finance} 2(5), 346--353. \nmdoi{10.1088/1469-7688/2/5/303}}
+\nmref{chiarella2009}{Chiarella, C., Iori, G. and Perell\'{o}, J. (2009). The impact of heterogeneous trading rules on the limit order book and order flows. \emph{Journal of Economic Dynamics and Control} 33(3), 525--537. \nmdoi{10.1016/j.jedc.2008.08.001}}
 \nmref{christensen2013}{Christensen, K., Podolskij, M. and Vetter, M. (2013). On covariation estimation for multivariate continuous It\^{o} semimartingales with noise in non-synchronous observation schemes. \emph{Journal of Multivariate Analysis} 120, 59--84. \nmdoi{10.1016/j.jmva.2013.05.002}}
 \nmref{croston1972}{Croston, J. D. (1972). Forecasting and stock control for intermittent demands. \emph{Journal of the Operational Research Society} 23(3), 289--303. \nmdoi{10.1057/jors.1972.50}}
 \nmref{delivera2011}{De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. \emph{Journal of the American Statistical Association} 106(496), 1513--1527. \nmdoi{10.1198/jasa.2011.tm09771}}
@@ -137,6 +143,7 @@ Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and Mac
 \nmref{rogers1991}{Rogers, L. C. G. and Satchell, S. E. (1991). Estimating variance from high, low and closing prices. \emph{The Annals of Applied Probability} 1(4), 504--512. \nmdoi{10.1214/aoap/1177005835}}
 \nmref{shanken1992}{Shanken, J. (1992). On the estimation of beta-pricing models. \emph{Review of Financial Studies} 5(1), 1--33. \nmdoi{10.1093/rfs/5.1.1}}
 \nmref{shih2019}{Shih, S.-Y., Sun, F.-K. and Lee, H.-y. (2019). Temporal pattern attention for multivariate time series forecasting. \emph{Machine Learning} 108(8--9), 1421--1441. \nmdoi{10.1007/s10994-019-05815-0}}
+\nmref{smith2003}{Smith, E., Farmer, J. D., Gillemot, L. and Krishnamurthy, S. (2003). Statistical theory of the continuous double auction. \emph{Quantitative Finance} 3(6), 481--514. \nmdoi{10.1088/1469-7688/3/6/307}}
 \nmref{syntetos2005}{Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. \emph{International Journal of Forecasting} 21(2), 303--314. \nmdoi{10.1016/j.ijforecast.2004.10.001}}
 \nmref{yang2000}{Yang, D. and Zhang, Q. (2000). Drift-independent volatility estimation based on high, low, open, and close prices. \emph{The Journal of Business} 73(3), 477--492. \nmdoi{10.1086/209650}}
 \nmref{zhang2005}{Zhang, L., Mykland, P. A. and A\"{\i}t-Sahalia, Y. (2005). A tale of two time scales: determining integrated volatility with noisy high-frequency data. \emph{Journal of the American Statistical Association} 100(472), 1394--1411. \nmdoi{10.1198/016214505000000169}}

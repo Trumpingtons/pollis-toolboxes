@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
-  "description": "Pollis Finance Toolbox: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.",
-  "version": "0.1.12",
+  "description": "Pollis Finance Toolbox: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, extreme value analysis, and simulated limit order book markets.",
+  "version": "0.1.13",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -50,7 +50,8 @@
           { "id": "gev", "command": "chiara.statistics.ev.gev", "title": "Generalized Extreme Value Distribution", "submenu": "ev", "group": "4_1_dist", "order": 1, "data": "panels/gev.toml", "defaultModel": "fit", "decisionFirstColumn": "Model" },
           { "id": "gp", "command": "chiara.statistics.ev.gp", "title": "Generalized Pareto Distribution", "submenu": "ev", "group": "4_1_dist", "order": 2, "data": "panels/gp.toml", "defaultModel": "fit", "decisionFirstColumn": "Model" },
           { "id": "evtRisk", "command": "chiara.statistics.ev.riskMeasures", "title": "Extreme Value Risk Measures", "menuTitle": "EVT Risk Measures", "submenu": "ev", "group": "4_2_risk", "order": 1, "data": "panels/evtRisk.toml", "defaultModel": "rl", "decisionFirstColumn": "Model" },
-          { "id": "evtDiag", "command": "chiara.statistics.ev.diagnostics", "title": "Extreme Value Diagnostics", "menuTitle": "EVT Diagnostics", "submenu": "ev", "group": "4_3_diag", "order": 1, "data": "panels/evtDiag.toml", "defaultModel": "me", "decisionFirstColumn": "Model" }
+          { "id": "evtDiag", "command": "chiara.statistics.ev.diagnostics", "title": "Extreme Value Diagnostics", "menuTitle": "EVT Diagnostics", "submenu": "ev", "group": "4_3_diag", "order": 1, "data": "panels/evtDiag.toml", "defaultModel": "me", "decisionFirstColumn": "Model" },
+          { "id": "trad", "command": "chiara.simulate.abm-ta", "title": "Trading Agents", "group": "5_et", "order": 1, "data": "panels/trad.toml", "defaultModel": "agents", "decisionFirstColumn": "Model" }
         ]
       }
     ]
