@@ -9,7 +9,7 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | Panel | What it covers | Powered by |
 |---|---|---|
 | Measuring Volatility | Range-based volatility estimators: close-to-close, Parkinson, Garman-Klass, Rogers-Satchell, Garman-Klass-Yang-Zhang, Yang-Zhang and Alizadeh-Brandt-Diebold | [RangeVol.jl](https://github.com/Trumpingtons/RangeVol.jl) |
-| High-Frequency Volatility | The volatility of one asset over a day of ticks: realized volatility, two-scales volatility and bipower variation, with the volatility signature plot and the Barndorff-Nielsen and Shephard jump test | [HighFrequencyCovariance.jl](https://github.com/s-baumann/HighFrequencyCovariance.jl) |
+| High-Frequency Volatility | The volatility of one asset over a day of ticks: realized volatility, two-scales volatility and bipower variation, with the volatility signature plot and the Barndorff-Nielsen and Shephard jump test | [HighFrequencyCovariance.jl](https://github.com/s-baumann/HighFrequencyCovariance.jl), [TwoScalesVolatility.jl](https://github.com/Trumpingtons/TwoScalesVolatility.jl) |
 | High-Frequency Covariance Matrix Estimation | The covariance of assets that trade at different times: realized covariance, pre-averaging, two scales and the realized kernel, with regularisation to a valid matrix | [HighFrequencyCovariance.jl](https://github.com/s-baumann/HighFrequencyCovariance.jl) |
 | ARIMAX and SARIMA Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl), [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
 | GARCH-Type Models | GARCH, EGARCH, GJR-GARCH and DCC volatility models | [ARCHModels.jl](https://github.com/s-broda/ARCHModels.jl) |

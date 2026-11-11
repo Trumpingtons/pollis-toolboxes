@@ -11,7 +11,7 @@ High-Frequency Volatility measures how much one asset's price varied over a span
 | Tab | Estimator | Prices used | Jumps |
 |---|---|---|---|
 | **Realized** | Realized volatility, `simple_volatility` of HighFrequencyCovariance.jl | The last price every **Sampling Interval** seconds | Included |
-| **Two-Scales** | Two-scales volatility, `two_scales_volatility` of HighFrequencyCovariance.jl | Every tick | Included |
+| **Two-Scales** | Two-scales volatility, `two_scales_variance` of TwoScalesVolatility.jl | Every tick | Included |
 | **Bipower** | Bipower variation, written in the panel's code | The last price every **Sampling Interval** seconds | Mostly left out |
 
 **Realized** follows [Andersen and Bollerslev (1998)](#ref-AB1998a), **Two-Scales** [Zhang, Mykland and Aït-Sahalia (2005)](#ref-ZMA2005a) and **Bipower** [Barndorff-Nielsen and Shephard (2004)](#ref-BS2004a). Each tab prints the volatility over the span of the ticks as `sigma`, so one day of ticks gives a daily volatility.
@@ -33,11 +33,11 @@ Realized and two-scales volatility estimate the same quantity, the total variati
 
 ## What Do the Next Steps of High-Frequency Volatility Add?
 
-**Price Path** plots every tick, and **Volatility Signature Plot** shows realized volatility at intervals from one second to half an hour: noise makes it rise as the interval shrinks. **Barndorff-Nielsen and Shephard Test** tests for jumps on five-minute returns, or on the returns of **Bipower**, after [Barndorff-Nielsen and Shephard (2006)](#ref-BS2006a). **Microstructure Noise** gives the noise variance that `estimate_microstructure_noise` finds, against the variance of the efficient price over one tick. **Volatility Through the Day** shows realized volatility of each half hour. **All Four Estimators** sets realized volatility on every tick and every five minutes, two-scales and bipower volatility side by side. **Annualise** multiplies a daily volatility by the square root of 252, and **Jump Share of the Variance** gives the part of realized variance that bipower variation leaves out.
+**Price Path** plots every tick, and **Volatility Signature Plot** shows realized volatility at intervals from one second to half an hour: noise makes it rise as the interval shrinks. **Barndorff-Nielsen and Shephard Test** tests for jumps on five-minute returns, or on the returns of **Bipower**, after [Barndorff-Nielsen and Shephard (2006)](#ref-BS2006a). **Microstructure Noise** gives the noise variance of the two-scales method, `noise_variance` of TwoScalesVolatility.jl, against the variance of the efficient price over one tick. **Volatility Through the Day** shows realized volatility of each half hour. **All Four Estimators** sets realized volatility on every tick and every five minutes, two-scales and bipower volatility side by side. **Annualise** multiplies a daily volatility by the square root of 252, and **Jump Share of the Variance** gives the part of realized variance that bipower variation leaves out.
 
 ## How Does High-Frequency Volatility Relate to Other Finance Panels?
 
-High-Frequency Volatility and High-Frequency Covariance Matrix Estimation share the High-Frequency Analysis submenu of the Finance Toolbox and the package HighFrequencyCovariance.jl, described by [Baumann and Klymak (2022)](#ref-BK2022a). High-Frequency Covariance Matrix Estimation estimates the covariance and correlation of several assets that trade at different times, while High-Frequency Volatility measures one asset and its jumps. Measuring Volatility, beside the submenu, estimates volatility from daily open, high, low and close prices when intraday prices are not at hand.
+High-Frequency Volatility and High-Frequency Covariance Matrix Estimation share the High-Frequency Analysis submenu of the Finance Toolbox and the package HighFrequencyCovariance.jl, described by [Baumann and Klymak (2022)](#ref-BK2022a). The **Two-Scales** tab and **Microstructure Noise** use TwoScalesVolatility.jl, a Pollis method that reproduces Table 2 of [Zhang, Mykland and Aït-Sahalia (2005)](#ref-ZMA2005a). High-Frequency Covariance Matrix Estimation estimates the covariance and correlation of several assets that trade at different times, while High-Frequency Volatility measures one asset and its jumps. Measuring Volatility, beside the submenu, estimates volatility from daily open, high, low and close prices when intraday prices are not at hand.
 
 ## References
 

@@ -7,7 +7,7 @@ The tabs, inputs, functions, variables and actions of High-Frequency Volatility 
 | Tab | Call | Prices used | `sigma` |
 |---|---|---|---|
 | **Realized** | `simple_volatility(ts, [asset]; fixed_spacing = 300)`, or without `fixed_spacing` when **Sampling Interval** is blank | Last price every **Sampling Interval** seconds | `vols[asset] * sqrt(span)` |
-| **Two-Scales** | `two_scales_volatility(ts, [asset])`, with `num_grids = K` when **Sub-grids (K)** is given | Every tick | `vols[asset] * sqrt(span)` |
+| **Two-Scales** | `two_scales_variance(y, K)` of TwoScalesVolatility.jl, with `y` the log prices of `asset` in time order | Every tick | `sqrt(two_scales_variance(y, K))` |
 | **Bipower** | `(pi / 2) * sum(abs.(r[2:end]) .* abs.(r[1:end-1]))`, with `r = grid_returns(ticks, asset, every)` | Last price every **Sampling Interval** seconds | `sqrt(BPV)` |
 
 Every tab gives `sigma`, the volatility over the span of the ticks, as a decimal.
@@ -18,7 +18,7 @@ Every tab gives `sigma`, the volatility over the span of the ticks, as a decimal
 |---|---|---|---|
 | **Tick Data** | `simulated` | All | A simulated trading day, or a Tables.jl source with columns `time` (seconds), `asset` (Symbol) and `logprice` |
 | **Sampling Interval (seconds)** | 300 | **Realized** | Seconds between the prices whose returns are squared; blank lets HighFrequencyCovariance.jl choose |
-| **Sub-grids (K)** | blank | **Two-Scales** | Number of sub-grids of the slow time scale; blank is the package default |
+| **Sub-grids (K)** | blank | **Two-Scales** | Number of sub-grids of the slow time scale; blank is K = c* n^(2/3), equation (10) of Zhang, Mykland and Aït-Sahalia (2005) |
 | **Sampling Interval (seconds)** | 300 | **Bipower** | Seconds between the prices whose returns are multiplied |
 
 ## Functions of HighFrequencyCovariance.jl in High-Frequency Volatility
@@ -29,9 +29,15 @@ Every tab gives `sigma`, the volatility over the span of the ticks, as a decimal
 | `get_assets(ts)` | The assets of the tick table |
 | `duration(ts; in_dates_period = false)` | The time from the first tick to the last, in seconds |
 | `simple_volatility(ts, assets; fixed_spacing, use_all_obs)` | Realized volatility per square root of a second, on a grid of `fixed_spacing` seconds, on every tick with `use_all_obs = true`, or on the package's own spacing |
-| `two_scales_volatility(ts, assets; num_grids)` | Two-scales volatility per square root of a second and the noise variance, each a `Dict` by asset |
-| `default_num_grids(ts)` | The default number of sub-grids: the fewest ticks of any asset divided by 100, at least 3 |
-| `estimate_microstructure_noise(ts, assets)` | The noise variance by asset, from the two-scales estimator |
+
+## Functions of TwoScalesVolatility.jl in High-Frequency Volatility
+
+| Function | What it does |
+|---|---|
+| `two_scales_variance(y, K)` | The two-scales estimate of the integrated variance from the log prices `y` with `K` sub-grids, adjusted for small samples: equations (55) and (64) |
+| `noise_variance(y)` | The noise variance from every tick, RV_all / (2n): equation (22) |
+| `noise_variance(y, K)` | The noise variance from both time scales: equation (65) |
+| `optimal_c(T, noise_variance, quarticity)` | The constant c* of the optimal number of sub-grids K = c* n^(2/3): equation (10) |
 
 ## Variables of High-Frequency Volatility
 
@@ -42,8 +48,8 @@ Every tab gives `sigma`, the volatility over the span of the ticks, as a decimal
 | `asset` | All | The asset measured, the first of `get_assets(ts)` |
 | `span` | All | Seconds from the first tick to the last |
 | `grid_returns` | All | A function: the log returns of `asset` every `every` seconds |
-| `vols` | **Realized**, **Two-Scales** | Volatility per square root of a second, by asset |
-| `noise` | **Two-Scales** | Noise variance, by asset |
+| `vols` | **Realized** | Volatility per square root of a second, by asset |
+| `y`, `n`, `K` | **Two-Scales** | The log prices of `asset` in time order, their number of returns and the sub-grids |
 | `r`, `BPV` | **Bipower** | The sampled log returns and their bipower variation |
 | `sigma` | All | Volatility over the span |
 
@@ -54,7 +60,7 @@ Every tab gives `sigma`, the volatility over the span of the ticks, as a decimal
 | Visualise | **Price Path** | The price at every tick, against hours since the first |
 | Visualise | **Volatility Signature Plot** | Realized volatility at intervals from 1 to 1,800 seconds, with the tab's `sigma` dashed |
 | Diagnose | **Barndorff-Nielsen and Shephard Test** | The Z statistic and its one-sided p-value |
-| Diagnose | **Microstructure Noise** | The noise standard deviation in basis points and the noise-to-signal ratio |
+| Diagnose | **Microstructure Noise** | The noise standard deviation in basis points, from equation (65), and the noise-to-signal ratio |
 | Diagnose | **Volatility Through the Day** | Realized volatility of each half hour, from one-minute returns |
 | Compare | **All Four Estimators** | Realized on every tick and every five minutes, two-scales and bipower, in % |
 | Interpret | **Annualise** | `sigma` times the square root of 252 |

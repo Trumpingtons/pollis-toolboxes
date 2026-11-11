@@ -10,8 +10,12 @@ defaultModel = "rv"
 name = "HighFrequencyCovariance.jl"
 github = "https://github.com/s-baumann/HighFrequencyCovariance.jl"
 
+[[packages]]
+name = "TwoScalesVolatility.jl"
+github = "https://github.com/Trumpingtons/TwoScalesVolatility.jl"
+
 [requires]
-packages = ["HighFrequencyCovariance.jl", "Plots.jl", "SpecialFunctions.jl", "Tables.jl"]
+packages = ["HighFrequencyCovariance.jl", "TwoScalesVolatility.jl", "Plots.jl", "SpecialFunctions.jl", "Tables.jl"]
 
 [[notebookSections]]
 label = ""
@@ -149,7 +153,7 @@ models = ["rv"]
 [[inputs]]
 id = "K"
 label = "Sub-grids (K)"
-tooltip = "Number of sub-grids of the slow time scale, each taking every K-th tick. Leave blank for the package default: the number of ticks of the asset with the fewest, divided by 100, and at least 3."
+tooltip = "Number of sub-grids of the slow time scale, each taking every K-th tick. Leave blank for the rule of Zhang, Mykland and Aït-Sahalia (2005), K = c* n^(2/3), from the noise and a first estimate of the variance from five-minute returns."
 default = ""
 models = ["tsv"]
 
@@ -250,12 +254,17 @@ function grid_returns(ticks, asset, every)
     return diff([p[searchsortedlast(t, g)] for g in range(first(t), last(t); step = every)])
 end
 
-{{?K=}} vols, noise = two_scales_volatility(ts, [asset])  # every tick, with the package's number of sub-grids
-{{?K!=}} vols, noise = two_scales_volatility(ts, [asset]; num_grids = {{K}})  # every tick, with {{K}} sub-grids
-sigma = vols[asset] * sqrt(span)  # volatility over the span of the ticks: one day of ticks gives a daily volatility
+using TwoScalesVolatility
+mine = ticks.asset .== asset
+y = ticks.logprice[mine][sortperm(ticks.time[mine])]  # the log prices of the asset, in time order
+n = length(y) - 1  # its returns
+{{?K=}} first_guess = sum(abs2, grid_returns(ticks, asset, 300))  # integrated variance from five-minute returns, a first estimate
+{{?K=}} K = clamp(round(Int, optimal_c(1.0, noise_variance(y), first_guess^2) * n^(2 / 3)), 2, n ÷ 2)  # K = c* n^(2/3), equation (10), the span taken as T = 1 and its quarticity as the first estimate squared
+{{?K!=}} K = {{K}}  # sub-grids
+sigma = sqrt(two_scales_variance(y, K))  # equations (55) and (64): volatility over the span of the ticks, one day of ticks giving a daily volatility
 
-println("Two-scales volatility over the span: ", round(100 * sigma, digits = 3), "%")
-println("Standard deviation of the noise: ", round(1e4 * sqrt(noise[asset]), digits = 2), " basis points")
+println("Two-scales volatility over the span: ", round(100 * sigma, digits = 3), "% with K = ", K, " sub-grids")
+println("Standard deviation of the noise: ", round(1e4 * sqrt(noise_variance(y, K)), digits = 2), " basis points")  # equation (65)
 '''
 
 [[codeBranches]]
@@ -341,10 +350,15 @@ println("Z = ", round(Z, digits = 2), ", one-sided p-value = ", round(p, sigdigi
 [[actionGroups.actions]]
 id = "noise"
 label = "Microstructure Noise"
-desc = "The variance of the noise, estimated by the two-scales method, against the variance of the efficient price over one tick"
+desc = "The variance of the noise, estimated by the two-scales method of Zhang, Mykland and Aït-Sahalia (2005), equation (65), against the variance of the efficient price over one tick"
 code = '''
-noise = estimate_microstructure_noise(ts, [asset])[asset]  # variance of the noise in the log price
-per_tick = sigma^2 / count(==(asset), ticks.asset)  # variance of the efficient price over one tick, from this tab's estimate
+using TwoScalesVolatility
+mine = ticks.asset .== asset
+y = ticks.logprice[mine][sortperm(ticks.time[mine])]  # the log prices of the asset, in time order
+n = length(y) - 1  # its returns
+K = clamp(round(Int, optimal_c(1.0, noise_variance(y), sum(abs2, grid_returns(ticks, asset, 300))^2) * n^(2 / 3)), 2, n ÷ 2)  # K = c* n^(2/3), equation (10)
+noise = noise_variance(y, K)  # variance of the noise in the log price, equation (65)
+per_tick = sigma^2 / n  # variance of the efficient price over one tick, from this tab's estimate
 (noise_sd_basis_points = round(1e4 * sqrt(noise), digits = 2), noise_to_signal = round(noise / per_tick, digits = 2))  # a ratio above 1: tick returns are mostly noise
 '''
 
@@ -368,11 +382,16 @@ id = "estimators"
 label = "All Four Estimators"
 desc = "Realized volatility on every tick and every five minutes, two-scales and bipower volatility, side by side"
 code = '''
+using TwoScalesVolatility
 r5 = grid_returns(ticks, asset, 300)  # log returns every five minutes
+mine = ticks.asset .== asset
+y = ticks.logprice[mine][sortperm(ticks.time[mine])]  # the log prices of the asset, in time order
+n = length(y) - 1  # its returns
+K = clamp(round(Int, optimal_c(1.0, noise_variance(y), sum(abs2, r5)^2) * n^(2 / 3)), 2, n ÷ 2)  # K = c* n^(2/3), equation (10) of Zhang, Mykland and Aït-Sahalia (2005)
 rows = [
     (estimator = "Realized, every tick", volatility = simple_volatility(ts, [asset]; use_all_obs = true)[asset] * sqrt(span)),
     (estimator = "Realized, every 5 minutes", volatility = simple_volatility(ts, [asset]; fixed_spacing = 300)[asset] * sqrt(span)),
-    (estimator = "Two-scales, every tick", volatility = two_scales_volatility(ts, [asset])[1][asset] * sqrt(span)),
+    (estimator = "Two-scales, every tick", volatility = sqrt(two_scales_variance(y, K))),
     (estimator = "Bipower, every 5 minutes", volatility = sqrt((pi / 2) * sum(abs.(r5[2:end]) .* abs.(r5[1:end-1])))),
 ]
 {{?data=simulated}} push!(rows, (estimator = "True, continuous moves only", volatility = 0.01), (estimator = "True, with the jump", volatility = sqrt(0.01^2 + 0.01^2)))
