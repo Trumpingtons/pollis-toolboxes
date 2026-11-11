@@ -37,7 +37,7 @@ Realized and two-scales volatility estimate the same quantity, the total variati
 
 ## How Does High-Frequency Volatility Relate to Other Finance Panels?
 
-High-Frequency Volatility and High-Frequency Covariance Matrix Estimation share the High-Frequency Analysis submenu of the Finance Toolbox and the package HighFrequencyCovariance.jl, described by [Baumann and Klymak (2022)](#ref-BK2022a). The **Two-Scales** tab and **Microstructure Noise** use TwoScalesVolatility.jl, a Pollis method that reproduces Table 2 of [Zhang, Mykland and Aït-Sahalia (2005)](#ref-ZMA2005a). High-Frequency Covariance Matrix Estimation estimates the covariance and correlation of several assets that trade at different times, while High-Frequency Volatility measures one asset and its jumps. Measuring Volatility, beside the submenu, estimates volatility from daily open, high, low and close prices when intraday prices are not at hand.
+High-Frequency Volatility and High-Frequency Covariance Matrix Estimation share the High-Frequency Volatility and Covariance submenu of the Finance Toolbox and the package HighFrequencyCovariance.jl, described by [Baumann and Klymak (2022)](#ref-BK2022a). The **Two-Scales** tab and **Microstructure Noise** use TwoScalesVolatility.jl, a Pollis method that reproduces Table 2 of [Zhang, Mykland and Aït-Sahalia (2005)](#ref-ZMA2005a). High-Frequency Covariance Matrix Estimation estimates the covariance and correlation of several assets that trade at different times, while High-Frequency Volatility measures one asset and its jumps. Measuring Volatility, beside the submenu, estimates volatility from daily open, high, low and close prices when intraday prices are not at hand.
 
 ## References
 

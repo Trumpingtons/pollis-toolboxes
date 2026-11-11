@@ -56,8 +56,8 @@ Alizadeh-Brandt-Diebold & A state-space model of log-volatility & The log range,
 \medskip
 Empirical Efficiency measures the gain on your own data, and Drift and Overnight Gaps checks the assumptions that separate the estimators. Each estimator gives one number for its window, so Volatility Clustering shows when a single full-sample figure is misleading.
 
-\nmsection{High-Frequency Analysis}
-Two panels in \menupath{Extend \gt Finance \gt High-Frequency Analysis}, both on \package{HighFrequencyCovariance}{https://github.com/s-baumann/HighFrequencyCovariance.jl} (\nmcite{baumann2022}{Baumann and Klymak 2022}), High-Frequency Volatility also on \package{TwoScalesVolatility}{https://github.com/Trumpingtons/TwoScalesVolatility.jl}. Their examples simulate the ticks; replace them with a table of time, asset and log price.
+\nmsection{High-Frequency Volatility and Covariance}
+Two panels in \menupath{Extend \gt Finance \gt High-Frequency Volatility and Covariance}, both on \package{HighFrequencyCovariance}{https://github.com/s-baumann/HighFrequencyCovariance.jl} (\nmcite{baumann2022}{Baumann and Klymak 2022}), High-Frequency Volatility also on \package{TwoScalesVolatility}{https://github.com/Trumpingtons/TwoScalesVolatility.jl}. Their examples simulate the ticks; replace them with a table of time, asset and log price.
 
 High-Frequency Volatility measures one asset over a day of ticks. Realized sums squared returns at a sampling interval (\nmcite{andersen1998}{Andersen and Bollerslev 1998}), Two-Scales uses every tick and corrects for microstructure noise, with the estimator, its small-sample adjustment and its rule for the number of sub-grids of \nmcite{zhang2005}{Zhang, Mykland and A\"{\i}t-Sahalia (2005)}, and Bipower leaves jumps out (\nmcite{barndorff2004}{Barndorff-Nielsen and Shephard 2004}). The actions draw the volatility signature plot, estimate the variance of the noise by the same two-scales method, test for jumps after \nmcite{barndorff2006}{Barndorff-Nielsen and Shephard (2006)} and give the jump share of the variance.
 

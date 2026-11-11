@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
   "description": "Pollis Finance Toolbox: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, portfolio optimisation, loss risk measures, extreme value analysis, and simulated limit order book markets.",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -28,9 +28,9 @@
           }
         ],
         "submenus": [
-          { "id": "hf", "title": "High-Frequency Analysis", "group": "0_et", "order": 2 },
+          { "id": "hf", "title": "High-Frequency Volatility and Covariance", "group": "0_et", "order": 2 },
           { "id": "pp", "title": "Point Processes", "group": "1_et", "order": 5 },
-          { "id": "ev", "title": "Extreme Value and Rare Events", "group": "4_et", "order": 1 }
+          { "id": "ev", "title": "Extreme Value and Rare Events", "group": "0_et", "order": 4 }
         ],
         "panels": [
           { "id": "rvol", "command": "chiara.statistics.rbv", "title": "Range-Based Volatility Estimation", "menuTitle": "Measuring Volatility", "group": "0_et", "order": 1, "data": "panels/rvol.toml", "defaultModel": "yz", "decisionFirstColumn": "Estimator" },
@@ -47,8 +47,8 @@
           { "id": "autotsf", "command": "chiara.statistics.autotsf", "title": "Automatic Time-Series Forecasting", "group": "2_et", "order": 3, "data": "panels/autotsf.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" },
           { "id": "blsdf", "command": "chiara.statistics.eco.blsdf", "title": "Bayesian Linear Stochastic Discount Factor", "group": "3_et", "order": 1, "data": "panels/blsdf.toml", "defaultModel": "sdf", "decisionFirstColumn": "Model" },
           { "id": "bfmb", "command": "chiara.statistics.eco.bfmb", "title": "Fama-MacBeth Regression", "group": "3_et", "order": 2, "data": "panels/bfmb.toml", "defaultModel": "bayesian", "decisionFirstColumn": "Approach" },
-          { "id": "po", "command": "chiara.statistics.eco.po", "title": "Portfolio Optimisation", "group": "3_et", "order": 3, "data": "panels/po.toml", "defaultModel": "mv", "decisionFirstColumn": "Method" },
-          { "id": "lrm", "command": "chiara.statistics.rmt.lrm", "title": "Loss Risk Measures", "group": "4_et", "order": 0, "data": "panels/lrm.toml", "defaultModel": "dd", "decisionFirstColumn": "Measure" },
+          { "id": "po", "command": "chiara.statistics.eco.po", "title": "Portfolio Optimisation", "group": "5_et", "order": 0, "data": "panels/po.toml", "defaultModel": "mv", "decisionFirstColumn": "Method" },
+          { "id": "lrm", "command": "chiara.statistics.rmt.lrm", "title": "Loss Risk Measures", "group": "0_et", "order": 3, "data": "panels/lrm.toml", "defaultModel": "dd", "decisionFirstColumn": "Measure" },
           { "id": "gev", "command": "chiara.statistics.ev.gev", "title": "Generalized Extreme Value Distribution", "submenu": "ev", "group": "4_1_dist", "order": 1, "data": "panels/gev.toml", "defaultModel": "fit", "decisionFirstColumn": "Model" },
           { "id": "gp", "command": "chiara.statistics.ev.gp", "title": "Generalized Pareto Distribution", "submenu": "ev", "group": "4_1_dist", "order": 2, "data": "panels/gp.toml", "defaultModel": "fit", "decisionFirstColumn": "Model" },
           { "id": "evtRisk", "command": "chiara.statistics.ev.riskMeasures", "title": "Extreme Value Risk Measures", "menuTitle": "EVT Risk Measures", "submenu": "ev", "group": "4_2_risk", "order": 1, "data": "panels/evtRisk.toml", "defaultModel": "rl", "decisionFirstColumn": "Model" },
