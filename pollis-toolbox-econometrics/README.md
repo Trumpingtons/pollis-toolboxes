@@ -1,6 +1,6 @@
 # Finance Toolbox
 
-The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, extreme value analysis, and simulated limit order book markets.
+The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, portfolio optimisation, extreme value analysis, and simulated limit order book markets.
 
 Installing it adds the **Finance** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
@@ -22,6 +22,7 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | Automatic Time-Series Forecasting | Auto ARIMA, auto ETS, auto ARARMA and a race between models | [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
 | Bayesian Linear Stochastic Discount Factor | Bayesian SDF estimation with spike-and-slab factor selection | [BayesianFactorZoo.jl](https://github.com/eohne/BayesianFactorZoo.jl) |
 | Fama-MacBeth Regression | Bayesian and classical Fama-MacBeth regressions of returns on factors | [BayesianFactorZoo.jl](https://github.com/eohne/BayesianFactorZoo.jl), [FamaFrenchData.jl](https://github.com/tbeason/FamaFrenchData.jl) |
+| Portfolio Optimisation | Mean-variance, mean-Expected Shortfall, Hierarchical Risk Parity and Hierarchical Equal Risk Contribution weights from daily returns, judged on held-out returns against 1/N | [PortfolioOptimisers.jl](https://github.com/dcelisgarza/PortfolioOptimisers.jl), [Clarabel.jl](https://github.com/oxfordcontrol/Clarabel.jl) |
 | Generalized Extreme Value Distribution | Block maxima: GEV fits by maximum likelihood, probability-weighted moments and Bayesian estimation, with return levels | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
 | Generalized Pareto Distribution | Peaks over threshold: threshold selection and GP fits to exceedances | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
 | EVT Risk Measures | Return levels, peaks-over-threshold analysis, and extreme value VaR and expected shortfall | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
