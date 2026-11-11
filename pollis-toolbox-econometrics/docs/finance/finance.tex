@@ -2,7 +2,7 @@
 % Compile with: julia -e 'using PollisTeX; display(compile("finance.tex"))'
 \input{vignette_style}
 \renewcommand{\vignetteauthor}{Pollis}
-\renewcommand{\vignettedate}{1 November 2026}
+\renewcommand{\vignettedate}{11 November 2026}
 \renewcommand{\vignettelicense}{AGPL-3.0}
 
 \begin{document}
@@ -19,6 +19,8 @@ Installing the toolbox adds the submenu \menupath{Extend \gt Finance}, with thes
 \toprule
 \textbf{Panel} & \textbf{Use it when} \\\midrule
 Measuring Volatility & You have daily open, high, low and close prices and want volatility from them. \\
+High-Frequency Volatility & You have the trades or quotes of one asset within a day and want its volatility, with or without its jumps. \\
+High-Frequency Covariance & You have intraday prices of several assets that trade at different times and want their covariance or correlation. \\
 ARIMAX Models & One series is forecast from its own past, with or without a seasonal pattern or other variables that drive it. \\
 GARCH-Type Models & Volatility clusters and you want it day by day, its forecast, Value-at-Risk or changing correlations. \\
 Regime Switching Models & A relationship seems to change between calm and turbulent periods. \\
@@ -50,6 +52,13 @@ Alizadeh-Brandt-Diebold & A state-space model of log-volatility & The log range,
 
 \medskip
 Empirical Efficiency measures the gain on your own data, and Drift and Overnight Gaps checks the assumptions that separate the estimators. Each estimator gives one number for its window, so Volatility Clustering shows when a single full-sample figure is misleading.
+
+\nmsection{High-Frequency Analysis}
+Two panels in \menupath{Extend \gt Finance \gt High-Frequency Analysis}, both on \package{HighFrequencyCovariance}{https://github.com/s-baumann/HighFrequencyCovariance.jl} (\nmcite{baumann2022}{Baumann and Klymak 2022}). Their examples simulate the ticks; replace them with a table of time, asset and log price.
+
+High-Frequency Volatility measures one asset over a day of ticks. Realized sums squared returns at a sampling interval (\nmcite{andersen1998}{Andersen and Bollerslev 1998}), Two-Scales uses every tick and corrects for microstructure noise (\nmcite{zhang2005}{Zhang, Mykland and A\"{\i}t-Sahalia 2005}), and Bipower leaves jumps out (\nmcite{barndorff2004}{Barndorff-Nielsen and Shephard 2004}). The actions draw the volatility signature plot, test for jumps after \nmcite{barndorff2006}{Barndorff-Nielsen and Shephard (2006)} and give the jump share of the variance.
+
+High-Frequency Covariance estimates the covariance of several assets that trade at different times: realized covariance on a time grid, pre-averaging (\nmcite{christensen2013}{Christensen, Podolskij and Vetter 2013}), two scales (\nmcite{zhang2011}{Zhang 2011}) and the realized kernel (\nmcite{barndorff2011}{Barndorff-Nielsen, Hansen, Lunde and Shephard 2011}). The actions check whether the matrix is positive semi-definite, repair it when it is not, and give the volatility of a portfolio.
 
 \nmsection{ARIMAX Models}
 Three tabs. The panel's title is ARIMA Models. \package{StateSpaceModels}{https://github.com/LAMPSPUC/StateSpaceModels.jl} fits ARIMA, where differencing removes a trend or a drifting level, and Seasonal ARIMA, for data with a repeating period. ARIMAX, with \package{Durbyn}{https://github.com/taf-society/Durbyn.jl}, regresses the series on other variables with ARIMA errors. Forecasting with it needs the future values of those variables, and its intervals leave out any uncertainty about them. Its backtest uses the values that actually occurred, so it scores better than a real forecast would when they have to be predicted too. The actions check the residuals, run an ADF unit root test, and backtest. For the first two tabs they also select the orders by AICc and simulate 500 future paths; for ARIMAX, With and Without the Regressors compares the fit.
@@ -95,10 +104,16 @@ Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and Mac
 \nmsection{References}
 {\footnotesize\sloppy
 \nmref{alizadeh2002}{Alizadeh, S., Brandt, M. W. and Diebold, F. X. (2002). Range-based estimation of stochastic volatility models. \emph{The Journal of Finance} 57(3), 1047--1091. \nmdoi{10.1111/1540-6261.00454}}
+\nmref{andersen1998}{Andersen, T. G. and Bollerslev, T. (1998). Answering the skeptics: yes, standard volatility models do provide accurate forecasts. \emph{International Economic Review} 39(4), 885--905. \nmdoi{10.2307/2527343}}
 \nmref{assimakopoulos2000}{Assimakopoulos, V. and Nikolopoulos, K. (2000). The theta model: a decomposition approach to forecasting. \emph{International Journal of Forecasting} 16(4), 521--530. \nmdoi{10.1016/S0169-2070(00)00066-2}}
 \nmref{bacry2015}{Bacry, E., Mastromatteo, I. and Muzy, J.-F. (2015). Hawkes processes in finance. \emph{Market Microstructure and Liquidity} 1, 1550005. \nmdoi{10.1142/S2382626615500057}}
+\nmref{barndorff2004}{Barndorff-Nielsen, O. E. and Shephard, N. (2004). Power and bipower variation with stochastic volatility and jumps. \emph{Journal of Financial Econometrics} 2(1), 1--37. \nmdoi{10.1093/jjfinec/nbh001}}
+\nmref{barndorff2006}{Barndorff-Nielsen, O. E. and Shephard, N. (2006). Econometrics of testing for jumps in financial economics using bipower variation. \emph{Journal of Financial Econometrics} 4(1), 1--30. \nmdoi{10.1093/jjfinec/nbi022}}
+\nmref{barndorff2011}{Barndorff-Nielsen, O. E., Hansen, P. R., Lunde, A. and Shephard, N. (2011). Multivariate realised kernels: consistent positive semi-definite estimators of the covariation of equity prices with noise and non-synchronous trading. \emph{Journal of Econometrics} 162(2), 149--169. \nmdoi{10.1016/j.jeconom.2010.07.009}}
+\nmref{baumann2022}{Baumann, S. and Klymak, M. (2022). HighFrequencyCovariance: a Julia package for estimating covariance matrices using high frequency financial data. \emph{Journal of Statistical Software} 103(14). \nmdoi{10.18637/jss.v103.i14}}
 \nmref{bollerslev1986}{Bollerslev, T. (1986). Generalized autoregressive conditional heteroskedasticity. \emph{Journal of Econometrics} 31(3), 307--327. \nmdoi{10.1016/0304-4076(86)90063-1}}
 \nmref{bryzgalova2023}{Bryzgalova, S., Huang, J. and Julliard, C. (2023). Bayesian solutions for the factor zoo: We just ran two quadrillion models. \emph{The Journal of Finance} 78(1), 487--557. \nmdoi{10.1111/jofi.13197}}
+\nmref{christensen2013}{Christensen, K., Podolskij, M. and Vetter, M. (2013). On covariation estimation for multivariate continuous It\^{o} semimartingales with noise in non-synchronous observation schemes. \emph{Journal of Multivariate Analysis} 120, 59--84. \nmdoi{10.1016/j.jmva.2013.05.002}}
 \nmref{croston1972}{Croston, J. D. (1972). Forecasting and stock control for intermittent demands. \emph{Journal of the Operational Research Society} 23(3), 289--303. \nmdoi{10.1057/jors.1972.50}}
 \nmref{delivera2011}{De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. \emph{Journal of the American Statistical Association} 106(496), 1513--1527. \nmdoi{10.1198/jasa.2011.tm09771}}
 \nmref{engle1982}{Engle, R. F. (1982). Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation. \emph{Econometrica} 50(4), 987--1007. \nmdoi{10.2307/1912773}}
@@ -124,6 +139,8 @@ Risk premia from test assets, in two passes as in \nmcite{fama1973}{Fama and Mac
 \nmref{shih2019}{Shih, S.-Y., Sun, F.-K. and Lee, H.-y. (2019). Temporal pattern attention for multivariate time series forecasting. \emph{Machine Learning} 108(8--9), 1421--1441. \nmdoi{10.1007/s10994-019-05815-0}}
 \nmref{syntetos2005}{Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. \emph{International Journal of Forecasting} 21(2), 303--314. \nmdoi{10.1016/j.ijforecast.2004.10.001}}
 \nmref{yang2000}{Yang, D. and Zhang, Q. (2000). Drift-independent volatility estimation based on high, low, open, and close prices. \emph{The Journal of Business} 73(3), 477--492. \nmdoi{10.1086/209650}}
+\nmref{zhang2005}{Zhang, L., Mykland, P. A. and A\"{\i}t-Sahalia, Y. (2005). A tale of two time scales: determining integrated volatility with noisy high-frequency data. \emph{Journal of the American Statistical Association} 100(472), 1394--1411. \nmdoi{10.1198/016214505000000169}}
+\nmref{zhang2011}{Zhang, L. (2011). Estimating covariation: Epps effect, microstructure noise. \emph{Journal of Econometrics} 160(1), 33--47. \nmdoi{10.1016/j.jeconom.2010.03.012}}
 }
 
 \nmcredit

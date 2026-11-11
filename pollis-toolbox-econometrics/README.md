@@ -1,6 +1,6 @@
 # Finance Toolbox
 
-The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.
+The Pollis Finance Toolbox covers time-series econometrics and empirical asset pricing: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, and extreme value analysis.
 
 Installing it adds the **Finance** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
 
@@ -9,6 +9,8 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | Panel | What it covers | Powered by |
 |---|---|---|
 | Measuring Volatility | Range-based volatility estimators: close-to-close, Parkinson, Garman-Klass, Rogers-Satchell, Garman-Klass-Yang-Zhang, Yang-Zhang and Alizadeh-Brandt-Diebold | [RangeVol.jl](https://github.com/Trumpingtons/RangeVol.jl) |
+| High-Frequency Volatility | The volatility of one asset over a day of ticks: realized volatility, two-scales volatility and bipower variation, with the volatility signature plot and the Barndorff-Nielsen and Shephard jump test | [HighFrequencyCovariance.jl](https://github.com/s-baumann/HighFrequencyCovariance.jl) |
+| High-Frequency Covariance Matrix Estimation | The covariance of assets that trade at different times: realized covariance, pre-averaging, two scales and the realized kernel, with regularisation to a valid matrix | [HighFrequencyCovariance.jl](https://github.com/s-baumann/HighFrequencyCovariance.jl) |
 | ARIMAX and SARIMA Models | ARIMA and seasonal ARIMA models with exogenous regressors | [StateSpaceModels.jl](https://github.com/LAMPSPUC/StateSpaceModels.jl), [Durbyn.jl](https://github.com/taf-society/Durbyn.jl) |
 | GARCH-Type Models | GARCH, EGARCH, GJR-GARCH and DCC volatility models | [ARCHModels.jl](https://github.com/s-broda/ARCHModels.jl) |
 | Continuous-Time Stochastic Volatility Models | Simulated paths and European option prices, in closed form and by Monte Carlo, under the Heston, Bates and SABR models | [StochasticVolatility.jl](https://github.com/Trumpingtons/StochasticVolatility.jl), [Distributions.jl](https://github.com/JuliaStats/Distributions.jl) |

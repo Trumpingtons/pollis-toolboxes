@@ -1,0 +1,404 @@
+# High-Frequency Volatility Webview Configuration
+# The declarative source of the panel, read by Pollis when the Finance Toolbox is installed.
+
+[meta]
+title = "High-Frequency Volatility"
+viewType = "pollis.hfvol"
+defaultModel = "rv"
+
+[[packages]]
+name = "HighFrequencyCovariance.jl"
+github = "https://github.com/s-baumann/HighFrequencyCovariance.jl"
+
+[requires]
+packages = ["HighFrequencyCovariance.jl", "Plots.jl", "SpecialFunctions.jl", "Tables.jl"]
+
+[[notebookSections]]
+label = ""
+
+[[notebookSections.notebooks]]
+name = "Realized Volatility and the Sampling Interval"
+file = "hf-vol/tutorial-01-realized.ipynb"
+bundled = true
+description = "Realized volatility of one day of ticks at several sampling intervals, and why the finest is not the best"
+
+[[notebookSections.notebooks]]
+name = "Two-Scales Volatility and the Noise"
+file = "hf-vol/tutorial-02-two-scales.ipynb"
+bundled = true
+description = "The two-scales estimator on every tick, its sub-grids and its estimate of the noise"
+
+[[notebookSections.notebooks]]
+name = "Bipower Variation and Jumps"
+file = "hf-vol/tutorial-03-bipower.ipynb"
+bundled = true
+description = "Bipower variation against realized variance, and the Barndorff-Nielsen and Shephard jump test"
+
+[[wikis]]
+name = "Overview"
+file = "hf-vol/overview.md"
+bundled = true
+
+[[wikis]]
+name = "Factsheet"
+file = "hf-vol/factsheet.md"
+bundled = true
+
+[[wikis]]
+name = "Introduction to High-Frequency Volatility"
+file = "hf-vol/intro-hf-volatility.md"
+bundled = true
+
+[[wikis]]
+separator = true
+label = "Estimators"
+
+[[wikis]]
+name = "Realized Volatility"
+file = "hf-vol/realized-volatility.md"
+bundled = true
+
+[[wikis]]
+name = "Two-Scales Volatility"
+file = "hf-vol/two-scales-volatility.md"
+bundled = true
+
+[[wikis]]
+name = "Bipower Variation"
+file = "hf-vol/bipower-variation.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "BK2022a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "AB1998a"
+
+[[references]]
+key = "BS2004a"
+
+[[references]]
+key = "AMZ2005a"
+
+[[references]]
+key = "ZMA2005a"
+
+[[references]]
+key = "BS2006a"
+
+[[models]]
+id = "rv"
+label = "Realized"
+
+[[models]]
+id = "tsv"
+label = "Two-Scales"
+
+[[models]]
+id = "bpv"
+label = "Bipower"
+
+[[bullets]]
+text = "Realized"
+detail = "the square root of the sum of squared log returns, sampled every few minutes so that market noise does not swamp it"
+
+[[bullets]]
+text = "Two-Scales"
+detail = "uses every tick and removes the bias of the noise by combining realized variance on all ticks with its average over sparser sub-grids"
+
+[[bullets]]
+text = "Bipower"
+detail = "multiplies adjacent absolute returns, so a jump counts far less than in realized variance and the two can be compared to find jumps"
+
+[[decisionRows]]
+task = "Realized"
+context = "Prices every few minutes"
+purpose = "The day's volatility, jumps included"
+
+[[decisionRows]]
+task = "Two-Scales"
+context = "Every tick, with noise"
+purpose = "The day's volatility from all the ticks, with the noise removed, and the size of the noise"
+
+[[decisionRows]]
+task = "Bipower"
+context = "Possible jumps"
+purpose = "The volatility of the continuous moves, apart from jumps, and a test for jumps"
+
+[[inputs]]
+id = "data"
+label = "Tick Data"
+tooltip = "simulated: one trading day of 6.5 hours with a tick every second, a true volatility of 1%, a 1% jump and noise of 2 basis points. Otherwise any Tables.jl source (e.g. a named tuple of vectors) with one row per tick: time (seconds), asset (Symbol) and logprice. Only the first asset is measured."
+default = "simulated"
+
+[[inputs]]
+id = "spacing"
+label = "Sampling Interval (seconds)"
+tooltip = "Seconds between the prices whose returns are squared: 300, five minutes, is a common choice. Leave blank for the interval HighFrequencyCovariance.jl chooses from its estimate of the noise."
+default = "300"
+models = ["rv"]
+
+[[inputs]]
+id = "K"
+label = "Sub-grids (K)"
+tooltip = "Number of sub-grids of the slow time scale, each taking every K-th tick. Leave blank for the package default: the number of ticks of the asset with the fewest, divided by 100, and at least 3."
+default = ""
+models = ["tsv"]
+
+[[inputs]]
+id = "every"
+label = "Sampling Interval (seconds)"
+tooltip = "Seconds between the prices whose returns are multiplied: 300, five minutes, keeps the noise small next to each return."
+default = "300"
+models = ["bpv"]
+
+[miniCharts]
+# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
+
+[miniCharts.rv]
+# Many small intraday returns summed into one bar
+svg = '''
+var s = '<line x1="4" y1="44" x2="38" y2="44" stroke="currentColor" stroke-width="0.6" opacity="0.5"/>';
+for (var i = 0; i < 16; i++) { var h = 3 + 9 * Math.abs(Math.sin(i * 1.7)); s += '<line x1="' + (6 + i * 2) + '" y1="' + (44 - h) + '" x2="' + (6 + i * 2) + '" y2="' + (44 + h * 0.6) + '" stroke="currentColor" stroke-width="1" opacity="0.6"/>'; }
+s += '<rect x="42" y="24" width="7" height="42" fill="currentColor" opacity="0.9"/>';
+return s;
+'''
+
+[miniCharts.tsv]
+# Noisy fast path and a smooth slow-scale path
+svg = '''
+var d = '', e = '';
+for (var i = 0; i <= 44; i++) {
+	var base = 44 - 12 * Math.sin(i / 9);
+	d += (i ? 'L' : 'M') + (5 + i) + ',' + (base + (i % 2 ? 4 : -4)).toFixed(1);
+	e += (i ? 'L' : 'M') + (5 + i) + ',' + base.toFixed(1);
+}
+return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="0.8" opacity="0.4"/><path d="' + e + '" fill="none" stroke="currentColor" stroke-width="1.6"/>';
+'''
+
+[miniCharts.bpv]
+# Returns with one jump that bipower variation discounts
+svg = '''
+var s = '<line x1="4" y1="46" x2="50" y2="46" stroke="currentColor" stroke-width="0.6" opacity="0.5"/>';
+for (var i = 0; i < 20; i++) {
+	var h = i === 11 ? 26 : 3 + 6 * Math.abs(Math.sin(i * 1.3));
+	s += '<line x1="' + (6 + i * 2.2) + '" y1="' + (46 - h) + '" x2="' + (6 + i * 2.2) + '" y2="46" stroke="currentColor" stroke-width="1.2" opacity="' + (i === 11 ? 0.95 : 0.55) + '"/>';
+}
+return s;
+'''
+
+[[codeBranches]]
+model = "rv"
+code = '''
+using HighFrequencyCovariance, Dates
+
+{{?data=simulated}} using Random
+{{?data=simulated}} rng = Xoshiro(7); n = 23400  # one trading day of 6.5 hours, a tick every second
+{{?data=simulated}} efficient = log(100) .+ cumsum(0.01 / sqrt(n) .* randn(rng, n))  # efficient log price, true volatility 1% over the day
+{{?data=simulated}} efficient[14000:end] .-= 0.01  # a 1% drop after 14,000 seconds: a jump
+{{?data=simulated}} ticks = (time = collect(1.0:n), asset = fill(:SPX, n), logprice = efficient .+ 0.0002 .* randn(rng, n))  # observed with 2 basis points of noise. Replace ticks with your own.
+{{?data!=simulated}} using Tables
+{{?data!=simulated}} ticks = Tables.columntable({{data}})  # one row per tick: time (seconds), asset (Symbol) and logprice
+ts = SortedDataFrame(HighFrequencyCovariance.DataFrame(ticks), :time, :asset, :logprice, Second(1))  # the package's tick table, sorted by time
+asset = first(get_assets(ts))
+span = duration(ts; in_dates_period = false)  # seconds from the first tick to the last
+
+"""The log returns of `asset` every `every` seconds: the last price at or before each time of the grid."""
+function grid_returns(ticks, asset, every)
+    mine = ticks.asset .== asset
+    order = sortperm(ticks.time[mine])
+    t, p = ticks.time[mine][order], ticks.logprice[mine][order]
+    return diff([p[searchsortedlast(t, g)] for g in range(first(t), last(t); step = every)])
+end
+
+{{?spacing=}} vols = simple_volatility(ts, [asset])  # sampled at the interval the package chooses from its estimate of the noise
+{{?spacing!=}} vols = simple_volatility(ts, [asset]; fixed_spacing = {{spacing}})  # sampled every {{spacing}} seconds
+sigma = vols[asset] * sqrt(span)  # volatility over the span of the ticks: one day of ticks gives a daily volatility
+
+println("Realized volatility over the span: ", round(100 * sigma, digits = 3), "%")
+'''
+
+[[codeBranches]]
+model = "tsv"
+code = '''
+using HighFrequencyCovariance, Dates
+
+{{?data=simulated}} using Random
+{{?data=simulated}} rng = Xoshiro(7); n = 23400  # one trading day of 6.5 hours, a tick every second
+{{?data=simulated}} efficient = log(100) .+ cumsum(0.01 / sqrt(n) .* randn(rng, n))  # efficient log price, true volatility 1% over the day
+{{?data=simulated}} efficient[14000:end] .-= 0.01  # a 1% drop after 14,000 seconds: a jump
+{{?data=simulated}} ticks = (time = collect(1.0:n), asset = fill(:SPX, n), logprice = efficient .+ 0.0002 .* randn(rng, n))  # observed with 2 basis points of noise. Replace ticks with your own.
+{{?data!=simulated}} using Tables
+{{?data!=simulated}} ticks = Tables.columntable({{data}})  # one row per tick: time (seconds), asset (Symbol) and logprice
+ts = SortedDataFrame(HighFrequencyCovariance.DataFrame(ticks), :time, :asset, :logprice, Second(1))  # the package's tick table, sorted by time
+asset = first(get_assets(ts))
+span = duration(ts; in_dates_period = false)  # seconds from the first tick to the last
+
+"""The log returns of `asset` every `every` seconds: the last price at or before each time of the grid."""
+function grid_returns(ticks, asset, every)
+    mine = ticks.asset .== asset
+    order = sortperm(ticks.time[mine])
+    t, p = ticks.time[mine][order], ticks.logprice[mine][order]
+    return diff([p[searchsortedlast(t, g)] for g in range(first(t), last(t); step = every)])
+end
+
+{{?K=}} vols, noise = two_scales_volatility(ts, [asset])  # every tick, with the package's number of sub-grids
+{{?K!=}} vols, noise = two_scales_volatility(ts, [asset]; num_grids = {{K}})  # every tick, with {{K}} sub-grids
+sigma = vols[asset] * sqrt(span)  # volatility over the span of the ticks: one day of ticks gives a daily volatility
+
+println("Two-scales volatility over the span: ", round(100 * sigma, digits = 3), "%")
+println("Standard deviation of the noise: ", round(1e4 * sqrt(noise[asset]), digits = 2), " basis points")
+'''
+
+[[codeBranches]]
+model = "bpv"
+code = '''
+using HighFrequencyCovariance, Dates
+
+{{?data=simulated}} using Random
+{{?data=simulated}} rng = Xoshiro(7); n = 23400  # one trading day of 6.5 hours, a tick every second
+{{?data=simulated}} efficient = log(100) .+ cumsum(0.01 / sqrt(n) .* randn(rng, n))  # efficient log price, true volatility 1% over the day
+{{?data=simulated}} efficient[14000:end] .-= 0.01  # a 1% drop after 14,000 seconds: a jump
+{{?data=simulated}} ticks = (time = collect(1.0:n), asset = fill(:SPX, n), logprice = efficient .+ 0.0002 .* randn(rng, n))  # observed with 2 basis points of noise. Replace ticks with your own.
+{{?data!=simulated}} using Tables
+{{?data!=simulated}} ticks = Tables.columntable({{data}})  # one row per tick: time (seconds), asset (Symbol) and logprice
+ts = SortedDataFrame(HighFrequencyCovariance.DataFrame(ticks), :time, :asset, :logprice, Second(1))  # the package's tick table, sorted by time
+asset = first(get_assets(ts))
+span = duration(ts; in_dates_period = false)  # seconds from the first tick to the last
+
+"""The log returns of `asset` every `every` seconds: the last price at or before each time of the grid."""
+function grid_returns(ticks, asset, every)
+    mine = ticks.asset .== asset
+    order = sortperm(ticks.time[mine])
+    t, p = ticks.time[mine][order], ticks.logprice[mine][order]
+    return diff([p[searchsortedlast(t, g)] for g in range(first(t), last(t); step = every)])
+end
+
+r = grid_returns(ticks, asset, {{every}})  # log returns every {{every}} seconds
+BPV = (pi / 2) * sum(abs.(r[2:end]) .* abs.(r[1:end-1]))  # bipower variation; pi/2 makes it estimate the variance of the continuous moves
+sigma = sqrt(BPV)  # volatility over the span, apart from jumps
+
+println("Bipower volatility over the span: ", round(100 * sigma, digits = 3), "%")
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "path"
+label = "Price Path"
+desc = "The asset's price at every tick through the span"
+code = '''
+using Plots
+mine = ticks.asset .== asset
+Plots.plot(ticks.time[mine] ./ 3600, exp.(ticks.logprice[mine]); xlabel = "Hours since the first tick", ylabel = "Price", legend = false)
+'''
+
+[[actionGroups.actions]]
+id = "signature"
+label = "Volatility Signature Plot"
+desc = "Realized volatility at sampling intervals from one second to half an hour: noise makes it rise as the interval shrinks"
+code = '''
+using Plots
+intervals = [1, 2, 5, 10, 30, 60, 120, 300, 600, 900, 1800]  # seconds
+realized = [sqrt(sum(abs2, grid_returns(ticks, asset, s))) for s in intervals]
+Plots.plot(intervals, 100 .* realized; xscale = :log10, marker = :circle, xlabel = "Sampling interval (seconds)", ylabel = "Realized volatility (%)", label = "Realized volatility")
+hline!([100 * sigma]; linestyle = :dash, label = "This tab's estimate")
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "bns"
+label = "Barndorff-Nielsen and Shephard Test"
+desc = "Jump test on returns every five minutes: the standardised gap between realized variance and bipower variation, one-sided, as jumps raise only realized variance"
+code = '''
+using SpecialFunctions  # gamma, erfc
+
+{{?model=rv|tsv}} r = grid_returns(ticks, asset, 300)  # log returns every five minutes
+{{?model=bpv}} r = grid_returns(ticks, asset, {{every}})  # the returns of the tab
+n = length(r)
+RV = sum(r .^ 2)  # realized variance
+BV = (pi / 2) * sum(abs.(r[2:end]) .* abs.(r[1:end-1]))  # bipower variation
+mu43 = 2^(2 / 3) * gamma(7 / 6) / gamma(1 / 2)  # E|Z|^(4/3) for a standard normal Z
+TQ = n * mu43^(-3) * sum(abs.(r[3:end]) .^ (4 / 3) .* abs.(r[2:end-1]) .^ (4 / 3) .* abs.(r[1:end-2]) .^ (4 / 3))  # tripower quarticity
+Z = (RV - BV) / sqrt(((pi / 2)^2 + pi - 5) * TQ / n)
+p = 0.5 * erfc(Z / sqrt(2))  # one-sided p-value
+println("Z = ", round(Z, digits = 2), ", one-sided p-value = ", round(p, sigdigits = 3), Z > 1.645 ? ": jumps at the 5% level" : ": no significant jump at the 5% level")
+'''
+
+[[actionGroups.actions]]
+id = "noise"
+label = "Microstructure Noise"
+desc = "The variance of the noise, estimated by the two-scales method, against the variance of the efficient price over one tick"
+code = '''
+noise = estimate_microstructure_noise(ts, [asset])[asset]  # variance of the noise in the log price
+per_tick = sigma^2 / count(==(asset), ticks.asset)  # variance of the efficient price over one tick, from this tab's estimate
+(noise_sd_basis_points = round(1e4 * sqrt(noise), digits = 2), noise_to_signal = round(noise / per_tick, digits = 2))  # a ratio above 1: tick returns are mostly noise
+'''
+
+[[actionGroups.actions]]
+id = "intraday"
+label = "Volatility Through the Day"
+desc = "Realized volatility of each half hour, from one-minute returns"
+code = '''
+using Plots
+minute = grid_returns(ticks, asset, 60)  # one-minute log returns
+halves = collect(Iterators.partition(minute, 30))  # half hours
+bar(100 .* [sqrt(sum(abs2, h)) for h in halves]; xlabel = "Half hour of the span", ylabel = "Realized volatility (%)", legend = false)
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "estimators"
+label = "All Four Estimators"
+desc = "Realized volatility on every tick and every five minutes, two-scales and bipower volatility, side by side"
+code = '''
+r5 = grid_returns(ticks, asset, 300)  # log returns every five minutes
+rows = [
+    (estimator = "Realized, every tick", volatility = simple_volatility(ts, [asset]; use_all_obs = true)[asset] * sqrt(span)),
+    (estimator = "Realized, every 5 minutes", volatility = simple_volatility(ts, [asset]; fixed_spacing = 300)[asset] * sqrt(span)),
+    (estimator = "Two-scales, every tick", volatility = two_scales_volatility(ts, [asset])[1][asset] * sqrt(span)),
+    (estimator = "Bipower, every 5 minutes", volatility = sqrt((pi / 2) * sum(abs.(r5[2:end]) .* abs.(r5[1:end-1])))),
+]
+{{?data=simulated}} push!(rows, (estimator = "True, continuous moves only", volatility = 0.01), (estimator = "True, with the jump", volatility = sqrt(0.01^2 + 0.01^2)))
+[(r.estimator, round(100 * r.volatility, digits = 3)) for r in rows]  # volatility over the span, in %
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "annualise"
+label = "Annualise"
+desc = "The volatility of one day of ticks scaled to a year of 252 trading days"
+code = '''
+println("Annualised volatility: ", round(100 * sigma * sqrt(252), digits = 2), "%  (valid when the ticks cover one trading day)")
+'''
+
+[[actionGroups.actions]]
+id = "jumpshare"
+label = "Jump Share of the Variance"
+desc = "The share of realized variance that bipower variation does not explain, an estimate of the part due to jumps"
+code = '''
+{{?model=rv|tsv}} r = grid_returns(ticks, asset, 300)  # log returns every five minutes
+{{?model=bpv}} r = grid_returns(ticks, asset, {{every}})  # the returns of the tab
+RV = sum(r .^ 2)
+BV = (pi / 2) * sum(abs.(r[2:end]) .* abs.(r[1:end-1]))
+println("Jump share of the variance: ", round(100 * max(RV - BV, 0) / RV, digits = 1), "%")
+'''
