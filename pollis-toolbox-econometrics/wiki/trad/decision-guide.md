@@ -36,7 +36,7 @@
 ## Related Panels
 
 - **Agent-Based Models**: agent-based models outside finance, with Agents.jl.
-- **Point Processes** and **Point Process Simulation**: Hawkes processes, the standard model for clustered order arrivals.
+- **Model Point Processes** and **Simulate Point Processes**: Hawkes processes, the standard model for clustered order arrivals.
 - **Diffusion Processes**: continuous-time price models that ignore the order book.
 
 ## See Also

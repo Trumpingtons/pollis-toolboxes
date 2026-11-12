@@ -1,10 +1,10 @@
-# Point Process Simulation Webview Configuration
+# Simulate Point Processes Webview Configuration
 # This is the declarative source for the webview. The build script generates:
 # - src/vs/workbench/contrib/model/browser/webviews/ptps.data.ts
 # Run: npm run gulp compile-toml
 
 [meta]
-title = "Point Process Simulation"
+title = "Simulate Point Processes"
 viewType = "pollis.ptps"
 defaultModel = "poisson"
 

@@ -1,10 +1,10 @@
-# Point Processes Webview Configuration
+# Model Point Processes Webview Configuration
 # This is the declarative source for the webview. The build script generates:
 # - src/vs/workbench/contrib/model/browser/webviews/ptp.data.ts
 # Run: npm run gulp compile-toml
 
 [meta]
-title = "Point Processes"
+title = "Model Point Processes"
 viewType = "pollis.ptp"
 defaultModel = "poisson"
 
