@@ -136,11 +136,11 @@ label = "Realized Kernel"
 
 [[bullets]]
 text = "Realized Covariance"
-detail = "synchronises asynchronous tick data by refresh-time sampling, then sums outer products of log-returns; fast and consistent under idealised conditions"
+detail = "samples asynchronous tick data on a common time grid, then sums outer products of log-returns; fast and consistent under idealised conditions"
 
 [[bullets]]
 text = "Pre-averaged"
-detail = "smooths tick log-returns over an H-tick window before forming outer products, reducing the influence of additive microstructure noise"
+detail = "smooths tick log-returns over a window of k = theta * sqrt(number of ticks) ticks before forming outer products, reducing the influence of additive microstructure noise"
 
 [[bullets]]
 text = "Two-Scales"
@@ -148,7 +148,7 @@ detail = "combines a slow-scale (K sub-sampled grids) and a fast-scale (all tick
 
 [[bullets]]
 text = "Realized Kernel"
-detail = "applies a Parzen kernel to the autocovariance matrices of tick returns up to lag L, yielding a positive semi-definite estimate robust to both noise and non-synchronicity"
+detail = "applies a Parzen kernel to the autocovariance matrices of tick returns up to the bandwidth H, yielding a positive semi-definite estimate robust to both noise and non-synchronicity"
 
 [[inputs]]
 id = "data"
