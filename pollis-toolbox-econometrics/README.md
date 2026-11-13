@@ -30,6 +30,14 @@ Installing it adds the **Finance** submenu to the end of the **Extend** menu; it
 | EVT Diagnostics | Threshold selection and tail index estimation for extreme value models | [Extremes.jl](https://github.com/jojal5/Extremes.jl) |
 | Trading Agents | Simulated limit order book markets: fundamentalist, chartist and noise traders after Chiarella and Iori, zero-intelligence order flow, and a live exchange with trading agents, with the spread, depth, fat tails and price impact they produce | [LimitOrderBook.jl](https://github.com/p-casgrain/LimitOrderBook.jl), [Brokerage.jl](https://github.com/aaron-wheeler/Brokerage.jl), [TradingAgents.jl](https://github.com/aaron-wheeler/TradingAgents.jl) |
 
+## Texts for the Knowledge Base
+
+The toolbox adds to the Knowledge Base (**Compose > Knowledge for AI Models > Knowledge Base**), with Finance Toolbox as its source, a text that Ask Pollis can answer from once it is switched on and in the index:
+
+| Text | Authors | Licence | As kept |
+|---|---|---|---|
+| Lecture Notes in Empirical Asset Pricing (PhD), 25 August 2023, University of St. Gallen | Söderlind | MIT | The PDF of its author, unchanged, downloaded from [PaulSoderlind/EmpiricalFinancePhD](https://github.com/PaulSoderlind/EmpiricalFinancePhD) |
+
 ## Requirements
 
 Julia. Each panel lists the Julia packages it uses on its Powered by line and offers to install the missing ones.

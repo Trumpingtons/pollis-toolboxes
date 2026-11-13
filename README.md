@@ -17,6 +17,8 @@ New toolboxes are welcome, as pull requests: see [CONTRIBUTING.md](CONTRIBUTING.
 
 - `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/` and, optionally, `docs/<document>/`, the LaTeX sources of the toolbox's documentation (see below).
 - A toolbox folder with a `DEFERRED.md` stays on `main` but is not published: the packaging leaves it out until the file is deleted.
+- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
+- `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
 
 ## Documentation
 
@@ -32,8 +34,33 @@ A toolbox can bring its own documentation, listed in **Help > Documentation > To
 ```
 
 `source` is the main `.tex` file, relative to the toolbox folder; its name is letters, digits, `-` and `_`. The document's other `.tex` files and its `.bib` files go in the same folder, and its images (`.png`, `.jpg`) in a `resources/` folder beside them. Write the sources for XeTeX: `fontspec` rather than `inputenc`, and no shell escape.
-- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
-- `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
+
+## Texts for the Knowledge Base
+
+A toolbox can add texts to the Knowledge Base of Pollis (**Compose > Knowledge for AI Models > Knowledge Base**): lecture notes, books or articles whose authors share them under an open licence. The toolbox ships no PDF: it names where the authors keep it, at a fixed version, and Pollis downloads it the first time the user switches the text on, checks it by its SHA-256 and keeps it, with a `LICENCE.md`, in `~/.pollis/knowledge/toolboxes`. In the table of the Knowledge Base, the toolbox is the text's **Source**, and the text leaves the table when the toolbox is uninstalled. Each toolbox entry of `pollisToolboxes` lists its texts:
+
+```json
+"texts": [
+  {
+    "id": "empirical_asset_pricing",
+    "reference": "Sod2023a",
+    "title": "Lecture Notes in Empirical Asset Pricing (PhD)",
+    "type": "Lecture Notes",
+    "edition": "25 August 2023",
+    "authors": ["Paul Söderlind"],
+    "publisher": "University of St. Gallen",
+    "year": 2023,
+    "licence": "MIT",
+    "licenceUrl": "https://github.com/PaulSoderlind/EmpiricalFinancePhD/blob/6e41df601c06c13ae097264a6604f51334d44fac/LICENSE.txt",
+    "page": "https://github.com/PaulSoderlind/EmpiricalFinancePhD",
+    "download": "https://raw.githubusercontent.com/PaulSoderlind/EmpiricalFinancePhD/6e41df601c06c13ae097264a6604f51334d44fac/EmpFinPhDAll.pdf",
+    "sha256": "58ffdb6b9fe6c162dae9caca5f65225a1abb93c803d5c493190c1daccd32a5dd",
+    "size": 9.2
+  }
+]
+```
+
+`id` is lower-case letters, digits and `_`. `download` is the PDF at a fixed version, such as a file of a GitHub repository at a commit, so that the file named is the one `sha256` describes; `size` is in MB. `reference` is the key of the text's work in PollisReferences, `subject`, `keyWords` and `classifications` (each a system with its codes, such as `JEL: G12, C58`) are optional, and so is `changes`, what is changed of the PDF; without it, the PDF of its authors, unchanged.
 
 ## For developers
 

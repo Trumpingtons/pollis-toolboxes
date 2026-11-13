@@ -58,6 +58,7 @@ interface ToolboxManifest {
 			readonly id?: string;
 			readonly panels?: readonly { readonly id?: string; readonly command?: string; readonly data?: string }[];
 			readonly documents?: readonly { readonly title?: string; readonly source?: string }[];
+			readonly texts?: readonly Readonly<Record<string, unknown>>[];
 		}[];
 	};
 }
@@ -230,6 +231,35 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 				error(`the document ${document.title} names ${document.source}: it must be a .tex file inside the toolbox folder`);
 			} else if (!fs.existsSync(source)) {
 				error(`the document ${document.title} names ${document.source}, which does not exist`);
+			}
+		}
+		// The texts of the Knowledge Base: PDFs their authors share, which Pollis downloads at a fixed version
+		const textIds = new Set<string>();
+		for (const text of toolbox.texts ?? []) {
+			const name = typeof text.title === 'string' ? text.title : String(text.id ?? 'a text');
+			const missing = ['id', 'title', 'type', 'edition', 'publisher', 'licence', 'licenceUrl', 'page', 'download', 'sha256'].filter(field => typeof text[field] !== 'string' || !text[field]);
+			if (missing.length) {
+				error(`the text ${name} needs ${missing.map(field => `"${field}"`).join(', ')}`);
+				continue;
+			}
+			const id = text.id as string;
+			if (!/^[a-z0-9_]+$/.test(id) || textIds.has(id)) {
+				error(`the text ${name} needs a unique id of lower-case letters, digits and underscores`);
+			}
+			textIds.add(id);
+			if (!/^[0-9a-f]{64}$/.test(text.sha256 as string)) {
+				error(`the text ${name} needs the SHA-256 of its PDF, in hexadecimal`);
+			}
+			for (const field of ['page', 'licenceUrl', 'download']) {
+				if (!(text[field] as string).startsWith('https://')) {
+					error(`the "${field}" of the text ${name} must be an https link`);
+				}
+			}
+			if (!Array.isArray(text.authors) || !text.authors.length || !text.authors.every(author => typeof author === 'string')) {
+				error(`the text ${name} needs its "authors"`);
+			}
+			if (!Number.isInteger(text.year) || typeof text.size !== 'number' || text.size <= 0) {
+				error(`the text ${name} needs its "year" and its "size" in MB`);
 			}
 		}
 	}

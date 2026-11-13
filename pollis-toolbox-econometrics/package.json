@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
   "description": "Pollis Finance Toolbox: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, portfolio optimisation, loss risk measures, extreme value analysis, and simulated limit order book markets.",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -25,6 +25,24 @@
           {
             "title": "Finance Toolbox",
             "source": "docs/finance/finance.tex"
+          }
+        ],
+        "texts": [
+          {
+            "id": "empirical_asset_pricing",
+            "reference": "Sod2023a",
+            "title": "Lecture Notes in Empirical Asset Pricing (PhD)",
+            "type": "Lecture Notes",
+            "edition": "25 August 2023",
+            "authors": ["Paul Söderlind"],
+            "publisher": "University of St. Gallen",
+            "year": 2023,
+            "licence": "MIT",
+            "licenceUrl": "https://github.com/PaulSoderlind/EmpiricalFinancePhD/blob/6e41df601c06c13ae097264a6604f51334d44fac/LICENSE.txt",
+            "page": "https://github.com/PaulSoderlind/EmpiricalFinancePhD",
+            "download": "https://raw.githubusercontent.com/PaulSoderlind/EmpiricalFinancePhD/6e41df601c06c13ae097264a6604f51334d44fac/EmpFinPhDAll.pdf",
+            "sha256": "58ffdb6b9fe6c162dae9caca5f65225a1abb93c803d5c493190c1daccd32a5dd",
+            "size": 9.2
           }
         ],
         "submenus": [
