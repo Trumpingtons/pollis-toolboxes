@@ -60,7 +60,22 @@ A toolbox can add texts to the Knowledge Base of Pollis (**Compose > Knowledge f
 ]
 ```
 
-`id` is lower-case letters, digits and `_`. `download` is the PDF at a fixed version, such as a file of a GitHub repository at a commit, so that the file named is the one `sha256` describes; `size` is in MB. `reference` is the key of the text's work in PollisReferences, `subject`, `keyWords` and `classifications` (each a system with its codes, such as `JEL: G12, C58`) are optional, and so is `changes`, what is changed of the PDF; without it, the PDF of its authors, unchanged.
+`id` is lower-case letters, digits and `_`. `download` is the PDF at a fixed version, such as a file of a GitHub repository at a commit, so that the file named is the one `sha256` describes; `size` is in MB. `reference` is the key of the text's work in PollisReferences, `subject`, `packages` (the Julia packages the text is about, such as `Distributions.jl`, which the Knowledge Base shows first in its subject), `keyWords` and `classifications` (each a system with its codes, such as `JEL: G12, C58`) are optional, and so is `changes`, what is changed of the PDF; without it, the PDF of its authors, unchanged.
+
+## Notebook courses
+
+A toolbox can add notebook courses to **Help > Notebook Courses** of Pollis: courses of its field taught in notebooks, on their authors' sites, which Pollis opens in its internal browser. They are in the menu while the toolbox is installed, after the courses Pollis has itself, by their titles. Each toolbox entry of `pollisToolboxes` lists its courses:
+
+```json
+"courses": [
+  {
+    "title": "QuantEcon Julia Lectures (Jupyter)",
+    "url": "https://julia.quantecon.org"
+  }
+]
+```
+
+`title` is the menu item, with the kind of the course's notebooks in parentheses when its title does not say it, and `url` the https link to the course's page.
 
 ## For developers
 

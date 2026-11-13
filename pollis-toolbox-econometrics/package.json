@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-econometrics",
   "displayName": "Finance Toolbox",
   "description": "Pollis Finance Toolbox: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, time-series forecasting, Bayesian asset-pricing factor models, portfolio optimisation, loss risk measures, extreme value analysis, and simulated limit order book markets.",
-  "version": "0.1.20",
+  "version": "0.1.21",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -21,6 +21,12 @@
         "id": "econometrics",
         "title": "Finance",
         "order": 1,
+        "courses": [
+          {
+            "title": "Financial Risk Forecasting",
+            "url": "https://financialriskforecasting.com/notebook/"
+          }
+        ],
         "documents": [
           {
             "title": "Finance Toolbox",

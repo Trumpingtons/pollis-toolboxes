@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-economics",
   "displayName": "Economics Toolbox",
   "description": "Pollis Economics Toolbox: business cycle filters, discrete-time stochastic volatility models, DSGE models, VAR/VECM systems, heterogeneous-agent models, continuous-time macro-finance and game theory.",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -21,6 +21,12 @@
         "id": "economics",
         "title": "Economics",
         "order": 1,
+        "courses": [
+          {
+            "title": "QuantEcon Julia Lectures (Jupyter)",
+            "url": "https://julia.quantecon.org"
+          }
+        ],
         "documents": [
           {
             "title": "Economics Toolbox",

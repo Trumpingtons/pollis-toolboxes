@@ -59,6 +59,7 @@ interface ToolboxManifest {
 			readonly panels?: readonly { readonly id?: string; readonly command?: string; readonly data?: string }[];
 			readonly documents?: readonly { readonly title?: string; readonly source?: string }[];
 			readonly texts?: readonly Readonly<Record<string, unknown>>[];
+			readonly courses?: readonly { readonly title?: string; readonly url?: string }[];
 		}[];
 	};
 }
@@ -260,6 +261,12 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 			}
 			if (!Number.isInteger(text.year) || typeof text.size !== 'number' || text.size <= 0) {
 				error(`the text ${name} needs its "year" and its "size" in MB`);
+			}
+		}
+		// The notebook courses of Help > Notebook Courses: web pages Pollis opens in its internal browser
+		for (const course of toolbox.courses ?? []) {
+			if (!course.title || !course.url?.startsWith('https://')) {
+				error(`the course ${course.title ?? 'of ' + (toolbox.id ?? 'a toolbox')} needs a "title" and an https "url"`);
 			}
 		}
 	}
