@@ -1,0 +1,445 @@
+# A Vineyard for the Portfolio: a case of Compose > Collaboration > Simulation Games. Its model is model.jl, which
+# Pollis runs for each round, in a fresh Julia process on the facilitator's computer.
+
+title = "A Vineyard for the Portfolio"
+description = "Harrowgate Drinks, a British drinks group, wants to buy one of three wineries, in Chile, Italy and Australia. One team is Harrowgate's board, three teams the wineries' owners, each knowing something about its winery that Harrowgate does not. After diligence and two rounds of offers, every winery is run for three years. The team that creates the most value wins."
+rounds = 6
+round = "Round"
+round_names = ["Due Diligence", "First Offers", "Last Offers", "Year 1", "Year 2", "Year 3"]
+team_names = ["Harrowgate Drinks", "Viña Piedra Azul", "Tenuta Ventaluce", "Kestrel Flats Estate"]
+briefing = "briefing.md"
+debrief = "debrief-questions.md"
+# Teams can write to each other, the facilitator reading what they write: the buyer and the owners negotiate.
+negotiations = true
+
+# The kinds of team: one buyer, and three wineries, in the order of team_names.
+[[sides]]
+key = "buyer"
+label = "Harrowgate Drinks"
+teams = 1
+briefing = "briefings/harrowgate.md"
+
+[[sides]]
+key = "winery"
+label = "Winery"
+teams = 3
+briefing = "briefings/wineries.md"
+
+# The ways the teams can be organised; the facilitator chooses one when hosting the game.
+[[structures]]
+key = "boards"
+label = "Boards"
+description = "Harrowgate's players sit on its board, and each winery's players are its owners: everyone in a team reads its briefings and sets its decisions."
+
+[[structures.roles]]
+key = "harrowgate_board"
+label = "Board Member"
+sides = ["buyer"]
+briefing = ["briefings/strategy.md", "briefings/deals.md", "briefings/treasury.md"]
+
+[[structures.roles]]
+key = "owners"
+label = "Owner"
+sides = ["winery"]
+briefing = ["briefings/selling.md", "briefings/running.md"]
+
+[[structures]]
+key = "officers"
+label = "Officers"
+description = "Harrowgate's players are its Chief Executive, Corporate Development, Treasury and Distribution; each winery's are its Owner, who negotiates the sale, and its Managing Director, who runs it."
+
+[[structures.roles]]
+key = "chief_executive"
+label = "Chief Executive"
+sides = ["buyer"]
+briefing = "briefings/strategy.md"
+decides = ["target"]
+
+[[structures.roles]]
+key = "corporate_development"
+label = "Corporate Development"
+sides = ["buyer"]
+briefing = "briefings/deals.md"
+decides = ["diligence_chile", "diligence_italy", "diligence_australia", "offer_cash", "offer_earnout"]
+
+[[structures.roles]]
+key = "treasury"
+label = "Treasury"
+sides = ["buyer"]
+briefing = "briefings/treasury.md"
+decides = ["hedge"]
+
+[[structures.roles]]
+key = "distribution"
+label = "Distribution"
+sides = ["buyer"]
+briefing = "briefings/strategy.md"
+decides = ["distribution"]
+
+[[structures.roles]]
+key = "owner"
+label = "Owner"
+sides = ["winery"]
+briefing = "briefings/selling.md"
+decides = ["disclose", "ask_cash", "ask_total"]
+
+[[structures.roles]]
+key = "managing_director"
+label = "Managing Director"
+sides = ["winery"]
+briefing = "briefings/running.md"
+decides = ["price", "marketing", "investment"]
+
+# Harrowgate's decisions
+[[decisions]]
+key = "diligence_chile"
+label = "Diligence on Viña Piedra Azul"
+kind = "choice"
+options = ["none", "light", "full"]
+labels = ["None", "Desk Review (0.2 m £)", "Full Due Diligence (0.6 m £)"]
+default = "none"
+sides = ["buyer"]
+rounds = [1]
+help = "How closely your analysts look at the Chilean winery."
+
+[[decisions]]
+key = "diligence_italy"
+label = "Diligence on Tenuta Ventaluce"
+kind = "choice"
+options = ["none", "light", "full"]
+labels = ["None", "Desk Review (0.2 m £)", "Full Due Diligence (0.6 m £)"]
+default = "none"
+sides = ["buyer"]
+rounds = [1]
+help = "How closely your analysts look at the Italian winery."
+
+[[decisions]]
+key = "diligence_australia"
+label = "Diligence on Kestrel Flats Estate"
+kind = "choice"
+options = ["none", "light", "full"]
+labels = ["None", "Desk Review (0.2 m £)", "Full Due Diligence (0.6 m £)"]
+default = "none"
+sides = ["buyer"]
+rounds = [1]
+help = "How closely your analysts look at the Australian winery."
+
+[[decisions]]
+key = "target"
+label = "Offer For"
+kind = "choice"
+options = ["none", "chile", "italy", "australia"]
+labels = ["No Offer", "Viña Piedra Azul (Chile)", "Tenuta Ventaluce (Italy)", "Kestrel Flats Estate (Australia)"]
+default = "none"
+sides = ["buyer"]
+rounds = [2, 3]
+help = "The one winery Harrowgate makes an offer for this round."
+
+[[decisions]]
+key = "offer_cash"
+label = "Cash Offered"
+kind = "number"
+unit = "m £"
+min = 0
+max = 250
+step = 0.5
+default = 0
+sides = ["buyer"]
+rounds = [2, 3]
+help = "The cash Harrowgate pays the owners when the deal is signed."
+
+[[decisions]]
+key = "offer_earnout"
+label = "Earn-Out Offered"
+kind = "number"
+unit = "m £"
+min = 0
+max = 60
+step = 0.5
+default = 0
+sides = ["buyer"]
+rounds = [2, 3]
+help = "Paid after Year 3: the share of its plan's earnings the winery reaches in Year 3, the plan being its stated earnings grown at its stated growth, at most all of it."
+
+[[decisions]]
+key = "distribution"
+label = "Distribution"
+kind = "choice"
+options = ["none", "partial", "full"]
+labels = ["None", "Some Markets (0.3 m £ a year)", "Every Market (0.6 m £ a year)"]
+default = "none"
+sides = ["buyer"]
+rounds = [4, 5, 6]
+help = "How much of Harrowgate's distribution network sells the winery it owns."
+
+[[decisions]]
+key = "hedge"
+label = "Currency Hedged"
+kind = "number"
+unit = "%"
+min = 0
+max = 100
+step = 5
+default = 0
+sides = ["buyer"]
+rounds = [4, 5, 6]
+help = "The share of the winery's earnings whose exchange rate against the pound Harrowgate fixes this year."
+
+# The wineries' decisions
+[[decisions]]
+key = "disclose"
+label = "Your Issue"
+kind = "choice"
+options = ["no", "yes"]
+labels = ["Say Nothing", "Disclose It to Harrowgate"]
+default = "no"
+sides = ["winery"]
+rounds = [1]
+help = "Whether Harrowgate hears of your winery's issue from you."
+
+[[decisions]]
+key = "ask_cash"
+label = "Least Cash Accepted"
+kind = "number"
+unit = "m £"
+min = 0
+max = 250
+step = 0.5
+default = 250
+sides = ["winery"]
+rounds = [2, 3]
+help = "The least cash your owners accept for the winery."
+
+[[decisions]]
+key = "ask_total"
+label = "Least Cash and Earn-Out Accepted"
+kind = "number"
+unit = "m £"
+min = 0
+max = 310
+step = 0.5
+default = 310
+sides = ["winery"]
+rounds = [2, 3]
+help = "The least cash plus earn-out your owners accept, the earn-out counted in full."
+
+[[decisions]]
+key = "price"
+label = "Prices"
+kind = "choice"
+options = ["keep", "raise", "cut"]
+labels = ["Keep Them", "Raise Them", "Cut Them"]
+default = "keep"
+sides = ["winery"]
+rounds = [4, 5, 6]
+help = "Your wines' prices this year: higher prices earn more on each bottle, and sell fewer."
+
+[[decisions]]
+key = "marketing"
+label = "Marketing"
+kind = "number"
+unit = "m £"
+min = 0
+max = 3
+step = 0.1
+default = 0.3
+sides = ["winery"]
+rounds = [4, 5, 6]
+help = "What the winery spends on marketing this year."
+
+[[decisions]]
+key = "investment"
+label = "Investment"
+kind = "number"
+unit = "m £"
+min = 0
+max = 10
+step = 0.5
+default = 0
+sides = ["winery"]
+rounds = [4, 5, 6]
+help = "What the winery spends this year on vines and cellars; Harrowgate pays it for the winery it owns."
+
+# The results. The debrief ranks the teams of each side by winner, a column of the public results: the three
+# wineries among themselves, and Harrowgate alone, against doing nothing.
+[results]
+winner = "gain"
+
+[[results.public]]
+key = "team"
+label = "Team"
+
+[[results.public]]
+key = "status"
+label = "Status"
+
+[[results.public]]
+key = "earnings"
+label = "Earnings"
+unit = "m £"
+digits = 1
+
+[[results.public]]
+key = "value"
+label = "Market Value"
+unit = "m £"
+digits = 1
+
+[[results.public]]
+key = "gain"
+label = "Value Created"
+unit = "m £"
+digits = 1
+
+[[results.private]]
+key = "diligence"
+label = "Spent on Diligence"
+unit = "m £"
+digits = 1
+sides = ["buyer"]
+
+[[results.private]]
+key = "price_paid"
+label = "Cash Paid"
+unit = "m £"
+digits = 1
+sides = ["buyer"]
+
+[[results.private]]
+key = "winery_earnings"
+label = "Winery's Earnings"
+unit = "m £"
+digits = 2
+sides = ["buyer"]
+
+[[results.private]]
+key = "synergy"
+label = "Yearly Savings"
+unit = "m £"
+digits = 1
+sides = ["buyer"]
+
+[[results.private]]
+key = "earnings"
+label = "Earnings"
+unit = "m £"
+digits = 2
+sides = ["winery"]
+
+[[results.private]]
+key = "fx"
+label = "Exchange Rate Index"
+digits = 3
+sides = ["winery"]
+
+[[results.private]]
+key = "investment_total"
+label = "Invested So Far"
+unit = "m £"
+digits = 1
+sides = ["winery"]
+
+[[results.private]]
+key = "start_value"
+label = "Stated Value, Carried Forward"
+unit = "m £"
+digits = 1
+sides = ["winery"]
+
+[[results.private]]
+key = "earnout_due"
+label = "Earn-Out Due"
+unit = "m £"
+digits = 1
+
+[[results.private]]
+key = "cash_flow"
+label = "Cash Received, Carried Forward"
+unit = "m £"
+digits = 1
+
+# The news the facilitator can release, from the round given on.
+[[news]]
+round = 4
+title = "Frost in Tuscany"
+text = "A late frost has struck the vineyards of Tuscany. Growers expect this year's harvest to be about 30% smaller than usual."
+[news.parameters.harvest]
+italy = -0.3
+
+[[news]]
+round = 4
+title = "The Chilean Peso Jumps"
+text = "The Chilean peso has risen sharply against the pound and the dollar. Chilean exporters' costs rise with it: their earnings in pounds are expected to be about 12% lower from now on."
+roles = ["treasury", "managing_director"]
+[news.parameters.fx_shift]
+chile = -0.12
+
+[[news]]
+round = 5
+title = "A Tariff on Imported Wine"
+text = "One of the largest export markets for Australian wine has put a tariff on it. Exporters expect their sales there to be worth about half as much from now on."
+[news.parameters]
+tariff = 0.5
+
+[[news]]
+round = 5
+title = "A Cool, Dry Year in Colchagua"
+text = "The Colchagua Valley has had an ideal growing season. Growers expect this year's harvest to be about 10% larger and finer than usual."
+roles = ["managing_director", "distribution"]
+[news.parameters.harvest]
+chile = 0.1
+
+# What model.jl reads; money is in millions of pounds, rates are a year's. The wineries' figures are given by
+# their key, in the order of team_names after Harrowgate.
+[parameters]
+wineries = ["chile", "italy", "australia"]
+cost_of_capital = 0.12
+earnings_noise = 0.04
+fx_volatility = 0.05
+desk_review_cost = 0.2
+full_diligence_cost = 0.6
+price_margin = 0.05
+price_volume = 0.03
+marketing_effect = 0.03
+investment_effect = 0.004
+distribution_cost = 0.6
+hedge_cost = 0.01
+replant_need = 4.0
+old_vine_decline = 0.12
+export_share = 0.45
+tariff = 0.0
+
+[parameters.growth]
+chile = 0.07
+italy = 0.04
+australia = 0.05
+
+[parameters.stated_earnings]
+chile = 6.0
+italy = 4.5
+australia = 7.5
+
+[parameters.earnings_gap]
+chile = 1.2
+italy = 0.0
+australia = 0.0
+
+[parameters.synergy]
+chile = 0.8
+italy = 0.6
+australia = 1.0
+
+[parameters.distribution_fit]
+chile = 0.05
+italy = 0.08
+australia = 0.04
+
+[parameters.fx_shift]
+chile = 0.0
+italy = 0.0
+australia = 0.0
+
+[parameters.harvest]
+chile = 0.0
+italy = 0.0
+australia = 0.0

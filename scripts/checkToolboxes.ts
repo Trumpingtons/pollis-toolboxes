@@ -20,6 +20,8 @@
 //   - the toolbox ids, panel ids and commands are not used by another toolbox, and every panel's TOML exists
 //   - only text, notebook and image files (.toml .md .json .ipynb .txt .png .svg), each at most 1 MB,
 //     5 MB in all; a README.md; notebooks saved without outputs
+//   - each Simulation Games case (games) is a folder of the toolbox with case.toml and model.jl; Julia
+//     files (.jl) go only in a case's folder, as Pollis runs model.jl when a facilitator hosts the case
 //   - every panel TOML passes validatePanel.mjs (its warnings are shown, not counted as errors)
 //   - the toolboxes package (scripts/packageToolboxes.ts)
 // Writes a report to the standard output and, on GitHub, to the job summary.
@@ -60,6 +62,7 @@ interface ToolboxManifest {
 			readonly documents?: readonly { readonly title?: string; readonly source?: string }[];
 			readonly texts?: readonly Readonly<Record<string, unknown>>[];
 			readonly courses?: readonly { readonly title?: string; readonly url?: string }[];
+			readonly games?: readonly { readonly folder?: string }[];
 		}[];
 	};
 }
@@ -198,6 +201,7 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 	// Ids, commands and the panel files
 	const used = usedIds(folder);
 	const panelTomls: string[] = [];
+	const gameFolders: string[] = [];
 	for (const toolbox of toolboxes) {
 		if (!toolbox.id) {
 			error('a pollisToolboxes entry has no "id"');
@@ -269,6 +273,20 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 				error(`the course ${course.title ?? 'of ' + (toolbox.id ?? 'a toolbox')} needs a "title" and an https "url"`);
 			}
 		}
+		// The Simulation Games cases: folders with case.toml and model.jl
+		for (const game of toolbox.games ?? []) {
+			const relative = game.folder ? path.posix.normalize(game.folder).replace(/\/$/, '') : '';
+			if (!relative || relative.startsWith('..') || path.posix.isAbsolute(relative) || relative === '.') {
+				error(`a game of ${toolbox.id ?? 'a toolbox'} needs a "folder" inside the toolbox`);
+				continue;
+			}
+			for (const file of ['case.toml', 'model.jl']) {
+				if (!fs.existsSync(path.join(ROOT, folder, relative, file))) {
+					error(`the game ${relative} has no ${file}`);
+				}
+			}
+			gameFolders.push(relative + '/');
+		}
 	}
 
 	// The files
@@ -283,8 +301,11 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 	for (const file of files) {
 		const size = fs.statSync(path.join(ROOT, folder, file)).size;
 		total += size;
-		if (!ALLOWED_EXTENSIONS.has(path.posix.extname(file).toLowerCase())) {
-			error(`${file}: only ${[...ALLOWED_EXTENSIONS].join(' ')} files go in a toolbox`);
+		const extension = path.posix.extname(file).toLowerCase();
+		if (extension === '.jl' ? !gameFolders.some(game => file.startsWith(game)) : !ALLOWED_EXTENSIONS.has(extension)) {
+			error(extension === '.jl'
+				? `${file}: Julia files go only in the folder of a game the toolbox lists in games`
+				: `${file}: only ${[...ALLOWED_EXTENSIONS].join(' ')} files go in a toolbox`);
 		}
 		if (size > MAX_FILE_BYTES) {
 			error(`${file} is ${(size / 1024 / 1024).toFixed(1)} MB: at most 1 MB a file`);

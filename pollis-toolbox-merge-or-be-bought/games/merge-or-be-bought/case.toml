@@ -1,0 +1,210 @@
+# Merge or Be Bought: a case of Compose > Collaboration > Simulation Games. Its model is model.jl, which Pollis
+# runs for each round, in a fresh Julia process on the facilitator's computer.
+
+title = "Merge or Be Bought"
+description = "Three listed bicycle makers, each run by a team as its board. Each quarter a board can bid for the shares of its rivals and sets the lowest bid it would accept for its own. The best return for the original shareholders after six quarters wins, whether the company is still independent or was bought."
+rounds = 6
+round = "Quarter"
+teams = [3, 3]
+team_names = ["Larkspur Cycles", "Tamberlin Bikes", "Orvane Wheelworks"]
+briefing = "briefing.md"
+# Questions the debrief suggests for the class.
+debrief = "debrief-questions.md"
+# Boards can write to each other, the facilitator reading what they write.
+negotiations = true
+
+# The ways the teams can be organised; the facilitator chooses one when hosting the game.
+[[structures]]
+key = "board"
+label = "Board Members"
+description = "Every player sits on the board of their company, reads every briefing and sets every decision."
+
+[[structures.roles]]
+key = "board"
+label = "Board Member"
+briefing = ["briefings/valuation.md", "briefings/bids-and-deals.md", "briefings/financing.md"]
+
+[[structures]]
+key = "officers"
+label = "Officers"
+description = "Each player is an officer of the company: the Chief Executive sets the walk-away price, Strategy makes the bids, and Finance knows what the company can pay. Each reads its own briefing, so the team has to talk."
+
+[[structures.roles]]
+key = "chief_executive"
+label = "Chief Executive"
+briefing = "briefings/valuation.md"
+decides = ["walk_away"]
+
+[[structures.roles]]
+key = "strategy"
+label = "Strategy"
+briefing = "briefings/bids-and-deals.md"
+decides = ["bid"]
+
+[[structures.roles]]
+key = "finance"
+label = "Finance"
+briefing = "briefings/financing.md"
+decides = []
+
+# A bid for each rival still listed: 0 makes no bid.
+[[decisions]]
+key = "bid"
+label = "Bid per Share"
+kind = "number"
+unit = "€"
+min = 0
+max = 10
+step = 0.05
+default = 0
+rivals = true
+help = "The cash your company offers for each share of this rival; 0 makes no bid."
+
+[[decisions]]
+key = "walk_away"
+label = "Walk-Away Price"
+kind = "number"
+unit = "€"
+min = 0
+max = 20
+step = 0.05
+default = 10
+help = "The lowest bid per share for your own company that your board accepts; a higher price keeps your company independent."
+
+# The results: those every player sees and those each team alone sees. The debrief ranks the companies by
+# winner, a column of the public results.
+[results]
+winner = "return"
+
+[[results.public]]
+key = "team"
+label = "Company"
+
+[[results.public]]
+key = "status"
+label = "Status"
+
+[[results.public]]
+key = "price"
+label = "Share Price"
+unit = "€"
+digits = 2
+
+[[results.public]]
+key = "change"
+label = "Change"
+unit = "%"
+digits = 1
+
+[[results.public]]
+key = "highest_bid"
+label = "Highest Bid"
+unit = "€"
+digits = 2
+
+[[results.public]]
+key = "market_value"
+label = "Market Value"
+unit = "m €"
+digits = 1
+
+[[results.public]]
+key = "earnings"
+label = "Yearly Earnings"
+unit = "m €"
+digits = 1
+
+[[results.public]]
+key = "return"
+label = "Shareholders' Return"
+unit = "%"
+digits = 1
+
+[[results.private]]
+key = "earnings"
+label = "Yearly Earnings"
+unit = "m €"
+digits = 1
+
+[[results.private]]
+key = "profit"
+label = "Quarter's Profit"
+unit = "m €"
+digits = 1
+
+[[results.private]]
+key = "cash"
+label = "Cash"
+unit = "m €"
+digits = 1
+
+[[results.private]]
+key = "debt"
+label = "Debt"
+unit = "m €"
+digits = 1
+
+[[results.private]]
+key = "borrowing_left"
+label = "Borrowing Left"
+unit = "m €"
+digits = 1
+
+[[results.private]]
+key = "capacity"
+label = "Most You Can Pay"
+unit = "m €"
+digits = 1
+
+[[results.private]]
+key = "value"
+label = "Value per Share"
+unit = "€"
+digits = 2
+
+# The news the facilitator can release, from the round given on; [news.parameters] are the values of
+# [parameters] it changes from the round it is released in.
+[[news]]
+round = 3
+title = "Interest Rates Rise"
+text = "The central bank has raised its rates. Banks now charge about 8% a year on acquisition loans, and lend at most five years of a company's earnings."
+roles = ["finance", "strategy"]
+
+[news.parameters]
+interest_rate = 0.08
+borrowing_multiple = 5
+
+[[news]]
+round = 4
+title = "A Cycling Boom"
+text = "Cities are building cycle lanes and buyers are queueing for new bicycles. Analysts expect every maker's earnings to grow about 2% a quarter faster from now on."
+roles = ["chief_executive", "strategy"]
+
+[news.parameters]
+market_growth = 0.02
+
+[[news]]
+round = 5
+title = "Investors Turn Cautious"
+text = "Stock markets have fallen, and investors now pay about seven years of earnings for a bicycle maker, down from eight."
+roles = ["chief_executive", "finance"]
+
+[news.parameters]
+earnings_multiple = 7
+
+# What model.jl reads; money is in millions of euros. annual_earnings, cash, shares and growth are given for
+# each company, in the order of team_names; growth is a quarter's.
+[parameters]
+annual_earnings = [40.0, 30.0, 22.0]
+cash = [60.0, 50.0, 40.0]
+shares = [100.0, 80.0, 60.0]
+growth = [0.01, 0.015, 0.02]
+market_growth = 0.0
+earnings_noise = 0.04
+earnings_multiple = 8
+borrowing_multiple = 6
+interest_rate = 0.06
+bid_belief = 0.5
+synergy_low = 0.15
+synergy_high = 0.45
+synergy_quarters = 4

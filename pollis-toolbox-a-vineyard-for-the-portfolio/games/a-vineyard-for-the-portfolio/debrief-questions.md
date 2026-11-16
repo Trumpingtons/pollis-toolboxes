@@ -1,0 +1,6 @@
+- Which winery did Harrowgate buy, for how much cash and earn-out, and was that above or below its value to Harrowgate, its true earnings with the savings?
+- Which owners disclosed their issue, and did it change the price? Did Harrowgate's diligence pay for itself?
+- How did the earn-out share the risk of the winery's issue between the buyer and the owners?
+- What did the teams tell each other in Negotiations? Which claims were true, and how could the other side have checked?
+- How did Frost in Tuscany, The Chilean Peso Jumps and A Tariff on Imported Wine change each team's value? Did the hedge protect Harrowgate?
+- Open model.jl: where does each winery's hidden issue come in, and how would you change the case to make it fairer to one side?

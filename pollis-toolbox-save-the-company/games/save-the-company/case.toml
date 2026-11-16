@@ -1,0 +1,347 @@
+# Save the Company: a case of Compose > Collaboration > Simulation Games. Its model is model.jl, which Pollis runs
+# for each round, in a fresh Julia process on the facilitator's computer.
+
+title = "Save the Company"
+description = "Thistledown Home & Garden, a British chain of home-and-garden stores, cannot pay its debts. Its shareholders, its banks and its bondholders each play as one team, and have a few quarters to agree a plan before the cash runs out and the company goes into administration. Each team knows something the others do not."
+rounds = 6
+# The facilitator plays the case in four quarters or in six; the company's cash lasts about 60% of them.
+round_choices = [4, 6]
+round = "Quarter"
+team_names = ["The Shareholders", "The Bank Syndicate", "The Bondholders"]
+briefing = "briefing.md"
+debrief = "debrief-questions.md"
+# The teams negotiate with each other, the facilitator reading what they write.
+negotiations = true
+
+[[sides]]
+key = "shareholders"
+label = "Shareholders"
+teams = 1
+briefing = "briefings/shareholders.md"
+
+[[sides]]
+key = "banks"
+label = "Banks"
+teams = 1
+briefing = "briefings/banks.md"
+
+[[sides]]
+key = "bondholders"
+label = "Bondholders"
+teams = 1
+briefing = "briefings/bondholders.md"
+
+# The ways the teams can be organised; the facilitator chooses one when hosting the game.
+[[structures]]
+key = "boards"
+label = "One Voice"
+description = "Every player in a team reads its briefings and sets every one of its decisions."
+
+[[structures.roles]]
+key = "shareholder"
+label = "Shareholder"
+sides = ["shareholders"]
+briefing = ["briefings/the-plan.md", "briefings/the-stores.md"]
+
+[[structures.roles]]
+key = "banker"
+label = "Banker"
+sides = ["banks"]
+briefing = "briefings/security.md"
+
+[[structures.roles]]
+key = "bondholder"
+label = "Bondholder"
+sides = ["bondholders"]
+briefing = "briefings/the-bonds.md"
+
+[[structures]]
+key = "officers"
+label = "Officers"
+description = "The shareholders are the Chair, who proposes the plan, and the Chief Executive, who runs the stores; the banks are the Relationship Director, who sets their terms, and the Credit Committee, which can call in the loan; the bondholders are the Portfolio Manager, who sets their terms, and the Trader, who can sell the bonds."
+
+[[structures.roles]]
+key = "chair"
+label = "Chair"
+sides = ["shareholders"]
+briefing = "briefings/the-plan.md"
+decides = ["propose", "new_equity", "senior_cut", "junior_cut", "equity_share"]
+
+[[structures.roles]]
+key = "chief_executive"
+label = "Chief Executive"
+sides = ["shareholders"]
+briefing = "briefings/the-stores.md"
+decides = ["closures"]
+
+[[structures.roles]]
+key = "relationship_director"
+label = "Relationship Director"
+sides = ["banks"]
+briefing = "briefings/security.md"
+decides = ["max_cut"]
+
+[[structures.roles]]
+key = "credit_committee"
+label = "Credit Committee"
+sides = ["banks"]
+briefing = "briefings/security.md"
+decides = ["enforce"]
+
+[[structures.roles]]
+key = "portfolio_manager"
+label = "Portfolio Manager"
+sides = ["bondholders"]
+briefing = "briefings/the-bonds.md"
+decides = ["max_cut", "min_share"]
+
+[[structures.roles]]
+key = "trader"
+label = "Trader"
+sides = ["bondholders"]
+briefing = "briefings/the-bonds.md"
+decides = ["sell"]
+
+# The shareholders' decisions
+[[decisions]]
+key = "propose"
+label = "Plan"
+kind = "choice"
+options = ["no", "yes"]
+labels = ["Propose No Plan", "Propose This Plan"]
+default = "no"
+sides = ["shareholders"]
+help = "Whether the shareholders put the plan below to the banks and the bondholders this quarter."
+
+[[decisions]]
+key = "new_equity"
+label = "New Money"
+kind = "number"
+unit = "m £"
+min = 0
+max = 40
+step = 0.5
+default = 0
+sides = ["shareholders"]
+help = "The cash the shareholders put into the company if the plan is adopted."
+
+[[decisions]]
+key = "senior_cut"
+label = "Cut to the Banks' Loans"
+kind = "number"
+unit = "%"
+min = 0
+max = 60
+step = 1
+default = 0
+sides = ["shareholders"]
+help = "The share of the 220 m £ of loans the banks write off."
+
+[[decisions]]
+key = "junior_cut"
+label = "Cut to the Bonds"
+kind = "number"
+unit = "%"
+min = 0
+max = 100
+step = 1
+default = 0
+sides = ["shareholders"]
+help = "The share of the 150 m £ of bonds the bondholders write off."
+
+[[decisions]]
+key = "equity_share"
+label = "Company for the Bondholders"
+kind = "number"
+unit = "%"
+min = 0
+max = 100
+step = 1
+default = 0
+sides = ["shareholders"]
+help = "The share of the company's shares the bondholders receive in exchange."
+
+[[decisions]]
+key = "closures"
+label = "Stores"
+kind = "choice"
+options = ["keep", "close"]
+labels = ["Keep Them Open", "Close 20 Loss-Making Stores"]
+default = "keep"
+sides = ["shareholders"]
+help = "Closing stores costs cash now and adds to every later quarter's earnings."
+
+# The banks' decisions
+[[decisions]]
+key = "max_cut"
+label = "Largest Cut Accepted"
+kind = "number"
+unit = "%"
+min = 0
+max = 100
+step = 1
+default = 0
+sides = ["banks", "bondholders"]
+help = "The largest cut to your claim you accept in a plan this quarter."
+
+[[decisions]]
+key = "enforce"
+label = "The Loan"
+kind = "choice"
+options = ["wait", "enforce"]
+labels = ["Wait", "Call It In"]
+default = "wait"
+sides = ["banks"]
+help = "Calling in the loan puts Thistledown into administration this quarter: its stores and stock are sold, and the banks are paid first."
+
+# The bondholders' decisions
+[[decisions]]
+key = "min_share"
+label = "Least Share of the Company Accepted"
+kind = "number"
+unit = "%"
+min = 0
+max = 100
+step = 1
+default = 100
+sides = ["bondholders"]
+help = "The least share of the company you accept in a plan this quarter."
+
+[[decisions]]
+key = "sell"
+label = "The Bonds"
+kind = "choice"
+options = ["hold", "sell"]
+labels = ["Hold Them", "Sell Them to the Fund"]
+default = "hold"
+sides = ["bondholders"]
+help = "Selling ends your part in the game at the fund's price; the fund negotiates in your place."
+
+# The results. The debrief ranks each side on its own: each team against what its claim was worth at the start.
+[results]
+winner = "gain"
+
+[[results.public]]
+key = "team"
+label = "Team"
+
+[[results.public]]
+key = "status"
+label = "Status"
+
+[[results.public]]
+key = "claim"
+label = "Claim"
+unit = "m £"
+digits = 1
+
+[[results.public]]
+key = "value"
+label = "Value of the Claim"
+unit = "m £"
+digits = 1
+
+[[results.public]]
+key = "gain"
+label = "Gain over the Start"
+unit = "m £"
+digits = 1
+
+[[results.private]]
+key = "cash"
+label = "Cash"
+unit = "m £"
+digits = 1
+
+[[results.private]]
+key = "ebitda"
+label = "Earnings This Quarter"
+unit = "m £"
+digits = 2
+sides = ["shareholders"]
+
+[[results.private]]
+key = "closed"
+label = "Stores Closed"
+sides = ["shareholders"]
+
+[[results.private]]
+key = "burn"
+label = "Cash Burned Next Quarter"
+unit = "m £"
+digits = 1
+sides = ["shareholders"]
+
+[[results.private]]
+key = "wound_up"
+label = "Your Recovery in Administration"
+unit = "m £"
+digits = 1
+sides = ["banks"]
+
+[[results.private]]
+key = "fund_offer"
+label = "The Fund's Offer"
+unit = "m £"
+digits = 1
+sides = ["bondholders"]
+
+# The news the facilitator can release, from the round given on.
+[[news]]
+round = 2
+title = "A Wet Spring"
+text = "The wettest spring in years has kept gardeners indoors. Retailers of garden goods expect their earnings to be about 10% lower from now on."
+[news.parameters]
+weather_shock = -0.1
+
+[[news]]
+round = 2
+title = "Interest Rates Rise"
+text = "The Bank of England has raised its rate. Thistledown's bank loans now cost about 8.5% a year, up from 7%."
+roles = ["chair", "relationship_director", "credit_committee"]
+[news.parameters]
+senior_rate = 0.085
+
+[[news]]
+round = 3
+title = "Commercial Property Prices Fall"
+text = "Prices of shops and retail parks have fallen sharply. Appraisers now expect a chain's stores and stock to fetch about a sixth less in an administration."
+roles = ["relationship_director", "credit_committee", "portfolio_manager"]
+[news.parameters]
+liquidation_value = 100
+
+[[news]]
+round = 3
+title = "A Rival Chain Collapses"
+text = "One of Thistledown's rivals has closed all its stores. Analysts expect the survivors' earnings to be about 8% higher from now on."
+[news.parameters]
+rival_exit = 0.08
+
+# What model.jl reads; money is in millions of pounds, and earnings, interest and spending are a quarter's.
+[parameters]
+rounds = 6
+multiple = 10
+min_cash = 20
+ebitda = 5.0
+trend = -0.03
+earnings_noise = 0.03
+capex = 1.5
+senior = 220
+senior_rate = 0.07
+junior = 150
+junior_rate = 0.1
+runway_share = 0.6
+liquidation_value = 120
+administration_cost = 8
+liquidation_noise = 0.05
+closure_cost = 3
+closure_gain = 0.7
+max_closures = 3
+capacity = 25
+fund_bid = 0.25
+fund_hurdle = 0.3
+senior_price = 0.65
+junior_price = 0.15
+equity_value = 3
+weather_shock = 0.0
+rival_exit = 0.0

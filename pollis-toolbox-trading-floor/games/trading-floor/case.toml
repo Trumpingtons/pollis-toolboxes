@@ -1,0 +1,110 @@
+# Trading Floor: a case of Compose > Collaboration > Simulation Games. The teams are trading desks on a market Pollis
+# keeps on the facilitator's computer, each period trading by the clock; model.jl runs at the close of each period.
+
+title = "Trading Floor"
+description = "Each team is a trading desk on the market for one share: Corvane Robotics, a listed maker of warehouse robots. Desks buy and sell on a live order book while each period trades by the clock; at its close Corvane announces results that move the share's value. Before each period some desks receive a hint of the results. The best return when Corvane is taken over at the end wins."
+rounds = 6
+# The facilitator plays the case in four periods or in six.
+round_choices = [4, 6]
+round = "Period"
+teams = [3, 8]
+team_names = ["Aldgate Desk", "Bishopsgate Desk", "Cheapside Desk", "Docklands Desk", "Eastcheap Desk", "Fleet Street Desk", "Gracechurch Desk", "Holborn Desk"]
+briefing = "briefing.md"
+debrief = "debrief-questions.md"
+# Desks can write to each other, the facilitator reading what they write.
+negotiations = true
+
+# The market: its asset, currency and tick, the minutes a period trades, each desk's start, and an order's limits.
+[market]
+asset = "Corvane Robotics"
+unit = "£"
+minutes = 4
+tick = 0.05
+cash = 5000
+shares = 100
+max_order = 100
+max_price = 200
+
+[[structures]]
+key = "desks"
+label = "Trading Desks"
+description = "Every player trades for their desk: any of them places and cancels its orders, and the desk sees who did."
+
+[[structures.roles]]
+key = "trader"
+label = "Trader"
+briefing = "briefings/trading.md"
+
+# The results. The debrief ranks the desks by their return.
+[results]
+winner = "return"
+
+[[results.public]]
+key = "team"
+label = "Desk"
+
+[[results.public]]
+key = "cash"
+label = "Cash"
+unit = "£"
+digits = 2
+
+[[results.public]]
+key = "shares"
+label = "Shares"
+
+[[results.public]]
+key = "wealth"
+label = "Wealth at Corvane's Value"
+unit = "£"
+digits = 2
+
+[[results.public]]
+key = "return"
+label = "Return"
+unit = "%"
+digits = 2
+
+[[results.private]]
+key = "bought"
+label = "Shares Bought This Period"
+
+[[results.private]]
+key = "sold"
+label = "Shares Sold This Period"
+
+[[results.private]]
+key = "average_buy"
+label = "Average Price Paid"
+unit = "£"
+digits = 2
+
+[[results.private]]
+key = "average_sell"
+label = "Average Price Received"
+unit = "£"
+digits = 2
+
+# The news the facilitator can release during a period; it moves Corvane's value at that period's close.
+[[news]]
+round = 2
+title = "A Rival Recalls Its Robots"
+text = "Corvane's largest rival has recalled thousands of warehouse robots after a fault. Analysts expect Corvane to win some of its customers: about £3 a share on its value, announced with its next results."
+[news.parameters]
+rival_recall = 3.0
+
+[[news]]
+round = 3
+title = "A Strike at the Warehouses"
+text = "Workers at several of Corvane's largest customers have gone on strike, and new orders for robots are on hold. Analysts expect about £4 a share off Corvane's value, announced with its next results."
+[news.parameters]
+warehouse_strike = -4.0
+
+# What model.jl reads; prices are in pounds a share.
+[parameters]
+rounds = 6
+value = 50.0
+change_sd = 4.0
+hint_error = 1.0
+rival_recall = 0.0
+warehouse_strike = 0.0
