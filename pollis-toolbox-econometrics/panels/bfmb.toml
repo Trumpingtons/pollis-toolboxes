@@ -192,35 +192,6 @@ label = "OLS"
 value = "gls"
 label = "GLS"
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.bayesian]
-# Posterior density of a risk price with its credible band
-svg = '''
-var s = '<line x1="4" y1="70" x2="50" y2="70" stroke="currentColor" stroke-width="1"/>';
-var d = '';
-for (var i = 0; i <= 40; i++) {
-	var z = (i - 20) / 7;
-	d += (i ? 'L' : 'M') + (7 + i) + ',' + (70 - Math.exp(-z * z / 2) * 44).toFixed(1);
-}
-s += '<rect x="15" y="26" width="24" height="44" fill="currentColor" opacity="0.15"/>';
-s += '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-s += '<line x1="27" y1="24" x2="27" y2="70" stroke="currentColor" stroke-width="1" stroke-dasharray="2,2"/>';
-return s;
-'''
-
-[miniCharts.classical]
-# Average returns against betas with the cross-sectional regression line
-svg = '''
-var s = '<line x1="6" y1="76" x2="50" y2="76" stroke="currentColor" stroke-width="1"/><line x1="6" y1="14" x2="6" y2="76" stroke="currentColor" stroke-width="1"/>';
-var x = [12, 16, 20, 25, 29, 33, 38, 43];
-var y = [64, 58, 60, 50, 46, 42, 36, 30];
-for (var i = 0; i < x.length; i++) { s += '<circle cx="' + x[i] + '" cy="' + y[i] + '" r="2" fill="currentColor" opacity="0.7"/>'; }
-s += '<line x1="9" y1="68" x2="47" y2="26" stroke="currentColor" stroke-width="1.5"/>';
-return s;
-'''
-
 [[codeBranches]]
 model = "bayesian"
 code = '''

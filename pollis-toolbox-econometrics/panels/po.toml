@@ -254,54 +254,6 @@ label = "Risk-Free Rate (Annual)"
 tooltip = "Annual risk-free rate as a decimal (0.02 = 2%). It is converted to a daily rate (rf / 252) for the Sharpe and STARR ratios and for excess returns."
 default = "0.02"
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.mv]
-# Efficient frontier with a scatter of feasible portfolios
-svg = '''
-var d = '';
-for (var i = 0; i <= 30; i++) { var y = 66 - i * 1.4; var x = 12 + 0.035 * Math.pow(y - 50, 2); d += (i ? 'L' : 'M') + x.toFixed(1) + ',' + y.toFixed(1); }
-var s = '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.6"/>';
-var pts = [[28, 50], [34, 58], [30, 40], [40, 46], [38, 32], [44, 54]];
-for (var j = 0; j < pts.length; j++) { s += '<circle cx="' + pts[j][0] + '" cy="' + pts[j][1] + '" r="1.4" fill="currentColor" opacity="0.5"/>'; }
-return s;
-'''
-
-[miniCharts.es]
-# Loss distribution with the shaded left tail
-svg = '''
-var d = '', t = 'M5,66';
-for (var i = 0; i <= 44; i++) {
-	var x = 5 + i, y = 66 - 34 * Math.exp(-0.5 * Math.pow((x - 30) / 8, 2));
-	d += (i ? 'L' : 'M') + x + ',' + y.toFixed(1);
-	if (x <= 16) { t += 'L' + x + ',' + y.toFixed(1); }
-}
-t += 'L16,66Z';
-return '<path d="' + t + '" fill="currentColor" opacity="0.5"/><path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
-[miniCharts.hrp]
-# Dendrogram over four assets
-svg = '''
-var s = '';
-var ln = function(a, b, c, d) { s += '<line x1="' + a + '" y1="' + b + '" x2="' + c + '" y2="' + d + '" stroke="currentColor" stroke-width="1.4"/>'; };
-ln(10, 66, 10, 52); ln(20, 66, 20, 52); ln(10, 52, 20, 52);
-ln(34, 66, 34, 46); ln(44, 66, 44, 46); ln(34, 46, 44, 46);
-ln(15, 52, 15, 28); ln(39, 46, 39, 28); ln(15, 28, 39, 28);
-return s;
-'''
-
-[miniCharts.herc]
-# Two clusters with equal total risk bars
-svg = '''
-var h = [20, 20, 13, 13, 14];
-var s = '<line x1="4" y1="66" x2="50" y2="66" stroke="currentColor" stroke-width="0.8" opacity="0.6"/>';
-for (var i = 0; i < h.length; i++) { var x = i < 2 ? 8 + i * 8 : 16 + i * 8; s += '<rect x="' + x + '" y="' + (66 - h[i]) + '" width="6" height="' + h[i] + '" fill="currentColor" opacity="' + (i < 2 ? 0.85 : 0.5) + '"/>'; }
-s += '<line x1="8" y1="40" x2="22" y2="40" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2"/><line x1="32" y1="40" x2="54" y2="40" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2"/>';
-return s;
-'''
-
 [[codeBranches]]
 model = "mv"
 code = '''

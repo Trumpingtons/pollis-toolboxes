@@ -208,47 +208,6 @@ label = "Fundamental Value"
 tooltip = "Trading Agents: the fundamental value F that fundamentalists expect the price to return to. Limit Order Book and Market Microstructure: the opening mid price, around which the initial book is seeded."
 default = "100.0"
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.agents]
-# Agent dots feeding a price path that oscillates around the fundamental
-svg = '''
-var s = '<line x1="4" y1="30" x2="50" y2="30" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.6"/>';
-var p = [30, 24, 34, 22, 36, 27, 33, 29, 31];
-var d = '';
-for (var i = 0; i < p.length; i++) { d += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + p[i]; }
-s += '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-for (var j = 0; j < 9; j++) { s += '<circle cx="' + (8 + (j % 3) * 19) + '" cy="' + (54 + Math.floor(j / 3) * 10) + '" r="2.6" fill="currentColor" opacity="' + (0.35 + (j % 3) * 0.25) + '"/>'; }
-return s;
-'''
-
-[miniCharts.lob]
-# Bid depth bars on the left, ask depth bars on the right of the mid-price
-svg = '''
-var s = '<line x1="27" y1="14" x2="27" y2="76" stroke="currentColor" stroke-width="0.8" stroke-dasharray="2,2" opacity="0.6"/>';
-var bid = [10, 16, 22, 30, 36];
-for (var i = 0; i < bid.length; i++) {
-	s += '<rect x="' + (4 + i * 4.4) + '" y="' + (76 - bid[4 - i]) + '" width="3.6" height="' + bid[4 - i] + '" fill="currentColor" opacity="0.8"/>';
-	s += '<rect x="' + (29 + i * 4.4) + '" y="' + (76 - bid[i]) + '" width="3.6" height="' + bid[i] + '" fill="currentColor" opacity="0.35"/>';
-}
-return s;
-'''
-
-[miniCharts.market]
-# Price line above traded-volume bars
-svg = '''
-var p = [36, 32, 34, 26, 28, 22, 24, 18, 20];
-var v = [8, 14, 6, 18, 10, 16, 7, 12, 9];
-var d = '';
-var s = '';
-for (var i = 0; i < p.length; i++) {
-	d += (i ? 'L' : 'M') + (6 + i * 5.3) + ',' + p[i];
-	s += '<rect x="' + (4.5 + i * 5.3) + '" y="' + (76 - v[i]) + '" width="3.4" height="' + v[i] + '" fill="currentColor" opacity="0.4"/>';
-}
-return s + '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
 [[codeBranches]]
 model = "agents"
 code = '''

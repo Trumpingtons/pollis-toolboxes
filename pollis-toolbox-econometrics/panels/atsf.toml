@@ -273,35 +273,6 @@ label = "Croston SBA"
 value = "sbj"
 label = "Croston SBJ"
 
-[miniCharts]
-# SVG drawing functions for each model's mini-chart icon (54 x 86 box)
-
-[miniCharts.bats]
-# Two superimposed seasonal cycles of different period
-svg = '''
-var d = '';
-for (var i = 0; i <= 46; i++) { d += (i ? 'L' : 'M') + (4 + i) + ',' + (46 - 9 * Math.sin(i * Math.PI / 4) - 6 * Math.sin(i * Math.PI / 23)).toFixed(1); }
-return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
-[miniCharts.theta]
-# Data between a straight trend line and a doubled-curvature line
-svg = '''
-var y = [56, 50, 54, 44, 48, 38, 42, 34], d = '';
-for (var i = 0; i < y.length; i++) { d += (i ? 'L' : 'M') + (5 + i * 6) + ',' + y[i]; }
-return '<path d="' + d + '" fill="none" stroke="currentColor" stroke-width="1.5"/>'
-	+ '<line x1="5" y1="56" x2="47" y2="34" stroke="currentColor" stroke-width="1" stroke-dasharray="3,2"/>'
-	+ '<line x1="47" y1="36" x2="53" y2="32" stroke="currentColor" stroke-width="1.5"/>';
-'''
-
-[miniCharts.demand]
-# Sparse demand spikes with a flat Croston forecast
-svg = '''
-var s = '<line x1="4" y1="66" x2="50" y2="66" stroke="currentColor" stroke-width="0.8"/>';
-[[8, 20], [17, 12], [21, 26], [33, 16], [44, 22]].forEach(function(b) { s += '<rect x="' + b[0] + '" y="' + (66 - b[1]) + '" width="3" height="' + b[1] + '" fill="currentColor"/>'; });
-return s + '<line x1="4" y1="58" x2="50" y2="58" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/>';
-'''
-
 [[codeBranches]]
 model = "bats"
 code = '''
