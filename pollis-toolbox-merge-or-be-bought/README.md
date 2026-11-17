@@ -2,7 +2,7 @@
 
 A case for Pollis's Simulation Games. Three listed bicycle makers, each run by a team as its board. Each quarter a board can bid for the shares of its rivals and sets the lowest bid it would accept for its own. The best return for the original shareholders after six quarters wins, whether the company is still independent or was bought.
 
-Installing it adds the case to **Compose > Collaboration > Simulation Games > Host a Game...**. The facilitator hosts the game and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
+Installing it adds the case to **Compose > Simulation Games > Host a Game...**. The facilitator hosts the game and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
 
 ## The Case
 

@@ -1,4 +1,4 @@
-# Trading Floor: a case of Compose > Collaboration > Simulation Games. The teams are trading desks on a market Pollis
+# Trading Floor: a case of Compose > Simulation Games. The teams are trading desks on a market Pollis
 # keeps on the facilitator's computer, each period trading by the clock; model.jl runs at the close of each period.
 
 title = "Trading Floor"

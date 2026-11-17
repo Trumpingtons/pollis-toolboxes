@@ -2,7 +2,7 @@
 
 A case for Pollis's Simulation Games. Harrowgate Drinks, a British drinks group, wants to buy one of three wineries, in Chile, Italy and Australia. One team is Harrowgate's board, three teams the wineries' owners, each knowing something about its winery that Harrowgate does not. After diligence and two rounds of offers, every winery is run for three years. The team that creates the most value wins.
 
-Installing it adds the case to **Compose > Collaboration > Simulation Games > Host a Game...**. The facilitator hosts the game and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
+Installing it adds the case to **Compose > Simulation Games > Host a Game...**. The facilitator hosts the game and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
 
 ## The Case
 

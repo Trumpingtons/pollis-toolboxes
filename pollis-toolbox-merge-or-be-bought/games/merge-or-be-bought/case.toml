@@ -1,4 +1,4 @@
-# Merge or Be Bought: a case of Compose > Collaboration > Simulation Games. Its model is model.jl, which Pollis
+# Merge or Be Bought: a case of Compose > Simulation Games. Its model is model.jl, which Pollis
 # runs for each round, in a fresh Julia process on the facilitator's computer.
 
 title = "Merge or Be Bought"

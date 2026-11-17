@@ -2,7 +2,7 @@
 
 A case for Pollis's Simulation Games. Thistledown Home & Garden, a British chain of home-and-garden stores, cannot pay its debts. Its shareholders, its banks and its bondholders each play as one team, and have a few quarters to agree a plan before the cash runs out and the company goes into administration. Each team knows something the others do not.
 
-Installing it adds the case to **Compose > Collaboration > Simulation Games > Host a Game...**. The facilitator hosts the game, chooses four or six quarters, and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
+Installing it adds the case to **Compose > Simulation Games > Host a Game...**. The facilitator hosts the game, chooses four or six quarters, and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
 
 ## The Case
 

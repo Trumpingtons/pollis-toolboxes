@@ -1,4 +1,4 @@
-# Save the Company: a case of Compose > Collaboration > Simulation Games. Its model is model.jl, which Pollis runs
+# Save the Company: a case of Compose > Simulation Games. Its model is model.jl, which Pollis runs
 # for each round, in a fresh Julia process on the facilitator's computer.
 
 title = "Save the Company"

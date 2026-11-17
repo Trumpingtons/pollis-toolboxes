@@ -6,11 +6,11 @@ A toolbox is a data-only extension that adds guided panels, with their wiki page
 
 | Toolbox | What it adds |
 |---|---|
-| [pollis-toolbox-chocolate-chain](pollis-toolbox-chocolate-chain/README.md) | Grow a Chocolate Chain, in Compose > Collaboration > Simulation Games > Host a Game...: rival teams each run a chocolate brand for five years, on a Julia model the class opens afterwards. |
-| [pollis-toolbox-merge-or-be-bought](pollis-toolbox-merge-or-be-bought/README.md) | Merge or Be Bought, in Compose > Collaboration > Simulation Games > Host a Game...: three listed bicycle makers bid for each other's shares for six quarters, on a Julia model the class opens afterwards. |
-| [pollis-toolbox-save-the-company](pollis-toolbox-save-the-company/README.md) | Save the Company, in Compose > Collaboration > Simulation Games > Host a Game...: the shareholders, banks and bondholders of a British retailer that cannot pay its debts negotiate a plan before its cash runs out, on a Julia model the class opens afterwards. |
-| [pollis-toolbox-trading-floor](pollis-toolbox-trading-floor/README.md) | Trading Floor, in Compose > Collaboration > Simulation Games > Host a Game...: trading desks buy and sell one company's shares on a live order book, period by period by the clock, on a Julia model the class opens afterwards. |
-| [pollis-toolbox-a-vineyard-for-the-portfolio](pollis-toolbox-a-vineyard-for-the-portfolio/README.md) | A Vineyard for the Portfolio, in Compose > Collaboration > Simulation Games > Host a Game...: a British drinks group negotiates to buy one of three wineries, in Chile, Italy and Australia, then every winery is run for three years, on a Julia model the class opens afterwards. |
+| [pollis-toolbox-chocolate-chain](pollis-toolbox-chocolate-chain/README.md) | Grow a Chocolate Chain, in Compose > Simulation Games > Host a Game...: rival teams each run a chocolate brand for five years, on a Julia model the class opens afterwards. |
+| [pollis-toolbox-merge-or-be-bought](pollis-toolbox-merge-or-be-bought/README.md) | Merge or Be Bought, in Compose > Simulation Games > Host a Game...: three listed bicycle makers bid for each other's shares for six quarters, on a Julia model the class opens afterwards. |
+| [pollis-toolbox-save-the-company](pollis-toolbox-save-the-company/README.md) | Save the Company, in Compose > Simulation Games > Host a Game...: the shareholders, banks and bondholders of a British retailer that cannot pay its debts negotiate a plan before its cash runs out, on a Julia model the class opens afterwards. |
+| [pollis-toolbox-trading-floor](pollis-toolbox-trading-floor/README.md) | Trading Floor, in Compose > Simulation Games > Host a Game...: trading desks buy and sell one company's shares on a live order book, period by period by the clock, on a Julia model the class opens afterwards. |
+| [pollis-toolbox-a-vineyard-for-the-portfolio](pollis-toolbox-a-vineyard-for-the-portfolio/README.md) | A Vineyard for the Portfolio, in Compose > Simulation Games > Host a Game...: a British drinks group negotiates to buy one of three wineries, in Chile, Italy and Australia, then every winery is run for three years, on a Julia model the class opens afterwards. |
 | [pollis-toolbox-econometrics](pollis-toolbox-econometrics/README.md) | Finance, in the Model menu: ARIMAX, GARCH-type, stochastic volatility and regime switching models, forecasting, Bayesian asset-pricing factor models. |
 | [pollis-toolbox-economics](pollis-toolbox-economics/README.md) | Economic Models, in the Simulate menu: business cycle filters, stochastic volatility, DSGE, VAR/VECM, heterogeneous-agent and continuous-time macro-finance models, and game theory. |
 | [pollis-toolbox-learning-and-practice](pollis-toolbox-learning-and-practice/README.md) | Self-Study: Learn and Practise, in the Extend menu. Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For students, and for teachers preparing their classes. |
@@ -84,7 +84,7 @@ A toolbox can add notebook courses to **Help > Notebook Courses** of Pollis: cou
 
 ## Simulation Games cases
 
-A toolbox can bring cases for **Compose > Collaboration > Simulation Games > Host a Game...** in Pollis: games that teams play in rounds, in a session the facilitator hosts, on a Julia model run on the facilitator's computer. A toolbox of cases alone has no panels. Each toolbox entry of `pollisToolboxes` lists its cases:
+A toolbox can bring cases for **Compose > Simulation Games > Host a Game...** in Pollis: games that teams play in rounds, in a session the facilitator hosts, on a Julia model run on the facilitator's computer. A toolbox of cases alone has no panels. Each toolbox entry of `pollisToolboxes` lists its cases:
 
 ```json
 "panels": [],

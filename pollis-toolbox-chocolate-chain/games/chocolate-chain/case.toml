@@ -1,4 +1,4 @@
-# Grow a Chocolate Chain: a case of Compose > Collaboration > Simulation Games. Its model is model.jl,
+# Grow a Chocolate Chain: a case of Compose > Simulation Games. Its model is model.jl,
 # which Pollis runs for each round, in a fresh Julia process on the facilitator's computer.
 
 title = "Grow a Chocolate Chain"

@@ -2,7 +2,7 @@
 
 A case for Pollis's Simulation Games. Rival teams each run a chocolate brand in one country, and make every tablet they sell in their own shops. Each year they set their price, beans, shops, staff and marketing. The highest cumulative profit after five years wins.
 
-Installing it adds the case to **Compose > Collaboration > Simulation Games > Host a Game...**. The facilitator hosts the game and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
+Installing it adds the case to **Compose > Simulation Games > Host a Game...**. The facilitator hosts the game and the players join it with its invitation; each round runs the case's Julia model on the facilitator's computer.
 
 ## The Case
 

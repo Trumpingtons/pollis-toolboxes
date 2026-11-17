@@ -1,4 +1,4 @@
-# A Vineyard for the Portfolio: a case of Compose > Collaboration > Simulation Games. Its model is model.jl, which
+# A Vineyard for the Portfolio: a case of Compose > Simulation Games. Its model is model.jl, which
 # Pollis runs for each round, in a fresh Julia process on the facilitator's computer.
 
 title = "A Vineyard for the Portfolio"
