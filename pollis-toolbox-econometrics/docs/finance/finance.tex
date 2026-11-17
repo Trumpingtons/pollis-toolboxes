@@ -2,7 +2,7 @@
 % Compile with: julia -e 'using PollisTeX; display(compile("finance.tex"))'
 \input{vignette_style}
 \renewcommand{\vignetteauthor}{Pollis}
-\renewcommand{\vignettedate}{11 November 2026}
+\renewcommand{\vignettedate}{17 November 2026}
 \renewcommand{\vignettelicense}{AGPL-3.0}
 
 \begin{document}
@@ -25,9 +25,6 @@ ARIMAX Models & One series is forecast from its own past, with or without a seas
 GARCH-Type Models & Volatility clusters and you want it day by day, its forecast, Value-at-Risk or changing correlations. \\
 Regime Switching Models & A relationship seems to change between calm and turbulent periods. \\
 Point Processes & Events arrive at random times, such as trades, orders or defaults, and you want their rate, whether they excite one another, or simulated ones. \\
-Advanced Time-Series Forecasting & A series has several seasonal periods or many zeros, or you need a hard-to-beat benchmark. \\
-Neural Network Time-Series Forecasting & Several series mix short patterns with long cycles, and a simple forecast is not enough. \\
-Automatic Time-Series Forecasting & You want a forecast without choosing the model by hand. \\
 Bayesian Linear Stochastic Discount Factor & There are many candidate factors and the question is which of them price assets. \\
 Fama-MacBeth Regression & You want the risk premia of a few factors from a set of test assets. \\
 Portfolio Optimisation & You want weights for a set of assets and to know whether they beat equal weights on later returns. \\
@@ -75,29 +72,6 @@ Three tabs. The panel's title is ARIMA Models. \package{StateSpaceModels}{https:
 \nmsection{Point Processes}
 The submenu \menupath{Point Processes} has two panels, Model and Simulate, for events that arrive at random times: trades and orders in high-frequency data, or defaults that spread from one firm to another (\nmcite{bacry2015}{Bacry, Mastromatteo and Muzy 2015}). Both cover five processes. Poisson has a constant rate, Inhomogeneous a rate that changes with time, and Cox a rate that is itself random. Hawkes is self-exciting: each event raises the rate for a while, as in \nmcite{hawkes1971}{Hawkes (1971)}, and its branching ratio, below 1 for a stable process, is the share of events triggered by earlier ones. Network Hawkes lets the events of one series excite the others along the links of a network. Model fits a process to event times with \package{PointProcesses}{https://github.com/JoseKling/PointProcesses.jl}, \package{HawkesProcesses}{https://github.com/dm13450/HawkesProcesses.jl} and \package{NetworkHawkesProcesses}{https://github.com/cswaney/NetworkHawkesProcesses.jl}; the Time-Rescaling Test and its Q-Q Plot check the fit (\nmcite{ogata1988}{Ogata 1988}), and Next Event Time and Expected Count predict. Simulate draws events from a process with the parameters given, and Count vs Theory and Multiple Seeds compare them with what the process should give.
 
-\nmsection{Advanced Time-Series Forecasting}
-Three methods from \package{Durbyn}{https://github.com/taf-society/Durbyn.jl}. BATS and TBATS (\nmcite{delivera2011}{De Livera, Hyndman and Snyder 2011}) handle several or non-integer seasonal periods, such as hourly data with daily and weekly cycles. The Theta Method (\nmcite{assimakopoulos2000}{Assimakopoulos and Nikolopoulos 2000}) is a simple benchmark for monthly or yearly series. Intermittent Demand is for sparse series with many zeros: \nmcite{croston1972}{Croston (1972)} smooths demand sizes and intervals separately, and SBA and SBJ correct its upward bias, SBA being the correction of \nmcite{syntetos2005}{Syntetos and Boylan (2005)}. Demand Pattern classifies a series before you choose, and Holdout Accuracy scores the forecast on data the model has not seen.
-
-\nmsection{Neural Network Time-Series Forecasting}
-Four architectures from \package{FluxArchitectures}{https://github.com/sdobber/FluxArchitectures.jl}, on \package{Flux}{https://github.com/FluxML/Flux.jl}. The package pins Flux 0.13, so the panel runs on that older version. The example forecasts one exchange rate six steps ahead from several, training on the first windows and testing on later ones.
-
-\medskip
-{\small
-\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{22mm}>{\raggedright\arraybackslash}p{58mm}X@{}}
-\toprule
-\textbf{Model} & \textbf{Structure} & \textbf{Use it for} \\\midrule
-LSTnet & CNN, GRU, skip connections and AR (\nmcite{lai2018}{Lai, Chang, Yang and Liu 2018}) & Short local patterns mixed with long seasonal cycles \\
-DA-RNN & Dual-stage attention (\nmcite{qin2017}{Qin, Song, Chen, Cheng, Jiang and Cottrell 2017}) & Attention over both the driving series and the time steps \\
-TPA-LSTM & LSTM with temporal pattern attention (\nmcite{shih2019}{Shih, Sun and Lee 2019}) & Many variables with different periodicities \\
-DSANet & Global and local self-attention (\nmcite{huang2019}{Huang, Wang, Wu and Tang 2019}) & Many correlated series, in parallel and with no recurrence \\\bottomrule
-\end{tabularx}}
-
-\medskip
-Run the Naive Baseline action first: a network that does not beat it adds nothing.
-
-\nmsection{Automatic Time-Series Forecasting}
-\package{Durbyn}{https://github.com/taf-society/Durbyn.jl} chooses the model for you. Auto ARIMA sets the differencing by unit-root tests and the orders by a stepwise search, as in \nmcite{hyndman2008}{Hyndman and Khandakar (2008)}. Auto ETS chooses the form of exponential smoothing by information criterion (\nmcite{hyndman2002}{Hyndman, Koehler, Snyder and Grose 2002}). Auto ARARMA applies the memory-shortening filter of \nmcite{parzen1982}{Parzen (1982)} and then a short ARMA, and suits slowly decaying series with no clear seasonal period. Model Race fits them all and keeps the one most accurate on the last observations. Selection Stability shows whether the chosen model changes as the sample does, and Rolling-Origin Accuracy gives a fairer score than a single holdout.
-
 \nmsection{Bayesian Linear Stochastic Discount Factor}
 \package{BayesianFactorZoo}{https://github.com/eohne/BayesianFactorZoo.jl}, the method of \nmcite{bryzgalova2023}{Bryzgalova, Huang and Julliard (2023)}. Bayesian SDF gives the full posterior of risk prices, in Sharpe-ratio units. Spike-and-Slab adds the probability that each factor is included, to select factors, and Spike-and-Slab (Traded) also prices tradable factors as test assets. By default the example simulates 600 months of five factors, of which two earn a premium, and 25 test assets; give it your own matrices to replace them. Results come from MCMC, so read Trace Plots and Effective Sample Size before the Risk Price Table.
 
@@ -119,7 +93,6 @@ Three simulated markets, each matched through a limit order book. Trading Agents
 \nmref{alizadeh2002}{Alizadeh, S., Brandt, M. W. and Diebold, F. X. (2002). Range-based estimation of stochastic volatility models. \emph{The Journal of Finance} 57(3), 1047--1091. \nmdoi{10.1111/1540-6261.00454}}
 \nmref{andersen1998}{Andersen, T. G. and Bollerslev, T. (1998). Answering the skeptics: yes, standard volatility models do provide accurate forecasts. \emph{International Economic Review} 39(4), 885--905. \nmdoi{10.2307/2527343}}
 \nmref{artzner1999}{Artzner, P., Delbaen, F., Eber, J.-M. and Heath, D. (1999). Coherent measures of risk. \emph{Mathematical Finance} 9(3), 203--228. \nmdoi{10.1111/1467-9965.00068}}
-\nmref{assimakopoulos2000}{Assimakopoulos, V. and Nikolopoulos, K. (2000). The theta model: a decomposition approach to forecasting. \emph{International Journal of Forecasting} 16(4), 521--530. \nmdoi{10.1016/S0169-2070(00)00066-2}}
 \nmref{bacry2015}{Bacry, E., Mastromatteo, I. and Muzy, J.-F. (2015). Hawkes processes in finance. \emph{Market Microstructure and Liquidity} 1, 1550005. \nmdoi{10.1142/S2382626615500057}}
 \nmref{barndorff2004}{Barndorff-Nielsen, O. E. and Shephard, N. (2004). Power and bipower variation with stochastic volatility and jumps. \emph{Journal of Financial Econometrics} 2(1), 1--37. \nmdoi{10.1093/jjfinec/nbh001}}
 \nmref{barndorff2006}{Barndorff-Nielsen, O. E. and Shephard, N. (2006). Econometrics of testing for jumps in financial economics using bipower variation. \emph{Journal of Financial Econometrics} 4(1), 1--30. \nmdoi{10.1093/jjfinec/nbi022}}
@@ -132,8 +105,6 @@ Three simulated markets, each matched through a limit order book. Trading Agents
 \nmref{christensen2013}{Christensen, K., Podolskij, M. and Vetter, M. (2013). On covariation estimation for multivariate continuous It\^{o} semimartingales with noise in non-synchronous observation schemes. \emph{Journal of Multivariate Analysis} 120, 59--84. \nmdoi{10.1016/j.jmva.2013.05.002}}
 \nmref{christoffersen1998}{Christoffersen, P. F. (1998). Evaluating interval forecasts. \emph{International Economic Review} 39(4), 841--862. \nmdoi{10.2307/2527341}}
 \nmref{cornish1938}{Cornish, E. A. and Fisher, R. A. (1938). Moments and cumulants in the specification of distributions. \emph{Revue de l'Institut International de Statistique} 5(4), 307--320. \nmdoi{10.2307/1400905}}
-\nmref{croston1972}{Croston, J. D. (1972). Forecasting and stock control for intermittent demands. \emph{Journal of the Operational Research Society} 23(3), 289--303. \nmdoi{10.1057/jors.1972.50}}
-\nmref{delivera2011}{De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. \emph{Journal of the American Statistical Association} 106(496), 1513--1527. \nmdoi{10.1198/jasa.2011.tm09771}}
 \nmref{demiguel2009}{DeMiguel, V., Garlappi, L. and Uppal, R. (2009). Optimal versus naive diversification: how inefficient is the 1/N portfolio strategy? \emph{Review of Financial Studies} 22(5), 1915--1953. \nmdoi{10.1093/rfs/hhm075}}
 \nmref{engle1982}{Engle, R. F. (1982). Autoregressive conditional heteroscedasticity with estimates of the variance of United Kingdom inflation. \emph{Econometrica} 50(4), 987--1007. \nmdoi{10.2307/1912773}}
 \nmref{engle2002}{Engle, R. (2002). Dynamic conditional correlation: A simple class of multivariate generalized autoregressive conditional heteroskedasticity models. \emph{Journal of Business \& Economic Statistics} 20(3), 339--350. \nmdoi{10.1198/073500102288618487}}
@@ -143,27 +114,19 @@ Three simulated markets, each matched through a limit order book. Trading Agents
 \nmref{glosten1993}{Glosten, L. R., Jagannathan, R. and Runkle, D. E. (1993). On the relation between the expected value and the volatility of the nominal excess return on stocks. \emph{The Journal of Finance} 48(5), 1779--1801. \nmdoi{10.1111/j.1540-6261.1993.tb05128.x}}
 \nmref{hamilton1989}{Hamilton, J. D. (1989). A new approach to the economic analysis of nonstationary time series and the business cycle. \emph{Econometrica} 57(2), 357--384. \nmdoi{10.2307/1912559}}
 \nmref{hawkes1971}{Hawkes, A. G. (1971). Spectra of some self-exciting and mutually exciting point processes. \emph{Biometrika} 58(1), 83--90. \nmdoi{10.1093/biomet/58.1.83}}
-\nmref{huang2019}{Huang, S., Wang, D., Wu, X. and Tang, A. (2019). DSANet: Dual self-attention network for multivariate time series forecasting. In \emph{Proceedings of the 28th ACM International Conference on Information and Knowledge Management}, 2129--2132. \nmdoi{10.1145/3357384.3358132}}
-\nmref{hyndman2008}{Hyndman, R. J. and Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. \emph{Journal of Statistical Software} 27(3). \nmdoi{10.18637/jss.v027.i03}}
-\nmref{hyndman2002}{Hyndman, R. J., Koehler, A. B., Snyder, R. D. and Grose, S. (2002). A state space framework for automatic forecasting using exponential smoothing methods. \emph{International Journal of Forecasting} 18(3), 439--454. \nmdoi{10.1016/S0169-2070(01)00110-8}}
 \nmref{kan1999}{Kan, R. and Zhang, C. (1999). Two-pass tests of asset pricing models with useless factors. \emph{The Journal of Finance} 54(1), 203--235. \nmdoi{10.1111/0022-1082.00102}}
 \nmref{kupiec1995}{Kupiec, P. H. (1995). Techniques for verifying the accuracy of risk measurement models. \emph{The Journal of Derivatives} 3(2), 73--84. \nmdoi{10.3905/jod.1995.407942}}
-\nmref{lai2018}{Lai, G., Chang, W.-C., Yang, Y. and Liu, H. (2018). Modeling long- and short-term temporal patterns with deep neural networks. In \emph{The 41st International ACM SIGIR Conference on Research \& Development in Information Retrieval}, 95--104. \nmdoi{10.1145/3209978.3210006}}
 \nmref{lopezdeprado2016}{Lopez de Prado, M. (2016). Building diversified portfolios that outperform out of sample. \emph{Journal of Portfolio Management} 42(4), 59--69. \nmdoi{10.3905/jpm.2016.42.4.059}}
 \nmref{markowitz1952}{Markowitz, H. M. (1952). Portfolio selection. \emph{Journal of Finance} 7(1), 77--91. \nmdoi{10.2307/2975974}}
 \nmref{nelson1991}{Nelson, D. B. (1991). Conditional heteroskedasticity in asset returns: A new approach. \emph{Econometrica} 59(2), 347--370. \nmdoi{10.2307/2938260}}
 \nmref{ogata1988}{Ogata, Y. (1988). Statistical models for earthquake occurrences and residual analysis for point processes. \emph{Journal of the American Statistical Association} 83(401), 9--27. \nmdoi{10.1080/01621459.1988.10478560}}
 \nmref{parkinson1980}{Parkinson, M. (1980). The extreme value method for estimating the variance of the rate of return. \emph{The Journal of Business} 53(1), 61--65. \nmdoi{10.1086/296071}}
-\nmref{parzen1982}{Parzen, E. (1982). ARARMA models for time series analysis and forecasting. \emph{Journal of Forecasting} 1(1), 67--82. \nmdoi{10.1002/for.3980010108}}
-\nmref{qin2017}{Qin, Y., Song, D., Chen, H., Cheng, W., Jiang, G. and Cottrell, G. W. (2017). A dual-stage attention-based recurrent neural network for time series prediction. In \emph{Proceedings of the Twenty-Sixth International Joint Conference on Artificial Intelligence}, 2627--2633. \nmdoi{10.24963/ijcai.2017/366}}
 \nmref{raffinot2018}{Raffinot, T. (2018). The hierarchical equal risk contribution portfolio. SSRN working paper. \nmdoi{10.2139/ssrn.3237540}}
 \nmref{rockafellar2000}{Rockafellar, R. T. and Uryasev, S. (2000). Optimization of conditional value-at-risk. \emph{Journal of Risk} 2(3), 21--41. \nmdoi{10.21314/JOR.2000.038}}
 \nmref{rogers1991}{Rogers, L. C. G. and Satchell, S. E. (1991). Estimating variance from high, low and closing prices. \emph{The Annals of Applied Probability} 1(4), 504--512. \nmdoi{10.1214/aoap/1177005835}}
 \nmref{shanken1992}{Shanken, J. (1992). On the estimation of beta-pricing models. \emph{Review of Financial Studies} 5(1), 1--33. \nmdoi{10.1093/rfs/5.1.1}}
-\nmref{shih2019}{Shih, S.-Y., Sun, F.-K. and Lee, H.-y. (2019). Temporal pattern attention for multivariate time series forecasting. \emph{Machine Learning} 108(8--9), 1421--1441. \nmdoi{10.1007/s10994-019-05815-0}}
 \nmref{smith2003}{Smith, E., Farmer, J. D., Gillemot, L. and Krishnamurthy, S. (2003). Statistical theory of the continuous double auction. \emph{Quantitative Finance} 3(6), 481--514. \nmdoi{10.1088/1469-7688/3/6/307}}
 \nmref{sortino1994}{Sortino, F. A. and Price, L. N. (1994). Performance measurement in a downside risk framework. \emph{The Journal of Investing} 3(3), 59--64. \nmdoi{10.3905/joi.3.3.59}}
-\nmref{syntetos2005}{Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. \emph{International Journal of Forecasting} 21(2), 303--314. \nmdoi{10.1016/j.ijforecast.2004.10.001}}
 \nmref{yang2000}{Yang, D. and Zhang, Q. (2000). Drift-independent volatility estimation based on high, low, open, and close prices. \emph{The Journal of Business} 73(3), 477--492. \nmdoi{10.1086/209650}}
 \nmref{zhang2005}{Zhang, L., Mykland, P. A. and A\"{\i}t-Sahalia, Y. (2005). A tale of two time scales: determining integrated volatility with noisy high-frequency data. \emph{Journal of the American Statistical Association} 100(472), 1394--1411. \nmdoi{10.1198/016214505000000169}}
 \nmref{zhang2011}{Zhang, L. (2011). Estimating covariation: Epps effect, microstructure noise. \emph{Journal of Econometrics} 160(1), 33--47. \nmdoi{10.1016/j.jeconom.2010.03.012}}

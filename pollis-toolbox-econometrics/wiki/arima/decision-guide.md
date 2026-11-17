@@ -21,7 +21,7 @@ Three routes are available in the panel. The classical route reads the autocorre
 
 ## How to Choose Between ARIMA and Other Forecasters
 
-For a broad treatment of the alternatives, [Hyndman and Athanasopoulos (2021)](#ref-HA2021a) is the standard text. ARIMA handles short-run correlation well, but a benchmark should always sit next to it: **Rolling Backtest** should beat a naive or seasonal naive forecast at the horizons that matter. Exponential smoothing tends to do as well on series with clear trend and seasonality, and is available in the Automatic Time-Series Forecasting panel. Conditional variance models take over when the question is about risk rather than level. A vector autoregression takes over when several series move together, and neural networks need far more data before they repay their complexity.
+For a broad treatment of the alternatives, [Hyndman and Athanasopoulos (2021)](#ref-HA2021a) is the standard text. ARIMA handles short-run correlation well, but a benchmark should always sit next to it: **Rolling Backtest** should beat a naive or seasonal naive forecast at the horizons that matter. Exponential smoothing tends to do as well on series with clear trend and seasonality, and is available in the Automatic Time-Series Forecasting panel of the Time-Series Forecasting Toolbox. Conditional variance models take over when the question is about risk rather than level. A vector autoregression takes over when several series move together, and neural networks need far more data before they repay their complexity.
 
 ## References
 

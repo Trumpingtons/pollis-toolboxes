@@ -1,0 +1,38 @@
+{
+  "name": "pollis-toolbox-time-series-forecasting",
+  "displayName": "Time-Series Forecasting Toolbox",
+  "description": "Pollis Time-Series Forecasting Toolbox: BATS and TBATS, the Theta method and intermittent demand, neural network forecasting with LSTnet, DA-RNN, TPA-LSTM and DSANet, and automatic forecasting with auto ARIMA, auto ETS, auto ARARMA and a race between models.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Other"],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "time-series-forecasting",
+        "title": "Time-Series Forecasting",
+        "order": 1,
+        "documents": [
+          {
+            "title": "Time-Series Forecasting Toolbox",
+            "source": "docs/forecasting/forecasting.tex"
+          }
+        ],
+        "panels": [
+          { "id": "atsf", "command": "chiara.statistics.atsf", "title": "Advanced Time-Series Forecasting", "group": "1_tsf", "order": 1, "data": "panels/atsf.toml", "defaultModel": "bats", "decisionFirstColumn": "Model" },
+          { "id": "nntsf", "command": "chiara.statistics.nntsf", "title": "Neural Network Time-Series Forecasting", "group": "1_tsf", "order": 2, "data": "panels/nntsf.toml", "defaultModel": "lstnet", "decisionFirstColumn": "Model" },
+          { "id": "autotsf", "command": "chiara.statistics.autotsf", "title": "Automatic Time-Series Forecasting", "group": "1_tsf", "order": 3, "data": "panels/autotsf.toml", "defaultModel": "arima", "decisionFirstColumn": "Model" }
+        ]
+      }
+    ]
+  }
+}

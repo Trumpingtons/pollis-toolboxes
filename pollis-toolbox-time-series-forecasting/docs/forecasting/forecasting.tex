@@ -1,0 +1,66 @@
+% Toolbox Vignette of the Time-Series Forecasting Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("forecasting.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{17 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Time-Series Forecasting Toolbox}
+  {Time-Series Forecasting Toolbox}
+  {What its panels are for, and when to use each.}
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Time-Series Forecasting}, with these panels. Each has an example you can edit and run, and actions on its results.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{62mm}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Use it when} \\\midrule
+Advanced Time-Series Forecasting & A series has several seasonal periods or many zeros, or you need a hard-to-beat benchmark. \\
+Neural Network Time-Series Forecasting & Several series mix short patterns with long cycles, and a simple forecast is not enough. \\
+Automatic Time-Series Forecasting & You want a forecast without choosing the model by hand. \\\bottomrule
+\end{tabularx}}
+
+
+\nmsection{Advanced Time-Series Forecasting}
+Three methods from \package{Durbyn}{https://github.com/taf-society/Durbyn.jl}. BATS and TBATS (\nmcite{delivera2011}{De Livera, Hyndman and Snyder 2011}) handle several or non-integer seasonal periods, such as hourly data with daily and weekly cycles. The Theta Method (\nmcite{assimakopoulos2000}{Assimakopoulos and Nikolopoulos 2000}) is a simple benchmark for monthly or yearly series. Intermittent Demand is for sparse series with many zeros: \nmcite{croston1972}{Croston (1972)} smooths demand sizes and intervals separately, and SBA and SBJ correct its upward bias, SBA being the correction of \nmcite{syntetos2005}{Syntetos and Boylan (2005)}. Demand Pattern classifies a series before you choose, and Holdout Accuracy scores the forecast on data the model has not seen.
+
+\nmsection{Neural Network Time-Series Forecasting}
+Four architectures from \package{FluxArchitectures}{https://github.com/sdobber/FluxArchitectures.jl}, on \package{Flux}{https://github.com/FluxML/Flux.jl}. The package pins Flux 0.13, so the panel runs on that older version. The example forecasts one exchange rate six steps ahead from several, training on the first windows and testing on later ones.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{22mm}>{\raggedright\arraybackslash}p{58mm}X@{}}
+\toprule
+\textbf{Model} & \textbf{Structure} & \textbf{Use it for} \\\midrule
+LSTnet & CNN, GRU, skip connections and AR (\nmcite{lai2018}{Lai, Chang, Yang and Liu 2018}) & Short local patterns mixed with long seasonal cycles \\
+DA-RNN & Dual-stage attention (\nmcite{qin2017}{Qin, Song, Chen, Cheng, Jiang and Cottrell 2017}) & Attention over both the driving series and the time steps \\
+TPA-LSTM & LSTM with temporal pattern attention (\nmcite{shih2019}{Shih, Sun and Lee 2019}) & Many variables with different periodicities \\
+DSANet & Global and local self-attention (\nmcite{huang2019}{Huang, Wang, Wu and Tang 2019}) & Many correlated series, in parallel and with no recurrence \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Run the Naive Baseline action first: a network that does not beat it adds nothing.
+
+\nmsection{Automatic Time-Series Forecasting}
+\package{Durbyn}{https://github.com/taf-society/Durbyn.jl} chooses the model for you. Auto ARIMA sets the differencing by unit-root tests and the orders by a stepwise search, as in \nmcite{hyndman2008}{Hyndman and Khandakar (2008)}. Auto ETS chooses the form of exponential smoothing by information criterion (\nmcite{hyndman2002}{Hyndman, Koehler, Snyder and Grose 2002}). Auto ARARMA applies the memory-shortening filter of \nmcite{parzen1982}{Parzen (1982)} and then a short ARMA, and suits slowly decaying series with no clear seasonal period. Model Race fits them all and keeps the one most accurate on the last observations. Selection Stability shows whether the chosen model changes as the sample does, and Rolling-Origin Accuracy gives a fairer score than a single holdout.
+
+\nmsection{References}
+{\footnotesize\sloppy
+\nmref{assimakopoulos2000}{Assimakopoulos, V. and Nikolopoulos, K. (2000). The theta model: a decomposition approach to forecasting. \emph{International Journal of Forecasting} 16(4), 521--530. \nmdoi{10.1016/S0169-2070(00)00066-2}}
+\nmref{croston1972}{Croston, J. D. (1972). Forecasting and stock control for intermittent demands. \emph{Journal of the Operational Research Society} 23(3), 289--303. \nmdoi{10.1057/jors.1972.50}}
+\nmref{delivera2011}{De Livera, A. M., Hyndman, R. J. and Snyder, R. D. (2011). Forecasting time series with complex seasonal patterns using exponential smoothing. \emph{Journal of the American Statistical Association} 106(496), 1513--1527. \nmdoi{10.1198/jasa.2011.tm09771}}
+\nmref{huang2019}{Huang, S., Wang, D., Wu, X. and Tang, A. (2019). DSANet: Dual self-attention network for multivariate time series forecasting. In \emph{Proceedings of the 28th ACM International Conference on Information and Knowledge Management}, 2129--2132. \nmdoi{10.1145/3357384.3358132}}
+\nmref{hyndman2008}{Hyndman, R. J. and Khandakar, Y. (2008). Automatic time series forecasting: The forecast package for R. \emph{Journal of Statistical Software} 27(3). \nmdoi{10.18637/jss.v027.i03}}
+\nmref{hyndman2002}{Hyndman, R. J., Koehler, A. B., Snyder, R. D. and Grose, S. (2002). A state space framework for automatic forecasting using exponential smoothing methods. \emph{International Journal of Forecasting} 18(3), 439--454. \nmdoi{10.1016/S0169-2070(01)00110-8}}
+\nmref{lai2018}{Lai, G., Chang, W.-C., Yang, Y. and Liu, H. (2018). Modeling long- and short-term temporal patterns with deep neural networks. In \emph{The 41st International ACM SIGIR Conference on Research \& Development in Information Retrieval}, 95--104. \nmdoi{10.1145/3209978.3210006}}
+\nmref{parzen1982}{Parzen, E. (1982). ARARMA models for time series analysis and forecasting. \emph{Journal of Forecasting} 1(1), 67--82. \nmdoi{10.1002/for.3980010108}}
+\nmref{qin2017}{Qin, Y., Song, D., Chen, H., Cheng, W., Jiang, G. and Cottrell, G. W. (2017). A dual-stage attention-based recurrent neural network for time series prediction. In \emph{Proceedings of the Twenty-Sixth International Joint Conference on Artificial Intelligence}, 2627--2633. \nmdoi{10.24963/ijcai.2017/366}}
+\nmref{shih2019}{Shih, S.-Y., Sun, F.-K. and Lee, H.-y. (2019). Temporal pattern attention for multivariate time series forecasting. \emph{Machine Learning} 108(8--9), 1421--1441. \nmdoi{10.1007/s10994-019-05815-0}}
+\nmref{syntetos2005}{Syntetos, A. A. and Boylan, J. E. (2005). The accuracy of intermittent demand estimates. \emph{International Journal of Forecasting} 21(2), 303--314. \nmdoi{10.1016/j.ijforecast.2004.10.001}}
+}
+
+\nmcredit
+\end{document}
