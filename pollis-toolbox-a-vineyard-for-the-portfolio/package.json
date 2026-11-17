@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-a-vineyard-for-the-portfolio",
   "displayName": "A Vineyard for the Portfolio",
-  "description": "A Simulation Games case for Pollis: a British drinks group negotiates to buy one of three wineries, in Chile, Italy and Australia, whose owners each know something it does not, then every winery is run for three years, on a Julia model the class can open afterwards.",
-  "version": "0.1.0",
+  "description": "A Simulation Game case for Pollis: a British drinks group negotiates to buy one of three wineries, in Chile, Italy and Australia, whose owners each know something it does not, then every winery is run for three years, on a Julia model the class can open afterwards.",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
