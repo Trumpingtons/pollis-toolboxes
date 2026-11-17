@@ -29,6 +29,10 @@ The name of Corvane Robotics is made up.
 
 Pollis, and Julia on the facilitator's computer. The players need only Pollis.
 
+## Icon
+
+The icon's photo, a commodity trading floor in New York, from the Library of Congress, through [rawpixel](https://www.rawpixel.com/image/6298192/commodity-market-new-york), is in the public domain (CC0 1.0), with the Pollis logo added in its upper left corner.
+
 ## License
 
 AGPL-3.0; model.jl is MIT.

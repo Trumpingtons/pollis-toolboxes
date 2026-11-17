@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-trading-floor",
   "displayName": "Trading Floor",
   "description": "A Simulation Game case for Pollis: trading desks buy and sell one company's shares on a live order book, period by period by the clock, as its results move the share's value and some desks receive hints first, on a Julia model the class can open afterwards.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

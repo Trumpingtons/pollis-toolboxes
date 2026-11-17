@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-save-the-company",
   "displayName": "Save the Company",
   "description": "A Simulation Game case for Pollis: the shareholders, banks and bondholders of a British retailer that cannot pay its debts negotiate a plan before its cash runs out, in four or six quarters, on a Julia model the class can open afterwards.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

@@ -31,6 +31,10 @@ The names of Harrowgate Drinks and of the three wineries are made up.
 
 Pollis, and Julia on the facilitator's computer. The players need only Pollis.
 
+## Icon
+
+The icon's photo, a vineyard below a hill, from [rawpixel](https://www.rawpixel.com/image/3286651/free-photo-image-cc0-countryside-creative-commons), is in the public domain (CC0 1.0), with the Pollis logo added in its upper left corner.
+
 ## License
 
 AGPL-3.0; model.jl is MIT.

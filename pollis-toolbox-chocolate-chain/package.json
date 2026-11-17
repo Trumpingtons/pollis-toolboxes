@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-chocolate-chain",
   "displayName": "Grow a Chocolate Chain",
   "description": "A Simulation Game case for Pollis: rival teams each run a chocolate brand in one country for five years, setting price, beans, shops, staff and marketing, on a Julia model the class can open afterwards.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

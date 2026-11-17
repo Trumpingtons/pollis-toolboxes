@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-merge-or-be-bought",
   "displayName": "Merge or Be Bought",
   "description": "A Simulation Game case for Pollis: three listed bicycle makers, each run by a team as its board, bid for each other's shares for six quarters, on a Julia model the class can open afterwards.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
