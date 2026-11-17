@@ -13,7 +13,8 @@
 // <out>/<name>-README.md, which Pollis shows before the toolbox is installed (both READMEs, this
 // one and the one in the .vsix, get the version on the line below their title), and a copy of its
 // icon, <out>/<name>-icon.<ext>, which the Toolboxes section shows on the toolbox's row:
-//   { "toolboxes": [ { "id", "name", "description", "author", "version", "vsix", "readme", "icon" } ] }
+//   { "toolboxes": [ { "id", "name", "description", "author", "version", "vsix", "readme", "icon", "games" } ] }
+// "games" is true for a toolbox of Simulation Games cases alone.
 // The .vsix is the zip that vsce writes (extension.vsixmanifest, [Content_Types].xml and the
 // extension's files under extension/), written here so that packaging needs neither vsce nor the
 // network. A toolbox has no code, so nothing is compiled and there are no dependencies.
@@ -49,6 +50,8 @@ interface ToolboxManifest {
 	readonly repository?: { readonly url?: string };
 	/** The icon, relative to the extension folder. */
 	readonly icon?: string;
+	/** The toolboxes the extension contributes, with their panels and their Simulation Games cases. */
+	readonly contributes?: { readonly pollisToolboxes?: readonly { readonly panels?: readonly unknown[]; readonly games?: readonly unknown[] }[] };
 }
 
 /** One toolbox in toolboxes.json. */
@@ -63,6 +66,8 @@ interface ToolboxIndexEntry {
 	readonly readme?: string;
 	/** The toolbox's icon, published as `<name>-icon.<ext>`, which the Toolboxes section shows on its row; absent when it has none. */
 	readonly icon?: string;
+	/** True for a toolbox of Simulation Games cases alone, with no panels, whose README Pollis heads as an online simulation. */
+	readonly games?: boolean;
 }
 
 /** A file of the zip: its path in the zip (forward slashes) and its content. */
@@ -276,7 +281,14 @@ function packageToolbox(folder: string): ToolboxIndexEntry {
 		vsix,
 		readme,
 		icon,
+		...(hasOnlyGames(manifest) ? { games: true } : {}),
 	};
+}
+
+/** Whether a toolbox brings Simulation Games cases alone: every toolbox it contributes has cases and no panels. */
+function hasOnlyGames(manifest: ToolboxManifest): boolean {
+	const toolboxes = manifest.contributes?.pollisToolboxes ?? [];
+	return toolboxes.length > 0 && toolboxes.every(toolbox => !toolbox.panels?.length && !!toolbox.games?.length);
 }
 
 /** The author's name: a package.json author is "Name <email> (url)" or { "name" }. */
