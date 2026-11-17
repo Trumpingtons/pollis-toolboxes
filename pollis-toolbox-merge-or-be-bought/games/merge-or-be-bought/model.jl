@@ -13,6 +13,18 @@
 # cash, takes on its business, cash and debt, and saves synergy a year once the two are merged, phased in over
 # synergy_quarters. Each team's score is the return of its original shareholders: its share price, or the price
 # it was bought at, over its price before the first quarter.
+#
+# The savings of each pair are drawn for each game, and each board's analysts give a range with the true savings
+# somewhere inside it, so that a student who has read this file knows how the savings are drawn, not what they are.
+# The debrief shows them, and, each quarter, each pair's zone of possible agreement: the target's value on its own,
+# the least its shareholders should accept, and its value to the bidder with the savings, the most the bidder
+# should pay.
+
+"""A range of width `width` times x with x somewhere inside it, drawn, so that its middle does not give x away."""
+function around(rng, x, width)
+	u = rand(rng)
+	return (x * (1 - width * u), x * (1 + width * (1 - u)))
+end
 
 """The companies before the first quarter, and what each team sees: the prices, and its own analysts' estimates of the savings."""
 function initial(rng, parameters, teams)
@@ -45,12 +57,76 @@ function initial(rng, parameters, teams)
 		"earnings" => c["earnings"], "return" => 0.0,
 	) for c in companies]
 	notes = Dict{String,Any}()
+	secrets = String[]
 	for (i, c) in enumerate(companies)
-		estimates = [@sprintf("buying %s would save about %.1f m € a year", companies[j]["name"], synergy[i, j]) for j in 1:n if j != i]
+		estimates = String[]
+		for j in 1:n
+			j == i && continue
+			low, high = around(rng, synergy[i, j], p["estimate_width"])
+			push!(estimates, @sprintf("buying %s would save between %.1f and %.1f m € a year", companies[j]["name"], low, high))
+			push!(secrets, @sprintf("| %s | %s | %.2f | %.1f to %.1f |", c["name"], companies[j]["name"], synergy[i, j], low, high))
+		end
 		notes[string(c["team"])] = "Your analysts estimate that " * join(estimates, ", and ") * ". Only your team knows these estimates."
 	end
-	return state, Dict{String,Any}("public" => public, "private_text" => notes,
+	debrief = join(vcat(["The yearly savings this game drew for each pair, which no board knew exactly: each board's analysts gave it the range beside them.", "",
+		"| Buyer | Target | Yearly Savings (m €) | The Analysts' Range (m €) |", "| --- | --- | --- | --- |"], secrets), "\n")
+	return state, Dict{String,Any}("public" => public, "private_text" => notes, "debrief" => debrief,
 		"text" => "Three bicycle makers are listed: each is valued at its earnings, cash and debt. Bids open in Quarter 1.")
+end
+
+"""Whether a share is above or below: "12% above", "8% below", or "equal to" below half a percent."""
+above(x) = abs(x) < 0.005 ? "equal to" : @sprintf("%.0f%% %s", 100 * abs(x), x >= 0 ? "above" : "below")
+
+"""
+What the debrief says of a quarter's bids, from the model's figures before the deals: for each company still listed,
+its value per share on its own, the least its shareholders should accept, and its walk-away price; for each rival,
+the company's value to it with the savings, the most it should pay, what it could pay, and its bid; then whether a
+deal was possible, and what came of it.
+"""
+function bids_debrief(companies, synergy, chosen, bids, p, sold)
+	lines = ["Each pair's zone of possible agreement, from the model's figures this quarter before the deals: a company's value on its own is the least its shareholders should accept, and its value to a rival, with the savings of buying it valued like earnings, the most that rival should pay, when its cash and borrowing cover it.", "",
+		"| Company | Value on Its Own (€) | Walk-Away (€) | Rival | Value to the Rival (€) | Most the Rival Could Pay (€) | Rival's Bid (€) |",
+		"| --- | --- | --- | --- | --- | --- | --- |"]
+	verdicts = String[]
+	for (j, target) in enumerate(companies)
+		target["active"] || continue
+		own = value_per_share(target, p)
+		walk = float(chosen[target["team"]]["walk_away"])
+		worth = Float64[]
+		for (i, rival) in enumerate(companies)
+			(i != j && rival["active"]) || continue
+			value = own + p["earnings_multiple"] * synergy[i][j] / target["shares"]
+			# The most this rival should and could pay
+			push!(worth, min(value, capacity(rival, p) / target["shares"]))
+			bid = something(findfirst(x -> x[1] == i, get(bids, j, Tuple{Int,Float64}[])), 0)
+			made = bid == 0 ? 0.0 : bids[j][bid][2]
+			push!(lines, @sprintf("| %s | %.2f | %.2f | %s | %.2f | %.2f | %s |", target["name"], own, walk, rival["name"], value, capacity(rival, p) / target["shares"], made > 0 ? @sprintf("%.2f", made) : "none"))
+		end
+		isempty(worth) && continue
+		verdict = @sprintf("- **%s:** its walk-away price was %s its value on its own.", target["name"], above(walk / own - 1))
+		if haskey(sold, j)
+			i, b = sold[j]
+			value = own + p["earnings_multiple"] * synergy[i][j] / target["shares"]
+			buyer = companies[i]["name"]
+			if b > value
+				verdict *= @sprintf(" %s bought it at %.2f € a share, %.2f € above its value to %s: %s's shareholders lost by the deal.", buyer, b, b - value, buyer, buyer)
+			elseif b < own
+				verdict *= @sprintf(" %s bought it at %.2f € a share, below its value on its own: its shareholders sold too cheaply.", buyer, b)
+			else
+				verdict *= @sprintf(" %s bought it at %.2f € a share, within the zone: of the %.2f € a share the savings were worth, its shareholders took %.2f and %s kept %.2f.", buyer, b, value - own, b - own, buyer, value - b)
+			end
+		elseif maximum(worth) < own
+			verdict *= @sprintf(" No rival could pay even its value on its own: the most any could and should pay was %.2f € a share, so no deal was possible.", maximum(worth))
+		elseif walk > maximum(worth)
+			verdict *= @sprintf(" That was above what any rival could and should pay, at most %.2f € a share: no rival should have paid it, and no deal was possible at it, though one was between %.2f and %.2f.", maximum(worth), own, maximum(worth))
+		elseif !isempty(get(bids, j, ())) && maximum(last.(bids[j])) >= walk
+			verdict *= " A bid reached its walk-away price, but a company takes part in one deal a quarter, and another deal went first."
+		else
+			verdict *= @sprintf(" A deal was possible: a rival could and should have paid up to %.2f € a share, at or above its walk-away price, but no bid reached it.", maximum(worth))
+		end
+		push!(verdicts, verdict)
+	end
+	return join(vcat(lines, "", verdicts), "\n")
 end
 
 """The market's value of a company per share: earnings_multiple years of its earnings and of the savings still to come, plus cash, less debt."""
@@ -107,11 +183,15 @@ function play(rng, state, decisions, parameters)
 	end
 	sort!(candidates; by = x -> x[3] / companies[x[2]]["price"], rev = true)
 	dealt = Set{Int}()
+	sold = Dict{Int,Tuple{Int,Float64}}()
+	# The debrief's zones, from the figures before the deals, filled in once the deals are known
+	values_before = [deepcopy(c) for c in companies]
 	deals = String[]
 	out = Dict{String,Any}()
 	for (i, j, b) in candidates
 		(i in dealt || j in dealt) && continue
 		push!(dealt, i, j)
+		sold[j] = (i, b)
 		buyer, target = companies[i], companies[j]
 		cost = b * target["shares"]
 		paid = clamp(buyer["cash"], 0.0, cost)
@@ -168,6 +248,7 @@ function play(rng, state, decisions, parameters)
 	state["quarter"] = quarter
 	return state, Dict{String,Any}(
 		"public" => public, "private" => private, "text" => text, "out" => out,
+		"debrief" => bids_debrief(values_before, synergy, chosen, bids, p, sold),
 		"private_text" => Dict{String,Any}(team => join(lines, " ") for (team, lines) in notes),
 		"over" => length(active) < 2,
 	)

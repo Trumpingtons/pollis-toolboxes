@@ -2,5 +2,5 @@
 - Which desks had a hint in each period, and did they trade on it? Did they gain more than the desks without one?
 - Could the desks without a hint tell, from the book and the trades, that someone knew something?
 - What did the desks tell each other in Negotiations? Did anyone share a hint, or a false one?
-- How did A Rival Recalls Its Robots and A Strike at the Warehouses move the price, and how fast?
+- How did the news released move the price, and how fast? Behind the Results shows each period's news and results beside the prices traded.
 - Open model.jl: how are the results and the hints drawn, and how would the market change if every desk had a hint, or none?

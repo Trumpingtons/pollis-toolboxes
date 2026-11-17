@@ -13,12 +13,26 @@
 # choose among the brands and buying none (no_purchase_appeal) by a multinomial logit: a brand's share of the
 # market is exp(appeal) over the sum of exp(appeal) of all brands and of buying none. A brand sells its
 # demand up to its capacity, shops times staff per shop times tablets_per_staff; the rest are lost sales.
+#
+# Each game draws its own market size and price sensitivity from the ranges of [parameters], so that a price
+# worked out in advance from this file does not carry over from one game to the next; the briefings give the
+# ranges, and the debrief shows what was drawn.
 
-"""The state before the first year: the market, and each team with its starting cash and no shops."""
+"""A value drawn evenly from a range [low, high]."""
+draw(rng, range) = range[1] + (range[2] - range[1]) * rand(rng)
+
+"""The state before the first year: the market and the buyers' price sensitivity drawn for this game, and each team with its starting cash and no shops; and, for the debrief, what was drawn."""
 function initial(rng, parameters, teams)
-	return Dict{String,Any}(
+	p = parameters
+	market = round(draw(rng, p["market_size"]); digits = -4)
+	sensitivity = round(draw(rng, p["price_sensitivity"]); digits = 2)
+	charge(bean) = round(Int, 100 * (exp(p["quality_appeal"][bean] / sensitivity) - 1))
+	debrief = @sprintf("What this game drew: the country's buyers would buy %s tablets in the first year, and their price sensitivity was %.2f, so that a price 10%% higher lost %.1f%% of a brand's buyers, Fine Trinitario let a brand charge %d%% more than Bulk Forastero for the same buyers, and Single-Origin Criollo %d%% more, while its share of the market was small.",
+		thousands(round(Int, market)), sensitivity, 100 * (1 - 1.1^-sensitivity), charge("fine"), charge("origin"))
+	state = Dict{String,Any}(
 		"year" => 0,
-		"market" => float(parameters["market_size"]),
+		"market" => market,
+		"price_sensitivity" => sensitivity,
 		"teams" => [Dict{String,Any}(
 			"team" => team["team"],
 			"name" => team["name"],
@@ -28,6 +42,7 @@ function initial(rng, parameters, teams)
 			"cumulative_profit" => 0.0,
 		) for team in teams],
 	)
+	return state, Dict{String,Any}("debrief" => debrief)
 end
 
 """One year: the market, each brand's share, sales and accounts."""
@@ -45,7 +60,7 @@ function play(rng, state, decisions, parameters)
 		staff = round(Int, d["staff"])
 		marketing = float(d["marketing"])
 		brand = p["brand_memory"] * team["brand"] + marketing
-		appeal = p["quality_appeal"][beans] - p["price_sensitivity"] * log(price) +
+		appeal = p["quality_appeal"][beans] - state["price_sensitivity"] * log(price) +
 			p["brand_appeal"] * log1p(brand / 100) + p["shop_appeal"] * log(shops)
 		(; team, price, beans, shops, staff, marketing, brand, appeal)
 	end
@@ -88,7 +103,7 @@ function play(rng, state, decisions, parameters)
 	leader = argmax(team -> team["cumulative_profit"], teams)
 	text = @sprintf("Year %d: the market would buy %s tablets. %s leads, with a cumulative profit of %s €.",
 		year, thousands(round(Int, market)), leader["name"], thousands(round(Int, leader["cumulative_profit"])))
-	return Dict{String,Any}("year" => year, "market" => market, "teams" => teams),
+	return Dict{String,Any}("year" => year, "market" => market, "price_sensitivity" => state["price_sensitivity"], "teams" => teams),
 		Dict{String,Any}("public" => public, "private" => private, "text" => text)
 end
 

@@ -10,6 +10,10 @@
 # Before each period, half of the desks, in turn, receive their analysts' hint of the change, the change plus a
 # normal error with standard deviation hint_error. At the end of the game Corvane is taken over at its value, so a
 # desk's wealth is its cash plus its shares at that value; its score is its return over its wealth at the start.
+#
+# The changes and the hints are drawn for each game, and the news is drawn by Pollis from the ranges of case.toml,
+# so a student who has read the files knows how the market moves, not where. The debrief shows, for each period,
+# the hints, the change the results brought, the news, and the prices the desks traded at.
 
 const GOOD = ["won a contract with a supermarket chain", "launched a faster picking robot", "beat its sales forecast", "signed a partnership with a logistics firm"]
 const BAD = ["lost a large customer", "recalled a batch of robots", "missed its sales forecast", "delayed its new model"]
@@ -64,6 +68,7 @@ function play(rng, state, decisions, parameters)
 	positions = Dict(entry["team"] => (float(entry["decisions"]["cash"]), float(entry["decisions"]["shares"])) for entry in decisions)
 	market = first(decisions)["decisions"]
 	change = s["changes"][period]
+	results = change
 	# News the facilitator released in the period moves the value once, at this close
 	for key in SHOCKS
 		if p[key] != s["shocks"][key]
@@ -71,6 +76,8 @@ function play(rng, state, decisions, parameters)
 			s["shocks"][key] = p[key]
 		end
 	end
+	hinted = [s["names"][string(team)] for team in informed(s, period)]
+	hint = results + s["hint_errors"][period]
 	before = s["value"]
 	s["value"] = max(before + change, 1.0)
 	event = change >= 0 ? rand(rng, GOOD) : rand(rng, BAD)
@@ -82,8 +89,16 @@ function play(rng, state, decisions, parameters)
 		"bought" => entry["decisions"]["bought"], "sold" => entry["decisions"]["sold"],
 		"average_buy" => entry["decisions"]["average_buy"], "average_sell" => entry["decisions"]["average_sell"],
 	)] for entry in decisions)
+	traded = market["volume"] > 0 ? @sprintf("%.2f", market["average_price"]) : "none"
+	debrief = join([
+		@sprintf("%s had their analysts' hint before this period: a change of %s£%.2f a share. The results brought %s£%.2f, ",
+			join(hinted, " and "), hint < 0 ? "-" : "+", abs(hint), results < 0 ? "-" : "+", abs(results)) *
+			(change == results ? "and no news moved the value." : @sprintf("and the news released in the period %s£%.2f.", change - results < 0 ? "-" : "+", abs(change - results))), "",
+		"| Value Before the Close (£) | Results (£) | News (£) | Value After the Close (£) | Average Price Traded (£) |", "| --- | --- | --- | --- | --- |",
+		@sprintf("| %.2f | %+.2f | %+.2f | %.2f | %s |", before, results, change - results, s["value"], traded),
+	], "\n")
 	return s, Dict{String,Any}("public" => standings(s, positions, s["value"]), "private" => private, "text" => text,
-		"private_text" => last ? Dict{String,Any}() : hints(s, p, period + 1), "over" => last)
+		"private_text" => last ? Dict{String,Any}() : hints(s, p, period + 1), "over" => last, "debrief" => debrief)
 end
 
 periods_over(p, period) = period >= p["rounds"]

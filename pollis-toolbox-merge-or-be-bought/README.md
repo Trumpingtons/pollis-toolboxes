@@ -11,11 +11,11 @@ Installing it adds the case to **Compose > Simulation Games > Host a Game...**. 
 | Rounds | 6 quarters |
 | Teams | 3: Larkspur Cycles, Tamberlin Bikes and Orvane Wheelworks |
 | Decisions | a bid per share for each rival still listed, and a walk-away price for the company's own shares |
-| Private information | each board's estimate of the yearly savings of buying each rival, and its own accounts |
+| Private information | each board's estimate of the yearly savings of buying each rival, a range around the savings each game draws, and its own accounts |
 | Teams organised as | Board Members (everyone sets everything), or Officers: Chief Executive, Strategy and Finance, each with its own briefing and decisions |
-| News | rising interest rates, a cycling boom, and investors paying less for earnings, each read by some roles only |
+| News | rising interest rates, a cycling boom, and investors paying less for earnings, each read by some roles only; each game draws whether each comes, when and how large |
 | Negotiations | boards can write to each other; the facilitator reads what they write |
-| Debrief | the standings, each round's results, the bids, the news and the negotiations, five tables and questions for the class |
+| Debrief | the standings, each round's results, the bids, the news and the negotiations, five tables and questions for the class; the savings the game drew, and each quarter's zones of possible agreement |
 
 A company that is bought leaves the game, and its shareholders keep the price they were paid.
 

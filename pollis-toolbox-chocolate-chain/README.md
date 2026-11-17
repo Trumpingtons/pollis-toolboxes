@@ -11,10 +11,11 @@ Installing it adds the case to **Compose > Simulation Games > Host a Game...**. 
 | Rounds | 5 years |
 | Teams | 2 to 6 |
 | Decisions | price, beans, shops, staff per shop, marketing |
+| Each game draws | the market's size and the buyers' sensitivity to price, within the ranges the briefings give |
 | Teams organised as | Board Members (everyone sets everything), or Departments: Chief Executive, Marketing, Sourcing and Finance, each with its own briefing and decisions |
-| News | rising cacao prices, rising rents, and a television series on craft chocolate, each read by some roles only |
+| News | rising cacao prices, rising rents, and a television series on craft chocolate, each read by some roles only; each game draws whether each comes, when and how large |
 | Negotiations | teams can write to each other; the facilitator reads what they write |
-| Debrief | the standings, each round's results, the news and the negotiations, five tables and questions for the class |
+| Debrief | the standings, each round's results, the news and the negotiations, five tables and questions for the class; the market and buyers the game drew |
 
 ## Files
 

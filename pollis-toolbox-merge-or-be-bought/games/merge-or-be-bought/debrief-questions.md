@@ -1,6 +1,7 @@
 - Which company was bought, at what premium, and did its shareholders do better than those of the buyer?
-- Did the buyer pay more than the savings its analysts estimated were worth? Open the decisions table: what did the boards bid, and when?
+- Did the buyer pay more than the savings were worth? Behind the Results shows each quarter's zones: where in its zone did the price fall, and who took more of the savings?
+- How far above their company's value on its own did the boards set their walk-away prices? When was no deal possible, and when was one possible but missed?
 - Did a bid raise the price of a company that was never sold? Who gained from it?
-- How did the boards answer Interest Rates Rise and Investors Turn Cautious? Did Finance tell the others what the company could still pay?
+- How did the boards answer the news released? Did Finance tell the others what the company could still pay?
 - Did any boards agree in their negotiations not to bid, or to sell at a price? Did they keep to it?
 - Open model.jl: which line decides whether a deal happens, and which decides the price of a company that is not sold?

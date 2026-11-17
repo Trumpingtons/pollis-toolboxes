@@ -162,35 +162,39 @@ label = "Value per Share"
 unit = "€"
 digits = 2
 
-# The news the facilitator can release, from the round given on; [news.parameters] are the values of
-# [parameters] it changes from the round it is released in.
+# The news the facilitator can release. Each game draws its own: whether an item is in it (chance, every game
+# when missing), its round, within rounds = [first, last], and each change given as [low, high], within it;
+# [news.parameters] are the values of [parameters] it changes from the round it is released in.
 [[news]]
-round = 3
+rounds = [2, 4]
+chance = 0.8
 title = "Interest Rates Rise"
-text = "The central bank has raised its rates. Banks now charge about 8% a year on acquisition loans, and lend at most five years of a company's earnings."
+text = "The central bank has raised its rates. Banks now charge more on acquisition loans, and lend less against a company's earnings."
 roles = ["finance", "strategy"]
 
 [news.parameters]
-interest_rate = 0.08
-borrowing_multiple = 5
+interest_rate = [0.07, 0.09]
+borrowing_multiple = [4.5, 5.5]
 
 [[news]]
-round = 4
+rounds = [3, 5]
+chance = 0.6
 title = "A Cycling Boom"
-text = "Cities are building cycle lanes and buyers are queueing for new bicycles. Analysts expect every maker's earnings to grow about 2% a quarter faster from now on."
+text = "Cities are building cycle lanes and buyers are queueing for new bicycles. Analysts expect every maker's earnings to grow faster from now on."
 roles = ["chief_executive", "strategy"]
 
 [news.parameters]
-market_growth = 0.02
+market_growth = [0.01, 0.03]
 
 [[news]]
-round = 5
+rounds = [4, 6]
+chance = 0.6
 title = "Investors Turn Cautious"
-text = "Stock markets have fallen, and investors now pay about seven years of earnings for a bicycle maker, down from eight."
+text = "Stock markets have fallen, and investors now pay fewer years of earnings for a bicycle maker than they did."
 roles = ["chief_executive", "finance"]
 
 [news.parameters]
-earnings_multiple = 7
+earnings_multiple = [6.5, 7.5]
 
 # What model.jl reads; money is in millions of euros. annual_earnings, cash, shares and growth are given for
 # each company, in the order of team_names; growth is a quarter's.
@@ -208,3 +212,5 @@ bid_belief = 0.5
 synergy_low = 0.15
 synergy_high = 0.45
 synergy_quarters = 4
+# The width of the range each board's analysts give for the savings, as a share of the true savings
+estimate_width = 0.6

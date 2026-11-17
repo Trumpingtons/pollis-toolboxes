@@ -358,36 +358,41 @@ label = "Cash Received, Carried Forward"
 unit = "m £"
 digits = 1
 
-# The news the facilitator can release, from the round given on.
+# The news the facilitator can release. Each game draws its own: whether an item is in it (chance, every game
+# when missing), its round, within rounds = [first, last], and each change given as [low, high], within it.
 [[news]]
-round = 4
+rounds = [4, 5]
+chance = 0.8
 title = "Frost in Tuscany"
-text = "A late frost has struck the vineyards of Tuscany. Growers expect this year's harvest to be about 30% smaller than usual."
+text = "A late frost has struck the vineyards of Tuscany. Growers expect this year's harvest to be much smaller than usual."
 [news.parameters.harvest]
-italy = -0.3
+italy = [-0.35, -0.15]
 
 [[news]]
-round = 4
+rounds = [4, 6]
+chance = 0.8
 title = "The Chilean Peso Jumps"
-text = "The Chilean peso has risen sharply against the pound and the dollar. Chilean exporters' costs rise with it: their earnings in pounds are expected to be about 12% lower from now on."
+text = "The Chilean peso has risen sharply against the pound and the dollar. Chilean exporters' costs rise with it: their earnings in pounds are expected to be lower from now on."
 roles = ["treasury", "managing_director"]
 [news.parameters.fx_shift]
-chile = -0.12
+chile = [-0.15, -0.06]
 
 [[news]]
-round = 5
+rounds = [4, 6]
+chance = 0.75
 title = "A Tariff on Imported Wine"
-text = "One of the largest export markets for Australian wine has put a tariff on it. Exporters expect their sales there to be worth about half as much from now on."
+text = "A large export market for wine has put a tariff on imported wine. Wineries that sell much of their wine there expect those sales to be worth much less from now on."
 [news.parameters]
-tariff = 0.5
+tariff = [0.3, 0.6]
 
 [[news]]
-round = 5
+rounds = [4, 6]
+chance = 0.6
 title = "A Cool, Dry Year in Colchagua"
-text = "The Colchagua Valley has had an ideal growing season. Growers expect this year's harvest to be about 10% larger and finer than usual."
+text = "The Colchagua Valley has had an ideal growing season. Growers expect this year's harvest to be larger and finer than usual."
 roles = ["managing_director", "distribution"]
 [news.parameters.harvest]
-chile = 0.1
+chile = [0.05, 0.15]
 
 # What model.jl reads; money is in millions of pounds, rates are a year's. The wineries' figures are given by
 # their key, in the order of team_names after Harrowgate.
@@ -404,10 +409,13 @@ marketing_effect = 0.03
 investment_effect = 0.004
 distribution_cost = 0.6
 hedge_cost = 0.01
-replant_need = 4.0
-old_vine_decline = 0.12
-export_share = 0.45
 tariff = 0.0
+# Harrowgate's yearly savings of owning each winery, drawn for each game, as a share of the winery's stated
+# earnings; its analysts give a range of estimate_width times the true savings, with the savings somewhere inside
+# it, and a desk review a range of desk_review_width times the issue's size.
+synergy = [0.08, 0.18]
+estimate_width = 0.5
+desk_review_width = 0.8
 
 [parameters.growth]
 chile = 0.07
@@ -419,15 +427,15 @@ chile = 6.0
 italy = 4.5
 australia = 7.5
 
-[parameters.earnings_gap]
-chile = 1.2
-italy = 0.0
-australia = 0.0
-
-[parameters.synergy]
-chile = 0.8
-italy = 0.6
-australia = 1.0
+# Each game shuffles the three hidden issues among the wineries, one each, and draws their sizes from these
+# ranges: disputed water rights, the share of the stated earnings that will not be there; old vines, the cost of
+# replanting them, in years of stated earnings, and the yearly fall of the harvest until they are; one export
+# market, the share of sales that go to it, which a tariff hits.
+[parameters.issues]
+earnings_gap = [0.12, 0.25]
+replant_need = [0.6, 1.0]
+old_vine_decline = [0.08, 0.15]
+export_share = [0.35, 0.55]
 
 [parameters.distribution_fit]
 chile = 0.05

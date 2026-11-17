@@ -286,36 +286,41 @@ unit = "m £"
 digits = 1
 sides = ["bondholders"]
 
-# The news the facilitator can release, from the round given on.
+# The news the facilitator can release. Each game draws its own: whether an item is in it (chance, every game
+# when missing), its round, within rounds = [first, last], and each change given as [low, high], within it.
 [[news]]
-round = 2
+rounds = [1, 3]
+chance = 0.8
 title = "A Wet Spring"
-text = "The wettest spring in years has kept gardeners indoors. Retailers of garden goods expect their earnings to be about 10% lower from now on."
+text = "The wettest spring in years has kept gardeners indoors. Retailers of garden goods expect their earnings to be lower from now on."
 [news.parameters]
-weather_shock = -0.1
+weather_shock = [-0.14, -0.06]
 
 [[news]]
-round = 2
+rounds = [2, 3]
+chance = 0.7
 title = "Interest Rates Rise"
-text = "The Bank of England has raised its rate. Thistledown's bank loans now cost about 8.5% a year, up from 7%."
+text = "The Bank of England has raised its rate. Thistledown's bank loans now cost more than the 7% a year they did."
 roles = ["chair", "relationship_director", "credit_committee"]
 [news.parameters]
-senior_rate = 0.085
+senior_rate = [0.08, 0.09]
 
 [[news]]
-round = 3
+rounds = [2, 4]
+chance = 0.7
 title = "Commercial Property Prices Fall"
-text = "Prices of shops and retail parks have fallen sharply. Appraisers now expect a chain's stores and stock to fetch about a sixth less in an administration."
+text = "Prices of shops and retail parks have fallen sharply. Appraisers now expect a chain's stores and stock to fetch less in an administration."
 roles = ["relationship_director", "credit_committee", "portfolio_manager"]
 [news.parameters]
-liquidation_value = 100
+property_shock = [-0.25, -0.1]
 
 [[news]]
-round = 3
+rounds = [2, 4]
+chance = 0.6
 title = "A Rival Chain Collapses"
-text = "One of Thistledown's rivals has closed all its stores. Analysts expect the survivors' earnings to be about 8% higher from now on."
+text = "One of Thistledown's rivals has closed all its stores. Analysts expect the survivors' earnings to be higher from now on."
 [news.parameters]
-rival_exit = 0.08
+rival_exit = [0.05, 0.11]
 
 # What model.jl reads; money is in millions of pounds, and earnings, interest and spending are a quarter's.
 [parameters]
@@ -323,7 +328,8 @@ rounds = 6
 multiple = 10
 min_cash = 20
 ebitda = 5.0
-trend = -0.03
+# Drawn for each game from these ranges: the sales trend, a quarter's, which the shareholders know
+trend = [-0.05, -0.015]
 earnings_noise = 0.03
 capex = 1.5
 senior = 220
@@ -331,17 +337,26 @@ senior_rate = 0.07
 junior = 150
 junior_rate = 0.1
 runway_share = 0.6
-liquidation_value = 120
+# Drawn for each game: what the stores and stock fetch in an administration, of which the banks' appraiser gives a
+# range of appraisal_width times the true value, with the true value somewhere inside it
+liquidation_value = [100, 140]
+appraisal_width = 0.25
 administration_cost = 8
 liquidation_noise = 0.05
 closure_cost = 3
-closure_gain = 0.7
+# Drawn for each game, as the shareholders know them: what closing 20 stores adds to each later quarter's
+# earnings, and the new money they can put in
+closure_gain = [0.5, 0.9]
 max_closures = 3
-capacity = 25
-fund_bid = 0.25
-fund_hurdle = 0.3
+capacity = [15, 35]
+# Drawn for each game: the fund's offer for the bonds, in the pound, which the bondholders know, and how much more
+# a plan must give the fund once it holds them
+fund_bid = [0.18, 0.32]
+fund_premium = [0.03, 0.1]
 senior_price = 0.65
 junior_price = 0.15
 equity_value = 3
 weather_shock = 0.0
+# A fall in property prices, a share of what the stores and stock fetch in an administration
+property_shock = 0.0
 rival_exit = 0.0

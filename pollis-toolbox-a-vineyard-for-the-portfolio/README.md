@@ -12,11 +12,11 @@ Installing it adds the case to **Compose > Simulation Games > Host a Game...**. 
 | Teams | 4: Harrowgate Drinks (the buyer), and the owners of Viña Piedra Azul (Chile), Tenuta Ventaluce (Italy) and Kestrel Flats Estate (Australia) |
 | Harrowgate decides | diligence on each winery; the winery it offers for, with cash and an earn-out; then its distribution and currency hedge |
 | The owners decide | whether to disclose their winery's issue; the least cash, and cash and earn-out, they accept; then prices, marketing and investment |
-| Private information | each winery's hidden issue, known to its owners; Harrowgate's estimate of the savings of owning each winery; offers and asks |
+| Private information | each winery's hidden issue, known to its owners; Harrowgate's estimate of the savings of owning each winery, a range; offers and asks. Each game draws its own: the issues are shuffled among the wineries, and their sizes and the savings drawn |
 | Teams organised as | Boards (everyone in a team sets everything), or Officers: Chief Executive, Corporate Development, Treasury and Distribution for Harrowgate, Owner and Managing Director for each winery |
-| News | frost in Tuscany, a jump in the Chilean peso, a tariff on Australian wine, and a fine year in Colchagua |
+| News | frost in Tuscany, a jump in the Chilean peso, a tariff in an export market, and a fine year in Colchagua; each game draws whether each comes, when and how large |
 | Negotiations | the buyer and the owners can write to each other; the facilitator reads what they write |
-| Debrief | the standings, each round's results, the news and the negotiations, five tables and questions for the class |
+| Debrief | the standings, each round's results, the news and the negotiations, five tables and questions for the class; what the game drew, and each winery's zone of possible agreement in the rounds of offers |
 
 The names of Harrowgate Drinks and of the three wineries are made up.
 

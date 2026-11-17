@@ -85,20 +85,24 @@ label = "Average Price Received"
 unit = "£"
 digits = 2
 
-# The news the facilitator can release during a period; it moves Corvane's value at that period's close.
+# The news the facilitator can release during a period; it moves Corvane's value at that period's close. Each
+# game draws its own: whether an item is in it (chance, every game when missing), its period, within
+# rounds = [first, last], and each change given as [low, high], within it.
 [[news]]
-round = 2
+rounds = [2, 4]
+chance = 0.7
 title = "A Rival Recalls Its Robots"
-text = "Corvane's largest rival has recalled thousands of warehouse robots after a fault. Analysts expect Corvane to win some of its customers: about £3 a share on its value, announced with its next results."
+text = "Corvane's largest rival has recalled thousands of warehouse robots after a fault. Analysts expect Corvane to win some of its customers: a few pounds a share on its value, announced with its next results."
 [news.parameters]
-rival_recall = 3.0
+rival_recall = [2.0, 4.5]
 
 [[news]]
-round = 3
+rounds = [2, 5]
+chance = 0.7
 title = "A Strike at the Warehouses"
-text = "Workers at several of Corvane's largest customers have gone on strike, and new orders for robots are on hold. Analysts expect about £4 a share off Corvane's value, announced with its next results."
+text = "Workers at several of Corvane's largest customers have gone on strike, and new orders for robots are on hold. Analysts expect a few pounds a share off Corvane's value, announced with its next results."
 [news.parameters]
-warehouse_strike = -4.0
+warehouse_strike = [-5.0, -2.5]
 
 # What model.jl reads; prices are in pounds a share.
 [parameters]

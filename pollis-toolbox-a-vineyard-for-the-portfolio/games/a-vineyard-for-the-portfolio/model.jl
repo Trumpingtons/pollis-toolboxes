@@ -17,20 +17,45 @@
 # Created, is what its owners have at the end over what they started with, both carried forward at the cost of
 # capital: a winery's owners started with its stated value, and Harrowgate with nothing. The owners are ranked
 # among themselves, and Harrowgate against doing nothing, 0.
+#
+# Each game draws its own secrets, so that a student who has read this file knows what may be hidden, not what is:
+# the three hidden issues (disputed water rights, old vines, one export market) are shuffled among the wineries,
+# their sizes and Harrowgate's savings are drawn from the ranges of [parameters.issues] and synergy, and what
+# Harrowgate's analysts and desk reviews say is a range with the true value somewhere inside it. The debrief shows
+# what was drawn, and, in the rounds of offers, each winery's zone of possible agreement.
 
-"""The wineries, Harrowgate, and what each team alone knows before the first round."""
+"""A value drawn evenly from a range [low, high]."""
+draw(rng, range) = range[1] + (range[2] - range[1]) * rand(rng)
+
+"""A range of width `width` times x with x somewhere inside it, drawn, so that its middle does not give x away."""
+function around(rng, x, width)
+	u = rand(rng)
+	return (x * (1 - width * u), x * (1 + width * (1 - u)))
+end
+
+"""The wineries, with the issue and savings drawn for this game, Harrowgate, and what each team alone knows before the first round."""
 function initial(rng, parameters, teams)
 	p = parameters
 	buyer = only(t for t in teams if get(t, "side", "") == "buyer")
 	wineries = [t for t in teams if get(t, "side", "") == "winery"]
 	r = p["cost_of_capital"]
+	ranges = p["issues"]
+	issues = shuffle(rng, ["water", "vines", "export"])
 	list = map(enumerate(wineries)) do (i, t)
 		key = p["wineries"][i]
 		g = float(p["growth"][key])
 		stated = float(p["stated_earnings"][key])
+		issue = issues[i]
+		gap = issue == "water" ? round(draw(rng, ranges["earnings_gap"]) * stated; digits = 2) : 0.0
+		synergy = round(draw(rng, p["synergy"]) * stated; digits = 2)
+		low, high = around(rng, synergy, p["estimate_width"])
 		Dict{String,Any}(
-			"team" => t["team"], "name" => t["name"], "key" => key,
-			"stated" => stated, "earnings" => stated - float(p["earnings_gap"][key]), "reported" => stated,
+			"team" => t["team"], "name" => t["name"], "key" => key, "issue" => issue,
+			"stated" => stated, "earnings" => stated - gap, "reported" => stated, "gap" => gap,
+			"replant_need" => issue == "vines" ? round(draw(rng, ranges["replant_need"]) * stated; digits = 1) : 0.0,
+			"decline" => issue == "vines" ? round(draw(rng, ranges["old_vine_decline"]); digits = 2) : 0.0,
+			"export_share" => issue == "export" ? round(draw(rng, ranges["export_share"]); digits = 2) : 0.0,
+			"synergy" => synergy, "estimate_low" => round(low; digits = 1), "estimate_high" => round(high; digits = 1),
 			"growth" => g, "multiple" => (1 + g) / (r - g), "fx" => 1.0, "boost" => 0.0, "replanted" => 0.0,
 			"disclosed" => false, "owned" => false, "flows" => 0.0, "earnout" => 0.0, "price_paid" => 0.0,
 			"harvest_seen" => 0.0,
@@ -45,34 +70,96 @@ function initial(rng, parameters, teams)
 	)
 	notes = Dict{String,Any}()
 	notes[string(buyer["team"])] = "Your analysts estimate the yearly savings of owning each winery, in bottling, buying and overheads: " *
-		join([@sprintf("%s about %.1f m £", w["name"], p["synergy"][w["key"]]) for w in list], ", ") *
+		join([@sprintf("%s between %.1f and %.1f m £", w["name"], w["estimate_low"], w["estimate_high"]) for w in list], ", ") *
 		". Only your board knows these estimates."
 	for w in list
-		notes[string(w["team"])] = "Only your team knows this: " * issue(w, p) *
+		notes[string(w["team"])] = "Only your team knows this: " * issue(w) *
 			" Harrowgate can find it with its diligence, or you can disclose it in Due Diligence."
 	end
+	secrets = ["- **$(w["name"]):** " * issue(w) * @sprintf(" Harrowgate's yearly savings of owning it: %.2f m £; its analysts said between %.1f and %.1f m £.", w["synergy"], w["estimate_low"], w["estimate_high"]) for w in list]
 	return state, Dict{String,Any}("public" => standings(state, p, 0), "private_text" => notes,
-		"text" => "Harrowgate Drinks is looking at three wineries. Each is valued at its stated earnings; the value each team creates is 0 to begin with.")
+		"text" => "Harrowgate Drinks is looking at three wineries. Each is valued at its stated earnings; the value each team creates is 0 to begin with.",
+		"debrief" => "What this game drew. Each winery's owners knew their own issue; Harrowgate knew only a range for each of its savings, and what its diligence found:\n\n" * join(secrets, "\n"))
 end
 
 """A winery's hidden issue, as its owners know it."""
-function issue(w, p)
-	key = w["key"]
-	if key == "chile"
-		return @sprintf("the winery's water rights are disputed, and about %.1f m £ of its stated yearly earnings of %.1f m £ will not be there.", p["earnings_gap"][key], w["stated"])
-	elseif key == "italy"
-		return @sprintf("a third of the vines are old: unless about %.1f m £ is spent replanting them, the harvest falls about %d%% a year.", p["replant_need"], round(Int, 100 * p["old_vine_decline"]))
+function issue(w)
+	if w["issue"] == "water"
+		return @sprintf("the winery's water rights are disputed, and about %.1f m £ of its stated yearly earnings of %.1f m £ will not be there.", w["gap"], w["stated"])
+	elseif w["issue"] == "vines"
+		return @sprintf("a third of the vines are old: unless about %.1f m £ is spent replanting them, the harvest falls about %d%% a year.", w["replant_need"], round(Int, 100 * w["decline"]))
 	else
-		return @sprintf("%d%% of the winery's sales go to one export market, which is debating a tariff on imported wine.", round(Int, 100 * p["export_share"]))
+		return @sprintf("%d%% of the winery's sales go to one export market, which is debating a tariff on imported wine.", round(Int, 100 * w["export_share"]))
 	end
 end
 
-"""What a desk review finds: the issue roughly."""
-function rough(w, p)
-	key = w["key"]
-	key == "chile" && return @sprintf("its stated earnings may be between %.1f and %.1f m £ a year too high.", 0.5 * p["earnings_gap"][key], 1.5 * p["earnings_gap"][key])
-	key == "italy" && return @sprintf("many vines look old, and replanting could cost between %.0f and %.0f m £.", 0.5 * p["replant_need"], 1.5 * p["replant_need"])
-	return "much of its sales seem to go to a single export market."
+"""What a desk review finds: the issue roughly, as a range with the true value somewhere inside it."""
+function rough(rng, w, p)
+	width = p["desk_review_width"]
+	if w["issue"] == "water"
+		low, high = around(rng, w["gap"], width)
+		return @sprintf("its stated earnings may be between %.1f and %.1f m £ a year too high.", low, high)
+	elseif w["issue"] == "vines"
+		low, high = around(rng, w["replant_need"], width)
+		return @sprintf("many vines look old, and replanting could cost between %.1f and %.1f m £.", low, high)
+	end
+	low, high = around(rng, w["export_share"], width)
+	return @sprintf("between %d%% and %d%% of its sales seem to go to a single export market.", round(Int, 100 * low), min(round(Int, 100 * high), 95))
+end
+
+"""
+A winery's zone of possible agreement before Year 1, from its true figures at its stated growth, before any news:
+the least its owners should accept, its value to them on its own, and the most Harrowgate could pay, its value
+with Harrowgate's savings; old vines count as replanted, their cost taken off both.
+"""
+function zone(w)
+	replant = w["issue"] == "vines" ? w["replant_need"] : 0.0
+	least = w["multiple"] * w["earnings"] - replant
+	return least, least + w["multiple"] * w["synergy"]
+end
+
+"""Whether a share is above or below: "12% above", "8% below", or "equal to" below half a percent."""
+above(x) = abs(x) < 0.005 ? "equal to" : @sprintf("%.0f%% %s", 100 * abs(x), x >= 0 ? "above" : "below")
+
+"""
+What the debrief says of the offers of a round: each winery's zone, the owners' asks and Harrowgate's offer, and, for
+the winery offered for, what came of it. The owners' least price is the larger of their least cash and their least
+cash and earn-out, since a deal needs both.
+"""
+function offers_debrief(state, chosen, target, cash, earnout, final)
+	b = state["buyer_name"]
+	lines = ["Each winery's zone of possible agreement, from the model's true figures at the stated growth, before any news: the least its owners should accept is its value to them on its own, and the most $b could pay is its value with the savings of owning it, both less the cost of replanting any old vines. The earn-out is counted in full.", "",
+		"| Winery | Least for Its Owners (m £) | Most for $b (m £) | Owners' Least Cash (m £) | Owners' Least Cash and Earn-Out (m £) | Offer: Cash and Earn-Out (m £) |",
+		"| --- | --- | --- | --- | --- | --- |"]
+	verdicts = String[]
+	for w in state["wineries"]
+		least, most = zone(w)
+		d = chosen[w["team"]]
+		ask_cash, ask_total = float(get(d, "ask_cash", 0.0)), float(get(d, "ask_total", 0.0))
+		ask = max(ask_cash, ask_total)
+		offered = w["key"] == target && cash + earnout > 0
+		push!(lines, @sprintf("| %s | %.1f | %.1f | %.1f | %.1f | %s |", w["name"], least, most, ask_cash, ask_total, offered ? @sprintf("%.1f + %.1f", cash, earnout) : "none"))
+		offered || continue
+		verdict = @sprintf("- **%s:** its owners asked at least %.1f m £, %s its value to them on its own, and %s offered %.1f m £, %s the most the winery was worth to it.",
+			w["name"], ask, above(ask / least - 1), b, cash + earnout, above((cash + earnout) / most - 1))
+		if w["owned"]
+			price = w["price_paid"] + w["earnout"]
+			if price > most
+				verdict *= @sprintf(" The deal was signed at %.1f m £ above that most: %s's shareholders lost by it.", price - most, b)
+			elseif price < least
+				verdict *= @sprintf(" The deal was signed %.1f m £ below the winery's value on its own: its owners sold too cheaply.", least - price)
+			else
+				verdict *= @sprintf(" The deal was signed within the zone: of the %.1f m £ the savings were worth, the owners took %.1f and %s kept %.1f.", most - least, price - least, b, most - price)
+			end
+		elseif ask > most
+			verdict *= @sprintf(" No deal could be signed at that ask, which was above the most the winery was worth to %s", b) * (final ? ": walking away was right." : ".")
+		else
+			verdict *= @sprintf(" A deal was possible between %.1f and %.1f m £, but the offer fell short of the asks", max(least, ask), most) *
+				(final ? @sprintf(": the %.1f m £ the savings were worth were left on the table.", most - least) : ".")
+		end
+		push!(verdicts, verdict)
+	end
+	return join(isempty(verdicts) ? lines : vcat(lines, "", verdicts), "\n")
 end
 
 """Each team's row of the public results: its earnings, value and the value it has created so far, `years` years in."""
@@ -87,7 +174,7 @@ function standings(state, p, years)
 		push!(rows, Dict{String,Any}("team" => state["buyer_name"], "status" => "No winery", "earnings" => 0.0, "value" => 0.0, "gain" => gain))
 	else
 		w = owned[1]
-		synergy = p["synergy"][w["key"]]
+		synergy = w["synergy"]
 		value = w["multiple"] * (w["reported"] + synergy)
 		due = earnout_due(w, years)
 		gain = state["flows"] + value - (state["price_paid"] + state["diligence"]) * grow - due
@@ -129,12 +216,12 @@ function play(rng, state, decisions, parameters)
 			state["diligence"] += cost[level]
 			w["disclosed"] = get(chosen[w["team"]], "disclose", "no") == "yes"
 			if w["disclosed"]
-				note(buyer, w["name"] * "'s owners disclosed that " * issue(w, p))
+				note(buyer, w["name"] * "'s owners disclosed that " * issue(w))
 				note(w["team"], "You disclosed your issue to Harrowgate.")
 			elseif level == "full"
-				note(buyer, "Your full due diligence on " * w["name"] * " found that " * issue(w, p))
+				note(buyer, "Your full due diligence on " * w["name"] * " found that " * issue(w))
 			elseif level == "light"
-				note(buyer, "Your desk review of " * w["name"] * " suggests that " * rough(w, p))
+				note(buyer, "Your desk review of " * w["name"] * " suggests that " * rough(rng, w, p))
 			else
 				note(buyer, "You looked at " * w["name"] * " no further than its stated figures.")
 			end
@@ -148,7 +235,7 @@ function play(rng, state, decisions, parameters)
 		# An offer: signed when it meets both of the owners' least amounts
 		if state["deal"] != 0
 			text = "The deal was signed in First Offers: the offers of Last Offers count for nothing."
-			return state, results(state, p, 0, text, notes)
+			return state, results(state, p, 0, text, notes; debrief = "The deal was signed in First Offers: its zone and what came of it are under First Offers.")
 		end
 		target = get(b, "target", "none")
 		cash = float(get(b, "offer_cash", 0.0))
@@ -176,7 +263,8 @@ function play(rng, state, decisions, parameters)
 				note(buyer, w["name"] * "'s owners turned down your offer of " * offer * ".")
 			end
 		end
-		return state, results(state, p, 0, text, notes)
+		debrief = offers_debrief(state, chosen, target, cash, earnout, round == 3 || state["deal"] != 0)
+		return state, results(state, p, 0, text, notes; debrief)
 	end
 
 	# Years 1 to 3
@@ -195,19 +283,19 @@ function play(rng, state, decisions, parameters)
 		g = w["growth"] + w["boost"] + price_growth[price] + p["marketing_effect"] * log1p(marketing)
 		distribution = w["owned"] ? get(b, "distribution", "none") : "none"
 		g += Dict("none" => 0.0, "partial" => 0.5, "full" => 1.0)[distribution] * p["distribution_fit"][key]
-		if key == "italy" && w["replanted"] < p["replant_need"]
-			g -= p["old_vine_decline"]
+		if w["issue"] == "vines" && w["replanted"] < w["replant_need"]
+			g -= w["decline"]
 		end
 		noise = p["earnings_noise"]
 		w["earnings"] *= (1 + g) * exp(noise * randn(rng) - noise^2 / 2)
-		# Investment raises growth from next year; in Italy it replants the old vines first
+		# Investment raises growth from next year; at a winery with old vines it replants them first
 		w["replanted"] += investment
 		w["boost"] += p["investment_effect"] * investment
 		# The exchange rate: a random walk, shifted by the news
 		w["fx"] *= exp(p["fx_volatility"] * randn(rng))
 		currency = w["fx"] * (1 + p["fx_shift"][key])
 		factor = currency * price_level[price]
-		key == "australia" && (factor *= 1 - p["export_share"] * p["tariff"])
+		w["issue"] == "export" && (factor *= 1 - w["export_share"] * p["tariff"])
 		# A harvest the news makes better or worse, this year only
 		harvest = p["harvest"][key]
 		if harvest != w["harvest_seen"]
@@ -221,7 +309,7 @@ function play(rng, state, decisions, parameters)
 			# The hedge keeps that share of the currency's move out of Harrowgate's pounds, at a cost
 			hedged = w["reported"] * (hedge / currency + 1 - hedge)
 			cost = Dict("none" => 0.0, "partial" => p["distribution_cost"] / 2, "full" => p["distribution_cost"])[distribution]
-			buyer_flow = hedged - marketing - investment + p["synergy"][key] - cost - p["hedge_cost"] * hedge * w["reported"]
+			buyer_flow = hedged - marketing - investment + w["synergy"] - cost - p["hedge_cost"] * hedge * w["reported"]
 			note(w["team"], @sprintf("Your winery earned %.1f m £ this year, %.0f%% of its plan's %.1f m £: the earn-out pays the share reached in Year 3, at most all of it.", w["reported"], 100 * w["reported"] / plan(w, year), plan(w, year)))
 		else
 			w["flows"] = w["flows"] * (1 + r) + flow
@@ -236,8 +324,8 @@ function play(rng, state, decisions, parameters)
 	return state, results(state, p, year, text, notes, round == 6)
 end
 
-"""The results of a round: the standings, each team's own figures, and what each team alone is told."""
-function results(state, p, years, text, notes, over = false)
+"""The results of a round: the standings, each team's own figures, what each team alone is told, and what the debrief alone shows."""
+function results(state, p, years, text, notes, over = false; debrief = "")
 	grow = (1 + p["cost_of_capital"])^years
 	private = Dict{String,Any}()
 	owned = [w for w in state["wineries"] if w["owned"]]
@@ -245,7 +333,7 @@ function results(state, p, years, text, notes, over = false)
 		"diligence" => state["diligence"], "price_paid" => state["price_paid"],
 		"earnout_due" => isempty(owned) ? 0.0 : earnout_due(owned[1], years),
 		"winery_earnings" => isempty(owned) ? 0.0 : owned[1]["reported"],
-		"synergy" => isempty(owned) ? 0.0 : p["synergy"][owned[1]["key"]],
+		"synergy" => isempty(owned) ? 0.0 : owned[1]["synergy"],
 		"cash_flow" => state["flows"],
 	)]
 	for w in state["wineries"]
@@ -258,5 +346,6 @@ function results(state, p, years, text, notes, over = false)
 	return Dict{String,Any}(
 		"public" => standings(state, p, years), "private" => private, "text" => text,
 		"private_text" => Dict{String,Any}(team => join(lines, " ") for (team, lines) in notes), "over" => over,
+		"debrief" => debrief,
 	)
 end

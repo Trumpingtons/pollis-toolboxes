@@ -1,5 +1,6 @@
-- Was Thistledown saved, and when? What did the quarters without a plan cost each team?
+- Was Thistledown saved, and when? Behind the Results shows the value a plan could save each quarter: what did the quarters without a plan cost each team?
 - Was the plan adopted better for each team than administration? Who took the largest share of the value saved?
+- Did any team turn down a plan that gave it more than administration, or agree to one that gave it less? Why?
 - What did each team know that the others did not: the sales trend, the appraisal of the stores, the fund's offer? Did anyone reveal it, and did it change the plan?
 - Did the banks threaten to call in the loan? Was the threat believed?
 - Did the bondholders sell to the fund, and did the fund drive a harder bargain than they would have?

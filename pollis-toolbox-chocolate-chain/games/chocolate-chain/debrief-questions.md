@@ -1,6 +1,6 @@
-- Which brand charged the most, and did its share of the market fall as much as the briefing on buyers said it would?
+- Which brand charged the most, and did its share of the market fall as much as the briefing on buyers said it would? Behind the Results shows this game's market and buyers: how soon did the teams find where in the briefings' ranges they were?
 - Which teams lost sales because their shops could not serve their buyers, and which paid for staff they did not need?
-- How did each team answer Cacao Prices Climb and the rise in rents? Did the roles that read the news first tell the others?
+- How did each team answer the news released? Did the roles that read the news first tell the others?
 - Did any teams agree on prices in their negotiations? Did they keep to it, and who gained?
 - Played as Departments: did the team use what each role knew? Who persuaded whom?
 - Open model.jl: which line explains the result that surprised you most?

@@ -12,9 +12,9 @@ Installing it adds the case to **Compose > Simulation Games > Host a Game...**. 
 | Teams | 3 to 8 trading desks, each starting with £5,000 and 100 shares |
 | Trading | limit orders on a continuous order book, best price first and then oldest first, at the price of the order on the book; no borrowing, no short selling, no trading with one's own desk |
 | Private information | before each period, every other desk receives its analysts' hint of the results |
-| News | a rival's recall and a strike at Corvane's customers, released by the facilitator during a period |
+| News | a rival's recall and a strike at Corvane's customers, released by the facilitator during a period; each game draws whether each comes, when and how large |
 | Negotiations | desks can write to each other; the facilitator reads what they write |
-| Debrief | each desk's return, each period's results, every trade (trades.csv), the news and the negotiations, and questions for the class |
+| Debrief | each desk's return, each period's results, every trade (trades.csv), the news and the negotiations, and questions for the class; for each period, the hints, the results and the news beside the prices traded |
 
 The name of Corvane Robotics is made up.
 
