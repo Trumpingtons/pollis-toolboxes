@@ -11,8 +11,9 @@
 // For every <name>/package.json at the root of this repository, writes <out>/<name>-<version>.vsix
 // and an index of them all, <out>/toolboxes.json, and a copy of each toolbox's README.md,
 // <out>/<name>-README.md, which Pollis shows before the toolbox is installed (both READMEs, this
-// one and the one in the .vsix, get the version on the line below their title):
-//   { "toolboxes": [ { "id", "name", "description", "author", "version", "vsix", "readme" } ] }
+// one and the one in the .vsix, get the version on the line below their title), and a copy of its
+// icon, <out>/<name>-icon.<ext>, which the Toolboxes section shows on the toolbox's row:
+//   { "toolboxes": [ { "id", "name", "description", "author", "version", "vsix", "readme", "icon" } ] }
 // The .vsix is the zip that vsce writes (extension.vsixmanifest, [Content_Types].xml and the
 // extension's files under extension/), written here so that packaging needs neither vsce nor the
 // network. A toolbox has no code, so nothing is compiled and there are no dependencies.
@@ -60,6 +61,8 @@ interface ToolboxIndexEntry {
 	readonly vsix: string;
 	/** The toolbox's README.md, published as `<name>-README.md`; absent when it has none. */
 	readonly readme?: string;
+	/** The toolbox's icon, published as `<name>-icon.<ext>`, which the Toolboxes section shows on its row; absent when it has none. */
+	readonly icon?: string;
 }
 
 /** A file of the zip: its path in the zip (forward slashes) and its content. */
@@ -260,6 +263,10 @@ function packageToolbox(folder: string): ToolboxIndexEntry {
 	if (readme) {
 		fs.writeFileSync(path.join(OUT_DIR, readme), readmeWithVersion(fs.readFileSync(path.join(folder, 'README.md'), 'utf-8'), manifest.version), 'utf-8');
 	}
+	const icon = manifest.icon ? `${manifest.name}-icon${path.extname(manifest.icon)}` : undefined;
+	if (manifest.icon && icon) {
+		fs.copyFileSync(path.join(folder, manifest.icon), path.join(OUT_DIR, icon));
+	}
 	return {
 		id: `${manifest.publisher}.${manifest.name}`,
 		name: manifest.displayName ?? manifest.name,
@@ -268,6 +275,7 @@ function packageToolbox(folder: string): ToolboxIndexEntry {
 		version: manifest.version,
 		vsix,
 		readme,
+		icon,
 	};
 }
 
@@ -288,7 +296,7 @@ function main(): void {
 		.sort();
 	const toolboxes = folders.map(folder => packageToolbox(folder));
 	fs.writeFileSync(path.join(OUT_DIR, 'toolboxes.json'), JSON.stringify({ toolboxes }, null, '\t') + '\n', 'utf-8');
-	console.log(`${toolboxes.length} toolboxes written to ${OUT_DIR} (the .vsix files, the READMEs and toolboxes.json)`);
+	console.log(`${toolboxes.length} toolboxes written to ${OUT_DIR} (the .vsix files, the READMEs, the icons and toolboxes.json)`);
 }
 
 main();

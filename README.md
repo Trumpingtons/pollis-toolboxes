@@ -22,7 +22,7 @@ New toolboxes are welcome, as pull requests: see [CONTRIBUTING.md](CONTRIBUTING.
 
 - `main` holds the sources: one folder per toolbox, `<name>/package.json` (the `pollisToolboxes` contribution), `panels/<id>.toml`, `wiki/<id>/`, `notebooks/<id>/` and, optionally, `docs/<document>/`, the LaTeX sources of the toolbox's documentation (see below).
 - A toolbox folder with a `DEFERRED.md` stays on `main` but is not published: the packaging leaves it out until the file is deleted.
-- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix` and README. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
+- `dist` holds what Pollis downloads: `toolboxes.json`, the index, and for each toolbox its `.vsix`, README and icon. It is generated, one commit with no history, by `.github/workflows/publish.yml` on every push to `main`.
 - `scripts/` holds the packaging script, `packageToolboxes.ts`, and the check that runs on every pull request, `checkToolboxes.ts` (`.github/workflows/check.yml`).
 
 ## Documentation
