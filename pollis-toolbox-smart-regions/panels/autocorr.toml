@@ -1,0 +1,577 @@
+# Spatial Autocorrelation: Moran's I and Geary's c for a whole map, and Local Moran (LISA) for each area, with
+# SpatialDependence.jl; the areas are read, and their neighbours found, through DuckDB's spatial extension
+
+[meta]
+title = "Spatial Autocorrelation"
+viewType = "pollis.autocorr"
+defaultModel = "global"
+decisionFirstColumn = "Statistic"
+
+[[packages]]
+name = "SpatialDependence.jl"
+github = "https://github.com/javierbarbero/SpatialDependence.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "autocorr/factsheet.md"
+bundled = true
+description = "One-page reference: the two tabs, the inputs, the neighbours found with SQL and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "autocorr/overview.md"
+bundled = true
+description = "Spatial autocorrelation, areal data, and global and local statistics"
+
+[[wikis]]
+name = "Spatial Weights"
+file = "autocorr/spatial-weights.md"
+bundled = true
+description = "Queen and rook contiguity, k nearest neighbours, row standardisation and islands"
+
+[[wikis]]
+name = "Spatial Autocorrelation"
+file = "autocorr/spatial-autocorrelation.md"
+bundled = true
+description = "Moran's I, Geary's c, the Moran scatterplot and the Getis-Ord statistics"
+
+[[wikis]]
+name = "Permutation Inference"
+file = "autocorr/permutation-inference.md"
+bundled = true
+description = "Pseudo p-values from random permutations, conditional randomisation, and multiple comparisons"
+
+[[wikis]]
+name = "Decision Guide"
+file = "autocorr/decision-guide.md"
+bundled = true
+description = "Which statistic, which neighbours, how many permutations and which adjustment"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Global Moran's I"
+file = "autocorr/global-moran.md"
+bundled = true
+
+[[wikis]]
+name = "Local Moran (LISA)"
+file = "autocorr/local-moran.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Bar2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Cre1993a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Mor1950a"
+
+[[references]]
+key = "Gea1954a"
+
+[[references]]
+key = "Tob1970a"
+
+[[references]]
+key = "GO1992a"
+
+[[references]]
+key = "Ans1995a"
+
+[[references]]
+key = "OG1995a"
+
+[[references]]
+key = "BH1995a"
+
+[[faq]]
+question = "What does a positive Moran's I mean, and what does a negative one mean?"
+answer = '''
+A positive Moran's I means that neighbouring areas tend to have similar values: high next to high, low next to low. A negative Moran's I means that neighbours tend to differ, high next to low, as on a chessboard.
+
+Under no spatial autocorrelation, Moran's I is expected to be -1/(n - 1), slightly below zero, for n areas. The pseudo p-value says how often random rearrangements of the values over the areas give a Moran's I as far from that expectation.
+'''
+wiki = "Global Moran's I"
+
+[[faq]]
+question = "Which neighbours should I choose: queen, rook or k nearest?"
+answer = '''
+Queen contiguity makes neighbours of areas that share any point of their boundaries, rook contiguity of areas that share a stretch of boundary. Both suit polygons that tile a region, such as municipalities or grid cells.
+
+k nearest neighbours gives every area the same number of neighbours, by the distance between centroids, and suits areas of very different sizes, islands, and points. Weights: Contiguity and k Nearest shows how much Moran's I depends on the choice.
+'''
+wiki = "Spatial Weights"
+
+[[faq]]
+question = "What do High-High, Low-Low, High-Low and Low-High mean on a LISA cluster map?"
+answer = '''
+High-High is an area with a high value among neighbours with high values: a hot spot. Low-Low is a low value among low values: a cold spot. High-Low and Low-High are spatial outliers, an area that differs from its neighbours.
+
+Only areas whose local Moran's I is significant at the chosen level get one of the four labels; the others are Not Significant.
+'''
+wiki = "Local Moran (LISA)"
+
+[[faq]]
+question = "Why do no areas stay significant after a Bonferroni or FDR adjustment?"
+answer = '''
+A pseudo p-value from random permutations can be no smaller than 1/(permutations + 1): 0.001 with 999 permutations. A Bonferroni adjustment at 0.05 over 225 areas asks for a p-value below 0.05/225, about 0.0002, which 999 permutations cannot give.
+
+Raise Permutations to 9999 or more before adjusting for the number of tests.
+'''
+wiki = "Permutation Inference"
+
+[[faq]]
+question = "Why is the pseudo p-value of Moran's I the same every time I run the code?"
+answer = '''
+The permutations are drawn from a random number generator started with a fixed seed, Xoshiro(2026), so a run gives the same permutations, and the same pseudo p-value, as the one before.
+
+Another seed gives other permutations: with enough permutations, the pseudo p-value changes little from one seed to another.
+'''
+wiki = "Permutation Inference"
+hidden = true
+
+[[faq]]
+question = "What is an island in a spatial weights matrix?"
+answer = '''
+An island is an area without neighbours: an island in the sea, with contiguity neighbours, or an area whose boundary touches no other because of gaps in the data.
+
+An island's spatial lag is zero, and it adds nothing to Moran's I. Neighbour Counts lists the islands; k nearest neighbours leaves none.
+'''
+wiki = "Spatial Weights"
+hidden = true
+
+[[faq]]
+question = "What is the difference between Moran's I and Geary's c?"
+answer = '''
+Moran's I is built from the products of the deviations of neighbouring values from the mean; Geary's c from the squared differences between neighbouring values.
+
+Under no spatial autocorrelation Moran's I is expected near zero and Geary's c at 1. Positive autocorrelation gives a positive Moran's I and a Geary's c below 1.
+'''
+wiki = "Spatial Autocorrelation"
+hidden = true
+
+[[faq]]
+question = "What does the slope of the Moran scatterplot show?"
+answer = '''
+The Moran scatterplot plots each area's standardised value against the average of its neighbours' standardised values, the spatial lag. With row-standardised weights, the slope of the regression line through the points is Moran's I.
+
+Its four quadrants are the four kinds of LISA cluster: High-High at the top right, Low-Low at the bottom left, and the spatial outliers in the other two.
+'''
+wiki = "Spatial Autocorrelation"
+hidden = true
+
+[[faq]]
+question = "Does a significant Moran's I tell me where the clusters are?"
+answer = '''
+No. Moran's I is one number for the whole map: it says that similar values lie near each other more often than chance would give, not where.
+
+The Local Moran (LISA) tab gives a statistic and a pseudo p-value for every area, and maps the hot spots, cold spots and spatial outliers.
+'''
+wiki = "Overview"
+hidden = true
+
+[[models]]
+id = "global"
+label = "Global Moran's I"
+
+[[models]]
+id = "local"
+label = "Local Moran (LISA)"
+
+[[bullets]]
+text = "Global Moran's I"
+detail = "One statistic for the whole map: do neighbouring areas have similar values more often than chance would give? With a pseudo p-value from random permutations"
+
+[[bullets]]
+text = "Local Moran (LISA)"
+detail = "A statistic for every area: hot spots (High-High), cold spots (Low-Low) and spatial outliers, mapped on a base map"
+
+[[decisionRows]]
+task = "Global Moran's I"
+context = "Whole map"
+purpose = "Test whether a value is spatially clustered, dispersed or random, before modelling it"
+
+[[decisionRows]]
+task = "Local Moran (LISA)"
+context = "Each area"
+purpose = "Find where the clusters and outliers are, and which areas stand out from their neighbours"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Results as GeoParquet writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, cells.gpkg, the example first writes a grid of 225 square cells of 1 km around Coimbra with a simulated annual mean of nitrogen dioxide (no2, in micrograms per cubic metre), unless the folder has a cells.gpkg already."
+default = "cells.gpkg"
+
+[[inputs]]
+id = "column"
+label = "Column"
+tooltip = "The numeric column whose spatial autocorrelation is measured. Areas without a value in it are left out."
+default = "no2"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the map and for the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON, KML and GPX are always EPSG:4326."
+default = "EPSG:3763"
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids."
+kind = "select"
+default = "queen"
+newRow = true
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest, and in Weights: Contiguity and k Nearest. The distances between all pairs of centroids are computed, so with tens of thousands of areas k Nearest is slow."
+default = "6"
+
+[[inputs]]
+id = "permutations"
+label = "Permutations"
+tooltip = "The number of random permutations of the values over the areas, from which the pseudo p-values come: the smallest pseudo p-value possible is 1/(permutations + 1), so 9999 permutations give 0.0001."
+default = "9999"
+
+[[inputs]]
+id = "alpha"
+label = "Significance Level"
+tooltip = "The pseudo p-value below which an area's local Moran's I is significant, and the area gets a cluster label."
+default = "0.05"
+models = ["local"]
+newRow = true
+
+[[inputs]]
+id = "adjust"
+label = "Adjustment"
+tooltip = "The adjustment for testing every area at once: None compares each pseudo p-value with the significance level; Bonferroni with the level divided by the number of areas; False Discovery Rate controls the expected share of false discoveries among the significant areas."
+kind = "select"
+default = "none"
+models = ["local"]
+
+[[inputs.options]]
+value = "none"
+label = "None"
+
+[[inputs.options]]
+value = "bonferroni"
+label = "Bonferroni"
+
+[[inputs.options]]
+value = "fdr"
+label = "False Discovery Rate (FDR)"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialDependence, SparseArrays, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+{{?file=cells.gpkg}} # Example file: a grid of 15 by 15 square cells of 1 km around Coimbra, in EPSG:3763, with a simulated annual mean of nitrogen dioxide in micrograms per cubic metre, written to cells.gpkg unless the folder has one already. Replace "cells.gpkg" with your own file.
+{{?file=cells.gpkg}} if !isfile(path)
+{{?file=cells.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+{{?file=cells.gpkg}} 	cells = String[]
+{{?file=cells.gpkg}} 	for row in 0:14, col in 0:14
+{{?file=cells.gpkg}} 		u, v = col - 7, row - 7  # km east and north of the centre cell
+{{?file=cells.gpkg}} 		no2 = 28 + 14 * exp(-((u + 1)^2 + (v - 1)^2) / 8) - 9 * exp(-((u - 5)^2 + (v + 5)^2) / 6) + 2.5 * randn(rng)  # higher near the centre, lower to the south-east, and noise
+{{?file=cells.gpkg}} 		x, y = -31000 + 1000 * col, 52000 + 1000 * row  # the south-west corner of the cell, in metres
+{{?file=cells.gpkg}} 		push!(cells, "($(round(no2, digits = 1)), ST_MakeEnvelope($x, $y, $(x + 1000), $(y + 1000)))")
+{{?file=cells.gpkg}} 	end
+{{?file=cells.gpkg}} 	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, geom FROM (VALUES $(join(cells, ", "))) t(no2, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+{{?file=cells.gpkg}} end
+# The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE \"{{column}}\" IS NOT NULL")
+DBInterface.execute(con, "ALTER TABLE areas DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+x = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"{{column}}\" AS x FROM areas ORDER BY i")).x)
+n = length(x)
+
+# The neighbours of each area, as pairs (i, j), found with SQL
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+function weights(kind)
+	pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs[kind]))
+	return SpatialWeights(sparse(pairs.i, pairs.j, 1.0, n, n))  # row-standardised: the weights of each area's neighbours sum to 1
+end
+W = weights("{{neighbours}}")
+{{?model=global}} gm = moran(x, W; permutations = {{permutations}}, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+{{?model=global}} println(gm)
+{{?model=local}} lm = localmoran(x, W; permutations = {{permutations}}, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+{{?model=local}} cluster = assignments(lm, {{alpha}}; adjust = :{{adjust}})  # :HH, :LL, :HL or :LH where significant, :ns where not
+{{?model=local}} labels = Dict(:HH => "High-High", :LL => "Low-Low", :HL => "High-Low", :LH => "Low-High", :ns => "Not Significant")
+{{?model=local}} rows = ["($i, '$(labels[cluster[i]])', $(score(lm)[i]), $(pvalue(lm)[i]))" for i in 1:n]
+{{?model=local}} DBInterface.execute(con, "CREATE OR REPLACE TABLE lisa AS SELECT i, cluster, local_i::DOUBLE AS local_i, p::DOUBLE AS p FROM (VALUES $(join(rows, ", "))) t(i, cluster, local_i, p)")
+{{?model=local}} colours = ["High-High" => "#d7191c", "Low-Low" => "#2c7bb6", "High-Low" => "#fdae61", "Low-High" => "#abd9e9", "Not Significant" => "#bdbdbd"]
+{{?model=local}} layers = []
+{{?model=local}} for (name, colour) in colours
+{{?model=local}} 	count(==(name), (labels[c] for c in cluster)) == 0 && continue
+{{?model=local}} 	file = joinpath(mktempdir(), "cluster.geojson")
+{{?model=local}} 	DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom), l.cluster, round(l.local_i, 3) AS local_i, l.p, a.geom FROM areas a JOIN lisa l USING (i) WHERE l.cluster = '$(name)') TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+{{?model=local}} 	push!(layers, Pollis.layer(file; name = name, color = colour, opacity = 0.75))
+{{?model=local}} end
+{{?model=local}} println(join(("$(name): $(count(==(name), (labels[c] for c in cluster)))" for (name, _) in colours), ", "))
+{{?model=local}} display(Pollis.webmap(layers...; title = "LISA Clusters of {{column}}"))  # drawn in the plot pane, on OpenFreeMap's tiles
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-values"
+label = "Map of the Values"
+desc = "The areas on a base map, coloured by the column, from its smallest to its largest value; click an area for its attributes"
+code = '''
+values = joinpath(mktempdir(), "values.geojson")
+DBInterface.execute(con, "COPY (SELECT * FROM areas) TO '$(values)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(values; name = "{{column}}", column = "{{column}}", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "moran-scatterplot"
+label = "Moran Scatterplot"
+desc = "Each area's standardised value against the average of its neighbours' (the spatial lag), with the line whose slope is Moran's I"
+code = '''
+using ECharts
+
+z = (x .- sum(x) / n) ./ sqrt(sum((x .- sum(x) / n) .^ 2) / n)  # standardised: mean 0, variance 1
+lag = slag(W, z)  # the average of the neighbours' standardised values
+slope = score(moran(x, W; permutations = 0))  # Moran's I, the slope of the line
+fig = scatter(z, lag; ec_width = 640, ec_height = 520)
+fig.xAxis[1].name = "{{column}}, standardised"
+fig.yAxis[1].name = "Spatial lag"
+lo, hi = extrema(z)
+push!(fig.series, ECharts.XYSeries(name = "Moran's I", _type = "line", data = [[lo, slope * lo], [hi, slope * hi]], showSymbol = false))
+title!(fig; text = "Moran Scatterplot: Moran's I = $(round(slope, digits = 3))")
+fig
+'''
+
+[[actionGroups.actions]]
+id = "map-p-values"
+label = "Map of the Local p-Values"
+desc = "The areas coloured by the pseudo p-value of their local Moran's I: the smallest, darkest, are the most significant"
+models = ["local"]
+code = '''
+pmap = joinpath(mktempdir(), "p-values.geojson")
+DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom), l.p, l.cluster, a.geom FROM areas a JOIN lisa l USING (i)) TO '$(pmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(pmap; name = "Pseudo p-value", column = "p", opacity = 0.75)))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "neighbour-counts"
+label = "Neighbour Counts"
+desc = "How many areas have 0, 1, 2, ... neighbours, the mean, and the islands: the areas without a neighbour"
+code = '''
+counts = W.nneighs  # the number of neighbours of each area
+println("Neighbours of {{neighbours}}: mean ", round(sum(counts) / n, digits = 2), ", from ", minimum(counts), " to ", maximum(counts))
+println(rpad("neighbours", 12), "areas")
+for c in sort(unique(counts))
+	println(rpad(c, 12), count(==(c), counts))
+end
+println(nislands(W) == 0 ? "No islands" : "Islands, areas without a neighbour: i = $(join(islands(W), ", "))")
+'''
+
+[[actionGroups.actions]]
+id = "neighbours-of-an-area"
+label = "Neighbours of an Area"
+desc = "The area nearest the middle of the map, in red, and its neighbours, in orange, on a base map"
+code = '''
+middle = only(Tables.columntable(DBInterface.execute(con, "WITH m AS (SELECT ST_Centroid(ST_Envelope_Agg(geom)) AS p FROM areas) SELECT i FROM areas, m ORDER BY ST_Distance_Sphere(ST_Centroid(geom), m.p) LIMIT 1")).i)
+around = W.neighs[middle]
+println("Area i = ", middle, " has ", length(around), " neighbours: i = ", join(around, ", "))
+part(ids, file) = (DBInterface.execute(con, "COPY (SELECT * FROM areas WHERE i IN ($(join(ids, ", ")))) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')"); file)
+dir = mktempdir()
+others = part(setdiff(1:n, [middle; around]), joinpath(dir, "others.geojson"))
+display(Pollis.webmap(Pollis.layer(others; name = "Other areas", color = "#bdbdbd", opacity = 0.3),
+	Pollis.layer(part(isempty(around) ? [0] : around, joinpath(dir, "neighbours.geojson")); name = "Neighbours", color = "#fdae61", opacity = 0.8),
+	Pollis.layer(part([middle], joinpath(dir, "area.geojson")); name = "Area $(middle)", color = "#d7191c", opacity = 0.9)))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "weights-compared"
+label = "Weights: Contiguity and k Nearest"
+desc = "Moran's I, its z-value and pseudo p-value with queen and rook contiguity and with k nearest neighbours"
+code = '''
+println(rpad("neighbours", 18), rpad("mean count", 12), rpad("Moran's I", 12), rpad("z", 10), "pseudo p")
+for (kind, name) in ("queen" => "Queen", "rook" => "Rook", "knn" => "k Nearest, k = {{k}}")
+	Wk = weights(kind)
+	g = moran(x, Wk; permutations = {{permutations}}, rng = Xoshiro(2026))
+	println(rpad(name, 18), rpad(round(sum(Wk.nneighs) / n, digits = 2), 12), rpad(round(score(g), digits = 4), 12), rpad(round(zscore(g), digits = 2), 10), pvalue(g))
+end
+'''
+
+[[actionGroups.actions]]
+id = "moran-and-geary"
+label = "Moran's I and Geary's c"
+desc = "The two global statistics side by side, each with its expectation under no spatial autocorrelation, z-value and pseudo p-value"
+code = '''
+gi = moran(x, W; permutations = {{permutations}}, rng = Xoshiro(2026))
+gc = geary(x, W; permutations = {{permutations}}, rng = Xoshiro(2026))
+println(rpad("statistic", 12), rpad("value", 10), rpad("expected", 11), rpad("z", 10), "pseudo p")
+println(rpad("Moran's I", 12), rpad(round(score(gi), digits = 4), 10), rpad(round(-1 / (n - 1), digits = 4), 11), rpad(round(zscore(gi), digits = 2), 10), pvalue(gi))
+println(rpad("Geary's c", 12), rpad(round(score(gc), digits = 4), 10), rpad(1.0, 11), rpad(round(zscore(gc), digits = 2), 10), pvalue(gc))
+println("Positive spatial autocorrelation: Moran's I above its expectation, Geary's c below 1")
+'''
+
+[[actionGroups.actions]]
+id = "adjustments-compared"
+label = "Significance Adjustments"
+desc = "The number of areas in each cluster with no adjustment, with Bonferroni's and with the False Discovery Rate"
+models = ["local"]
+code = '''
+println(rpad("adjustment", 14), join(rpad.(["High-High", "Low-Low", "High-Low", "Low-High", "Not Sig."], 11)))
+for (adj, name) in ((:none, "None"), (:bonferroni, "Bonferroni"), (:fdr, "FDR"))
+	a = assignments(lm, {{alpha}}; adjust = adj)
+	println(rpad(name, 14), join(rpad.([count(==(q), a) for q in (:HH, :LL, :HL, :LH, :ns)], 11)))
+end
+'''
+
+[[actionGroups.actions]]
+id = "lisa-and-getis-ord"
+label = "Local Moran and Getis-Ord Gi*"
+desc = "The LISA clusters against the hot and cold spots of the Getis-Ord Gi* statistic, area by area, at the same significance level"
+models = ["local"]
+code = '''
+gi = getisord(x, W; permutations = {{permutations}}, rng = Xoshiro(2026))  # Gi*: each area with its neighbours
+spot = assignments(gi, {{alpha}}; adjust = :{{adjust}})  # :H, a hot spot; :L, a cold spot; :ns, not significant
+println(rpad("LISA", 18), join(rpad.(["Hot Spot", "Cold Spot", "Not Sig."], 11)))
+for (q, name) in ((:HH, "High-High"), (:LL, "Low-Low"), (:HL, "High-Low"), (:LH, "Low-High"), (:ns, "Not Significant"))
+	println(rpad(name, 18), join(rpad.([count((cluster .== q) .& (spot .== s)) for s in (:H, :L, :ns)], 11)))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "permutation-distribution"
+label = "Permutation Distribution of Moran's I"
+desc = "A histogram of Moran's I over the random permutations, with the value of the map: how far it lies from what chance gives"
+models = ["global"]
+code = '''
+using ECharts
+
+perms = scoreperms(gm)
+edges = range(min(minimum(perms), score(gm)), max(maximum(perms), score(gm)), length = 41)
+counts = [count(p -> edges[b] <= p < edges[b + 1] || (b == 40 && p == edges[end]), perms) for b in 1:40]
+mids = [round((edges[b] + edges[b + 1]) / 2, digits = 4) for b in 1:40]
+fig = EChart(ec_width = 700, ec_height = 420, title = [ECharts.Title(text = "Moran's I: $(round(score(gm), digits = 3)), pseudo p-value $(pvalue(gm))")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Moran's I", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Permutations")],
+	series = [ECharts.XYSeries(name = "Permutations", _type = "bar", data = [[m, c] for (m, c) in zip(mids, counts)]),
+		ECharts.XYSeries(name = "Observed", _type = "line", data = [[score(gm), 0], [score(gm), maximum(counts)]], showSymbol = false)])
+println("Mean over the permutations ", round(mean(gm), digits = 4), " (expected -1/(n - 1) = ", round(-1 / (n - 1), digits = 4), "), standard deviation ", round(std(gm), digits = 4), ", z = ", round(zscore(gm), digits = 2))
+fig
+'''
+
+[[actionGroups.actions]]
+id = "clusters-table"
+label = "Clusters in a Table"
+desc = "The number of areas in each LISA cluster, with the mean, smallest and largest value of the column in it"
+models = ["local"]
+code = '''
+t = Tables.columntable(DBInterface.execute(con, """
+SELECT l.cluster, count(*) AS areas, round(avg(a."{{column}}"), 2) AS mean, round(min(a."{{column}}"), 2) AS smallest, round(max(a."{{column}}"), 2) AS largest
+FROM areas a JOIN lisa l USING (i) GROUP BY l.cluster ORDER BY areas DESC
+"""))
+println(rpad("cluster", 18), rpad("areas", 8), rpad("mean", 10), rpad("smallest", 10), "largest")
+for r in Tables.rows(t)
+	println(rpad(r.cluster, 18), rpad(r.areas, 8), rpad(r.mean, 10), rpad(r.smallest, 10), r.largest)
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save the Results as GeoParquet"
+desc = "Write the areas, in longitude and latitude, with the spatial lag of the column, and on the Local Moran tab the LISA cluster, local Moran's I and pseudo p-value, to autocorrelation.parquet in the folder above"
+code = '''
+out = joinpath(folder, "autocorrelation.parquet")
+lagged = slag(W, x)  # the average of the neighbours' values
+DBInterface.execute(con, "CREATE OR REPLACE TABLE lags AS SELECT i, spatial_lag::DOUBLE AS spatial_lag FROM (VALUES $(join(("($i, $(lagged[i]))" for i in 1:n), ", "))) t(i, spatial_lag)")
+{{?model=global}} result = "SELECT a.* EXCLUDE (geom), g.spatial_lag, a.geom FROM areas a JOIN lags g USING (i) ORDER BY i"
+{{?model=local}} result = "SELECT a.* EXCLUDE (geom), g.spatial_lag, l.cluster, l.local_i, l.p, a.geom FROM areas a JOIN lags g USING (i) JOIN lisa l USING (i) ORDER BY i"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY ($result) TO '$(out)' (FORMAT PARQUET)")  # GeoParquet: DuckDB writes the geometry column's metadata
+	println("Wrote ", out)
+end
+'''
