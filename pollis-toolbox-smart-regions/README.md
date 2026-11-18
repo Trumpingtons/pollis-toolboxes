@@ -20,7 +20,7 @@ Julia. Each panel lists the Julia packages it uses on its Powered by line and of
 
 ## Icon
 
-The icon's map, of Coimbra and the Mondego, is drawn by MapLibre GL JS from OpenFreeMap's vector tiles in the Liberty style (OpenFreeMap © OpenMapTiles, data from OpenStreetMap, © OpenStreetMap contributors, ODbL), with the Pollis logo added in its upper left corner.
+The icon's map, of Porto and the Douro, is drawn by MapLibre GL JS from OpenFreeMap's vector tiles, in the colours of a paper map (OpenFreeMap © OpenMapTiles, data from OpenStreetMap, © OpenStreetMap contributors, ODbL), with the Pollis logo added in its upper left corner.
 
 ## License
 
