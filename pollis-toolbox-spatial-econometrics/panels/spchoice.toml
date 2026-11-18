@@ -1,0 +1,705 @@
+# Spatial Discrete Choice: binary and ordered outcomes of areas that depend on their neighbours' outcomes,
+# spatial lag probit by GMM or Gibbs sampling, spatial ordered probit, and logit with a spatial filter, with SpatialEconometrics.jl;
+# the areas are read, and their neighbours found, through DuckDB's spatial extension.
+
+[meta]
+title = "Spatial Discrete Choice"
+viewType = "pollis.spchoice"
+defaultModel = "probitgmm"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[requires]
+packages = ["ECharts.jl", "MCMCDiagnosticTools.jl", "GLM.jl", "RData.jl"]
+
+[[models]]
+id = "probitgmm"
+label = "Probit, GMM"
+
+[[models]]
+id = "probitbayes"
+label = "Probit, Bayesian"
+
+[[models]]
+id = "ordered"
+label = "Ordered Probit"
+
+[[models]]
+id = "logitesf"
+label = "Logit With a Filter"
+
+[[bullets]]
+text = "Probit, GMM"
+detail = "A spatial lag probit: an area's choice depends on its neighbours' latent propensities, estimated by linearised GMM with spatial lags of the explanatory variables as instruments"
+
+[[bullets]]
+text = "Probit, Bayesian"
+detail = "The same spatial lag probit by Gibbs sampling, drawing the latent propensities of the areas: slower, and more precise on the spillover parameter rho"
+
+[[bullets]]
+text = "Ordered Probit"
+detail = "Ordered categories, such as low, medium and high, with a spatial lag of the latent propensity, by Gibbs sampling: cut points separate the categories in place of an intercept"
+
+[[bullets]]
+text = "Logit With a Filter"
+detail = "A logistic regression with Moran eigenvectors of the spatial weights as extra regressors: the spatial autocorrelation filtered out rather than modelled as a spillover"
+
+[[decisionRows]]
+task = "Probit, GMM"
+context = "Fast estimate"
+purpose = "Estimate the spillover of a binary choice between neighbours quickly, with direct, indirect and total effects"
+
+[[decisionRows]]
+task = "Probit, Bayesian"
+context = "Precise spillover"
+purpose = "Estimate the spillover of a binary choice with posterior means and credible intervals, from many draws"
+
+[[decisionRows]]
+task = "Ordered Probit"
+context = "Ordered categories"
+purpose = "Estimate the spillover of an outcome in ordered categories, with the cut points between them"
+
+[[decisionRows]]
+task = "Logit With a Filter"
+context = "Autocorrelation as nuisance"
+purpose = "Read the coefficients of a binary choice as in an ordinary logistic regression, with the spatial autocorrelation removed"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbrachoice.gpkg, the example first writes a grid of 400 square cells of 1 km around Coimbra with simulated household income, detached houses and rooftop solar adoption, which spreads between neighbouring cells, unless the folder has a coimbrachoice.gpkg already."
+default = "coimbrachoice.gpkg"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The column of the choice, coded 0 and 1; on Ordered Probit, ordered categories coded 1, 2, ... (with the example file, adoption used in place of solar). Areas without a value in it, or in an explanatory variable, are left out."
+default = "solar"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns that explain it, separated by commas. The binary models add an intercept; Ordered Probit has none, its cut points hold the level, so no column may be constant."
+default = "income, detached"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:3763"
+newRow = true
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. The weights of each area's neighbours sum to 1."
+kind = "select"
+default = "queen"
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest."
+default = "6"
+
+[[inputs]]
+id = "instrumentLags"
+label = "Instrument Lags"
+tooltip = "On Probit, GMM: the spatial lags of the explanatory variables used as instruments, WX alone (1), WX and W²X (2), or up to W³X (3)."
+kind = "select"
+default = "2"
+newRow = true
+
+[[inputs.options]]
+value = "1"
+label = "WX"
+
+[[inputs.options]]
+value = "2"
+label = "WX, W²X"
+
+[[inputs.options]]
+value = "3"
+label = "WX, W²X, W³X"
+
+[[inputs]]
+id = "draws"
+label = "Draws"
+tooltip = "On the Bayesian tabs: the number of draws kept from the Gibbs sampler, after the burn-in. More draws make the posterior means and standard deviations less noisy."
+default = "2000"
+
+[[inputs]]
+id = "burnin"
+label = "Burn-in"
+tooltip = "On the Bayesian tabs: the number of first draws discarded, while the sampler moves away from its starting values."
+default = "500"
+
+[[inputs]]
+id = "screen"
+label = "Candidate Screen"
+tooltip = "On Logit With a Filter: the candidate eigenvectors are those whose Moran coefficient is at least this share of the largest; 0.25 keeps the eigenvectors of marked positive spatial autocorrelation."
+default = "0.25"
+newRow = true
+
+[[inputs]]
+id = "maxEigenvectors"
+label = "Maximum Eigenvectors"
+tooltip = "On Logit With a Filter: selection stops at this number of eigenvectors, if it has not stopped before."
+default = "20"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+# Example file: 20 by 20 square cells of 1 km around Coimbra, in EPSG:3763, written unless the folder has one already. Replace "coimbrachoice.gpkg" with your own file.
+if basename(path) == "coimbrachoice.gpkg" && !isfile(path)
+	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
+	income = 18 .+ 0.4 .* u .+ 3 .* randn(rng, 400)  # household income, thousand euros a year, higher to the east
+	detached = clamp.(40 .+ 1.5 .* v .+ 10 .* randn(rng, 400), 0, 100)  # percent of detached houses, more to the north
+	grid = [(c, d) for c in 1:400 for d in 1:400 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
+	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 400, 400))
+	latent = (I - 0.5 .* Matrix(Wgrid)) \ (-5.6 .+ 0.2 .* income .+ 0.05 .* detached .+ randn(rng, 400))  # a spatial lag of the propensity, rho = 0.5
+	solar = Int.(latent .> 0)  # 1 if at least one home in ten has rooftop solar panels
+	adoption = 1 .+ Int.(latent .> -0.6) .+ Int.(latent .> 0.6)  # adoption as 1 low, 2 medium, 3 high
+	cells = ["($(solar[c]), $(adoption[c]), $(round(income[c], digits = 2)), $(round(detached[c], digits = 1)), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:400]
+	DBInterface.execute(con, "COPY (SELECT solar::INTEGER AS solar, adoption::INTEGER AS adoption, income::DOUBLE AS income, detached::DOUBLE AS detached, geom FROM (VALUES $(join(cells, ", "))) t(solar, adoption, income, detached, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+end
+yname = "{{dependent}}"
+{{?model=ordered}} yname = yname == "solar" && basename(path) == "coimbrachoice.gpkg" ? "adoption" : yname  # the example's ordered outcome: adoption, 1 low, 2 medium, 3 high
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
+# The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE $(present)")
+DBInterface.execute(con, "ALTER TABLE areas DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM areas ORDER BY i")).v)
+y = column(yname)
+X = reduce(hcat, column.(xnames))  # without an intercept, which the binary models add
+n, p = size(X)
+
+# The neighbours of each area, as pairs (i, j), found with SQL
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs["{{neighbours}}"]))
+W = row_standardize(sparse(pairs.i, pairs.j, 1.0, n, n))  # the weights of each area's neighbours sum to 1
+
+{{?model=probitgmm}} # Linearised GMM: a probit at rho = 0, then two-stage least squares on the moment conditions linearised around it
+{{?model=probitgmm}} m = fit_spatial_probit(W, X, y; varnames = xnames, instrument_lags = {{instrumentLags}})
+{{?model=probitbayes}} # Gibbs sampling: the latent propensities drawn area by area within their sign, the coefficients from their normal conditional, rho by random-walk Metropolis
+{{?model=probitbayes}} m = fit_bayesian_spatial_probit(W, X, y; n_samples = {{draws}}, burnin = {{burnin}}, varnames = xnames, rng = Xoshiro(2026))  # a fixed seed: the same draws every time
+{{?model=ordered}} # Gibbs sampling as for the binary probit, the latent propensities drawn between the cut points of their category, and the free cut points from their uniform conditionals
+{{?model=ordered}} m = fit_spatial_ordered_probit(W, X, Int.(y); n_samples = {{draws}}, burnin = {{burnin}}, varnames = xnames, rng = Xoshiro(2026))  # the categories 1 to the largest in the data
+{{?model=logitesf}} basis = spatial_eigenvectors(W; min_moran_ratio = {{screen}})  # the candidate Moran eigenvectors
+{{?model=logitesf}} # A logistic regression fitted by IRLS, the eigenvectors added one at a time by the Moran coefficient of its Pearson residuals
+{{?model=logitesf}} m = fit_esf(X, y, W; family = :logit, criterion = :moran, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+{{?model=probitgmm|probitbayes}} prob = m.fitted_prob  # the fitted probability of each area's choice
+{{?model=logitesf}} prob = m.fitted
+
+se = sqrt.(diag(m.vcov))
+{{?model=probitgmm|logitesf}} println(rpad("", 14), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
+{{?model=probitbayes|ordered}} draws = hcat(m.beta_draws, m.rho_draws)  # one row per draw kept: the coefficients, then rho
+{{?model=probitbayes|ordered}} println(rpad("", 14), rpad("Post. Mean", 12), rpad("Post. SD", 12), rpad("2.5%", 10), "97.5%")
+{{?model!=logitesf}} shown = eachindex(m.coef)  # the intercept (not on Ordered Probit), the explanatory variables and rho, the spatial lag of the latent propensity
+{{?model=logitesf}} shown = 1:1 + p  # the intercept and the explanatory variables; the eigenvectors' coefficients follow them
+for k in shown
+{{?model=probitgmm|logitesf}} 	println(rpad(m.coefnames[k], 14), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
+{{?model=probitbayes|ordered}} 	println(rpad(m.coefnames[k], 14), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), rpad(round(quantile(draws[:, k], 0.025), digits = 4), 10), round(quantile(draws[:, k], 0.975), digits = 4))
+end
+{{?model=probitgmm}} println("\nStandard errors: heteroskedasticity-robust, of the two-stage least squares step")
+{{?model=probitbayes|ordered}} println("\n", m.n_samples, " draws kept after a burn-in of ", m.burnin, "; acceptance rate of rho ", round(m.accept_rate, digits = 3), ", which should be between 0.2 and 0.5")
+{{?model=ordered}} println("Cut points: the first fixed at 0; ", join(("cut point $(j): $(round(m.cutpoints[j], digits = 4)) [$(round(quantile(m.cut_draws[:, j], 0.025), digits = 4)), $(round(quantile(m.cut_draws[:, j], 0.975), digits = 4))]" for j in 2:m.n_categories - 1), "; "), ", with their 2.5% and 97.5% quantiles")
+{{?model=ordered}} println("Areas in each category: ", join(("$(j): $(count(==(j), m.y))" for j in 1:m.n_categories), ", "))
+{{?model=probitbayes|ordered}} println("The error variance is fixed at 1; the prior of each coefficient is normal with mean 0 and variance 100, that of rho uniform on (-1, 1)")
+{{?model=logitesf}} println("\n", length(m.selected), " of ", size(basis.vectors, 2), " candidate eigenvectors selected: ", join(m.selected, ", "))
+{{?model=logitesf}} println("Moran coefficient of the Pearson residuals: ", round(m.moran_initial, digits = 4), " without the filter, ", round(m.moran_final, digits = 4), " with it")
+{{?model=probitgmm}} println("Pseudo log-likelihood: ", round(m.loglik, digits = 2), " (a probit log-likelihood at the fitted index, to compare fits made the same way)")
+{{?model!=ordered}} println("Hit rate: ", round(mean((prob .>= 0.5) .== (y .== 1)), digits = 3), ", the share of areas whose fitted probability is on the side of 0.5 of their choice")
+{{?model=probitgmm}} println("The coefficients are on the scale of the latent propensity, not effects on the probability: see Direct, Indirect and Total Effects")
+{{?model=probitbayes|ordered}} println("The coefficients are on the scale of the latent propensity, not effects on the probability")
+{{?model=logitesf}} println("The coefficients are on the log-odds scale: exp(coefficient) is the factor by which the odds of the choice change for one more unit, the filter held fixed")
+{{?model=logitesf}} m.converged || println("The fit did not converge: read the results with care")
+{{?model=probitgmm}} m.converged || println("The two-stage least squares step was ill-conditioned, or rho reached the edge of (-1, 1): read the results with care")
+{{?model!=ordered}} res = m.residuals  # the choice minus its fitted probability
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-probabilities"
+label = "Map of the Fitted Probabilities"
+desc = "The fitted probability of the choice in each area on a base map, each area's choice shown when it is clicked: where the model expects the choice, and where it was made against the odds"
+models = ["probitgmm", "probitbayes", "logitesf"]
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fitted AS SELECT * FROM (VALUES $(join(("($i, $(prob[i]))" for i in 1:n), ", "))) t(i, probability)")
+fmap = joinpath(mktempdir(), "fitted-probabilities.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, round(f.probability, 3) AS probability, a.\"$(yname)\"::INTEGER AS choice FROM areas a JOIN fitted f USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(fmap; name = "Fitted probability", column = "probability", opacity = 0.75)))  # clicking an area shows its probability and its choice
+'''
+
+[[actionGroups.actions]]
+id = "trace-density-rho"
+label = "Trace and Density of ρ"
+desc = "The draws of rho in the order the Gibbs sampler made them, with their running mean, and a histogram of the draws, the posterior density of rho: a trace that wanders, or a running mean still drifting, means the chain needs more draws or a longer burn-in"
+models = ["probitbayes", "ordered"]
+code = '''
+using ECharts
+
+r = m.rho_draws  # the draws kept, after the burn-in
+running = cumsum(r) ./ (1:length(r))
+display(EChart(ec_width = 700, ec_height = 360, title = [ECharts.Title(text = "Trace of rho")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Draw")], yAxis = [ECharts.Axis(_type = "value", name = "rho", scale = true)],
+	series = [ECharts.XYSeries(name = "Draws", _type = "line", data = [[s, r[s]] for s in eachindex(r)]),
+		ECharts.XYSeries(name = "Running mean", _type = "line", data = [[s, running[s]] for s in eachindex(r)])]))
+
+edges = range(minimum(r), maximum(r), length = 41)  # 40 bins over the range of the draws
+width = step(edges)
+counts = zeros(Int, 40)
+for v in r
+	counts[clamp(floor(Int, (v - first(edges)) / width) + 1, 1, 40)] += 1
+end
+display(EChart(ec_width = 700, ec_height = 360, title = [ECharts.Title(text = "Posterior density of rho")],
+	xAxis = [ECharts.Axis(_type = "value", name = "rho", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Density")],
+	series = [ECharts.XYSeries(name = "Histogram of the draws", _type = "bar", data = [[first(edges) + (b - 0.5) * width, counts[b] / (length(r) * width)] for b in 1:40])]))
+println("Posterior mean of rho ", round(mean(r), digits = 4), ", median ", round(median(r), digits = 4), ", 95% interval [", round(quantile(r, 0.025), digits = 4), ", ", round(quantile(r, 0.975), digits = 4), "]")
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "hit-rate"
+label = "Hit Rate and Confusion Table"
+desc = "The areas by their choice and by the choice the model predicts, at a cut-off of 0.5 and at the share of areas that made the choice: the hit rate, the share of each choice predicted right, and the hit rate of always predicting the commoner choice, which the model should beat"
+models = ["probitgmm", "probitbayes", "logitesf"]
+code = '''
+share = mean(y)  # the share of areas that made the choice
+println("Areas that made the choice: ", count(==(1), y), " of ", n, " (", round(100 * share, digits = 1), "%)")
+println("Always predicting the commoner choice: a hit rate of ", round(max(share, 1 - share), digits = 3), "\n")
+for cutoff in (0.5, share)
+	predicted = prob .>= cutoff
+	both = count(predicted .& (y .== 1))  # choice made and predicted
+	missed = count(.!predicted .& (y .== 1))  # choice made, not predicted
+	false_alarm = count(predicted .& (y .== 0))  # choice not made, predicted
+	neither = count(.!predicted .& (y .== 0))  # choice not made, not predicted
+	println("Cut-off ", round(cutoff, digits = 3), ": an area is predicted to make the choice when its fitted probability is at least this")
+	println(rpad("", 18), rpad("Predicted 1", 14), "Predicted 0")
+	println(rpad("Choice 1", 18), rpad(both, 14), missed)
+	println(rpad("Choice 0", 18), rpad(false_alarm, 14), neither)
+	println("Hit rate ", round((both + neither) / n, digits = 3), "; choice 1 predicted right (sensitivity) ", round(both / max(both + missed, 1), digits = 3), "; choice 0 predicted right (specificity) ", round(neither / max(neither + false_alarm, 1), digits = 3), "\n")
+end
+'''
+
+[[actionGroups.actions]]
+id = "chain-diagnostics"
+label = "Chain Diagnostics"
+desc = "For each parameter of the Gibbs sampler: the effective sample size of the centre and of the tails of its posterior, the split-chain R-hat, which compares the two halves of the chain, and the Monte Carlo standard error of its posterior mean, with the acceptance rate of rho"
+models = ["probitbayes", "ordered"]
+code = '''
+using MCMCDiagnosticTools
+
+{{?model=probitbayes}} chain = hcat(m.beta_draws, m.rho_draws)  # one row per draw kept: the intercept, the explanatory variables, rho
+{{?model=probitbayes}} labels = m.coefnames
+{{?model=ordered}} chain = hcat(m.beta_draws, m.rho_draws, m.cut_draws[:, 2:end])  # the explanatory variables, rho and the free cut points; the first is fixed at 0
+{{?model=ordered}} labels = [m.coefnames; ["cut point $j" for j in 2:m.n_categories - 1]]
+samples = reshape(chain, size(chain, 1), 1, size(chain, 2))  # draws, one chain, parameters
+bulk = ess(samples)  # the effective number of independent draws, for the centre of the posterior
+tails = ess(samples; kind = :tail)  # for its 5% and 95% quantiles
+split_rhat = rhat(samples)  # the chain split in two halves, compared as two chains
+error_of_mean = mcse(samples)  # the Monte Carlo standard error of the posterior mean
+println(rpad("", 16), rpad("Bulk ESS", 11), rpad("Tail ESS", 11), rpad("R-hat", 9), "MCSE of mean")
+for k in eachindex(labels)
+	println(rpad(labels[k], 16), rpad(round(Int, bulk[k]), 11), rpad(round(Int, tails[k]), 11), rpad(round(split_rhat[k], digits = 3), 9), round(error_of_mean[k], sigdigits = 3))
+end
+println("\n", size(chain, 1), " draws; acceptance rate of rho ", round(m.accept_rate, digits = 3), ", which should be between 0.2 and 0.5")
+println("Recommended: an effective sample size of at least 100 and an R-hat below 1.01; if not, raise Draws or Burn-in")
+'''
+
+[[actionGroups.actions]]
+id = "residual-moran"
+label = "Moran's I of the Residuals"
+desc = "Moran's I of the Pearson residuals of the tab's model, each choice minus its fitted probability over the standard deviation of a 0 or 1 with that probability, with a pseudo p-value from 999 random permutations: spatial autocorrelation left that the spillover or the filter has not taken up"
+models = ["probitgmm", "probitbayes", "logitesf"]
+code = '''
+pearson = (y .- prob) ./ sqrt.(prob .* (1 .- prob))  # each residual over its standard deviation under the model
+mr = moran_global(pearson, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+println("Moran's I of the Pearson residuals: ", round(mr.I_stat, digits = 4), " (expected ", round(mr.E_I, digits = 4), " without spatial autocorrelation), pseudo p-value ", mr.p_value)
+println(mr.p_value < 0.05 ? "Spatial autocorrelation is left in the residuals: the model has not taken it all up" : "No significant spatial autocorrelation is left in the residuals")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "gmm-vs-gibbs"
+label = "GMM Against Gibbs"
+desc = "The spatial lag probit by linearised GMM and by Gibbs sampling on the same data and weights: each coefficient and rho with its standard error or posterior standard deviation, and the hit rate of each"
+models = ["probitgmm", "probitbayes"]
+code = '''
+{{?model=probitgmm}} gmm = m
+{{?model=probitgmm}} gibbs = fit_bayesian_spatial_probit(W, X, y; n_samples = {{draws}}, burnin = {{burnin}}, varnames = xnames, rng = Xoshiro(2026))  # Draws and Burn-in from the inputs
+{{?model=probitbayes}} gibbs = m
+{{?model=probitbayes}} gmm = fit_spatial_probit(W, X, y; varnames = xnames, instrument_lags = {{instrumentLags}})  # Instrument Lags from the inputs
+se_gmm, sd_gibbs = sqrt.(diag(gmm.vcov)), sqrt.(diag(gibbs.vcov))
+println(rpad("", 14), rpad("GMM", 12), rpad("Std. Error", 13), rpad("Gibbs", 12), "Post. SD")
+for k in eachindex(gmm.coef)  # the intercept, the explanatory variables and rho, in the same order in both
+	println(rpad(gmm.coefnames[k], 14), rpad(round(gmm.coef[k], digits = 4), 12), rpad(round(se_gmm[k], digits = 4), 13), rpad(round(gibbs.coef[k], digits = 4), 12), round(sd_gibbs[k], digits = 4))
+end
+hits(f) = round(mean((f.fitted_prob .>= 0.5) .== (y .== 1)), digits = 3)
+println("\nHit rate: ", hits(gmm), " by GMM, ", hits(gibbs), " by Gibbs sampling")
+println("Both fix the variance of the latent errors at 1, so their coefficients are on the same scale")
+gmm.converged || println("The GMM two-stage least squares step was ill-conditioned, or rho reached the edge of (-1, 1)")
+'''
+
+[[actionGroups.actions]]
+id = "spatial-vs-probit"
+label = "Spatial Probit Against Probit"
+desc = "The tab's spatial lag probit beside an ordinary probit that ignores the neighbours: the coefficients, the hit rates and the Moran's I left in the Pearson residuals of each, and on Probit, GMM the total effect of each variable beside the probit's average marginal effect"
+models = ["probitgmm", "probitbayes"]
+code = '''
+using GLM
+
+Xi = hcat(ones(n), X)
+probit = glm(Xi, y, Binomial(), ProbitLink())  # the ordinary probit: rho fixed at 0
+b, se_probit, se = coef(probit), stderror(probit), sqrt.(diag(m.vcov))
+println(rpad("", 14), rpad("Probit", 12), rpad("Std. Error", 13), rpad("Spatial", 12), "Std. Error")
+for k in eachindex(b)  # the intercept and the explanatory variables
+	println(rpad(m.coefnames[k], 14), rpad(round(b[k], digits = 4), 12), rpad(round(se_probit[k], digits = 4), 13), rpad(round(m.coef[k], digits = 4), 12), round(se[k], digits = 4))
+end
+println(rpad("rho", 14), rpad("0", 25), rpad(round(m.rho, digits = 4), 12), round(se[end], digits = 4))
+{{?model=probitbayes}} println("(the spatial probit's are posterior means and standard deviations)")
+
+pearson(q) = (y .- q) ./ sqrt.(q .* (1 .- q))  # each residual over its standard deviation under the model
+println("\n", rpad("", 18), rpad("Hit rate", 11), rpad("Moran's I", 12), "pseudo p-value")
+for (name, q) in ("Probit" => predict(probit), "Spatial probit" => m.fitted_prob)
+	mr = moran_global(pearson(q), W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+	println(rpad(name, 18), rpad(round(mean((q .>= 0.5) .== (y .== 1)), digits = 3), 11), rpad(round(mr.I_stat, digits = 4), 12), mr.p_value)
+end
+
+{{?model=probitgmm}} # The coefficients of the two are not on the same scale, as the spatial multiplier also spreads the latent errors: compare effects on the probability
+{{?model=probitgmm}} effects = marginal_effects(m)
+{{?model=probitgmm}} density = exp.(-(Xi * b) .^ 2 ./ 2) ./ sqrt(2 * pi)  # the standard normal density at each area's probit index
+{{?model=probitgmm}} println("\n", rpad("", 14), rpad("Probit AME", 13), "Spatial total effect")
+{{?model=probitgmm}} for k in 1:p
+{{?model=probitgmm}} 	println(rpad(xnames[k], 14), rpad(round(mean(density) * b[k + 1], digits = 4), 13), round(effects.total[k], digits = 4))
+{{?model=probitgmm}} end
+'''
+
+[[actionGroups.actions]]
+id = "lag-vs-filter"
+label = "Lag Probit Against a Filter"
+desc = "The two ways of handling spatial autocorrelation in a binary choice on the same data: a spatial lag probit, which models it as a spillover, and a logistic regression with a spatial filter, which removes it; their hit rates, the Moran's I left in their Pearson residuals, and, with the lag probit by GMM, the effect of each variable on the probability"
+models = ["probitgmm", "probitbayes", "logitesf"]
+code = '''
+{{?model=probitgmm}} lag, lagname = m, "Lag probit, GMM"
+{{?model=probitbayes}} lag, lagname = m, "Lag probit, Gibbs"
+{{?model!=logitesf}} basis = spatial_eigenvectors(W; min_moran_ratio = {{screen}})  # Candidate Screen from the inputs
+{{?model!=logitesf}} filtered = fit_esf(X, y, W; family = :logit, criterion = :moran, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+{{?model=logitesf}} filtered = m
+{{?model=logitesf}} lag, lagname = fit_spatial_probit(W, X, y; varnames = xnames, instrument_lags = {{instrumentLags}}), "Lag probit, GMM"
+
+pearson(q) = (y .- q) ./ sqrt.(q .* (1 .- q))  # each residual over its standard deviation under the model
+println(rpad("", 22), rpad("Hit rate", 11), rpad("Moran's I", 12), "pseudo p-value")
+for (name, q) in (lagname => lag.fitted_prob, "Logit with a filter" => filtered.fitted)
+	mr = moran_global(pearson(q), W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+	println(rpad(name, 22), rpad(round(mean((q .>= 0.5) .== (y .== 1)), digits = 3), 11), rpad(round(mr.I_stat, digits = 4), 12), mr.p_value)
+end
+println("\nThe lag probit's rho: ", round(lag.rho, digits = 4), "; the filter: ", length(filtered.selected), " eigenvectors")
+
+{{?model!=probitbayes}} # Probit and logit coefficients are on different scales: compare their effects on the probability
+{{?model!=probitbayes}} effects = marginal_effects(lag)
+{{?model!=probitbayes}} slope = mean(filtered.fitted .* (1 .- filtered.fitted))  # the average slope of the logistic curve at the fitted probabilities
+{{?model!=probitbayes}} println("\n", rpad("", 14), rpad("Lag direct", 12), rpad("Lag indirect", 14), rpad("Lag total", 12), "Filter AME")
+{{?model!=probitbayes}} for k in 1:p
+{{?model!=probitbayes}} 	println(rpad(xnames[k], 14), rpad(round(effects.direct[k], digits = 4), 12), rpad(round(effects.indirect[k], digits = 4), 14), rpad(round(effects.total[k], digits = 4), 12), round(slope * filtered.coef[k + 1], digits = 4))
+{{?model!=probitbayes}} end
+{{?model!=probitbayes}} println("The filter's average marginal effect holds the filter fixed: it has no indirect effect through the neighbours")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "effects"
+label = "Direct, Indirect and Total Effects"
+desc = "The effect of each explanatory variable on the probability of the choice, averaged over the areas: direct, of a change in an area on its own choice; indirect, through its neighbours and theirs; and total, of the same change in every area, with the share of the total that passes through the neighbours"
+models = ["probitgmm"]
+code = '''
+effects = marginal_effects(m)  # the effects of LeSage and Pace (2009), from the normal density at each area's index and the spatial multiplier
+println(rpad("", 14), rpad("Direct", 11), rpad("Indirect", 11), rpad("Total", 11), "Indirect share")
+for k in 1:p
+	println(rpad(effects.varnames[k], 14), rpad(round(effects.direct[k], digits = 4), 11), rpad(round(effects.indirect[k], digits = 4), 11), rpad(round(effects.total[k], digits = 4), 11), round(100 * effects.indirect[k] / effects.total[k], digits = 1), "%")
+end
+println("\nEach effect is a change in the probability of the choice, from 0 to 1, for one more unit of the variable")
+println("Direct: one more unit in an area, on that area's own probability, feedback through its neighbours included")
+println("Indirect: the same change in every other area, on an area's probability, through the neighbours")
+println("Total: one more unit in every area, on an area's probability; the effects are averaged over the areas, without standard errors")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-katrina"
+label = "New Orleans After Katrina"
+desc = "Table 3 of LeSage, Pace, Lam, Campanella and Liu (2011): the reopening of 673 businesses on three New Orleans streets within 6 and within 12 months of Hurricane Katrina, by a spatial lag probit fitted by Gibbs sampling on the 15 nearest neighbours, the posterior means and standard deviations beside those of the article"
+models = ["probitbayes"]
+code = '''
+using Downloads, RData
+
+let
+	file = joinpath(mktempdir(), "Katrina.RData")
+	Downloads.download("https://raw.githubusercontent.com/stefanwilhelm/spatialprobit/7b624f571a740caf491671ef6cf4ae1135593a6c/data/Katrina.RData", file)  # the data of the R package spatialprobit, GPL-2 or later
+	katrina = Tables.columntable(RData.load(file)["Katrina"])  # read as columns, one vector per variable
+	names = ["flood_depth", "log_medinc", "small_size", "large_size", "low_status_customers", "high_status_customers", "owntype_sole_proprietor", "owntype_national_chain"]
+	Xk = reduce(hcat, (Float64.(Tables.getcolumn(katrina, Symbol(c))) for c in names))
+	coords = hcat(Float64.(katrina.lat), Float64.(katrina.long))
+	nk = size(Xk, 1)
+	# The 15 nearest businesses by the Euclidean distance between latitude and longitude, as spdep's knearneigh in the article's code, row-standardised
+	D = [i == j ? Inf : norm(coords[i, :] - coords[j, :]) for i in 1:nk, j in 1:nk]  # a business is not its own neighbour
+	near = [partialsortperm(D[i, :], 1:15) for i in 1:nk]
+	Wk = row_standardize(sparse(repeat(1:nk, inner = 15), reduce(vcat, near), 1.0, nk, nk))
+	labels = ["constant"; names; "rho"]
+	function report(title, fit, means, deviations)
+		sd = sqrt.(diag(fit.vcov))
+		println("\n", title, "; acceptance rate of rho ", round(fit.accept_rate, digits = 3))
+		println(rpad("", 24), rpad("Julia mean", 12), rpad("Article", 10), rpad("Julia SD", 10), "Article SD")
+		for k in eachindex(labels)
+			println(rpad(labels[k], 24), rpad(round(fit.coef[k], digits = 4), 12), rpad(means[k], 10), rpad(round(sd[k], digits = 4), 10), deviations[k])
+		end
+	end
+	for (column, title, reopened, means, deviations) in (
+			("y2", "(b) 0-6 months", 425,
+				[-2.9778, -0.1103, 0.3110, -0.1087, -0.3723, -0.3423, 0.0407, 0.3588, 0.2948, 0.5783],
+				[2.7300, 0.0349, 0.2685, 0.1488, 0.3316, 0.1613, 0.1528, 0.1813, 0.3806, 0.0842]),
+			("y3", "(c) 0-12 months", 478,
+				[-4.3361, -0.0894, 0.4844, -0.2142, -0.3572, -0.3209, -0.1015, 0.1459, -0.1205, 0.5846],
+				[2.7227, 0.0343, 0.2683, 0.1542, 0.2981, 0.1620, 0.1654, 0.1886, 0.3893, 0.0929]))
+		yk = Float64.(Tables.getcolumn(katrina, Symbol(column)))
+		println("\n", title, ": ", count(==(1), yk), " of ", nk, " businesses reopened (the article: ", reopened, ")")
+		fit = fit_bayesian_spatial_probit(Wk, Xk, yk; n_samples = {{draws}}, burnin = {{burnin}}, varnames = names, rng = Xoshiro(2026))  # Draws and Burn-in from the inputs; more draws give steadier posterior means
+		report(title, fit, means, deviations)
+	end
+end
+'''
+
+[[wikis]]
+name = "Factsheet"
+file = "spchoice/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the inputs and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "spchoice/overview.md"
+bundled = true
+description = "Binary and ordered choices that depend on the neighbours' choices, and how the spatial lag probit is estimated"
+
+[[wikis]]
+name = "Effects on the Probability"
+file = "spchoice/effects.md"
+bundled = true
+description = "Why the coefficients are not effects, and the direct, indirect and total effects on the probability"
+
+[[wikis]]
+name = "Decision Guide"
+file = "spchoice/decision-guide.md"
+bundled = true
+description = "GMM or Gibbs sampling, a spatial lag probit or a filter, binary or ordered, and the choice of neighbours"
+
+[[wikis]]
+name = "Replications"
+file = "spchoice/replications.md"
+bundled = true
+description = "spatialprobit and the New Orleans business recovery after Hurricane Katrina the panel's results are checked against"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Probit, GMM"
+file = "spchoice/probitgmm.md"
+bundled = true
+
+[[wikis]]
+name = "Probit, Bayesian"
+file = "spchoice/probitbayes.md"
+bundled = true
+
+[[wikis]]
+name = "Ordered Probit"
+file = "spchoice/ordered.md"
+bundled = true
+
+[[wikis]]
+name = "Logit With a Filter"
+file = "spchoice/logitesf.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "LP2009a"
+
+[[references]]
+key = "Gri2003a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Mcm1992a"
+
+[[references]]
+key = "AC1993a"
+
+[[references]]
+key = "KM2008a"
+
+[[references]]
+key = "WK2009a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "LPLCL2011a"
+
+[[references]]
+key = "WM2013a"
+
+[[faq]]
+question = "Should I fit the spatial probit by GMM or by Gibbs sampling?"
+answer = '''
+The two trade speed against precision. The linearised GMM of the Probit, GMM tab is fast and approximately unbiased, but its estimates of rho are spread far more widely than those of the Gibbs sampler on the same data. The Gibbs sampler of the Probit, Bayesian tab is more precise and gives posterior intervals for every parameter, but in small samples it pulls rho towards zero. The GMM Against Gibbs step fits both on the same data.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why can't I read the coefficients of a spatial probit as effects on the probability?"
+answer = '''
+A coefficient moves the latent propensity, not the probability, and in a spatial lag probit a change at one location also moves its neighbours' propensities through the spatial multiplier. The effect on the probability is then summarised by three averages over the locations: the direct effect on a location's own probability, the indirect effect that reaches it from changes elsewhere, and the total effect, their sum. The Direct, Indirect and Total Effects step computes them on the Probit, GMM tab.
+'''
+wiki = "Effects on the Probability"
+
+[[faq]]
+question = "When should I use the Logit With a Filter tab instead of a spatial lag probit?"
+answer = '''
+When the spatial autocorrelation of the choices is in the way of the coefficients rather than the question. A spatial lag probit models how a location's propensity responds to its neighbours', so it gives indirect effects; a logistic regression with a spatial filter takes up the spatial pattern with Moran eigenvectors and has no indirect effects, its coefficients reading as in an ordinary logistic regression. The Lag Probit Against a Filter step compares the two.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Which software are the panel's results checked against?"
+answer = '''
+The published estimates of LeSage, Pace, Lam, Campanella and Liu (2011) for the reopening of New Orleans businesses after Hurricane Katrina, whose data are distributed with spatialprobit, the R package of Wilhelm and de Matos. The New Orleans After Katrina step fits the spatial lag probit at the 6- and 12-month horizons and prints Julia's posterior means and standard deviations beside the article's Table 3.
+'''
+wiki = "Replications"
+
+[[faq]]
+question = "What does the Instrument Lags input do?"
+answer = '''
+It sets how many spatial lags of the explanatory variables enter as instruments in the two-stage least squares step of the Probit, GMM tab: their neighbours' averages, the averages of those averages and so on, from one to three, with two by default. The spatial lag of the intercept is left out, as with row-standardised weights it equals the intercept itself.
+'''
+wiki = "Probit, GMM"
+hidden = true
+
+[[faq]]
+question = "What acceptance rate of rho should the Probit, Bayesian tab show?"
+answer = '''
+Between 0.2 and 0.5, as the documentation of fit_bayesian_spatial_probit expects for its random-walk Metropolis step on rho. The Trace and Density of ρ and Chain Diagnostics steps then check whether the chain has run long enough for the posterior summaries.
+'''
+wiki = "Probit, Bayesian"
+hidden = true
+
+[[faq]]
+question = "Why does the Ordered Probit tab have no intercept?"
+answer = '''
+The level of the latent propensity and the cut points cannot both be estimated, so fit_spatial_ordered_probit fixes the first cut point at zero and leaves out the intercept. For the same reason no explanatory variable may be constant, as a constant column would play the part of the missing intercept.
+'''
+wiki = "Ordered Probit"
+hidden = true
+
+[[faq]]
+question = "Do the standard errors of the Logit With a Filter tab allow for the selection of eigenvectors?"
+answer = '''
+No. The eigenvectors are chosen on the same choices the regression then explains, and the standard errors treat them as fixed in advance, so they do not include the uncertainty of the selection.
+'''
+wiki = "Logit With a Filter"
+hidden = true
+
+[[faq]]
+question = "Why might the replication of the New Orleans estimates not match the article to the last digit?"
+answer = '''
+A Gibbs sampler gives posterior means that vary from one chain to another by their Monte Carlo error, so different random draws or a chain of a different length do not reproduce the published values exactly; the Chain Diagnostics step reports that error. The priors of the two samplers need not be the same, and businesses at equal distances can be ordered differently among the 15 nearest neighbours.
+'''
+wiki = "Replications"
+hidden = true
