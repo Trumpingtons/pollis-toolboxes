@@ -1,0 +1,675 @@
+# Transport Network Files: public transport timetables in GTFS, read with ZipArchives.jl and DuckDB's CSV reader,
+# and OpenStreetMap PBF extracts, read with ST_ReadOSM of DuckDB's spatial extension
+
+[meta]
+title = "Transport Network Files"
+viewType = "pollis.networkfiles"
+defaultModel = "gtfs"
+decisionFirstColumn = "Format"
+
+[[packages]]
+name = "ZipArchives.jl"
+github = "https://github.com/JuliaIO/ZipArchives.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "networkfiles/factsheet.md"
+bundled = true
+description = "One-page reference: the two formats, how they are read, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "networkfiles/overview.md"
+bundled = true
+description = "Transit schedules and street networks as data: what GTFS feeds and OpenStreetMap extracts hold"
+
+[[wikis]]
+name = "Diagnostics"
+file = "networkfiles/diagnostics.md"
+bundled = true
+description = "Required files, broken references, times past midnight, missing nodes and missing tags"
+
+[[wikis]]
+name = "Decision Guide"
+file = "networkfiles/decision-guide.md"
+bundled = true
+description = "Which tab, which service day, which key of OpenStreetMap, and what to save for other tools"
+
+[[wikis]]
+separator = true
+label = "Formats and Measures"
+
+[[wikis]]
+name = "GTFS"
+file = "networkfiles/gtfs.md"
+bundled = true
+
+[[wikis]]
+name = "OpenStreetMap PBF"
+file = "networkfiles/osm-pbf.md"
+bundled = true
+
+[[wikis]]
+name = "Service Frequency"
+file = "networkfiles/service-frequency.md"
+bundled = true
+
+[[wikis]]
+name = "Street Networks"
+file = "networkfiles/street-networks.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Zim2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Won2013a"
+
+[[references]]
+key = "HW2008a"
+
+[[references]]
+key = "BM2017a"
+
+[[references]]
+key = "Boe2017a"
+
+[[references]]
+separator = true
+label = "Specifications"
+
+[[references]]
+key = "Mob2026a"
+
+[[references]]
+key = "OSMWC2026a"
+
+[[faq]]
+question = "Why are some GTFS times later than 24:00:00?"
+answer = '''
+GTFS measures times from noon minus 12 hours of the service day, which is midnight except on days when daylight saving time changes. A trip that runs past midnight keeps counting: 25:35:00 is 1:35 in the morning of the next calendar day, but belongs to the service day before.
+
+The GTFS tab reads times as text and turns them into seconds since the start of the service day, so times past 24:00:00 are kept.
+'''
+wiki = "GTFS"
+
+[[faq]]
+question = "Which day does the GTFS tab analyse?"
+answer = '''
+The Service Date input names it, as YYYY-MM-DD, or is busiest, the date with the most trips in the feed. The tab expands calendar.txt into dates, by weekday between start_date and end_date, adds the dates calendar_dates.txt adds and removes those it removes, and keeps the trips whose service runs on the date.
+
+Service Calendar shows the trips of every date of the feed.
+'''
+wiki = "Service Frequency"
+
+[[faq]]
+question = "How are intersections and dead ends counted in an OpenStreetMap network?"
+answer = '''
+Network Measures counts, for each node, the line segments of the network that meet there: one for a node at the end of a way, two for a node inside it, summed over the ways that use the node. A node where three or more segments meet is an intersection; a node with one is a dead end.
+
+Ways that cross without a shared node, as at bridges, do not meet.
+'''
+wiki = "Street Networks"
+
+[[faq]]
+question = "Is OpenStreetMap complete enough for my area?"
+answer = '''
+It depends on the area. Barrington-Leigh and Millard-Ball estimated in 2017 that OpenStreetMap's road network was about 83% complete worldwide, and fully mapped in more than 40% of countries; better-governed countries with good internet access were more complete, and both sparsely populated areas and dense cities were the best mapped.
+
+Tag Check shows which tags of a network are filled in.
+'''
+wiki = "OpenStreetMap PBF"
+
+[[faq]]
+question = "What is a headway?"
+answer = '''
+The time between two departures of the same route, in the same direction, from the same stop. Routes Side by Side gives the median headway of each route at its first stop, and Service at Stops the median headway over all departures at each stop.
+
+A feed that defines trips by frequencies.txt, by a headway between a start and an end time, has fewer rows in stop_times.txt than trips run; Feed Check says when a feed has that file.
+'''
+wiki = "Service Frequency"
+hidden = true
+
+[[faq]]
+question = "Which files must a GTFS feed have?"
+answer = '''
+agency.txt, routes.txt, trips.txt and stop_times.txt are required; stops.txt is required unless all stops are demand-responsive zones in locations.geojson. calendar.txt is required unless every service date is in calendar_dates.txt, which is then required.
+
+Feed Check lists the required files a feed lacks.
+'''
+wiki = "GTFS"
+hidden = true
+
+[[faq]]
+question = "How much smaller is PBF than OpenStreetMap XML?"
+answer = '''
+According to the OpenStreetMap wiki, the PBF format is about half the size of a gzipped planet file and about 30% smaller than a bzipped one, and it is about five times faster to write and six times faster to read than a gzipped planet.
+
+PBF files end in .osm.pbf, and Geofabrik and other sites publish extracts of countries and regions in it.
+'''
+wiki = "OpenStreetMap PBF"
+hidden = true
+
+[[models]]
+id = "gtfs"
+label = "GTFS"
+
+[[models]]
+id = "osmpbf"
+label = "OpenStreetMap PBF"
+
+[[bullets]]
+text = "GTFS"
+detail = "The General Transit Feed Specification: a public transport timetable as a .zip of CSV files, with agencies, routes, trips, stops, stop times and service calendars"
+
+[[bullets]]
+text = "OpenStreetMap PBF"
+detail = "OpenStreetMap data in its compact binary format: nodes, ways and relations with their tags, from which street, rail and path networks are built"
+
+[[decisionRows]]
+task = "GTFS"
+context = "Public transport timetables"
+purpose = "Read a transit feed: stops, routes and trips on a map, departures by hour, headways, the service calendar"
+
+[[decisionRows]]
+task = "OpenStreetMap PBF"
+context = "Street and rail networks"
+purpose = "Read a network from an OpenStreetMap extract: lengths by class, tags, intersections and dead ends"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "gtfsFile"
+label = "File"
+tooltip = "The GTFS feed, a .zip file or a folder of its .txt files, in the folder above, or an absolute path. With the default, coimbra-gtfs.zip, the example first writes a simulated feed of three bus routes in Coimbra to it, unless the folder has one already."
+default = "coimbra-gtfs.zip"
+models = ["gtfs"]
+
+[[inputs]]
+id = "serviceDate"
+label = "Service Date"
+tooltip = "The service day analysed, as YYYY-MM-DD, or busiest: the date of the feed with the most trips."
+default = "busiest"
+models = ["gtfs"]
+
+[[inputs]]
+id = "pbfFile"
+label = "File"
+tooltip = "The OpenStreetMap extract, an .osm.pbf file, in the folder above, or an absolute path. With the default, monaco-latest.osm.pbf, the example first downloads Geofabrik's extract of Monaco (about 0.7 MB, © OpenStreetMap contributors, ODbL), unless the folder has it already."
+default = "monaco-latest.osm.pbf"
+models = ["osmpbf"]
+
+[[inputs]]
+id = "osmKey"
+label = "Network Key"
+tooltip = "The tag key whose ways form the network: highway for streets and paths, railway for rail, waterway for rivers and canals, ... Its values become the classes of the network."
+default = "highway"
+models = ["osmpbf"]
+
+[[codeBranches]]
+model = "gtfs"
+code = '''
+using ZipArchives, DuckDB, Tables, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the feed stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+path = joinpath(folder, "{{gtfsFile}}")  # an absolute path is kept as it is
+{{?gtfsFile=coimbra-gtfs.zip}}# Example feed: three simulated bus routes across Coimbra, every 15, 20 and 30 minutes on weekdays and half as often at weekends, in 2026, written to coimbra-gtfs.zip unless the folder has one already. Replace "coimbra-gtfs.zip" with your own feed.
+{{?gtfsFile=coimbra-gtfs.zip}}if !isfile(path)
+{{?gtfsFile=coimbra-gtfs.zip}}	routes = [("1", "Estação - Universidade", [(-8.4330, 40.2110), (-8.4290, 40.2085), (-8.4250, 40.2075), (-8.4225, 40.2070)], 15),
+{{?gtfsFile=coimbra-gtfs.zip}}		("2", "Baixa - Celas", [(-8.4310, 40.2095), (-8.4270, 40.2120), (-8.4200, 40.2150), (-8.4150, 40.2165)], 20),
+{{?gtfsFile=coimbra-gtfs.zip}}		("3", "Solum - Santa Clara", [(-8.4060, 40.2040), (-8.4180, 40.2060), (-8.4290, 40.2050), (-8.4370, 40.2020)], 30)]  # id, name, waypoints (longitude, latitude), weekday headway in minutes
+{{?gtfsFile=coimbra-gtfs.zip}}	stops, stop_times, trips = ["stop_id,stop_name,stop_lat,stop_lon"], ["trip_id,arrival_time,departure_time,stop_id,stop_sequence"], ["route_id,service_id,trip_id,direction_id"]
+{{?gtfsFile=coimbra-gtfs.zip}}	hms(t) = join(lpad.([t ÷ 3600, t % 3600 ÷ 60, t % 60], 2, '0'), ":")  # seconds as HH:MM:SS, past 24:00:00 after midnight
+{{?gtfsFile=coimbra-gtfs.zip}}	for (route, name, waypoints, headway) in routes
+{{?gtfsFile=coimbra-gtfs.zip}}		points = [[waypoints[k] .+ (waypoints[k + 1] .- waypoints[k]) .* f for k in 1:3 for f in (0, 1 / 3, 2 / 3)]; [waypoints[4]]]  # ten stops along the route
+{{?gtfsFile=coimbra-gtfs.zip}}		ids = ["R$(route)S$(i)" for i in eachindex(points)]
+{{?gtfsFile=coimbra-gtfs.zip}}		append!(stops, ["$(ids[i]),Paragem $(route).$(i),$(round(p[2], digits = 6)),$(round(p[1], digits = 6))" for (i, p) in enumerate(points)])
+{{?gtfsFile=coimbra-gtfs.zip}}		for (service, start, finish, h) in (("weekday", 6 * 3600, 24 * 3600 + 1800, headway), ("weekend", 7 * 3600, 23 * 3600, 2 * headway)), direction in (0, 1)
+{{?gtfsFile=coimbra-gtfs.zip}}			for (n, departure) in enumerate(start:h * 60:finish)  # the last weekday trips run past midnight
+{{?gtfsFile=coimbra-gtfs.zip}}				trip = "$(route)-$(service)-$(direction)-$(n)"
+{{?gtfsFile=coimbra-gtfs.zip}}				push!(trips, "$(route),$(service),$(trip),$(direction)")
+{{?gtfsFile=coimbra-gtfs.zip}}				for (sequence, stop) in enumerate(direction == 0 ? ids : reverse(ids))
+{{?gtfsFile=coimbra-gtfs.zip}}					push!(stop_times, "$(trip),$(hms(departure)),$(hms(departure + 20)),$(stop),$(sequence)")
+{{?gtfsFile=coimbra-gtfs.zip}}					departure += 20 + 90 + 10 * (sequence % 3)  # 20 s at the stop, 90 to 110 s to the next
+{{?gtfsFile=coimbra-gtfs.zip}}				end
+{{?gtfsFile=coimbra-gtfs.zip}}			end
+{{?gtfsFile=coimbra-gtfs.zip}}		end
+{{?gtfsFile=coimbra-gtfs.zip}}	end
+{{?gtfsFile=coimbra-gtfs.zip}}	files = ["agency.txt" => "agency_id,agency_name,agency_url,agency_timezone\nSIM,Transportes Simulados de Coimbra,https://example.org,Europe/Lisbon",
+{{?gtfsFile=coimbra-gtfs.zip}}		"routes.txt" => join(["route_id,agency_id,route_short_name,route_long_name,route_type"; ["$(r[1]),SIM,$(r[1]),$(r[2]),3" for r in routes]], "\n"),
+{{?gtfsFile=coimbra-gtfs.zip}}		"calendar.txt" => "service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date\nweekday,1,1,1,1,1,0,0,20260101,20261231\nweekend,0,0,0,0,0,1,1,20260101,20261231",
+{{?gtfsFile=coimbra-gtfs.zip}}		"calendar_dates.txt" => "service_id,date,exception_type\nweekday,20261225,2\nweekend,20261225,1",  # Christmas Day runs the weekend service
+{{?gtfsFile=coimbra-gtfs.zip}}		"stops.txt" => join(stops, "\n"), "trips.txt" => join(trips, "\n"), "stop_times.txt" => join(stop_times, "\n")]
+{{?gtfsFile=coimbra-gtfs.zip}}	ZipWriter(path) do zip
+{{?gtfsFile=coimbra-gtfs.zip}}		for (name, text) in files
+{{?gtfsFile=coimbra-gtfs.zip}}			zip_writefile(zip, name, codeunits(text * "\n"))
+{{?gtfsFile=coimbra-gtfs.zip}}		end
+{{?gtfsFile=coimbra-gtfs.zip}}	end
+{{?gtfsFile=coimbra-gtfs.zip}}end
+
+feed = isdir(path) ? path : mktempdir()  # the .txt files of the feed
+if !isdir(path)
+	archive = ZipReader(read(path))  # a .zip feed, unpacked to a temporary folder
+	for name in zip_names(archive)
+		endswith(name, ".txt") && write(joinpath(feed, basename(name)), zip_readentry(archive, name))
+	end
+end
+tables = String[]  # one DuckDB table per file, every column as text, as GTFS writes it
+for file in sort(readdir(feed))
+	endswith(file, ".txt") || continue
+	push!(tables, first(splitext(file)))
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE \"$(tables[end])\" AS SELECT * FROM read_csv('$(joinpath(feed, file))', header = true, all_varchar = true, delim = ',', quote = '\"', escape = '\"', null_padding = true)")  # GTFS files are comma-separated, quotes doubled inside quoted values
+end
+DBInterface.execute(con, "CREATE OR REPLACE MACRO seconds(t) AS TRY_CAST(split_part(t, ':', 1) AS INTEGER) * 3600 + TRY_CAST(split_part(t, ':', 2) AS INTEGER) * 60 + TRY_CAST(split_part(t, ':', 3) AS INTEGER)")  # HH:MM:SS as seconds since the start of the service day, past 86400 after midnight
+DBInterface.execute(con, "CREATE OR REPLACE TABLE stop_points AS SELECT *, ST_Point(TRY_CAST(stop_lon AS DOUBLE), TRY_CAST(stop_lat AS DOUBLE)) AS geom FROM stops")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE times AS SELECT trip_id, stop_id, CAST(stop_sequence AS INTEGER) AS sequence, seconds(arrival_time) AS arrival, seconds(departure_time) AS departure, CAST(stop_sequence AS INTEGER) = max(CAST(stop_sequence AS INTEGER)) OVER (PARTITION BY trip_id) AS last_stop FROM stop_times")
+calendars = String[]  # the dates of each service: calendar.txt by weekday between its dates, plus the dates calendar_dates.txt adds
+"calendar" in tables && push!(calendars, "SELECT CAST(d AS DATE) AS date, service_id FROM calendar, generate_series(strptime(start_date, '%Y%m%d'), strptime(end_date, '%Y%m%d'), INTERVAL 1 DAY) g(d) WHERE [monday, tuesday, wednesday, thursday, friday, saturday, sunday][isodow(d)] = '1'")
+"calendar_dates" in tables && push!(calendars, "SELECT CAST(strptime(date, '%Y%m%d') AS DATE), service_id FROM calendar_dates WHERE exception_type = '1'")
+removed = "calendar_dates" in tables ? " EXCEPT SELECT CAST(strptime(date, '%Y%m%d') AS DATE), service_id FROM calendar_dates WHERE exception_type = '2'" : ""  # minus the dates it removes
+DBInterface.execute(con, "CREATE OR REPLACE TABLE service_dates AS SELECT * FROM ($(join(calendars, " UNION "))$(removed))")
+day = "{{serviceDate}}" == "busiest" ? Tables.columntable(DBInterface.execute(con, "SELECT date FROM service_dates JOIN trips USING (service_id) GROUP BY date ORDER BY count(*) DESC, date LIMIT 1")).date[1] : Date("{{serviceDate}}")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE day_trips AS SELECT t.* FROM trips t JOIN service_dates s USING (service_id) WHERE s.date = DATE '$(day)'")  # the trips that run on the service day analysed
+n = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT count(*) FROM routes) AS routes, (SELECT count(*) FROM stops) AS stops, (SELECT count(*) FROM trips) AS trips, (SELECT count(*) FROM stop_times) AS times, (SELECT count(*) FROM day_trips) AS today, (SELECT min(date) FROM service_dates) AS first, (SELECT max(date) FROM service_dates) AS last"))
+println("GTFS feed with ", n.routes[1], " routes, ", n.stops[1], " stops, ", n.trips[1], " trips and ", n.times[1], " stop times, service from ", n.first[1], " to ", n.last[1], "; ", n.today[1], " trips on ", day, " (", dayname(day), ")")
+'''
+
+[[codeBranches]]
+model = "osmpbf"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+path = joinpath(folder, "{{pbfFile}}")  # an absolute path is kept as it is
+{{?pbfFile=monaco-latest.osm.pbf}}# Example file: Geofabrik's OpenStreetMap extract of Monaco, about 0.7 MB, © OpenStreetMap contributors, under the Open Database License (ODbL). Downloaded unless the folder has it already. Replace "monaco-latest.osm.pbf" with your own extract.
+{{?pbfFile=monaco-latest.osm.pbf}}isfile(path) || Downloads.download("https://download.geofabrik.de/europe/monaco-latest.osm.pbf", path)
+
+key = "{{osmKey}}"  # the ways with this tag form the network
+DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT id, tags, refs FROM ST_ReadOSM('$(path)') WHERE kind = 'way' AND tags['$(key)'] IS NOT NULL")  # first pass over the file: the ways of the network
+DBInterface.execute(con, "CREATE OR REPLACE TABLE nodes AS SELECT id, lon, lat FROM ST_ReadOSM('$(path)') WHERE kind = 'node' AND id IN (SELECT UNNEST(refs) FROM ways)")  # second pass: the nodes those ways use
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE network AS
+WITH points AS (SELECT w.id, UNNEST(w.refs) AS node, generate_subscripts(w.refs, 1) AS i FROM ways w)
+SELECT w.id, w.tags['$(key)'] AS class, w.tags['name'] AS name, w.tags, len(w.refs) AS nodes, count(n.id) AS found,
+	ST_MakeLine(list(ST_Point(n.lon, n.lat) ORDER BY p.i) FILTER (WHERE n.id IS NOT NULL)) AS geom
+FROM ways w JOIN points p ON p.id = w.id LEFT JOIN nodes n ON n.id = p.node
+GROUP BY w.id, w.tags, w.refs HAVING count(n.id) >= 2
+""")  # each way as a line through its nodes in order; nodes outside the extract are skipped
+DBInterface.execute(con, "CREATE OR REPLACE TABLE network_m AS SELECT *, ST_Length_Spheroid(geom) AS metres FROM network")  # lengths in metres on the WGS 84 ellipsoid
+n = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS ways, count(DISTINCT class) AS classes, round(sum(metres) / 1000, 1) AS km FROM network_m"))
+println("Network of the ways tagged $(key): ", n.ways[1], " ways in ", n.classes[1], " classes, ", n.km[1], " km")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "stops-routes-map"
+label = "Show on a Map"
+desc = "The stops and one line per route and direction, through the stops of its longest trip, or along its shape when the feed has shapes.txt"
+models = ["gtfs"]
+code = '''
+dir = mktempdir()
+shape = "shapes" in tables && "shape_id" in Tables.columntable(DBInterface.execute(con, "DESCRIBE trips")).column_name
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE route_lines AS
+WITH stops_per_trip AS (SELECT trip_id, count(*) AS n FROM times GROUP BY trip_id),
+longest AS (SELECT t.*, row_number() OVER (PARTITION BY t.route_id, t.direction_id ORDER BY s.n DESC, t.trip_id) AS k FROM trips t JOIN stops_per_trip s USING (trip_id) QUALIFY k = 1)  -- the trip with the most stops of each route and direction
+SELECT l.route_id AS route, coalesce(r.route_short_name, r.route_long_name, l.route_id) AS name, l.direction_id AS direction,
+	$(shape ? "coalesce(any_value(s.geom), ST_MakeLine(list(p.geom ORDER BY x.sequence)))" : "ST_MakeLine(list(p.geom ORDER BY x.sequence))") AS geom
+FROM longest l JOIN routes r USING (route_id) JOIN times x USING (trip_id) JOIN stop_points p USING (stop_id)
+$(shape ? "LEFT JOIN (SELECT shape_id, ST_MakeLine(list(ST_Point(CAST(shape_pt_lon AS DOUBLE), CAST(shape_pt_lat AS DOUBLE)) ORDER BY CAST(shape_pt_sequence AS INTEGER))) AS geom FROM shapes GROUP BY shape_id) s USING (shape_id)" : "")
+GROUP BY ALL
+""")
+DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), geom FROM route_lines) TO '$(joinpath(dir, "routes.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT stop_id, stop_name, geom FROM stop_points WHERE geom IS NOT NULL) TO '$(joinpath(dir, "stops.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "routes.geojson"); name = "Routes", column = "name", opacity = 0.9), Pollis.layer(joinpath(dir, "stops.geojson"); name = "Stops", color = "#333333")))
+'''
+
+[[actionGroups.actions]]
+id = "network-map"
+label = "Show on a Map"
+desc = "The network on an OpenStreetMap base map in Pollis's map view, coloured by class; click a way for its class, name and length"
+models = ["osmpbf"]
+code = '''
+dir = mktempdir()
+shown = 50_000  # a map of more ways is slow to draw: the longest are kept
+DBInterface.execute(con, "COPY (SELECT id, class, name, round(metres) AS metres, geom FROM network_m ORDER BY metres DESC LIMIT $(shown)) TO '$(joinpath(dir, "network.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+total = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM network_m"))))
+total > shown && println("The map shows the ", shown, " longest of ", total, " ways")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "network.geojson"); name = "$(key)", column = "class", opacity = 0.9)))
+'''
+
+[[actionGroups.actions]]
+id = "departures-by-hour"
+label = "Departures by Hour"
+desc = "The departures from all stops in each hour of the service day, as a bar chart drawn with ECharts"
+models = ["gtfs"]
+code = '''
+using ECharts
+
+d = Tables.columntable(DBInterface.execute(con, "SELECT departure // 3600 AS hour, count(*) AS n FROM times JOIN day_trips USING (trip_id) WHERE NOT last_stop AND departure IS NOT NULL GROUP BY hour ORDER BY hour"))
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Departures by hour, $(day)")],
+	xAxis = [ECharts.Axis(_type = "category", name = "Hour", data = string.(d.hour))], yAxis = [ECharts.Axis(_type = "value", name = "Departures")],
+	series = [ECharts.XYSeries(name = "Departures", _type = "bar", data = collect(d.n))])
+'''
+
+[[actionGroups.actions]]
+id = "length-by-class"
+label = "Kilometres by Class"
+desc = "The kilometres of each class of the network, as a bar chart drawn with ECharts"
+models = ["osmpbf"]
+code = '''
+using ECharts
+
+d = Tables.columntable(DBInterface.execute(con, "SELECT class, round(sum(metres) / 1000, 2) AS km FROM network_m GROUP BY class ORDER BY km DESC LIMIT 25"))
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Kilometres by $(key)")],
+	xAxis = [ECharts.Axis(_type = "category", name = "$(key)", data = collect(d.class), axisLabel = ECharts.AxisLabel(rotate = 45))], yAxis = [ECharts.Axis(_type = "value", name = "km")],
+	series = [ECharts.XYSeries(name = "km", _type = "bar", data = collect(d.km))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "feed-contents"
+label = "Feed Contents"
+desc = "The files of the feed with their rows and columns, the agencies and the feed's dates"
+models = ["gtfs"]
+code = '''
+for t in tables
+	cols = Tables.columntable(DBInterface.execute(con, "DESCRIBE \"$(t)\"")).column_name
+	println(rpad(t * ".txt", 24), rpad(string(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM \"$(t)\"")).n[1], " rows"), 16), join(cols, ", "))
+end
+a = Tables.columntable(DBInterface.execute(con, "SELECT agency_name, agency_timezone FROM agency"))
+println("Agencies: ", join(["$(a.agency_name[i]) ($(a.agency_timezone[i]))" for i in eachindex(a.agency_name)], "; "))
+"feed_info" in tables && println("Feed info: ", Tables.columntable(DBInterface.execute(con, "SELECT * FROM feed_info LIMIT 1")))
+'''
+
+[[actionGroups.actions]]
+id = "file-contents"
+label = "File Contents"
+desc = "The nodes, ways and relations of the file, and the ways of the network and their extent"
+models = ["osmpbf"]
+code = '''
+k = Tables.columntable(DBInterface.execute(con, "SELECT kind::VARCHAR AS kind, count(*) AS n FROM ST_ReadOSM('$(path)') GROUP BY kind ORDER BY kind"))
+println("File ", basename(path), ", ", round(filesize(path) / 2^20, digits = 2), " MB: ", join(["$(k.n[i]) $(k.kind[i])s" for i in eachindex(k.kind)], ", "))
+e = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS ways, sum(nodes) AS refs, sum(found) AS found, ST_XMin(ST_Extent_Agg(geom)) AS w, ST_XMax(ST_Extent_Agg(geom)) AS e, ST_YMin(ST_Extent_Agg(geom)) AS s, ST_YMax(ST_Extent_Agg(geom)) AS n FROM network"))
+println("Ways tagged $(key): ", e.ways[1], ", with ", e.refs[1], " node references, ", e.found[1], " of them in the file")
+println("Extent of the network: longitude ", round(e.w[1], digits = 4), " to ", round(e.e[1], digits = 4), ", latitude ", round(e.s[1], digits = 4), " to ", round(e.n[1], digits = 4))
+'''
+
+[[actionGroups.actions]]
+id = "feed-check"
+label = "Feed Check"
+desc = "Required files, stops without coordinates, references to unknown stops and trips, trips without times, times that go backwards, times past midnight, frequencies.txt"
+models = ["gtfs"]
+code = '''
+required = ["agency", "routes", "trips", "stop_times", "stops"]
+missing_files = [setdiff(required, tables); ("calendar" in tables || "calendar_dates" in tables) ? String[] : ["calendar or calendar_dates"]]
+println("Required files missing: ", isempty(missing_files) ? "none" : join(missing_files .* ".txt", ", "))
+checks = [
+	"Stops without valid coordinates" => "SELECT count(*) FROM stop_points WHERE geom IS NULL",
+	"Stop times at stops not in stops.txt" => "SELECT count(*) FROM times WHERE stop_id NOT IN (SELECT stop_id FROM stops)",
+	"Stop times of trips not in trips.txt" => "SELECT count(*) FROM times WHERE trip_id NOT IN (SELECT trip_id FROM trips)",
+	"Trips without stop times" => "SELECT count(*) FROM trips WHERE trip_id NOT IN (SELECT trip_id FROM times)",
+	"Trips of routes not in routes.txt" => "SELECT count(*) FROM trips WHERE route_id NOT IN (SELECT route_id FROM routes)",
+	"Routes without trips" => "SELECT count(*) FROM routes WHERE route_id NOT IN (SELECT route_id FROM trips)",
+	"Stop times whose departure is earlier than the arrival or the time before" => "SELECT count(*) FROM (SELECT arrival, departure, lag(departure) OVER (PARTITION BY trip_id ORDER BY sequence) AS before FROM times) WHERE departure < arrival OR arrival < before",
+	"Stop times without times (allowed between timepoints)" => "SELECT count(*) FROM times WHERE arrival IS NULL AND departure IS NULL",
+	"Stop times past 24:00:00, after midnight of the service day" => "SELECT count(*) FROM times WHERE departure >= 86400"]
+for (label, sql) in checks
+	println(rpad(label, 76), only(only(Tables.columntable(DBInterface.execute(con, sql)))))
+end
+println("frequencies.txt: ", "frequencies" in tables ? "present, so trips defined by headway run more often than stop_times.txt lists" : "none")
+'''
+
+[[actionGroups.actions]]
+id = "tag-check"
+label = "Tag Check"
+desc = "How many ways of the network have each common tag, and ways with nodes missing from the extract"
+models = ["osmpbf"]
+code = '''
+t = Tables.columntable(DBInterface.execute(con, "SELECT k AS tag, count(*) AS ways, round(100 * count(*) / (SELECT count(*) FROM network), 1) AS percent FROM network, UNNEST(map_keys(tags)) t(k) WHERE k <> '$(key)' GROUP BY k ORDER BY ways DESC LIMIT 20"))
+println(rpad("tag", 26), rpad("ways", 10), "% of the network")
+for i in eachindex(t.tag)
+	println(rpad(t.tag[i], 26), rpad(t.ways[i], 10), t.percent[i])
+end
+m = Tables.columntable(DBInterface.execute(con, "SELECT count(*) FILTER (WHERE found < nodes) AS cut, (SELECT count(*) FROM ways) - count(*) AS dropped FROM network"))
+println("Ways with nodes outside the extract, cut at its edge: ", m.cut[1], "; ways left out, with fewer than two nodes in it: ", m.dropped[1])
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "routes-side-by-side"
+label = "Routes Side by Side"
+desc = "Each route on the service day, its trips, stops, first and last departure, median headway at its first stop and median trip time"
+models = ["gtfs"]
+code = '''
+r = Tables.columntable(DBInterface.execute(con, """
+WITH first_stops AS (SELECT d.route_id, d.direction_id, x.trip_id, x.departure FROM day_trips d JOIN times x USING (trip_id) WHERE x.sequence = (SELECT min(sequence) FROM times y WHERE y.trip_id = x.trip_id)),
+gaps AS (SELECT route_id, departure - lag(departure) OVER (PARTITION BY route_id, direction_id ORDER BY departure) AS gap FROM first_stops),
+spans AS (SELECT trip_id, max(arrival) - min(departure) AS span FROM times GROUP BY trip_id)
+SELECT r.route_id, coalesce(r.route_short_name, '') || ' ' || coalesce(r.route_long_name, '') AS name,
+	(SELECT count(*) FROM day_trips d WHERE d.route_id = r.route_id) AS trips,
+	(SELECT count(DISTINCT x.stop_id) FROM day_trips d JOIN times x USING (trip_id) WHERE d.route_id = r.route_id) AS stops,
+	(SELECT min(departure) FROM first_stops f WHERE f.route_id = r.route_id) AS first, (SELECT max(departure) FROM first_stops f WHERE f.route_id = r.route_id) AS last,
+	(SELECT median(gap) FROM gaps g WHERE g.route_id = r.route_id) AS headway,
+	(SELECT median(span) FROM day_trips d JOIN spans USING (trip_id) WHERE d.route_id = r.route_id) AS duration
+FROM routes r ORDER BY trips DESC
+"""))
+clock(s) = ismissing(s) ? "" : join(lpad.([s ÷ 3600, s % 3600 ÷ 60], 2, '0'), ":")
+w = maximum(length, strip.(r.name); init = 5) + 2
+println("Routes on ", day, "\n", rpad("route", w), rpad("trips", 8), rpad("stops", 8), rpad("first", 8), rpad("last", 8), rpad("headway", 10), "trip time")
+for i in eachindex(r.route_id)
+	println(rpad(strip(r.name[i]), w), rpad(r.trips[i], 8), rpad(r.stops[i], 8), rpad(clock(r.first[i]), 8), rpad(clock(r.last[i]), 8), rpad(ismissing(r.headway[i]) ? "" : string(round(r.headway[i] / 60, digits = 1), " min"), 10), ismissing(r.duration[i]) ? "" : string(round(r.duration[i] / 60, digits = 1), " min"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "classes-side-by-side"
+label = "Classes Side by Side"
+desc = "Each class of the network, its ways, kilometres, and the share named, with a speed limit and one-way"
+models = ["osmpbf"]
+code = '''
+c = Tables.columntable(DBInterface.execute(con, """
+SELECT class, count(*) AS ways, round(sum(metres) / 1000, 2) AS km, round(100 * avg((name IS NOT NULL)::INT), 1) AS named,
+	round(100 * avg((tags['maxspeed'] IS NOT NULL)::INT), 1) AS maxspeed, round(100 * avg(coalesce(tags['oneway'] = 'yes', false)::INT), 1) AS oneway
+FROM network_m GROUP BY class ORDER BY km DESC
+"""))
+w = maximum(length, c.class; init = 5) + 2
+println(rpad(key, w), rpad("ways", 8), rpad("km", 10), rpad("% named", 10), rpad("% maxspeed", 12), "% one-way")
+for i in eachindex(c.class)
+	println(rpad(c.class[i], w), rpad(c.ways[i], 8), rpad(c.km[i], 10), rpad(c.named[i], 10), rpad(c.maxspeed[i], 12), c.oneway[i])
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "service-at-stops"
+label = "Service at Stops"
+desc = "The busiest stops of the service day, with their departures, departures in their busiest hour and median headway"
+models = ["gtfs"]
+code = '''
+s = Tables.columntable(DBInterface.execute(con, """
+WITH d AS (SELECT x.stop_id, x.departure, t.route_id, t.direction_id FROM times x JOIN day_trips t USING (trip_id) WHERE NOT x.last_stop AND x.departure IS NOT NULL),
+gaps AS (SELECT stop_id, departure - lag(departure) OVER (PARTITION BY stop_id, route_id, direction_id ORDER BY departure) AS gap FROM d),
+hours AS (SELECT stop_id, departure // 3600 AS hour, count(*) AS n FROM d GROUP BY ALL)
+SELECT p.stop_id, coalesce(p.stop_name, p.stop_id) AS name, (SELECT count(*) FROM d WHERE d.stop_id = p.stop_id) AS departures,
+	(SELECT max(n) FROM hours h WHERE h.stop_id = p.stop_id) AS peak, (SELECT median(gap) FROM gaps g WHERE g.stop_id = p.stop_id) AS headway
+FROM stop_points p ORDER BY departures DESC LIMIT 20
+"""))
+w = maximum(length, s.name; init = 4) + 2
+println("Busiest stops on ", day, "\n", rpad("stop", w), rpad("departures", 12), rpad("in busiest hour", 17), "median headway of a route")
+for i in eachindex(s.stop_id)
+	println(rpad(s.name[i], w), rpad(s.departures[i], 12), rpad(coalesce(s.peak[i], 0), 17), ismissing(s.headway[i]) ? "" : string(round(s.headway[i] / 60, digits = 1), " min"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "network-measures"
+label = "Network Measures"
+desc = "The length of the network, its nodes, intersections and dead ends, and its length per square kilometre of its extent"
+models = ["osmpbf"]
+code = '''
+m = Tables.columntable(DBInterface.execute(con, """
+WITH ends AS (SELECT id, refs[1] AS first, refs[len(refs)] AS last, refs FROM ways WHERE id IN (SELECT id FROM network)),
+uses AS (SELECT UNNEST(refs) AS node, first, last FROM ends),
+degree AS (SELECT node, sum(CASE WHEN node = first OR node = last THEN 1 ELSE 2 END) AS d FROM uses GROUP BY node)
+SELECT (SELECT round(sum(metres) / 1000, 2) FROM network_m) AS km, count(*) AS nodes, count(*) FILTER (WHERE d >= 3) AS intersections, count(*) FILTER (WHERE d = 1) AS dead_ends,
+	round(avg(d), 2) AS mean_degree, (SELECT ST_Area_Spheroid(ST_ConvexHull(ST_Union_Agg(geom))) / 1e6 FROM network) AS area FROM degree
+"""))
+println("Network of the ways tagged $(key)")
+println("Length: ", m.km[1], " km; nodes: ", m.nodes[1], "; intersections (3 or more segments): ", m.intersections[1], "; dead ends (1 segment): ", m.dead_ends[1], "; mean segments per node: ", m.mean_degree[1])
+println("Convex hull of the network: ", round(m.area[1], digits = 2), " km²; ", round(m.km[1] / m.area[1], digits = 1), " km of network and ", round(m.intersections[1] / m.area[1], digits = 1), " intersections per km²")
+'''
+
+[[actionGroups.actions]]
+id = "service-calendar"
+label = "Service Calendar"
+desc = "The trips of each weekday on average over the feed's dates, and the dates without service"
+models = ["gtfs"]
+code = '''
+c = Tables.columntable(DBInterface.execute(con, "WITH per AS (SELECT s.date, count(t.trip_id) AS trips FROM service_dates s JOIN trips t USING (service_id) GROUP BY s.date) SELECT dayname(date) AS weekday, isodow(date) AS dow, count(*) AS days, round(avg(trips), 1) AS mean, min(trips) AS low, max(trips) AS high FROM per GROUP BY ALL ORDER BY dow"))
+println(rpad("weekday", 12), rpad("dates", 8), rpad("mean trips", 12), "range")
+for i in eachindex(c.weekday)
+	println(rpad(c.weekday[i], 12), rpad(c.days[i], 8), rpad(c.mean[i], 12), c.low[i], " to ", c.high[i])
+end
+gaps = Tables.columntable(DBInterface.execute(con, "SELECT CAST(d AS DATE) AS date FROM generate_series((SELECT min(date) FROM service_dates), (SELECT max(date) FROM service_dates), INTERVAL 1 DAY) g(d) WHERE CAST(d AS DATE) NOT IN (SELECT date FROM service_dates) ORDER BY date")).date
+println("Dates without service between the first and the last: ", isempty(gaps) ? "none" : join(first(gaps, 15), ", ") * (length(gaps) > 15 ? ", ... ($(length(gaps)) in all)" : ""))
+'''
+
+[[actionGroups.actions]]
+id = "street-names"
+label = "Names of the Network"
+desc = "The most frequent names of the network and their kilometres"
+models = ["osmpbf"]
+code = '''
+s = Tables.columntable(DBInterface.execute(con, "SELECT name, count(*) AS ways, round(sum(metres) / 1000, 2) AS km, string_agg(DISTINCT class, ', ') AS classes FROM network_m WHERE name IS NOT NULL GROUP BY name ORDER BY km DESC LIMIT 20"))
+w = maximum(length, s.name; init = 4) + 2
+println(rpad("name", w), rpad("ways", 8), rpad("km", 10), key)
+for i in eachindex(s.name)
+	println(rpad(s.name[i], w), rpad(s.ways[i], 8), rpad(s.km[i], 10), s.classes[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-stops-gpkg"
+label = "Save Stops as GeoPackage"
+desc = "The stops, with the departures of the service day, to a GeoPackage next to the feed, for the Geospatial Vector Files panel and any GIS"
+models = ["gtfs"]
+code = '''
+out = replace(path, r"\.zip$" => "") * "-stops.gpkg"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT p.stop_id, p.stop_name, count(x.trip_id) AS departures, p.geom FROM stop_points p LEFT JOIN (SELECT * FROM times WHERE NOT last_stop AND trip_id IN (SELECT trip_id FROM day_trips)) x USING (stop_id) WHERE p.geom IS NOT NULL GROUP BY p.stop_id, p.stop_name, p.geom) TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'stops', SRS 'EPSG:4326')")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-network-gpkg"
+label = "Save Network as GeoPackage"
+desc = "The network lines with their class, name and length, to a GeoPackage next to the file read, for the Geospatial Vector Files panel and any GIS"
+models = ["osmpbf"]
+code = '''
+out = replace(path, r"\.osm\.pbf$|\.pbf$" => "") * "-$(key).gpkg"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT id AS osm_id, class, name, metres, geom FROM network_m) TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME '$(key)', SRS 'EPSG:4326')")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-feed-duckdb"
+label = "Save Feed as DuckDB Database"
+desc = "Every file of the feed as a table, with the stops as points and the service dates, in a DuckDB database next to the feed, for SQL with DuckDB"
+models = ["gtfs"]
+code = '''
+out = replace(path, r"\.zip$" => "") * ".duckdb"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "ATTACH '$(out)' AS saved")
+	foreach(t -> DBInterface.execute(con, "CREATE TABLE saved.\"$(t)\" AS SELECT * FROM \"$(t)\""), [tables; "stop_points"; "service_dates"])
+	DBInterface.execute(con, "DETACH saved")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-network-duckdb"
+label = "Save Network as DuckDB Database"
+desc = "The ways of the network with all their tags and their lines, in a DuckDB database next to the file read, for SQL with DuckDB"
+models = ["osmpbf"]
+code = '''
+out = replace(path, r"\.osm\.pbf$|\.pbf$" => "") * "-$(key).duckdb"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "ATTACH '$(out)' AS saved")
+	DBInterface.execute(con, "CREATE TABLE saved.network AS SELECT * FROM network_m")
+	DBInterface.execute(con, "DETACH saved")
+	println("Wrote ", out)
+end
+'''
