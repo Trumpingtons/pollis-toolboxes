@@ -14,7 +14,7 @@ A global statistic of spatial autocorrelation, such as Moran's I or Geary's c, s
 
 ## Why Spatial Autocorrelation Matters Before Modelling Areal Data
 
-Most statistical methods assume that observations are independent. When areal data are positively autocorrelated, neighbouring observations carry partly the same information, so a test that ignores the dependence treats the sample as larger than it is, and standard errors come out too small ([Cressie (1993)](#ref-Cre1993a)). Testing the variable, or the residuals of a model fitted to it, with Moran's I shows whether the dependence is there. Where it is, spatial regression models, which include the values or errors of neighbours, are the usual next step; the Spatial Econometrics part of the Smart Regions Toolbox is planned for them, and coming soon.
+Most statistical methods assume that observations are independent. When areal data are positively autocorrelated, neighbouring observations carry partly the same information, so a test that ignores the dependence treats the sample as larger than it is, and standard errors come out too small ([Cressie (1993)](#ref-Cre1993a)). Testing the variable, or the residuals of a model fitted to it, with Moran's I shows whether the dependence is there. Where it is, spatial regression models, which include the values or errors of neighbours, are the usual next step.
 
 ## References
 

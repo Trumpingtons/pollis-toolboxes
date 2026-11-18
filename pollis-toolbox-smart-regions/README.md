@@ -12,7 +12,7 @@ Installing it adds the **Smart Regions** submenu to the end of the **Extend** me
 | OpenStreetMap Base Maps, in Map Visualisation | A place, or the features of a file, on an OpenStreetMap base map in the plot pane, in one colour or coloured by a column | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
 | Spatial Autocorrelation | Moran's I and Geary's c for a whole map, and Local Moran (LISA) clusters for each area, with neighbours by queen or rook contiguity or k nearest centroids, found with SQL | [SpatialDependence.jl](https://github.com/javierbarbero/SpatialDependence.jl), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
 
-Access Files has one menu item per format, and Map Visualisation one per tab of the base map panel, each opening the panel on its tab. Spatial Autocorrelation is straight in the Smart Regions menu, as Global Moran's I and Local Moran (LISA). The base maps come from OpenFreeMap's vector tiles of OpenStreetMap data, free and without an API key, and need the internet.
+Access Files has one menu item per format, and Map Visualisation one per tab of the base map panel, each opening the panel on its tab. Spatial Autocorrelation is in Spatial Statistics and Kriging, as Global Moran's I and Local Moran (LISA). The menu also shows the panels planned for the toolbox, greyed out, in their places. The base maps come from OpenFreeMap's vector tiles of OpenStreetMap data, free and without an API key, and need the internet.
 
 ## Requirements
 

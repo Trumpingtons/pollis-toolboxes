@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
   "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, shows them on OpenStreetMap base maps, and tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA).",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -24,7 +24,13 @@
         "duckdbExtensions": ["spatial"],
         "submenus": [
           { "id": "accessFiles", "title": "Access Files", "group": "0_sr", "order": 1 },
-          { "id": "mapVisualisation", "title": "Map Visualisation", "group": "0_sr", "order": 2 }
+          { "id": "accessDataLibraries", "title": "Access Data Libraries", "group": "0_sr", "order": 2 },
+          { "id": "mapVisualisation", "title": "Map Visualisation", "group": "1_sr", "order": 0 },
+          { "id": "spatialStatistics", "title": "Spatial Statistics and Kriging", "group": "2_sr", "order": 1 },
+          { "id": "remoteSensing", "title": "Remote Sensing", "group": "3_sr", "order": 1 },
+          { "id": "pointClouds", "title": "Point Cloud Processing", "group": "3_sr", "order": 2 },
+          { "id": "smartCities", "title": "Smart Cities", "group": "4_sr", "order": 1 },
+          { "id": "smartRuralAreas", "title": "Smart Rural Areas", "group": "4_sr", "order": 2 }
         ],
         "panels": [
           {
@@ -45,11 +51,61 @@
             ]
           },
           {
-            "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "menuTitle": "Global Moran's I", "group": "1_spatialStatistics", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic",
+            "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "menuTitle": "Global Moran's I", "submenu": "spatialStatistics", "group": "1_autocorrelation", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic",
             "tabs": [
               { "model": "local", "command": "pollis.smartRegions.autocorr.local", "title": "Local Moran (LISA)" }
             ]
           }
+        ],
+        "planned": [
+          { "title": "GeoTIFF Files", "submenu": "accessFiles", "group": "2_raster", "order": 1 },
+          { "title": "LAS and LAZ Files", "submenu": "accessFiles", "group": "2_raster", "order": 2 },
+          { "title": "CityGML and CityJSON Files", "submenu": "accessFiles", "group": "3_networks", "order": 1 },
+          { "title": "GTFS Feeds", "submenu": "accessFiles", "group": "3_networks", "order": 2 },
+          { "title": "OpenStreetMap PBF Files", "submenu": "accessFiles", "group": "3_networks", "order": 3 },
+          { "title": "OpenStreetMap", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1 },
+          { "title": "Overture Maps", "submenu": "accessDataLibraries", "group": "1_vector", "order": 2 },
+          { "title": "Eurostat GISCO (NUTS Regions)", "submenu": "accessDataLibraries", "group": "1_vector", "order": 3 },
+          { "title": "Copernicus Data Space", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 1 },
+          { "title": "USGS EarthExplorer", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 2 },
+          { "title": "OpenTopography", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 3 },
+          { "title": "INSPIRE Geoportal", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 4 },
+          { "title": "Microsoft Planetary Computer", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 5 },
+          { "title": "Mapillary Street-Level Imagery", "submenu": "accessDataLibraries", "group": "3_streetLevel", "order": 1 },
+          { "title": "Copernicus Imagery Layers", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 2 },
+          { "title": "Mapillary Street-Level Viewer", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 3 },
+          { "title": "Google Maps", "submenu": "mapVisualisation", "group": "2_google", "order": 1 },
+          { "title": "Google Photorealistic 3D Tiles", "submenu": "mapVisualisation", "group": "2_google", "order": 2 },
+          { "title": "Coordinate Transformations and Projections", "group": "1_sr", "order": 2 },
+          { "title": "Spatial Indexing", "group": "1_sr", "order": 3 },
+          { "title": "Kriging", "submenu": "spatialStatistics", "group": "2_kriging", "order": 1 },
+          { "title": "Spatial Econometrics", "group": "2_sr", "order": 2 },
+          { "title": "Raster Analysis", "group": "2_sr", "order": 3 },
+          { "title": "Route and Network Analysis", "group": "2_sr", "order": 4 },
+          { "title": "Vegetation Indices (NDVI)", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 1 },
+          { "title": "Land Cover Classification", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 2 },
+          { "title": "Land Surface Temperature", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 3 },
+          { "title": "Burned Area and Flood Mapping", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 4 },
+          { "title": "Ground Movement from Radar (InSAR)", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 5 },
+          { "title": "Night-Time Lights", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 6 },
+          { "title": "Filtering and Ground Classification", "submenu": "pointClouds", "group": "1_pointClouds", "order": 1 },
+          { "title": "Building Extraction and 3D City Models", "submenu": "pointClouds", "group": "1_pointClouds", "order": 2 },
+          { "title": "Tree and Canopy Metrics", "submenu": "pointClouds", "group": "1_pointClouds", "order": 3 },
+          { "title": "Change Between Surveys", "submenu": "pointClouds", "group": "1_pointClouds", "order": 4 },
+          { "title": "Archaeological Feature Detection", "submenu": "pointClouds", "group": "1_pointClouds", "order": 5 },
+          { "title": "Terrain and Elevation Analysis", "group": "3_sr", "order": 3 },
+          { "title": "Urban Mobility and Traffic", "submenu": "smartCities", "group": "1_smartCities", "order": 1 },
+          { "title": "Buildings and Energy", "submenu": "smartCities", "group": "1_smartCities", "order": 2 },
+          { "title": "Air Quality", "submenu": "smartCities", "group": "1_smartCities", "order": 3 },
+          { "title": "Urban Heat Islands", "submenu": "smartCities", "group": "1_smartCities", "order": 4 },
+          { "title": "Land Use and Zoning", "submenu": "smartCities", "group": "1_smartCities", "order": 5 },
+          { "title": "Access to Public Services", "submenu": "smartCities", "group": "1_smartCities", "order": 6 },
+          { "title": "Precision Agriculture", "submenu": "smartRuralAreas", "group": "1_smartRuralAreas", "order": 1 },
+          { "title": "Water Resources and Irrigation", "submenu": "smartRuralAreas", "group": "1_smartRuralAreas", "order": 2 },
+          { "title": "Rural Accessibility and Connectivity", "submenu": "smartRuralAreas", "group": "1_smartRuralAreas", "order": 3 },
+          { "title": "Land Cover Change", "submenu": "smartRuralAreas", "group": "1_smartRuralAreas", "order": 4 },
+          { "title": "Renewable Energy Siting", "submenu": "smartRuralAreas", "group": "1_smartRuralAreas", "order": 5 },
+          { "title": "Natural Hazards", "submenu": "smartRuralAreas", "group": "1_smartRuralAreas", "order": 6 }
         ]
       }
     ]
