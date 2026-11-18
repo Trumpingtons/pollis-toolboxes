@@ -1,0 +1,819 @@
+# Spatial Panel Data: areas observed over several periods, whose outcomes depend on their neighbours',
+# spatial lag, spatial error and spatial Durbin models with fixed effects, and a dynamic spatial panel, with SpatialEconometrics.jl;
+# the areas are read, the panel joined to them, and their neighbours found, through DuckDB and its spatial extension.
+
+[meta]
+title = "Spatial Panel Data"
+viewType = "pollis.sppanel"
+defaultModel = "sarfe"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[requires]
+packages = ["ECharts.jl", "RData.jl"]
+
+[[models]]
+id = "sarfe"
+label = "SAR, Fixed Effects"
+
+[[models]]
+id = "semfe"
+label = "SEM, Fixed Effects"
+
+[[models]]
+id = "sdmfe"
+label = "SDM, Fixed Effects"
+
+[[models]]
+id = "dynamic"
+label = "Dynamic Panel"
+
+[[bullets]]
+text = "SAR, Fixed Effects"
+detail = "A spatial lag model on a panel: each area's outcome in a period depends on its neighbours' outcomes in the same period, with fixed effects of the areas, of the periods or both, by quasi-maximum likelihood"
+
+[[bullets]]
+text = "SEM, Fixed Effects"
+detail = "A spatial error model on a panel: the shocks of neighbouring areas are correlated, while the outcomes depend only on each area's own explanatory variables and fixed effects"
+
+[[bullets]]
+text = "SDM, Fixed Effects"
+detail = "A spatial Durbin model on a panel: the neighbours' explanatory variables enter beside the neighbours' outcomes, so spillovers can come from both"
+
+[[bullets]]
+text = "Dynamic Panel"
+detail = "A spatial lag or Durbin model with the area's own outcome and its neighbours' outcomes in the previous period, by quasi-maximum likelihood with a correction for the bias of fixed effects in short panels"
+
+[[decisionRows]]
+task = "SAR, Fixed Effects"
+context = "Spillover of outcomes"
+purpose = "Estimate how an area's outcome responds to its neighbours' outcomes, with what is constant in each area or each period removed"
+
+[[decisionRows]]
+task = "SEM, Fixed Effects"
+context = "Correlated shocks"
+purpose = "Estimate the coefficients of the explanatory variables when unobserved shocks spread between neighbours"
+
+[[decisionRows]]
+task = "SDM, Fixed Effects"
+context = "Spillover of regressors"
+purpose = "Estimate spillovers that come from the neighbours' explanatory variables as well as from their outcomes"
+
+[[decisionRows]]
+task = "Dynamic Panel"
+context = "Persistence over time"
+purpose = "Separate the persistence of an outcome over time from its spillover between neighbours, with short-run and long-run effects"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "areasFile"
+label = "Areas File"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbrapanel.gpkg, the example first writes a grid of 400 square cells of 1 km around Coimbra, and the panel file beside it, unless the folder has both already."
+default = "coimbrapanel.gpkg"
+
+[[inputs]]
+id = "panelFile"
+label = "Panel File"
+tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period."
+default = "coimbrapanel.csv"
+
+[[inputs]]
+id = "areaColumn"
+label = "Area Column"
+tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
+default = "cell"
+newRow = true
+
+[[inputs]]
+id = "periodColumn"
+label = "Period Column"
+tooltip = "The column of the panel file that names each period, a year, a quarter or a date: the periods are put in its order."
+default = "year"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The column of the panel file to explain. With the example files, price: the log of the price per square metre of the dwellings sold in the cell that year."
+default = "price"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns of the panel file that explain it, separated by commas. With fixed effects of the areas a column that does not change over time cannot be estimated, nor with fixed effects of the periods one that is the same in every area."
+default = "income, construction"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:3763"
+newRow = true
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. The weights of each area's neighbours sum to 1, and are the same in every period."
+kind = "select"
+default = "queen"
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest."
+default = "6"
+
+[[inputs]]
+id = "effects"
+label = "Fixed Effects"
+tooltip = "What is removed before the spatial model is fitted: Areas, a level of its own for each area, constant over time; Periods, a level for each period, common to all areas; Areas and Periods, the two together; None, a single intercept. Dynamic Panel needs the areas' effects: Areas and Periods, or Areas."
+kind = "select"
+default = "both"
+newRow = true
+
+[[inputs.options]]
+value = "both"
+label = "Areas and Periods"
+
+[[inputs.options]]
+value = "areas"
+label = "Areas"
+
+[[inputs.options]]
+value = "periods"
+label = "Periods"
+
+[[inputs.options]]
+value = "none"
+label = "None"
+
+[[inputs]]
+id = "approach"
+label = "Estimation"
+tooltip = "On SAR and SDM: Lee and Yu Transformation removes the fixed effects with a transformation that keeps the errors independent, so that no bias correction is needed afterwards, the default of SpatialEconometrics.jl for short panels; Direct QML demeans the data and corrects the bias that demeaning leaves in the variance and in rho afterwards."
+kind = "select"
+default = "leeyu"
+
+[[inputs.options]]
+value = "leeyu"
+label = "Lee and Yu Transformation"
+
+[[inputs.options]]
+value = "direct"
+label = "Direct QML"
+
+[[inputs]]
+id = "lagModel"
+label = "Spatial Model"
+tooltip = "On Dynamic Panel: SAR, the neighbours' outcomes in the same period; SDM, also the neighbours' explanatory variables. Both carry the area's own outcome and its neighbours' outcomes in the previous period."
+kind = "select"
+default = "sar"
+
+[[inputs.options]]
+value = "sar"
+label = "SAR"
+
+[[inputs.options]]
+value = "sdm"
+label = "SDM"
+
+[[inputs]]
+id = "breakAfter"
+label = "Break After"
+tooltip = "For the Structural Break step: the last period before the break, a value of the Period Column, so that the second sub-period starts with the next; empty, the middle period. It cannot be the first or the last period."
+default = "2019"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
+panel_path = joinpath(folder, "{{panelFile}}")
+# Example files: 20 by 20 square cells of 1 km around Coimbra, in EPSG:3763, observed over 10 years, written unless the folder has both already. Replace them with your own files.
+if basename(areas_path) == "coimbrapanel.gpkg" && basename(panel_path) == "coimbrapanel.csv" && !(isfile(areas_path) && isfile(panel_path))
+	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
+	grid = [(c, d) for c in 1:400 for d in 1:400 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
+	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 400, 400))
+	spread = lu(I - 0.4 .* Matrix(Wgrid))  # a spatial lag of the price, rho = 0.4
+	level = 4.2 .+ 0.012 .* v .+ 0.06 .* randn(rng, 400)  # each cell's own level, constant over the years, higher to the north
+	open(panel_path, "w") do io
+		println(io, "cell,year,price,income,construction")
+		for t in 1:10
+			income = 18 .+ 0.4 .* u .+ 0.3 .* t .+ 3 .* randn(rng, 400)  # household income, thousand euros a year, higher to the east and rising
+			construction = 5 .+ 2 .* randn(rng, 400)  # new dwellings per thousand residents
+			# The log price per square metre: the cell's level, a common trend, its own income and construction, its neighbours' income, and the neighbours' prices through rho
+			price = spread \ (level .+ 0.02 .* t .+ 0.012 .* income .- 0.006 .* construction .+ 0.006 .* (Wgrid * income) .+ 0.03 .* randn(rng, 400))
+			for c in 1:400
+				println(io, c, ",", 2014 + t, ",", round(price[c], digits = 4), ",", round(income[c], digits = 2), ",", round(construction[c], digits = 2))
+			end
+		end
+	end
+	cells = ["($(c), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:400]
+	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+end
+yname = "{{dependent}}"
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+present = join(("p.\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
+# The polygons, in longitude and latitude, and the panel's rows that have a polygon and every value
+DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"{{areaColumn}}\" AS area, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
+DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE obs AS
+	WITH p AS (SELECT p.* FROM '$(panel_path)' p JOIN polygons g ON p."{{areaColumn}}" = g.area WHERE $(present)),
+	complete AS (SELECT "{{areaColumn}}" AS area FROM p GROUP BY 1 HAVING count(DISTINCT "{{periodColumn}}") = (SELECT count(DISTINCT "{{periodColumn}}") FROM p))
+	SELECT dense_rank() OVER (ORDER BY p."{{areaColumn}}") AS i, dense_rank() OVER (ORDER BY p."{{periodColumn}}") AS t, p.*
+	FROM p JOIN complete c ON p."{{areaColumn}}" = c.area""")  # areas numbered i = 1, 2, ... and periods t = 1, 2, ..., only areas with every period
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT o.i, o.area, g.geom FROM (SELECT DISTINCT i, \"{{areaColumn}}\" AS area FROM obs) o JOIN polygons g ON o.area = g.area")
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM obs ORDER BY t, i")).v)  # period by period, the areas varying fastest, the order SpatialEconometrics.jl requires
+y = column(yname)
+X = reduce(hcat, column.(xnames))  # without an intercept, which only the model without fixed effects adds
+counts = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT max(i) FROM obs) AS n, (SELECT max(t) FROM obs) AS periods, (SELECT count(*) FROM polygons) AS polygons"))
+N, T_per = Int(only(counts.n)), Int(only(counts.periods))
+p = size(X, 2)
+println(N, " areas over ", T_per, " periods", only(counts.polygons) > N ? "; $(only(counts.polygons) - N) areas of the areas file left out, with missing values or periods" : "")
+
+# The neighbours of each area, as pairs (i, j), found with SQL; the same in every period
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs["{{neighbours}}"]))
+W = row_standardize(sparse(pairs.i, pairs.j, 1.0, N, N))  # the N x N weights of the areas, not of the stacked panel
+
+fe = Dict("both" => TwoWayFE(), "areas" => IndivFE(), "periods" => TimeFE(), "none" => NoFE())["{{effects}}"]
+fe_label = Dict("both" => "of the areas and of the periods", "areas" => "of the areas", "periods" => "of the periods", "none" => "none, a single intercept")["{{effects}}"]
+{{?model=sarfe|sdmfe}} approach = Dict("leeyu" => LeeYuTransformation(), "direct" => DirectQML())["{{approach}}"]
+{{?model=sarfe}} # Quasi-maximum likelihood, the fixed effects removed first, rho found by maximising the concentrated log-likelihood
+{{?model=sarfe}} m = fit_spatial_panel(SAR(), fe, W, X, y, N, T_per; approach = approach, varnames = xnames, rng = Xoshiro(2026))  # rng: the random probes used only for more than 1000 areas
+{{?model=sdmfe}} # As SAR, with the spatial lags of the explanatory variables, their neighbours' averages, as further regressors
+{{?model=sdmfe}} m = fit_spatial_panel(SDM(), fe, W, X, y, N, T_per; approach = approach, varnames = xnames, rng = Xoshiro(2026))  # rng: the random probes used only for more than 1000 areas
+{{?model=dynamic}} fe isa IndivFE || fe isa TwoWayFE || error("Dynamic Panel needs fixed effects of the areas: choose Areas and Periods, or Areas")
+{{?model=dynamic}} # Quasi-maximum likelihood on periods 2 to T, the first giving the lags, then Yu, de Jong and Lee's correction of the bias that fixed effects leave with a lagged outcome in short panels
+{{?model=dynamic}} variant = Dict("sar" => SAR(), "sdm" => SDM())["{{lagModel}}"]
+{{?model=dynamic}} m = fit_dynamic_spatial_panel(variant, fe, W, X, y, N, T_per; varnames = xnames, rng = Xoshiro(2026))  # rng: the random probes of the bias correction, fixed for the same result every time
+{{?model=semfe}} # Maximum likelihood on the demeaned data: at each lambda, y and X are filtered by (I - lambda W) and the coefficients found by least squares; lambda maximises the concentrated log-likelihood
+{{?model=semfe}} m = fit_spatial_error(fe, W, X, y, N, T_per; varnames = xnames, rng = Xoshiro(2026))  # rng: the random probes used only for more than 1000 areas
+
+se = sqrt.(max.(0.0, diag(m.vcov)))
+println(rpad("", 16), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
+for k in eachindex(m.coef)  # on Dynamic Panel y_lag and Wy_lag first; the intercept (without fixed effects only), the explanatory variables, on SDM their spatial lags W_, then rho, or lambda on SEM
+	println(rpad(m.coefnames[k], 16), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
+end
+println("\nFixed effects: ", fe_label)
+{{?model=sarfe|sdmfe}} println("Estimation: ", "{{approach}}" == "leeyu" ? "Lee and Yu's transformation, on $(m.N_eff * m.T_eff) transformed observations" : "direct QML on the demeaned data, bias corrected")
+{{?model=semfe}} println("Estimation: maximum likelihood on the demeaned data, with $(m.N_eff * m.T_eff) effective observations")
+{{?model=dynamic}} println("Estimation: bias-corrected quasi-maximum likelihood on periods 2 to ", m.T_total, ", the first giving the lags")
+{{?model=dynamic}} println("gamma (own outcome, previous period): ", round(m.gamma, digits = 4), "; eta (neighbours' outcomes, previous period): ", round(m.eta, digits = 4), "; rho (neighbours' outcomes, same period): ", round(m.rho, digits = 4))
+{{?model=dynamic}} println("Before the bias correction: gamma ", round(m.coef_uncorrected[1], digits = 4), ", eta ", round(m.coef_uncorrected[2], digits = 4), ", rho ", round(m.coef_uncorrected[end], digits = 4))
+{{?model=dynamic}} println("Spectral radius of the implied system: ", round(m.spectral_radius_A, digits = 4), m.spectral_radius_A < 1 ? ", below 1: the long-run effects exist" : ", not below 1: the long-run effects do not exist")
+println("Error variance: ", round(m.sigma2, digits = 5), "; log-likelihood: ", round(m.loglik, digits = 2))
+{{?model!=semfe}} println("Standard errors: from the information matrix of the quasi-likelihood; Driscoll and Kraay's, robust to correlation across areas and over time, in the Next Steps")
+{{?model=semfe}} println("Standard errors: from the information matrix of the likelihood")
+{{?model=sarfe}} println("The coefficients are not the effects of the explanatory variables: through rho a change in one area reaches its neighbours. See Direct, Indirect and Total Effects")
+{{?model=sdmfe}} println("The coefficients are not the effects of the explanatory variables: an area's outcome responds to its neighbours' explanatory variables through the W_ coefficients and to their outcomes through rho. See Direct, Indirect and Total Effects")
+{{?model=dynamic}} println("The coefficients are not the effects of the explanatory variables: a change reaches the neighbours through rho and the following periods through gamma and eta. See Direct, Indirect and Total Effects, in the short run and the long run")
+{{?model=semfe}} println("The coefficients are the effects of the explanatory variables as they stand: the spatial dependence is in the shocks, so a change in one area does not reach its neighbours' outcomes")
+{{?model=sarfe|sdmfe}} res = m.residuals  # with the fixed effects removed, stacked as y
+{{?model=dynamic}} res = m.residuals  # with the fixed effects removed, stacked as y over periods 2 to T only
+{{?model=semfe}} res = m.residuals  # the shocks after the spatial filter (I - lambda W), with the fixed effects removed, stacked as y
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "moran-by-period"
+label = "Moran's I Period by Period"
+desc = "Moran's I of the residuals in each period, on a line beside its expected value without spatial autocorrelation, with a test for each period and for all of them together: whether the model leaves spatial autocorrelation, and whether it is steady or concentrated in some periods"
+code = '''
+using ECharts
+
+T_res = length(res) ÷ N  # the periods of the residuals: all of them, or 2 to T on Dynamic Panel
+mp = panel_moran(res, W, N, T_res)  # Moran's I of each period's residuals, with its asymptotic test
+labels = String.(Tables.columntable(DBInterface.execute(con, "SELECT DISTINCT t, \"{{periodColumn}}\"::VARCHAR AS label FROM obs ORDER BY t")).label)[end - T_res + 1:end]
+display(EChart(ec_width = 700, ec_height = 360, title = [ECharts.Title(text = "Moran's I of the residuals, period by period")],
+	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Moran's I", scale = true)],
+	series = [ECharts.XYSeries(name = "Moran's I", _type = "line", data = [r.I_stat for r in mp.period_results]),
+		ECharts.XYSeries(name = "Expected without autocorrelation", _type = "line", data = [r.E_I for r in mp.period_results])]))
+println(rpad("Period", 12), rpad("Moran's I", 12), rpad("z", 10), "p-value")
+for (label, r) in zip(labels, mp.period_results)
+	println(rpad(label, 12), rpad(round(r.I_stat, digits = 4), 12), rpad(round(r.z_stat, digits = 2), 10), round(r.p_value, digits = 4))
+end
+println("\nAll periods: average Moran's I ", round(mp.pooled.I_stat, digits = 4), ", combined z ", round(mp.pooled.z_stat, digits = 2), ", p-value ", round(mp.pooled.p_value, digits = 4))
+println("The combined test treats the periods as independent, which the residuals of one fit are not, as they share its coefficients and fixed effects: the documentation of panel_moran finds it mildly liberal")
+'''
+
+[[actionGroups.actions]]
+id = "map-residual-size"
+label = "Map of the Residual Size per Area"
+desc = "The root mean square of each area's residuals over the periods, on a base map, with the areas the model fits worst: where the explanatory variables, the neighbours and the fixed effects leave most unexplained"
+code = '''
+T_res = length(res) ÷ N  # the periods of the residuals: all of them, or 2 to T on Dynamic Panel
+rms = vec(sqrt.(mean(reshape(res, N, T_res) .^ 2, dims = 2)))  # one column per period; the root mean square of each area's row
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(rms[i]))" for i in 1:N), ", "))) t(i, value)")
+fmap = joinpath(mktempdir(), "residual-size.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.value, 4) AS residual_size FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(fmap; name = "Residual size", column = "residual_size", opacity = 0.75)))  # clicking an area shows its name and residual size
+area_names = Tables.columntable(DBInterface.execute(con, "SELECT area::VARCHAR AS area FROM areas ORDER BY i")).area
+println("Areas the model fits worst, by the root mean square of their residuals over ", T_res, " periods:")
+for i in sortperm(rms, rev = true)[1:min(5, N)]
+	println("  ", rpad(area_names[i], 16), round(rms[i], digits = 4))
+end
+println("Across all areas: ", round(sqrt(mean(res .^ 2)), digits = 4))
+'''
+
+[[actionGroups.actions]]
+id = "map-area-effects"
+label = "Map of the Area Effects"
+desc = "The fixed effect of each area, its own level relative to the average area, on a base map: what is constant in each area over the periods and is explained neither by the explanatory variables nor by the neighbours"
+code = '''
+if fe isa TimeFE || fe isa NoFE
+	println("The model has no fixed effects of the areas: choose Areas and Periods, or Areas, under Fixed Effects")
+else
+	Y = reshape(y, N, T_per)  # one row per area, one column per period
+	WY = W * Y  # the neighbours' outcomes, period by period
+	Xk = [reshape(X[:, k], N, T_per) for k in 1:p]  # each explanatory variable, as Y
+	# What is left of each outcome once the model's other terms are taken away: the area's effect, a period's effect with Areas and Periods, and the error
+{{?model=sarfe}} 	left = Y .- m.rho .* WY .- sum(m.coef[k] .* Xk[k] for k in 1:p)
+{{?model=sdmfe}} 	left = Y .- m.rho .* WY .- sum(m.coef[k] .* Xk[k] .+ m.coef[p + k] .* (W * Xk[k]) for k in 1:p)  # coef holds the explanatory variables, then their spatial lags W_
+{{?model=semfe}} 	left = Y .- sum(m.coef[k] .* Xk[k] for k in 1:p)  # the spatially correlated shocks stay in it
+{{?model=dynamic}} 	durbin = "{{lagModel}}" == "sdm" ? sum(m.coef[2 + p + k] .* (W * Xk[k])[:, 2:end] for k in 1:p) : 0.0  # coef holds y_lag, Wy_lag, the explanatory variables, then their spatial lags W_
+{{?model=dynamic}} 	left = Y[:, 2:end] .- m.gamma .* Y[:, 1:end - 1] .- m.eta .* WY[:, 1:end - 1] .- m.rho .* WY[:, 2:end] .- sum(m.coef[2 + k] .* Xk[k][:, 2:end] for k in 1:p) .- durbin
+	effect = vec(mean(left, dims = 2))  # each area's average over the periods
+	effect .-= mean(effect)  # relative to the average area: the periods' effects, common to all areas, drop out
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(effect[i]))" for i in 1:N), ", "))) t(i, value)")
+	fmap = joinpath(mktempdir(), "area-effects.geojson")
+	DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.value, 4) AS area_effect FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	display(Pollis.webmap(Pollis.layer(fmap; name = "Area effect", column = "area_effect", opacity = 0.75)))  # clicking an area shows its name and effect
+	area_names = Tables.columntable(DBInterface.execute(con, "SELECT area::VARCHAR AS area FROM areas ORDER BY i")).area
+	order = sortperm(effect)
+	println("Area effects relative to the average area, in units of ", yname, ", each the average over ", size(left, 2), " periods")
+	println("Lowest: ", join(("$(area_names[i]) $(round(effect[i], digits = 4))" for i in order[1:min(3, N)]), ", "))
+	println("Highest: ", join(("$(area_names[i]) $(round(effect[i], digits = 4))" for i in reverse(order)[1:min(3, N)]), ", "))
+	println("Standard deviation across the areas: ", round(std(effect), digits = 4))
+end
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "panel-lm-tests"
+label = "Panel LM Tests"
+desc = "Lagrange multiplier tests on the residuals of pooled least squares, before any spatial model: a spatial lag, a spatial error, random effects of the areas, and all three jointly, to see which kinds of dependence the data carry"
+code = '''
+pooled = hcat(ones(N * T_per), X)  # pooled least squares: an intercept and the explanatory variables, no fixed effects
+lmt = panel_lm_tests(y, pooled, W, N, T_per)
+println(rpad("Test", 34), rpad("LM", 12), rpad("df", 6), "p-value")
+println(rpad("Joint: lag, error and random effects", 34), rpad(round(lmt.joint_stat, digits = 3), 12), rpad(lmt.joint_df, 6), round(lmt.joint_p, digits = 4))
+println(rpad("Spatial lag", 34), rpad(round(lmt.lag_stat, digits = 3), 12), rpad(1, 6), round(lmt.lag_p, digits = 4))
+println(rpad("Spatial error", 34), rpad(round(lmt.error_stat, digits = 3), 12), rpad(1, 6), round(lmt.error_p, digits = 4))
+println(rpad("Random effects of the areas", 34), rpad(round(lmt.re_stat, digits = 3), 12), rpad(1, 6), round(lmt.re_p, digits = 4))
+println("\nThe tests start from pooled least squares, with neither fixed effects nor a spatial term; each is chi-squared under the hypothesis of no dependence of its kind")
+println("Read the joint test first: when it does not reject, the three components are not worth reading one by one")
+println("A statistic of exactly 0 means the formula gave a negative value, and the test says nothing")
+'''
+
+[[actionGroups.actions]]
+id = "driscoll-kraay"
+label = "Driscoll–Kraay Standard Errors"
+desc = "Driscoll and Kraay's standard errors beside those of the quasi-likelihood: robust to any correlation of the errors across areas, to heteroskedasticity and to correlation over time, with no distances needed. A large gap between them means the model's own standard errors understate the uncertainty"
+models = ["sarfe", "sdmfe", "dynamic"]
+code = '''
+dk = robust_coeftable(m, DriscollKraayVCOV())  # the scores averaged over the areas in each period, then a Newey-West correction over the periods, with Bartlett weights
+println(rpad("", 16), rpad("Estimate", 12), rpad("QML SE", 12), rpad("D-K SE", 12), rpad("Ratio", 8), "z (D-K)")
+for k in eachindex(dk.coef)
+	println(rpad(dk.coefnames[k], 16), rpad(round(dk.coef[k], digits = 4), 12), rpad(round(dk.se_baseline[k], digits = 4), 12), rpad(round(dk.se_robust[k], digits = 4), 12), rpad(round(dk.se_robust[k] / dk.se_baseline[k], digits = 2), 8), round(dk.z_robust[k], digits = 2))
+end
+println("\nRatio: Driscoll and Kraay's standard error over the quasi-likelihood's. The number of lags follows a rule of thumb from the number of periods, with a small-sample correction")
+println("They rest on the periods, here ", length(res) ÷ N, ": with few periods the correction over time is poorly estimated")
+'''
+
+[[actionGroups.actions]]
+id = "structural-break"
+label = "Structural Break"
+desc = "A spatial Chow test of whether the coefficients and the spatial lag are the same before and after a period: an F test of a model fitted on the two sub-periods apart against one fitted on all of them"
+code = '''
+period_labels = String.(Tables.columntable(DBInterface.execute(con, "SELECT DISTINCT t, \"{{periodColumn}}\"::VARCHAR AS label FROM obs ORDER BY t")).label)
+chosen = strip("{{breakAfter}}")
+b = isempty(chosen) ? T_per ÷ 2 : something(findfirst(==(chosen), period_labels), 0)  # the number of the last period before the break
+1 < b < T_per || error("Break After must be a period of the Period Column other than the first and the last: one of ", join(period_labels[2:end - 1], ", "))
+pooled = hcat(ones(N * T_per), X)  # an intercept and the explanatory variables, no fixed effects
+chow = spatial_chow_test(y, pooled, W, N, T_per, b)  # each model fitted by least squares on the explanatory variables and the neighbours' outcomes
+println("Break after ", period_labels[b], ": ", period_labels[1], " to ", period_labels[b], " against ", period_labels[b + 1], " to ", period_labels[end])
+println("F = ", round(chow.stat, digits = 4), " with ", chow.df, " and ", N * T_per - 2 * chow.df, " degrees of freedom; p-value ", round(chow.p_value, digits = 4))
+println(chow.p_value < 0.05 ? "The coefficients differ before and after the break, at the 5% level: one specification for all periods may not be adequate" : "No evidence, at the 5% level, that the coefficients differ before and after the break")
+println("\nThe test restricts the coefficients, the intercept among them, and the spatial lag. Its fits are by least squares, without fixed effects, and treat the neighbours' outcomes as given, so the F distribution is an approximation")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "fixed-effect-specifications"
+label = "Fixed-Effect Specifications"
+desc = "The tab's model fitted with no fixed effects, with those of the areas, of the periods and of both, side by side: how much the coefficients and the spatial parameter depend on what is constant in each area or each period"
+code = '''
+specs = [("None", NoFE()), ("Areas", IndivFE()), ("Periods", TimeFE()), ("Areas and Periods", TwoWayFE())]
+{{?model=dynamic}} specs = specs[[2, 4]]  # Dynamic Panel needs the areas' effects
+{{?model=sarfe}} refit(f) = fit_spatial_panel(SAR(), f, W, X, y, N, T_per; approach = approach, varnames = xnames, rng = Xoshiro(2026))
+{{?model=sdmfe}} refit(f) = fit_spatial_panel(SDM(), f, W, X, y, N, T_per; approach = approach, varnames = xnames, rng = Xoshiro(2026))
+{{?model=semfe}} refit(f) = fit_spatial_error(f, W, X, y, N, T_per; varnames = xnames, rng = Xoshiro(2026))
+{{?model=dynamic}} refit(f) = fit_dynamic_spatial_panel(variant, f, W, X, y, N, T_per; varnames = xnames, rng = Xoshiro(2026))
+fits = map(specs) do (name, f)
+	try
+		refit(f)
+	catch err
+		err isa ArgumentError || rethrow()
+		println(name, ": not estimable, ", err.msg)  # a column that does not vary within the areas or within the periods
+		nothing
+	end
+end
+rows = filter(!=("(Intercept)"), m.coefnames)  # the tab's parameters, without the intercept, which only None has
+cell(f, name) = (k = findfirst(==(name), f.coefnames); "$(round(f.coef[k], digits = 4)) ($(round(sqrt(max(0.0, f.vcov[k, k])), digits = 4)))")
+println(rpad("", 18), join((rpad(name, 22) for (name, _) in specs)))
+for name in rows
+	println(rpad(name, 18), join((rpad(isnothing(f) ? "" : cell(f, name), 22) for f in fits)))
+end
+observations(f) = hasproperty(f, :N_eff) ? f.N_eff * f.T_eff : f.N * f.T_post  # after the transformation, or periods 2 to T on Dynamic Panel
+println(rpad("Error variance", 18), join((rpad(isnothing(f) ? "" : round(f.sigma2, digits = 5), 22) for f in fits)))
+println(rpad("Log-likelihood", 18), join((rpad(isnothing(f) ? "" : round(f.loglik, digits = 2), 22) for f in fits)))
+println(rpad("Observations", 18), join((rpad(isnothing(f) ? "" : observations(f), 22) for f in fits)))
+println("\nEstimates with their standard errors in parentheses. Each log-likelihood is of the data after its own transformation, on the number of observations shown")
+'''
+
+[[actionGroups.actions]]
+id = "sar-sem-sdm"
+label = "SAR, SEM and SDM"
+desc = "The three static models fitted with the same fixed effects: their log-likelihoods, AIC and BIC, likelihood-ratio tests of SDM against SAR and against SEM, and the common factor test of whether SDM reduces to SEM"
+models = ["sarfe", "semfe", "sdmfe"]
+code = '''
+# SAR and SDM with Lee and Yu's transformation, whose log-likelihood, like SEM's, is of the N_eff x T_eff transformed observations
+sar = fit_spatial_panel(SAR(), fe, W, X, y, N, T_per; approach = LeeYuTransformation(), varnames = xnames, rng = Xoshiro(2026))
+sem = fit_spatial_error(fe, W, X, y, N, T_per; varnames = xnames, rng = Xoshiro(2026))
+sdm = fit_spatial_panel(SDM(), fe, W, X, y, N, T_per; approach = LeeYuTransformation(), varnames = xnames, rng = Xoshiro(2026))
+println(rpad("", 6), rpad("Log-likelihood", 16), rpad("AIC", 14), rpad("BIC", 14), "Spatial parameter")
+for (name, f) in (("SAR", sar), ("SEM", sem), ("SDM", sdm))
+	println(rpad(name, 6), rpad(round(f.loglik, digits = 2), 16), rpad(round(spatial_aic(f), digits = 2), 14), rpad(round(spatial_bic(f), digits = 2), 14), f.coefnames[end], " = ", round(f.coef[end], digits = 4))
+end
+println("Lower AIC and BIC fit better for the parameters they spend; SAR and SEM, which do not nest each other, are compared only by them")
+
+println("\nTests of SDM, which nests both")
+lr_sar = lr_test(sar, sdm)  # SAR is SDM without the spatial lags of the explanatory variables
+println("SDM against SAR, likelihood ratio: ", round(lr_sar.stat, digits = 3), " with ", lr_sar.df, " df, p-value ", round(lr_sar.p_value, digits = 4))
+lr_sem = lr_test(sem, sdm)  # SEM is SDM with the common factor restriction
+println("SDM against SEM, likelihood ratio: ", round(lr_sem.stat, digits = 3), " with ", lr_sem.df, " df, p-value ", round(lr_sem.p_value, digits = 4))
+offset = fe isa NoFE ? 1 : 0  # the intercept, without fixed effects only
+# common_factor_test expects the intercept first in the covariance: with fixed effects, a row and a column of zeros stand in for it
+V = fe isa NoFE ? sdm.vcov : [zeros(1, size(sdm.vcov, 2) + 1); zeros(size(sdm.vcov, 1)) sdm.vcov]
+cf = common_factor_test(sdm.coef[offset .+ (1:p)], sdm.coef[offset .+ ((p + 1):(2 * p))], sdm.rho, V)  # the explanatory variables, their spatial lags, rho
+println("SDM against SEM, common factor (Wald): ", round(cf.stat, digits = 3), " with ", cf.df, " df, p-value ", round(cf.p_value, digits = 4))
+println("\nA rejection keeps SDM: the spatial lags of the explanatory variables carry what SAR or SEM leaves out")
+'''
+
+[[actionGroups.actions]]
+id = "leeyu-direct"
+label = "Lee and Yu Against Direct QML"
+desc = "The tab's model by Lee and Yu's transformation and by quasi-maximum likelihood on the demeaned data, before and after its bias correction: what removing the fixed effects by demeaning does to rho and to the error variance in a short panel"
+models = ["sarfe", "sdmfe"]
+code = '''
+fe isa NoFE && println("With no fixed effects nothing is removed, and the three columns are the same estimator: choose fixed effects to see them differ\n")
+{{?model=sarfe}} variant = SAR()
+{{?model=sdmfe}} variant = SDM()
+leeyu = fit_spatial_panel(variant, fe, W, X, y, N, T_per; approach = LeeYuTransformation(), varnames = xnames, rng = Xoshiro(2026))
+direct = fit_spatial_panel(variant, fe, W, X, y, N, T_per; approach = DirectQML(bias_correct = true), varnames = xnames, rng = Xoshiro(2026))  # its coef_uncorrected holds the estimates before the correction
+println(rpad("", 18), rpad("Lee and Yu", 16), rpad("Direct, corrected", 20), "Direct, uncorrected")
+for k in eachindex(leeyu.coef)
+	println(rpad(leeyu.coefnames[k], 18), rpad(round(leeyu.coef[k], digits = 4), 16), rpad(round(direct.coef[k], digits = 4), 20), round(direct.coef_uncorrected[k], digits = 4))
+end
+println(rpad("Error variance", 18), rpad(round(leeyu.sigma2, digits = 5), 16), rpad(round(direct.sigma2, digits = 5), 20), round(direct.sigma2_uncorrected, digits = 5))
+println("\nLee and Yu's transformation removes the fixed effects while keeping the errors independent, so it needs no correction; demeaning leaves a bias of order 1/T in rho and in the error variance, which the corrected direct estimator removes afterwards, here with ", T_per, " periods")
+'''
+
+[[actionGroups.actions]]
+id = "static-dynamic"
+label = "Static Against Dynamic"
+desc = "The static spatial model beside the dynamic one, both on periods 2 to T: whether the outcome persists from one period to the next, and what leaving that out does to rho, to the coefficients and to the total effects"
+models = ["sarfe", "sdmfe", "dynamic"]
+code = '''
+if !(fe isa IndivFE || fe isa TwoWayFE)
+	println("The dynamic panel needs fixed effects of the areas: choose Areas and Periods, or Areas, under Fixed Effects")
+else
+{{?model=sarfe}} 	variant = SAR()
+{{?model=sdmfe}} 	variant = SDM()
+	later = (N + 1):(N * T_per)  # periods 2 to T, those the dynamic model explains, the first giving its lags
+	static = fit_spatial_panel(variant, fe, W, X[later, :], y[later], N, T_per - 1; approach = LeeYuTransformation(), varnames = xnames, rng = Xoshiro(2026))
+{{?model=dynamic}} 	dyn = m
+{{?model!=dynamic}} 	dyn = fit_dynamic_spatial_panel(variant, fe, W, X, y, N, T_per; varnames = xnames, rng = Xoshiro(2026))
+	sd(f, k) = sqrt(max(0.0, f.vcov[k, k]))
+	println(rpad("", 18), rpad("Static", 22), "Dynamic")
+	for (k, name) in enumerate(dyn.coefnames)  # y_lag and Wy_lag, which only the dynamic model has, then the parameters of both
+		s = findfirst(==(name), static.coefnames)
+		println(rpad(name, 18), rpad(isnothing(s) ? "" : "$(round(static.coef[s], digits = 4)) ($(round(sd(static, s), digits = 4)))", 22), round(dyn.coef[k], digits = 4), " (", round(sd(dyn, k), digits = 4), ")")
+	end
+	println("Estimates with their standard errors in parentheses; y_lag is gamma, the area's own outcome in the previous period, and Wy_lag eta, its neighbours'")
+	println("\nTotal effects of each explanatory variable, a change in every area")
+	st = spatial_effects(static)
+	de = dynamic_spatial_effects(dyn)
+	println(rpad("", 18), rpad("Static", 14), rpad("Dynamic, short run", 22), "Dynamic, long run")
+	for k in eachindex(st.varnames)
+		println(rpad(st.varnames[k], 18), rpad(round(st.total[k], digits = 4), 14), rpad(round(de.sr_total[k], digits = 4), 22), dyn.spectral_radius_A < 1 ? round(de.lr_total[k], digits = 4) : "none, spectral radius not below 1")
+	end
+	println("The short-run effects are those within the period of the change; the long-run effects add its persistence over the periods that follow, to the new steady state")
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "effects"
+label = "Direct, Indirect and Total Effects"
+desc = "The effects of each explanatory variable on the outcome, averaged over the areas: the direct effect of a change in an area on its own outcome, feedback through its neighbours included, the indirect effect that reaches it from changes in the other areas, and their sum; on Dynamic Panel in the short run and the long run"
+models = ["sarfe", "sdmfe", "dynamic"]
+code = '''
+est(v, s) = "$(round(v, digits = 4)) ($(round(s, digits = 4)))"
+{{?model=sarfe|sdmfe}} ef = spatial_effects(m)  # averages over the areas of the matrix of effects, with delta-method standard errors
+{{?model=sarfe|sdmfe}} println(rpad("", 16), rpad("Direct", 22), rpad("Indirect", 22), "Total")
+{{?model=sarfe|sdmfe}} for k in eachindex(ef.varnames)
+{{?model=sarfe|sdmfe}} 	println(rpad(ef.varnames[k], 16), rpad(est(ef.direct[k], ef.direct_se[k]), 22), rpad(est(ef.indirect[k], ef.indirect_se[k]), 22), est(ef.total[k], ef.total_se[k]))
+{{?model=sarfe|sdmfe}} end
+{{?model=dynamic}} ef = dynamic_spatial_effects(m)  # within the period of the change, and cumulated over the periods that follow, with delta-method standard errors
+{{?model=dynamic}} m.spectral_radius_A < 1 || println("The spectral radius of the implied system is not below 1: the long-run effects do not exist, and those printed mean nothing\n")
+{{?model=dynamic}} for (title, dir, dir_se, ind, ind_se, tot, tot_se) in (("Short run", ef.sr_direct, ef.sr_direct_se, ef.sr_indirect, ef.sr_indirect_se, ef.sr_total, ef.sr_total_se), ("Long run", ef.lr_direct, ef.lr_direct_se, ef.lr_indirect, ef.lr_indirect_se, ef.lr_total, ef.lr_total_se))
+{{?model=dynamic}} 	println(rpad(title, 16), rpad("Direct", 22), rpad("Indirect", 22), "Total")
+{{?model=dynamic}} 	for k in eachindex(ef.varnames)
+{{?model=dynamic}} 		println(rpad(ef.varnames[k], 16), rpad(est(dir[k], dir_se[k]), 22), rpad(est(ind[k], ind_se[k]), 22), est(tot[k], tot_se[k]))
+{{?model=dynamic}} 	end
+{{?model=dynamic}} 	println()
+{{?model=dynamic}} end
+println("\nEffects in units of ", yname, " for one more unit of each explanatory variable, with their standard errors in parentheses")
+println("Direct: a change in an area on its own outcome; Indirect: on an area's outcome, of the same change in all the other areas; Total: their sum, a change in every area")
+{{?model=dynamic}} println("The long-run effects add the persistence of the outcome over the periods that follow, to the new steady state; near a spectral radius of 1 their standard errors become unreliable")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-munnell"
+label = "Munnell's Production Function"
+desc = "Millo and Piras (2012), pages 14 and 15: the gross product of the 48 continental US states, 1970 to 1986, on public capital, private capital, employment and unemployment, by a spatial error model with fixed effects of the states and with fixed effects of the years, the estimates and standard errors beside those splm printed"
+models = ["semfe"]
+code = '''
+using Downloads, RData
+
+let
+	pfile = joinpath(mktempdir(), "Produc.rda")
+	Downloads.download("https://raw.githubusercontent.com/cran/plm/d9b431acb4efefa0144c4e7eb55e963a5b83f629/data/Produc.rda", pfile)  # Munnell's data, in the R package plm, GPL-2 or later
+	wfile = joinpath(mktempdir(), "usaww.rda")
+	Downloads.download("https://raw.githubusercontent.com/cran/splm/154febf2968967fcaec455cd6c8426b79c5e81cf/data/usaww.rda", wfile)  # the weights of the states, in the R package splm, GPL-2
+	produc = Tables.columntable(RData.load(pfile)["Produc"])  # read as columns, one vector per variable
+	states = unique(string.(produc.state))  # alphabetical, as in the data: the order of the rows and columns of usaww
+	years = sort(unique(Int.(produc.year)))
+	Nu, Tu = length(states), length(years)
+	row = Dict((string(produc.state[r]), Int(produc.year[r])) => r for r in eachindex(produc.year))
+	order = [row[(s, year)] for year in years for s in states]  # year by year, the states varying fastest
+	yu = log.(Float64.(produc.gsp[order]))  # log gross state product
+	Xu = hcat(log.(Float64.(produc.pcap[order])), log.(Float64.(produc.pc[order])), log.(Float64.(produc.emp[order])), Float64.(produc.unemp[order]))
+	names_u = ["log(pcap)", "log(pc)", "log(emp)", "unemp"]
+	Wu = sparse(Matrix{Float64}(RData.load(wfile)["usaww"]))  # 48 x 48, queen contiguity, Arizona and Colorado neighbours, each row summing to 1
+	println(Nu, " states over ", Tu, " years, ", years[1], " to ", years[end])
+	# splm's spml(log(gsp) ~ log(pcap) + log(pc) + log(emp) + unemp, model = "within", method = "eigen"), with its defaults lag = FALSE and spatial.error = "b": a spatial error model, whose parameter splm names rho
+	for (title, fe_u, published, published_se) in (
+			("Fixed effects of the states, page 14", IndivFE(),
+				[0.5574013, 0.0051438, 0.2053026, 0.7822540, -0.0022317], [0.0330749, 0.0250109, 0.0231427, 0.0278057, 0.0010709]),
+			("Fixed effects of the years, pages 14 and 15", TimeFE(),
+				[0.4962301, 0.1432725, 0.3636539, 0.5619649, -0.0078930], [0.0357912, 0.0165720, 0.0109631, 0.0143684, 0.0018665]))
+		fit = fit_spatial_error(fe_u, Wu, Xu, yu, Nu, Tu; varnames = names_u, method = ExactLU())  # the exact log-determinant, as splm's method = "eigen"
+		se_u = sqrt.(max.(0.0, diag(fit.vcov)))
+		shown = [length(fit.coef); 1:length(fit.coef) - 1]  # lambda first, as the article prints it
+		println("\n", title)
+		println(rpad("", 12), rpad("Julia", 12), rpad("Article", 12), rpad("Julia SE", 12), "Article SE")
+		for (row_k, k) in enumerate(shown)
+			label = k == length(fit.coef) ? "lambda" : fit.coefnames[k]
+			println(rpad(label, 12), rpad(round(fit.coef[k], digits = 7), 12), rpad(published[row_k], 12), rpad(round(se_u[k], digits = 7), 12), published_se[row_k])
+		end
+	end
+	println("\nThe article's rho is the spatial error parameter, lambda here. The Replications wiki says where the two programs can differ")
+end
+'''
+
+[[wikis]]
+name = "Factsheet"
+file = "sppanel/factsheet.md"
+bundled = true
+description = "One-page reference: what each tab prints, the inputs and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "sppanel/overview.md"
+bundled = true
+description = "Areas observed over several periods: spatial lag, error and Durbin panels, fixed effects and dynamic spatial panels"
+
+[[wikis]]
+name = "Fixed Effects in Spatial Panels"
+file = "sppanel/fixed-effects.md"
+bundled = true
+description = "What each fixed effects choice absorbs, Lee and Yu's transformation, direct QML and recovering the area effects"
+
+[[wikis]]
+name = "Dynamic Spatial Panels"
+file = "sppanel/dynamic-panels.md"
+bundled = true
+description = "Gamma, eta and rho, the bias of fixed effects with a lagged outcome, and short-run and long-run effects"
+
+[[wikis]]
+name = "Decision Guide"
+file = "sppanel/decision-guide.md"
+bundled = true
+description = "Which tab, which fixed effects, Lee and Yu or direct QML, SAR, SEM or SDM, static or dynamic, and which standard errors"
+
+[[wikis]]
+name = "Replications"
+file = "sppanel/replications.md"
+bundled = true
+description = "splm and Munnell's production function on the US states the panel's results are checked against"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "SAR, Fixed Effects"
+file = "sppanel/sarfe.md"
+bundled = true
+
+[[wikis]]
+name = "SEM, Fixed Effects"
+file = "sppanel/semfe.md"
+bundled = true
+
+[[wikis]]
+name = "SDM, Fixed Effects"
+file = "sppanel/sdmfe.md"
+bundled = true
+
+[[wikis]]
+name = "Dynamic Panel"
+file = "sppanel/dynamic.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Elh2014a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "LY2010a"
+
+[[references]]
+key = "YJL2008a"
+
+[[references]]
+key = "BSK2003a"
+
+[[references]]
+key = "DK1998a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "MP2012a"
+
+[[references]]
+key = "Mun1990b"
+
+[[faq]]
+question = "Which fixed effects should I choose for a spatial panel?"
+answer = '''
+Fixed effects of the areas remove what is constant in each area over the periods, fixed effects of the periods what is common to all areas in each period, and Areas and Periods both. The documentation of SpatialEconometrics.jl calls the two together the usual specification for spatial panels, because a shock common to all areas in a period can otherwise pass for spatial dependence. With fixed effects of the areas a variable that does not change over time cannot be estimated. The Fixed-Effect Specifications step fits the tab's model under each choice.
+'''
+wiki = "Fixed Effects in Spatial Panels"
+
+[[faq]]
+question = "Should I use Lee and Yu's transformation or direct QML?"
+answer = '''
+Lee and Yu's transformation, the default. Lee and Yu (2010) show that estimating the fixed effects along with the other parameters leaves some estimators inconsistent or not properly centred, and their transformation removes the fixed effects with consistent, properly centred estimators. Direct QML demeans the data and corrects the bias afterwards; SpatialEconometrics.jl prefers the transformation unless the direct estimator is wanted specifically. The Lee and Yu Against Direct QML step sets them side by side.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I choose between the spatial lag, spatial error and spatial Durbin panels?"
+answer = '''
+Start with the Panel LM Tests, reading the joint test first, then the tests for a spatial lag and a spatial error. The spatial Durbin panel nests the other two: it reduces to the spatial lag panel when the coefficients of the spatially lagged explanatory variables are zero, and to the spatial error panel under the common factor restriction. The SAR, SEM and SDM step compares the three by AIC and BIC and tests both restrictions.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "When should I use the Dynamic Panel tab?"
+answer = '''
+When the outcome persists from one period to the next. The dynamic spatial panel adds the area's own outcome and its neighbours' outcomes in the previous period to the spatial lag, separating persistence over time, gamma, from spillover in space, rho, and gives short-run and long-run effects. It needs fixed effects of the areas, and its estimates are corrected for the bias fixed effects leave with a lagged outcome. The Static Against Dynamic step compares the two on the same periods.
+'''
+wiki = "Dynamic Spatial Panels"
+
+[[faq]]
+question = "Why are the coefficients of the SAR and SDM tabs not the effects of the explanatory variables?"
+answer = '''
+Because a change in an explanatory variable in one area changes its outcome, which changes its neighbours' outcomes through rho, and through them its own again. The Direct, Indirect and Total Effects step summarises these changes by the direct effect, on an area's own outcome, the indirect effect, the spillover from the other areas, and the total effect, their sum, with delta-method standard errors. On the SEM tab the coefficients are the effects as they stand.
+'''
+wiki = "SAR, Fixed Effects"
+hidden = true
+
+[[faq]]
+question = "Why does the Dynamic Panel tab stop with None or Periods as fixed effects?"
+answer = '''
+Because the dynamic spatial panel in SpatialEconometrics.jl treats only fixed effects of the areas, alone or with those of the periods, as meaningful choices, and adds no intercept. Choose Areas and Periods, or Areas, under Fixed Effects.
+'''
+wiki = "Dynamic Spatial Panels"
+hidden = true
+
+[[faq]]
+question = "When do the long-run effects of a dynamic spatial panel exist?"
+answer = '''
+Only when gamma, rho and eta sum to less than one, which the spectral radius of the system the model implies, printed on the Dynamic Panel tab, must show by being below one. As the sum approaches one the long-run effects diverge and their standard errors become unreliable well before that point.
+'''
+wiki = "Dynamic Spatial Panels"
+hidden = true
+
+[[faq]]
+question = "Why is there no Driscoll–Kraay step on the SEM, Fixed Effects tab?"
+answer = '''
+SpatialEconometrics.jl computes Driscoll and Kraay's standard errors for the spatial lag and Durbin panels and for the dynamic panel, but not for the spatial error panel, so the step is offered only on the other three tabs.
+'''
+wiki = "SEM, Fixed Effects"
+hidden = true
+
+[[faq]]
+question = "Which software and data are the panel's results checked against?"
+answer = '''
+splm, the R package of Millo and Piras (2012), on Munnell's data on the gross product of 48 US states from 1970 to 1986. The Munnell's Production Function step fits the article's two spatial error models, with fixed effects of the states and of the years, and prints Julia's estimates and standard errors beside those of the article.
+'''
+wiki = "Replications"
+hidden = true
