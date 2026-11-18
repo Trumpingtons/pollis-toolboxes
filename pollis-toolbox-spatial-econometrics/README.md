@@ -12,11 +12,12 @@ Installing it adds the **Spatial Econometrics** submenu to the end of the **Exte
 
 **Eigenvector Spatial Filtering**: regressions with a spatial filter made of Moran eigenvectors of the spatial weights, which removes the spatial autocorrelation of the residuals so that the coefficients can be read as in an ordinary regression, on SpatialEconometrics.jl. The eigenvectors are selected one at a time by the Moran coefficient of the residuals or by AIC, enter a Poisson or negative binomial regression for counts, or are all kept with their coefficients shrunk, in random-effects ESF. Its Next Steps map the filter and the selected eigenvectors, test the residuals with Moran's I before and after the filter, and compare the filter with least squares, SAR and SEM, the two criteria with each other, and stepwise with random-effects ESF. Its Replicate step sets the panel's results beside the case study examples of Murakami's R package spmoran, on the Boston data of the spData package.
 
+**Spatial Discrete Choice**: binary and ordered choices that depend on the neighbours' choices, on SpatialEconometrics.jl: the spatial lag probit, fitted by linearised GMM or by Gibbs sampling, the spatial ordered probit, and a logistic regression with a spatial filter of Moran eigenvectors. Its Next Steps map the fitted probabilities, draw the trace and density of rho, give the hit rate and confusion tables, check the chain, test the residuals with Moran's I, compute the direct, indirect and total effects on the probability, and compare GMM with Gibbs sampling, the spatial probit with an ordinary probit, and a lag probit with a filter. Its Replicate step sets the panel's estimates beside Table 3 of LeSage, Pace, Lam, Campanella and Liu (2011) on the reopening of New Orleans businesses after Hurricane Katrina, with the data of Wilhelm and de Matos's R package spatialprobit.
+
 The other items of the menu are greyed out:
 
 | Group | Panels |
 |---|---|
-| Cross-section | Spatial Discrete Choice |
 | Space and time | Spatial Panel Data, Spatio-Temporal Forecasting |
 | Regions and policy | Spatial Causal Inference, Regionalisation and Spatial Regimes |
 
