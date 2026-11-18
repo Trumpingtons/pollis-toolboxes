@@ -17,7 +17,7 @@ A submenu of graduate lab courses, each a page of numbered steps, one a lab, wit
 
 | Lab course | What it covers |
 |---|---|
-| Lab Course 01 — Empirical Forecasting: From Univariate Parsimony to Probabilistic Ensembles | Four labs, from univariate parsimony on Tourism (2011), to global cross-learning and multiple seasonalities on NN5, to probabilistic covariate modeling on GEFCom 2014, and real-time ensemble calibration on the COVID-19 Forecast Hub |
+| Forecasting: From Univariate Parsimony to Probabilistic Ensembles | Three labs, from univariate parsimony on Tourism (2011), to global cross-learning and multiple seasonalities on NN5, and probabilistic covariate modeling on GEFCom 2014 |
 
 ## Requirements
 

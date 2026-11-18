@@ -1,8 +1,8 @@
 # Lab Course 01 of Data-Driven Decisions: Computational Lab Series, a page in the Time Arrow style: one step a lab
 [meta]
-title = "Lab Course 01 — Empirical Forecasting: From Univariate Parsimony to Probabilistic Ensembles"
+title = "Forecasting: From Univariate Parsimony to Probabilistic Ensembles"
 style = "timeArrow"
-intro = "This 4-lab sequence moves graduate students systematically from classical univariate parsimony, to global cross-learning and multiple seasonalities, to probabilistic covariate modeling, and finally to real-time ensemble calibration under structural breaks."
+intro = "This 3-lab sequence moves graduate students systematically from classical univariate parsimony, to global cross-learning and multiple seasonalities, and finally to probabilistic covariate modeling."
 
 [matrix]
 columns = ["Lab", "Dataset", "Frequency and Scale", "Primary Paradigm Shift", "Core Scoring Metric"]
@@ -15,9 +15,6 @@ cells = ["2", "NN5", "Daily (111 ATMs)", "Local univariate → global cross-lear
 
 [[matrix.rows]]
 cells = ["3", "GEFCom 2014", "Hourly, with weather covariates", "Point forecasts → quantile distributions", "Pinball loss and CRPS"]
-
-[[matrix.rows]]
-cells = ["4", "COVID-19 Forecast Hub", "Weekly, multi-team archive", "Offline cross-validation → real-time operational ensembles", "WIS and interval coverage"]
 
 [[steps]]
 title = "Lab 1: Univariate Foundations, Scale-Free Metrics and Parsimony"
@@ -82,27 +79,6 @@ items = ["Quantile gradient boosting (LightGBM with the quantile loss) predictin
 heading = "Required Deliverable and Diagnostic"
 text = "A reliability (PIT or calibration) diagram alongside a breakdown of the pinball loss by forecast horizon, from 1 to 24 hours, showing why Gaussian homoscedastic intervals fail during peak demand hours."
 
-[[steps]]
-title = "Lab 4: Operational Ensembles, Structural Breaks and Real-Time Evaluation"
-dataset = "covid19_forecast_hub"
-datasetText = "COVID-19 Forecast Hub (Cramer and 427 coauthors, 2022): a public GitHub archive of timestamped weekly quantile submissions for US state and national incident deaths and hospitalisations"
-
-[[steps.sections]]
-heading = "Core Learning Objectives"
-items = ["Evaluate models under true real-time operational conditions, strictly respecting forecast submission timestamps and data revisions, with no look-ahead bias.", "Compute proper scoring rules for interval forecasts with the Weighted Interval Score (WIS), and decompose it into dispersion, underprediction and overprediction penalties.", "Analyse ensemble aggregation (the linear opinion pool, or mean, against Vincentization, or median) during non-stationary regime shifts such as epidemic peaks and variant waves."]
-
-[[steps.sections]]
-heading = "Baseline Models (Public Hub Benchmarks)"
-items = ["COVIDhub-baseline: flat median extrapolation with expanding empirical error intervals.", "Representative individual mechanistic (SEIR compartmental) and statistical or machine learning entries, taken directly from the Hub repository."]
-
-[[steps.sections]]
-heading = "Target Models (Student Ensembles and Post-Processed Rankers)"
-items = ["Reproduce COVIDhub-ensemble, the equal-weighted quantile median across all eligible teams.", "Build a performance-weighted or trimmed ensemble, for example weighting teams dynamically by their trailing 4-week WIS or by inverse-score weights, and test whether adaptive weighting beats the simple median ensemble out of sample."]
-
-[[steps.sections]]
-heading = "Required Deliverable and Diagnostic"
-text = "A WIS decomposition and coverage audit comparing the nominal 50% and 95% coverage with the empirical coverage, across stable periods and inflection points, testing whether adaptive weighting overfits noise during rapid regime changes."
-
 [[references]]
 separator = true
 label = "Datasets and Competitions"
@@ -118,15 +94,6 @@ key = "HPF2014a"
 
 [[references]]
 key = "HPFZT...2016a"
-
-[[references]]
-key = "CHWRC...2022a"
-
-[[references]]
-key = "CRLBB...2022a"
-
-[[references]]
-key = "RBBBB...2023a"
 
 [[references]]
 separator = true
@@ -179,9 +146,6 @@ key = "CFG2010a"
 key = "LHS2011a"
 
 [[references]]
-key = "LGW2013a"
-
-[[references]]
 key = "KMFWC...2017a"
 
 [[references]]
@@ -189,9 +153,6 @@ key = "OCCB2019a"
 
 [[references]]
 key = "RPC2019a"
-
-[[references]]
-key = "BRGR2021a"
 
 [[references]]
 key = "MH2021a"

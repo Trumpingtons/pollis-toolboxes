@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-learning-and-practice",
   "displayName": "Self-Study: Learn and Practise",
   "description": "Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For students, and for teachers preparing their classes.",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -60,7 +60,7 @@
           {
             "id": "learning-and-practice.lab01",
             "command": "pollis.pollis-toolbox-learning-and-practice.lab01",
-            "title": "Lab Course 01 — Empirical Forecasting: From Univariate Parsimony to Probabilistic Ensembles",
+            "title": "Forecasting: From Univariate Parsimony to Probabilistic Ensembles",
             "group": "1_labs",
             "order": 1,
             "submenu": "labSeries",
