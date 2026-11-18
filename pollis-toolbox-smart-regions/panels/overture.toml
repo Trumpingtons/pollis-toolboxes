@@ -1,0 +1,626 @@
+# Overture Maps: places, buildings, transportation, divisions and addresses of an area, read with DuckDB from
+# Overture's GeoParquet files in the cloud, only the parts of the files the area needs
+
+[meta]
+title = "Overture Maps"
+viewType = "pollis.overture"
+defaultModel = "places"
+decisionFirstColumn = "Theme"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "overture/factsheet.md"
+bundled = true
+description = "One-page reference: the five themes, how the panel reads them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "overture/overview.md"
+bundled = true
+description = "What Overture Maps is: open map data conflated from many sources, released every month"
+
+[[wikis]]
+name = "Diagnostics"
+file = "overture/diagnostics.md"
+bundled = true
+description = "Releases that expire, empty columns, low-confidence places, features cut by the area, sources"
+
+[[wikis]]
+name = "Decision Guide"
+file = "overture/decision-guide.md"
+bundled = true
+description = "Which theme, how large an area, which release, and what to save for other tools"
+
+[[wikis]]
+separator = true
+label = "Data and Access"
+
+[[wikis]]
+name = "Themes and Types"
+file = "overture/themes-and-types.md"
+bundled = true
+
+[[wikis]]
+name = "GeoParquet in the Cloud"
+file = "overture/geoparquet-in-the-cloud.md"
+bundled = true
+
+[[wikis]]
+name = "Sources and Licences"
+file = "overture/sources-and-licences.md"
+bundled = true
+
+[[wikis]]
+name = "Overture and OpenStreetMap"
+file = "overture/overture-and-openstreetmap.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "RM2019a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "BB2024a"
+
+[[references]]
+key = "GBH2024a"
+
+[[references]]
+key = "GSTM2026a"
+
+[[references]]
+key = "HW2008a"
+
+[[references]]
+separator = true
+label = "Specifications"
+
+[[references]]
+key = "OMF2026a"
+
+[[references]]
+key = "OGC2026b"
+
+[[references]]
+key = "ASF2026a"
+
+[[faq]]
+question = "Does the panel download whole Overture files?"
+answer = '''
+No. Overture's catalogue lists every GeoParquet file of a release with the bounding box of its features, so the panel reads only the files that overlap the area. Inside those files, DuckDB reads only the row groups whose bounding boxes overlap it, over HTTPS, so a few square kilometres of a city take seconds, not the hundreds of megabytes of a file.
+
+Divisions take longer: the polygons of a country or a region overlap any area inside them, and are large.
+'''
+wiki = "GeoParquet in the Cloud"
+
+[[faq]]
+question = "Why did an Overture release I used last month stop working?"
+answer = '''
+Overture keeps a release in its public buckets for at most 60 days, two monthly releases, to comply with data protection rules such as the right to be forgotten. A release name that has expired finds no files. The Release input set to latest asks Overture's catalogue for the newest release each time; Release and Files lists the releases the catalogue still has.
+
+To keep the data of a release, save it with Save as GeoParquet.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Which licence does Overture data have?"
+answer = '''
+It depends on the theme and the source. Buildings, transportation, divisions and the base theme are under the Open Database License (ODbL), since they contain OpenStreetMap data; places are under CDLA Permissive 2.0 for most sources, with Foursquare's under Apache 2.0; addresses come from open address registers, each with its own licence.
+
+Every feature names its sources and their licences; Sources and Licences counts them for the features read.
+'''
+wiki = "Sources and Licences"
+
+[[faq]]
+question = "Is Overture the same as OpenStreetMap?"
+answer = '''
+No. Overture uses OpenStreetMap as one of its sources, for most buildings, roads and boundaries, and adds other sources: machine-learned building footprints from Microsoft and Google, places from Meta, Microsoft, Foursquare and others, roads from TomTom, and national address registers. It conflates them into one schema, with stable identifiers, released every month.
+
+Sources Side by Side shows what each source gives in the area.
+'''
+wiki = "Overture and OpenStreetMap"
+
+[[faq]]
+question = "What is the confidence of an Overture place?"
+answer = '''
+A number between 0 and 1, which Overture computes for each place as its confidence that the place exists. Places with low confidence are more likely to be closed, duplicated or wrong.
+
+The Minimum Confidence input of the Places tab leaves out the places below it; Confidence Check shows how confidence is spread over the places of the area.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Why do buildings at the edge of the area cross its boundary?"
+answer = '''
+The panel keeps every feature whose bounding box overlaps the area, so features that cross the boundary are kept whole. The totals of the Next Steps count them whole, except Building Measures and Division Areas, which also give the part of each footprint or polygon inside the area.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "What are the themes of Overture Maps?"
+answer = '''
+Six: addresses, base (land, water, land use, land cover, infrastructure and bathymetry), buildings (buildings and building parts), divisions (countries, regions, counties, localities and neighbourhoods, as points, areas and boundaries), places (points of interest), and transportation (road, rail and water segments and the connectors between them).
+
+The tabs of the panel read five of them; the base theme is left to the GeoParquet files themselves.
+'''
+wiki = "Themes and Types"
+hidden = true
+
+[[faq]]
+question = "How does DuckDB find the latest Overture release?"
+answer = '''
+Overture publishes a STAC catalogue at stac.overturemaps.org whose catalog.json has a field latest, the name of the newest release, such as 2026-11-18.0. DuckDB reads the JSON over HTTPS, and the release's collections.parquet then lists its files.
+'''
+wiki = "GeoParquet in the Cloud"
+hidden = true
+
+[[models]]
+id = "places"
+label = "Places"
+
+[[models]]
+id = "buildings"
+label = "Buildings"
+
+[[models]]
+id = "transportation"
+label = "Transportation"
+
+[[models]]
+id = "divisions"
+label = "Divisions"
+
+[[models]]
+id = "addresses"
+label = "Addresses"
+
+[[bullets]]
+text = "Places"
+detail = "Points of interest, such as shops, restaurants, schools and hospitals, with a category, a confidence that the place exists, and its websites and phones"
+
+[[bullets]]
+text = "Buildings"
+detail = "Building footprints as polygons, with the subtype, height and floors when known, from OpenStreetMap and machine-learned footprints"
+
+[[bullets]]
+text = "Transportation"
+detail = "Road, rail and water segments with their class, joined by connectors, from which lengths, intersections and dead ends follow"
+
+[[bullets]]
+text = "Divisions"
+detail = "The areas of countries, regions, counties, localities and neighbourhoods, with their names and administrative levels"
+
+[[bullets]]
+text = "Addresses"
+detail = "Address points with street, number and postcode, from national and regional address registers"
+
+[[decisionRows]]
+task = "Places"
+context = "Points of interest"
+purpose = "Find shops, services and amenities of an area by category, and check their confidence"
+
+[[decisionRows]]
+task = "Buildings"
+context = "Building footprints"
+purpose = "Map the buildings of an area, measure footprints and the share of the area built up"
+
+[[decisionRows]]
+task = "Transportation"
+context = "Road, rail and water networks"
+purpose = "Map a network by class, measure its length, intersections and dead ends"
+
+[[decisionRows]]
+task = "Divisions"
+context = "Administrative areas"
+purpose = "Get the boundaries of counties, localities or neighbourhoods that cover an area"
+
+[[decisionRows]]
+task = "Addresses"
+context = "Address points"
+purpose = "Get the addresses of an area with street, number and postcode"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where Save as GeoPackage and Save as GeoParquet write: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "bbox"
+label = "Area"
+tooltip = "The area as west, south, east, north: longitudes and latitudes in degrees, WGS 84. The default is the centre of Coimbra, about 4 by 4.5 km. A larger area reads more data and takes longer."
+default = "-8.45, 40.19, -8.40, 40.23"
+
+[[inputs]]
+id = "release"
+label = "Release"
+tooltip = "The Overture release, such as 2026-11-18.0, or latest: the newest release in Overture's catalogue. Overture keeps a release for at most 60 days."
+default = "latest"
+
+[[inputs]]
+id = "placeCategory"
+label = "Category"
+tooltip = "The basic category of the places read, such as restaurant, hotel, college_university or grocery_store, or all. Counts by Category shows the categories of the area."
+default = "all"
+models = ["places"]
+
+[[inputs]]
+id = "minConfidence"
+label = "Minimum Confidence"
+tooltip = "Places whose confidence, between 0 and 1, is lower are left out: 0 keeps every place."
+default = "0"
+models = ["places"]
+
+[[inputs]]
+id = "segmentSubtype"
+label = "Network"
+kind = "select"
+default = "road"
+models = ["transportation"]
+
+[[inputs.options]]
+value = "road"
+label = "Road"
+
+[[inputs.options]]
+value = "rail"
+label = "Rail"
+
+[[inputs.options]]
+value = "water"
+label = "Water"
+
+[[inputs]]
+id = "divisionSubtype"
+label = "Subtype"
+kind = "select"
+default = "county"
+models = ["divisions"]
+
+[[inputs.options]]
+value = "country"
+label = "Country"
+
+[[inputs.options]]
+value = "region"
+label = "Region"
+
+[[inputs.options]]
+value = "county"
+label = "County"
+
+[[inputs.options]]
+value = "localadmin"
+label = "Local Administrative Unit"
+
+[[inputs.options]]
+value = "locality"
+label = "Locality"
+
+[[inputs.options]]
+value = "macrohood"
+label = "Macrohood"
+
+[[inputs.options]]
+value = "neighborhood"
+label = "Neighbourhood"
+
+[[inputs.options]]
+value = "microhood"
+label = "Microhood"
+
+[[inputs.options]]
+value = "all"
+label = "All"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: only the features of the area are copied into it
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "LOAD httpfs")  # DuckDB's extension for files over HTTPS, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
+west, south, east, north = parse.(Float64, split("{{bbox}}", ","))  # the area, in degrees of longitude and latitude
+catalogue = "https://stac.overturemaps.org"  # Overture's catalogue of its releases
+release = "{{release}}" == "latest" ? only(only(Tables.columntable(DBInterface.execute(con, "SELECT latest FROM '$(catalogue)/catalog.json'")))) : "{{release}}"
+{{?model=places}}kind, by = "place", "category"  # the feature type read, and the column the map and the chart group by
+{{?model=places}}columns = "id, names.primary AS name, basic_category AS category, taxonomy.primary AS taxonomy, confidence, operating_status, addresses[1].freeform AS address, websites[1] AS website, phones[1] AS phone"
+{{?model=places}}filter = "confidence >= {{minConfidence}}" * ("{{placeCategory}}" == "all" ? "" : " AND basic_category = '{{placeCategory}}'")
+{{?model=places}}fields = "id, name, category, confidence, dataset"  # the columns shown on the map and saved to GeoPackage
+{{?model=buildings}}kind, by = "building", "subtype"  # the feature type read, and the column the map and the chart group by
+{{?model=buildings}}columns = "id, names.primary AS name, subtype, class, height, num_floors, roof_shape, is_underground, ST_Area_Spheroid(geometry) AS area_m2"  # footprint areas in square metres on the WGS 84 ellipsoid
+{{?model=buildings}}filter = "true"
+{{?model=buildings}}fields = "id, name, subtype, class, height, num_floors, round(area_m2, 1) AS area_m2, dataset"  # the columns shown on the map and saved to GeoPackage
+{{?model=transportation}}kind, by = "segment", "class"  # the feature type read, and the column the map and the chart group by
+{{?model=transportation}}columns = "id, names.primary AS name, subtype, class, subclass, connectors, ST_Length_Spheroid(geometry) AS metres"  # lengths in metres on the WGS 84 ellipsoid
+{{?model=transportation}}filter = "subtype = '{{segmentSubtype}}'"
+{{?model=transportation}}fields = "id, name, class, subclass, round(metres) AS metres, dataset"  # the columns shown on the map and saved to GeoPackage
+{{?model=divisions}}kind, by = "division_area", "subtype"  # the feature type read, and the column the map and the chart group by
+{{?model=divisions}}columns = "id, names.primary AS name, subtype, class, admin_level, country, region, division_id"
+{{?model=divisions}}filter = "{{divisionSubtype}}" == "all" ? "true" : "subtype = '{{divisionSubtype}}'"
+{{?model=divisions}}fields = "id, name, subtype, class, admin_level, country, region, dataset"  # the columns shown on the map and saved to GeoPackage
+{{?model=addresses}}kind, by = "address", "postcode"  # the feature type read, and the column the map and the chart group by
+{{?model=addresses}}columns = "id, street, number, unit, postcode, postal_city, address_levels[1].value AS level_1, country"
+{{?model=addresses}}filter = "true"
+{{?model=addresses}}fields = "id, street, number, postcode, level_1, dataset"  # the columns shown on the map and saved to GeoPackage
+
+in_box = "bbox.xmin <= $(east) AND bbox.xmax >= $(west) AND bbox.ymin <= $(north) AND bbox.ymax >= $(south)"  # the bounding box of a feature overlaps the area
+files = Tables.columntable(DBInterface.execute(con, "SELECT assets.aws.href AS href, assets.aws.\"file:size\" AS bytes FROM '$(catalogue)/$(release)/collections.parquet' WHERE collection = '$(kind)' AND $(in_box)"))  # the release's files of the type whose features overlap the area
+isempty(files.href) && error("No $(kind) file of Overture release $(release) covers the area")
+main = "list_filter(sources, lambda s: coalesce(s.property, '') = '')[1]"  # the source of the feature itself, not of one of its properties
+seconds = @elapsed DBInterface.execute(con, """
+CREATE OR REPLACE TABLE features AS
+SELECT $(columns), $(main).dataset AS dataset, $(main).license AS license, sources, geometry AS geom
+FROM read_parquet([$(join(["'$(f)'" for f in files.href], ", "))])
+WHERE $(in_box) AND $(filter) AND ST_Intersects(geometry, ST_MakeEnvelope($(west), $(south), $(east), $(north)))
+""")  # only the row groups whose bounding boxes overlap the area are read; of their features, those that meet the area are kept
+n = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM features"))))
+println("Overture release ", release, ": ", n, " ", kind, " features in longitude ", west, " to ", east, ", latitude ", south, " to ", north, ", from ", length(files.href), " file(s) in ", round(seconds, digits = 1), " s")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-on-map"
+label = "Show on a Map"
+desc = "The features on an OpenStreetMap base map in Pollis's map view, coloured by category, subtype, class or postcode; click a feature for its columns"
+code = '''
+dir = mktempdir()
+most = 50_000  # a map of more features is slow to draw
+DBInterface.execute(con, "COPY (SELECT $(fields), geom FROM features LIMIT $(most)) TO '$(joinpath(dir, "features.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+n > most && println("The map shows ", most, " of ", n, " features")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "features.geojson"); name = "Overture $(kind)", column = by, opacity = 0.8)))
+'''
+
+[[actionGroups.actions]]
+id = "counts-chart"
+label = "Counts by Category"
+desc = "The features of each category (Places), subtype (Buildings, Divisions), class (Transportation) or postcode (Addresses), the 25 most frequent, as a bar chart drawn with ECharts"
+code = '''
+using ECharts
+
+d = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(CAST($(by) AS VARCHAR), '(none)') AS value, count(*) AS n FROM features GROUP BY ALL ORDER BY n DESC LIMIT 25"))
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Overture $(kind) features by $(by)")],
+	xAxis = [ECharts.Axis(_type = "category", name = by, data = collect(d.value), axisLabel = ECharts.AxisLabel(rotate = 45))], yAxis = [ECharts.Axis(_type = "value", name = "Features")],
+	series = [ECharts.XYSeries(name = "Features", _type = "bar", data = collect(d.n))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "release-files"
+label = "Release and Files"
+desc = "The release read and its schema version, the releases Overture still has, the files read with their sizes, and the size of the area"
+code = '''
+links = "(SELECT UNNEST(links) AS l FROM '$(catalogue)/$(release)/catalog.json')"
+schema = only(only(Tables.columntable(DBInterface.execute(con, "SELECT regexp_extract(l.href, 'schema-v([0-9.]+)', 1) FROM $(links) WHERE l.rel = 'describedby'"))))
+kept = Tables.columntable(DBInterface.execute(con, "SELECT split_part(l.title, ' ', 1) AS name FROM (SELECT UNNEST(links) AS l FROM '$(catalogue)/catalog.json') WHERE l.rel = 'child' ORDER BY name")).name
+println("Release ", release, ", schema version ", schema, "; releases in the catalogue: ", join(kept, ", "))
+km2 = only(only(Tables.columntable(DBInterface.execute(con, "SELECT ST_Area_Spheroid(ST_MakeEnvelope($(west), $(south), $(east), $(north))) / 1e6"))))
+println("Area: ", round(km2, digits = 2), " km²; ", n, " ", kind, " features, read in ", round(seconds, digits = 1), " s from ", length(files.href), " file(s):")
+for (href, bytes) in zip(files.href, files.bytes)
+	println("  ", basename(href), ", ", round(bytes / 2^20, digits = 1), " MB")
+end
+'''
+
+[[actionGroups.actions]]
+id = "column-completeness"
+label = "Column Completeness"
+desc = "The share of the features with a value in each column"
+code = '''
+cols = Tables.columntable(DBInterface.execute(con, "DESCRIBE features"))
+println(rpad("column", 20), "% of the features with a value")
+for (c, t) in zip(cols.column_name, cols.column_type)
+	c in ("geom", "sources") && continue
+	filled = endswith(t, "[]") ? "coalesce(len(\"$(c)\"), 0) > 0" : "\"$(c)\" IS NOT NULL"  # a list counts when it is not empty
+	println(rpad(c, 20), only(only(Tables.columntable(DBInterface.execute(con, "SELECT round(100 * avg(($(filled))::INT), 1) FROM features")))))
+end
+'''
+
+[[actionGroups.actions]]
+id = "sources-licences"
+label = "Sources and Licences"
+desc = "The datasets the features and their properties come from, with their licences"
+code = '''
+s = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(nullif(s.property, ''), 'the feature') AS property, s.dataset, s.license, count(DISTINCT id) AS n FROM features, UNNEST(sources) u(s) GROUP BY ALL ORDER BY n DESC"))
+w = maximum(length, s.dataset; init = 7) + 2
+println(rpad("dataset", w), rpad("licence", 22), rpad("features", 10), "source of")
+for i in eachindex(s.n)
+	println(rpad(s.dataset[i], w), rpad(coalesce(s.license[i], ""), 22), rpad(s.n[i], 10), s.property[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "confidence-check"
+label = "Confidence Check"
+desc = "How the confidence of the places is spread, from 0 to 1, and their operating status"
+models = ["places"]
+code = '''
+c = Tables.columntable(DBInterface.execute(con, "SELECT floor(least(confidence, 0.999) * 10) / 10 AS low, count(*) AS n FROM features GROUP BY ALL ORDER BY low"))
+println(rpad("confidence", 14), "places")
+for i in eachindex(c.n)
+	println(rpad("$(c.low[i]) to $(round(c.low[i] + 0.1, digits = 1))", 14), rpad(c.n[i], 8), repeat("█", ceil(Int, 40 * c.n[i] / maximum(c.n))))
+end
+s = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(operating_status, 'not given') AS status, count(*) AS n FROM features GROUP BY ALL ORDER BY n DESC"))
+println("Operating status: ", join(["$(s.status[i]) $(s.n[i])" for i in eachindex(s.n)], ", "))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "sources-side-by-side"
+label = "Sources Side by Side"
+desc = "Each dataset the features come from, its features and what they hold: confidence, websites and phones of places, areas, heights and floors of buildings, kilometres and names of segments"
+code = '''
+{{?model=places}}measures = ["mean confidence" => "round(avg(confidence), 2)", "% with website" => "round(100 * avg((website IS NOT NULL)::INT), 1)", "% with phone" => "round(100 * avg((phone IS NOT NULL)::INT), 1)"]
+{{?model=buildings}}measures = ["median m²" => "round(median(area_m2), 1)", "% with height" => "round(100 * avg((height IS NOT NULL)::INT), 1)", "% with floors" => "round(100 * avg((num_floors IS NOT NULL)::INT), 1)"]
+{{?model=transportation}}measures = ["km" => "round(sum(metres) / 1000, 2)", "% named" => "round(100 * avg((name IS NOT NULL)::INT), 1)", "classes" => "count(DISTINCT class)"]
+{{?model=divisions}}measures = ["% named" => "round(100 * avg((name IS NOT NULL)::INT), 1)", "subtypes" => "count(DISTINCT subtype)"]
+{{?model=addresses}}measures = ["% with number" => "round(100 * avg((number IS NOT NULL)::INT), 1)", "% with postcode" => "round(100 * avg((postcode IS NOT NULL)::INT), 1)"]
+s = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(dataset, 'not given') AS dataset, count(*) AS features, $(join(["$(sql) AS m$(i)" for (i, (label, sql)) in enumerate(measures)], ", ")) FROM features GROUP BY ALL ORDER BY features DESC"))
+w = maximum(length, s.dataset; init = 7) + 2
+println(rpad("dataset", w), rpad("features", 10), join(rpad.(first.(measures), 16)))
+for i in eachindex(s.dataset)
+	println(rpad(s.dataset[i], w), rpad(s.features[i], 10), join([rpad(coalesce(s[Symbol("m$(k)")][i], ""), 16) for k in eachindex(measures)]))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "place-density"
+label = "Place Density"
+desc = "Places per square kilometre of the area, and the ten most frequent categories with their share"
+models = ["places"]
+code = '''
+km2 = only(only(Tables.columntable(DBInterface.execute(con, "SELECT ST_Area_Spheroid(ST_MakeEnvelope($(west), $(south), $(east), $(north))) / 1e6"))))
+println(n, " places in ", round(km2, digits = 2), " km²: ", round(n / km2, digits = 1), " per km²")
+c = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(category, 'not given') AS category, count(*) AS n FROM features GROUP BY ALL ORDER BY n DESC LIMIT 10"))
+w = maximum(length, c.category; init = 8) + 2
+println(rpad("category", w), rpad("places", 8), rpad("% of all", 10), "per km²")
+for i in eachindex(c.n)
+	println(rpad(c.category[i], w), rpad(c.n[i], 8), rpad(round(100 * c.n[i] / n, digits = 1), 10), round(c.n[i] / km2, digits = 2))
+end
+'''
+
+[[actionGroups.actions]]
+id = "building-measures"
+label = "Building Measures"
+desc = "The buildings' footprints, the share of the area they cover, and their heights and floors where known"
+models = ["buildings"]
+code = '''
+box = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+m = Tables.columntable(DBInterface.execute(con, """
+SELECT count(*) AS buildings, round(sum(area_m2) / 1e6, 3) AS km2, round(median(area_m2), 1) AS median_m2,
+	round(100 * sum(ST_Area_Spheroid(ST_Intersection(geom, $(box)))) / ST_Area_Spheroid($(box)), 1) AS covered,
+	count(height) AS with_height, round(median(height), 1) AS median_height, count(num_floors) AS with_floors, median(num_floors) AS median_floors
+FROM features
+"""))  # the cover counts only the part of each footprint inside the area
+println(m.buildings[1], " buildings with ", m.km2[1], " km² of footprints, median ", m.median_m2[1], " m²; they cover ", m.covered[1], "% of the area")
+println("Height known for ", m.with_height[1], " (median ", coalesce(m.median_height[1], "–"), " m); floors known for ", m.with_floors[1], " (median ", coalesce(m.median_floors[1], "–"), ")")
+'''
+
+[[actionGroups.actions]]
+id = "network-measures"
+label = "Network Measures"
+desc = "The kilometres of each class, and the connectors inside the area: intersections, where three or more segment ends meet, and dead ends"
+models = ["transportation"]
+code = '''
+k = Tables.columntable(DBInterface.execute(con, "SELECT class, count(*) AS segments, round(sum(metres) / 1000, 2) AS km FROM features GROUP BY ALL ORDER BY km DESC"))
+w = maximum(length, coalesce.(k.class, "not given"); init = 5) + 2
+println(rpad("class", w), rpad("segments", 10), "km")
+for i in eachindex(k.km)
+	println(rpad(coalesce(k.class[i], "not given"), w), rpad(k.segments[i], 10), k.km[i])
+end
+box = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+m = Tables.columntable(DBInterface.execute(con, """
+WITH uses AS (SELECT u.c.connector_id AS connector, CASE WHEN u.c."at" IN (0, 1) THEN 1 ELSE 2 END AS ends, ST_LineInterpolatePoint(geom, u.c."at") AS point FROM features, UNNEST(connectors) u(c)),
+degree AS (SELECT connector, sum(ends) AS d, any_value(point) AS point FROM uses GROUP BY connector)
+SELECT count(*) AS connectors, count(*) FILTER (WHERE d >= 3) AS intersections, count(*) FILTER (WHERE d = 1) AS dead_ends, ST_Area_Spheroid($(box)) / 1e6 AS km2 FROM degree WHERE ST_Intersects(point, $(box))
+"""))  # a connector inside a segment counts as two segment ends, one at either side
+println("Connectors in the area: ", m.connectors[1], "; intersections (3 or more segment ends): ", m.intersections[1], "; dead ends (1): ", m.dead_ends[1], "; ", round(m.intersections[1] / m.km2[1], digits = 1), " intersections per km²")
+'''
+
+[[actionGroups.actions]]
+id = "division-areas"
+label = "Division Areas"
+desc = "Each division, its area and the part of the area it covers"
+models = ["divisions"]
+code = '''
+box = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+d = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(name, id) AS name, subtype, admin_level, round(ST_Area_Spheroid(geom) / 1e6, 2) AS km2, round(100 * ST_Area_Spheroid(ST_Intersection(geom, $(box))) / ST_Area_Spheroid($(box)), 1) AS share FROM features ORDER BY share DESC, km2 DESC LIMIT 30"))
+w = maximum(length, d.name; init = 4) + 2
+println(rpad("name", w), rpad("subtype", 14), rpad("level", 7), rpad("km²", 12), "% of the area")
+for i in eachindex(d.name)
+	println(rpad(d.name[i], w), rpad(d.subtype[i], 14), rpad(coalesce(d.admin_level[i], ""), 7), rpad(d.km2[i], 12), d.share[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "streets-numbers"
+label = "Streets and Numbers"
+desc = "The streets with the most addresses, and how many addresses have a number and a postcode"
+models = ["addresses"]
+code = '''
+m = Tables.columntable(DBInterface.execute(con, "SELECT count(DISTINCT street) AS streets, count(DISTINCT postcode) AS postcodes, round(100 * avg((number IS NOT NULL)::INT), 1) AS numbered FROM features"))
+println(n, " addresses on ", m.streets[1], " streets, in ", m.postcodes[1], " postcodes; ", m.numbered[1], "% with a number")
+s = Tables.columntable(DBInterface.execute(con, "SELECT street, count(*) AS n, count(DISTINCT postcode) AS postcodes FROM features WHERE street IS NOT NULL GROUP BY ALL ORDER BY n DESC LIMIT 20"))
+w = maximum(length, s.street; init = 6) + 2
+println(rpad("street", w), rpad("addresses", 11), "postcodes")
+for i in eachindex(s.n)
+	println(rpad(s.street[i], w), rpad(s.n[i], 11), s.postcodes[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-gpkg"
+label = "Save as GeoPackage"
+desc = "The features with their main columns to a GeoPackage in the folder, for the Geospatial Vector Files panel and any GIS"
+code = '''
+out = joinpath(folder, "overture-$(kind)-$(release).gpkg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT $(fields), license, geom FROM features) TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME '$(kind)', SRS 'EPSG:4326')")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "The features with every column, their sources included, to a GeoParquet file in the folder, which keeps them after Overture removes the release"
+code = '''
+out = joinpath(folder, "overture-$(kind)-$(release).parquet")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT parquet)")  # DuckDB writes GeoParquet metadata for the geometry column
+	println("Wrote ", out)
+end
+'''
