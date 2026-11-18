@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-spatial-econometrics",
   "displayName": "Spatial Econometrics Toolbox",
   "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, eigenvector spatial filtering, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, and regionalisation with spatial regimes.",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -42,10 +42,19 @@
             "data": "panels/gwr.toml",
             "defaultModel": "gwrfixed",
             "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "esf",
+            "command": "pollis.spatialEconometrics.esf",
+            "title": "Eigenvector Spatial Filtering",
+            "group": "1_crossSection",
+            "order": 3,
+            "data": "panels/esf.toml",
+            "defaultModel": "esfmoran",
+            "decisionFirstColumn": "Model"
           }
         ],
         "planned": [
-          { "title": "Eigenvector Spatial Filtering", "group": "1_crossSection", "order": 3 },
           { "title": "Spatial Discrete Choice", "group": "1_crossSection", "order": 4 },
           { "title": "Spatial Panel Data", "group": "2_spaceTime", "order": 1 },
           { "title": "Spatio-Temporal Forecasting", "group": "2_spaceTime", "order": 2 },
