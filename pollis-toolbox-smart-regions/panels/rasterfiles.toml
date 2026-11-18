@@ -1,0 +1,790 @@
+# Raster and Point Cloud Files: GeoTIFF and Cloud-Optimised GeoTIFF, read with Rasters.jl and ArchGDAL.jl, and LAS and LAZ
+# lidar point clouds, read with PointClouds.jl
+
+[meta]
+title = "Raster and Point Cloud Files"
+viewType = "pollis.rasterfiles"
+defaultModel = "geotiff"
+decisionFirstColumn = "Format"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+[[packages]]
+name = "PointClouds.jl"
+github = "https://github.com/efpl-columbia/PointClouds.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl", "Tables.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "rasterfiles/factsheet.md"
+bundled = true
+description = "One-page reference: the two tabs, the packages that read them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "rasterfiles/overview.md"
+bundled = true
+description = "Rasters and point clouds: grids of cells and clouds of measured points, and how Julia reads them"
+
+[[wikis]]
+name = "Coordinates and Georeferencing"
+file = "rasterfiles/georeferencing.md"
+bundled = true
+description = "The geotransform of a raster, the scale and offset of a point cloud, and their coordinate systems"
+
+[[wikis]]
+name = "Diagnostics"
+file = "rasterfiles/diagnostics.md"
+bundled = true
+description = "No-data values, missing coordinate systems, tiling and overviews, classes and point density"
+
+[[wikis]]
+name = "Decision Guide"
+file = "rasterfiles/decision-guide.md"
+bundled = true
+description = "Which format to keep or share, when to read lazily, and when to turn points into a grid"
+
+[[wikis]]
+separator = true
+label = "Formats"
+
+[[wikis]]
+name = "GeoTIFF"
+file = "rasterfiles/geotiff.md"
+bundled = true
+
+[[wikis]]
+name = "Cloud-Optimised GeoTIFF"
+file = "rasterfiles/cloud-optimised-geotiff.md"
+bundled = true
+
+[[wikis]]
+name = "LAS"
+file = "rasterfiles/las.md"
+bundled = true
+
+[[wikis]]
+name = "LAZ"
+file = "rasterfiles/laz.md"
+bundled = true
+
+[[wikis]]
+name = "Elevation Models From Point Clouds"
+file = "rasterfiles/elevation-models.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "Sch2026b"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "RR1997a"
+
+[[references]]
+key = "Ise2013a"
+
+[[references]]
+key = "KP1998a"
+
+[[references]]
+key = "SV2004a"
+
+[[references]]
+separator = true
+label = "Standards"
+
+[[references]]
+key = "OGC2019a"
+
+[[references]]
+key = "OGC2023a"
+
+[[references]]
+key = "ASPRS2025a"
+
+[[faq]]
+question = "Why are some cells of my raster missing?"
+answer = '''
+A raster marks the cells without a measurement with a no-data value, such as -9999 or -32768, recorded in the file. Rasters.jl reads those cells as missing, so sums and means skip them with skipmissing.
+
+When the file records no no-data value, the sentinel comes back as a number and spoils every statistic. Missing Cells and Range shows the no-data value the file records, how many cells are missing and the smallest and largest values: a minimum far below the rest is a sentinel the file does not declare.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Should I read a large GeoTIFF lazily?"
+answer = '''
+Raster(path; lazy = true) opens the file and reads only its header; cells are read when an operation needs them, block by block. A crop or a window then reads only the blocks it covers, which matters when the file is larger than memory or sits on a web server.
+
+read(r) loads the whole band into memory, which is faster for repeated operations on a raster that fits. The Example Code of the GeoTIFF tab opens the file lazily, takes one band, then reads it.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "What is the difference between LAS and LAZ?"
+answer = '''
+LAZ is LAS compressed with LASzip, without loss: the same header, records and point attributes, in a fraction of the size. A LAZ file is decompressed as it is read, so reading takes more processor time and less disk.
+
+PointClouds.jl reads both with the same LAS(path); the LAS and LAZ tab shows which one the file is in Header and Records.
+'''
+wiki = "LAZ"
+
+[[faq]]
+question = "How do I get a terrain model from a point cloud?"
+answer = '''
+A digital terrain model (DTM) gives the height of the bare ground in each cell: from the points classified as ground (ASPRS class 2), for example their mean height in the cell. A digital surface model (DSM) gives the highest point in each cell, roofs and treetops included. Their difference, the normalised DSM, is the height of buildings and vegetation above the ground.
+
+Surface and Terrain Grids computes the three at the Cell Size input, and Save Elevation Grids as GeoTIFF writes them.
+'''
+wiki = "Elevation Models From Point Clouds"
+
+[[faq]]
+question = "What makes a GeoTIFF cloud-optimised?"
+answer = '''
+A Cloud-Optimised GeoTIFF is a GeoTIFF whose cells are stored in tiles, with reduced-resolution overviews, and whose header comes first in the file. A reader can then fetch the header, then only the tiles of the area and resolution it needs, with HTTP range requests, without downloading the whole file.
+
+GDAL writes one with its COG driver: Save as Cloud-Optimised GeoTIFF does that.
+'''
+wiki = "Cloud-Optimised GeoTIFF"
+hidden = true
+
+[[faq]]
+question = "What does the geotransform of a raster say?"
+answer = '''
+The geotransform is six numbers that place the grid on the map: the x coordinate of the upper left corner, the cell width, a rotation term, the y coordinate of the upper left corner, a second rotation term, and the cell height, negative when rows run from north to south.
+
+The x coordinate of the left edge of column c (counted from 0) of a north-up raster is the first number plus c times the cell width. File Metadata prints the geotransform.
+'''
+wiki = "Coordinates and Georeferencing"
+hidden = true
+
+[[faq]]
+question = "Why are the coordinates of a LAS file stored as integers?"
+answer = '''
+A LAS point record holds X, Y and Z as 32-bit integers. The header gives a scale factor and an offset for each axis, and the coordinate is the integer times the scale plus the offset: with a scale of 0.001, coordinates are kept to the millimetre.
+
+Integers keep the precision the same over the whole extent of the file and compress well. PointClouds.jl applies the scale and offset when it reads the coordinates.
+'''
+wiki = "LAS"
+hidden = true
+
+[[faq]]
+question = "Which ASPRS classes does a LAS file use?"
+answer = '''
+The LAS 1.4 specification defines the classification codes of point data record formats 6 to 10: 0 created and never classified, 1 unclassified, 2 ground, 3 low, 4 medium and 5 high vegetation, 6 building, 7 low point (noise), 9 water, 10 rail, 11 road surface, 13 wire guard, 14 wire conductor, 15 transmission tower, 16 wire-structure connector, 17 bridge deck, 18 high noise, 19 overhead structure, 20 ignored ground, 21 snow and 22 temporal exclusion. Codes 64 to 255 are left to the user.
+
+Classes and Returns counts the points of each class in the file.
+'''
+wiki = "LAS"
+hidden = true
+
+[[faq]]
+question = "How many points per square metre does a lidar survey need?"
+answer = '''
+Point density, the number of points per square metre, sets the smallest detail a survey resolves and the cell size its grids can have. A grid cell should hold several points: at 4 points per square metre, a 1 m cell holds about four.
+
+Point Density counts the points in each cell of the Cell Size input and reports the mean, the lowest and the share of empty cells, which shows gaps in the coverage.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "geotiff"
+label = "GeoTIFF"
+
+[[models]]
+id = "las"
+label = "LAS and LAZ"
+
+[[bullets]]
+text = "GeoTIFF"
+detail = "A TIFF image whose cells are values on a map grid, with the grid's position and coordinate system in its tags: elevation models, satellite bands, land cover"
+
+[[bullets]]
+text = "Cloud-Optimised GeoTIFF"
+detail = "A GeoTIFF in tiles, with overviews and its header first, so that a reader fetches only the part it needs, also over the web"
+
+[[bullets]]
+text = "LAS"
+detail = "The ASPRS format of lidar point clouds: every point with its coordinates, intensity, return number and class"
+
+[[bullets]]
+text = "LAZ"
+detail = "LAS compressed with LASzip, without loss, to a fraction of the size: how national lidar surveys are published"
+
+[[decisionRows]]
+task = "GeoTIFF"
+context = "A grid of values"
+purpose = "Read an elevation model, a satellite band or any map of values on regular cells"
+
+[[decisionRows]]
+task = "LAS and LAZ"
+context = "Lidar points"
+purpose = "Read an airborne or terrestrial laser scan, its classes and returns, and turn it into elevation grids"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "tiffFile"
+label = "File"
+tooltip = "The GeoTIFF file (.tif or .tiff), in the folder above, or an absolute path. With the default, elevation.tif, the example first writes a simulated elevation model of the area of Coimbra to it, unless the folder has an elevation.tif already."
+default = "elevation.tif"
+models = ["geotiff"]
+
+[[inputs]]
+id = "band"
+label = "Band"
+tooltip = "The band to read, from 1: an elevation model has one, a satellite image one per spectral band. File Metadata lists them."
+default = "1"
+models = ["geotiff"]
+
+[[inputs]]
+id = "lasFile"
+label = "File"
+tooltip = "The LAS (.las) or LAZ (.laz) file, in the folder above, or an absolute path. With the default, cloud.las, the example first writes a simulated lidar survey of a block of Coimbra to it, unless the folder has a cloud.las already."
+default = "cloud.las"
+models = ["las"]
+
+[[inputs]]
+id = "every"
+label = "Read Every"
+tooltip = "Read every point (1), or every second, tenth, ... point of a large file, for a first look in less memory."
+default = "1"
+models = ["las"]
+
+[[inputs]]
+id = "lasCrs"
+label = "File Coordinate System"
+tooltip = "file: the coordinate system the file records. For a file that records none, give it as an EPSG code, e.g. EPSG:3763 (ETRS89 / Portugal TM06) or EPSG:25829 (ETRS89 / UTM zone 29N)."
+default = "file"
+models = ["las"]
+
+[[inputs]]
+id = "cellSize"
+label = "Cell Size"
+tooltip = "The side of a grid cell, in the units of the coordinate system (metres for a projected one), for Point Density and the elevation grids: a cell should hold several points."
+default = "1"
+models = ["las"]
+
+[[codeBranches]]
+model = "geotiff"
+code = '''
+using Rasters, ArchGDAL, Statistics
+{{?tiffFile=elevation.tif}}using Random
+{{?tiffFile=elevation.tif}}using Rasters.Lookups: Intervals, Center
+
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+path = joinpath(folder, "{{tiffFile}}")  # an absolute path is kept as it is
+{{?tiffFile=elevation.tif}}# Example file: a simulated elevation model of 12 by 10 km around Coimbra, in cells of 50 m on ETRS89 / Portugal TM06 (EPSG:3763), with a strip of cells without data, written as a Cloud-Optimised GeoTIFF unless the folder has an elevation.tif already. Replace "elevation.tif" with your own file.
+{{?tiffFile=elevation.tif}}if !isfile(path)
+{{?tiffFile=elevation.tif}}	rng = Xoshiro(42)  # fixed seed: the same terrain on every run
+{{?tiffFile=elevation.tif}}	xs = range(-29975.0; step = 50.0, length = 240)  # cell centres from west to east, in metres
+{{?tiffFile=elevation.tif}}	ys = range(64975.0; step = -50.0, length = 200)  # from north to south, the order GeoTIFF stores rows in
+{{?tiffFile=elevation.tif}}	hills = [(-26000.0, 61000.0, 120.0, 1500.0), (-21000.0, 62000.0, 180.0, 2500.0), (-20000.0, 57000.0, 90.0, 1200.0)]  # centre x, centre y, height and spread, in metres
+{{?tiffFile=elevation.tif}}	z = [Float32(30 + 0.004 * (x + 30000) + sum(h * exp(-((x - cx)^2 + (y - cy)^2) / (2 * s^2)) for (cx, cy, h, s) in hills) + 2 * randn(rng)) for x in xs, y in ys]
+{{?tiffFile=elevation.tif}}	z[100:115, 60:200] .= -9999f0  # a strip without data, as a river or a gap in a survey leaves
+{{?tiffFile=elevation.tif}}	sim = Raster(z, (X(xs; sampling = Intervals(Center())), Y(ys; sampling = Intervals(Center()))); crs = EPSG(3763), missingval = -9999f0)
+{{?tiffFile=elevation.tif}}	write(path, sim; driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))  # tiled, with overviews, compressed
+{{?tiffFile=elevation.tif}}end
+
+r = Raster(path; lazy = true)  # the file opened: its cells are read only when used
+hasdim(r, Band) && (r = r[Band({{band}})])  # one band of a multiband file
+grid = read(r)  # the band in memory, missing where the file has no data
+file_crs, transform, nodata = ArchGDAL.read(ds -> (ArchGDAL.getproj(ds), ArchGDAL.getgeotransform(ds), ArchGDAL.getnodatavalue(ArchGDAL.getband(ds, {{band}}))), path)  # the coordinate system as WKT, the geotransform and the no-data value
+fill_value = convert(nonmissingtype(eltype(grid)), something(nodata, -9999))  # the value written for missing cells: the file's no-data value
+println(size(grid, X), " x ", size(grid, Y), " cells of ", transform[2], " by ", abs(transform[6]), ", ", count(ismissing, grid), " missing; values from ", minimum(skipmissing(grid)), " to ", maximum(skipmissing(grid)))
+'''
+
+[[codeBranches]]
+model = "las"
+code = '''
+using PointClouds, ArchGDAL
+{{?lasFile=cloud.las}}using Random
+
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+path = joinpath(folder, "{{lasFile}}")  # an absolute path is kept as it is
+{{?lasFile=cloud.las}}# Example file: a simulated airborne lidar survey of a block of 200 by 150 m in Coimbra, 4 points per square metre on ETRS89 / Portugal TM06 (EPSG:3763): sloping ground, two buildings and a row of trees, classified as ground (2), high vegetation (5) and building (6), written to cloud.las unless the folder has one already. Replace "cloud.las" with your own LAS or LAZ file.
+{{?lasFile=cloud.las}}if !isfile(path)
+{{?lasFile=cloud.las}}	rng = Xoshiro(42)  # fixed seed: the same survey on every run
+{{?lasFile=cloud.las}}	n = 120_000
+{{?lasFile=cloud.las}}	x0, y0 = -23700.0, 59350.0  # the south-west corner, in metres
+{{?lasFile=cloud.las}}	x = x0 .+ 200 .* rand(rng, n)
+{{?lasFile=cloud.las}}	y = y0 .+ 150 .* rand(rng, n)
+{{?lasFile=cloud.las}}	ground = 60 .+ 0.05 .* (x .- x0) .+ 0.02 .* (y .- y0)  # a gentle slope up to the north-east
+{{?lasFile=cloud.las}}	building = ((30 .< x .- x0 .< 70) .& (40 .< y .- y0 .< 90)) .| ((120 .< x .- x0 .< 160) .& (20 .< y .- y0 .< 50))  # two flat roofs
+{{?lasFile=cloud.las}}	tree = [any((xi - x0 - cx)^2 + (yi - y0 - 125)^2 < 25 for cx in 20:20:180) for (xi, yi) in zip(x, y)]  # crowns of 5 m radius along a street
+{{?lasFile=cloud.las}}	canopy = tree .& (rand(rng, n) .< 0.7)  # most pulses return from the crown, the rest reach the ground
+{{?lasFile=cloud.las}}	z = ground .+ 0.05 .* randn(rng, n) .+ ifelse.(building, ifelse.(x .- x0 .< 100, 15.0, 9.0), 0.0) .+ ifelse.(canopy .& .!building, 4 .+ 6 .* rand(rng, n), 0.0)
+{{?lasFile=cloud.las}}	class = ifelse.(building, 6, ifelse.(canopy, 5, 2))  # ASPRS classes: 2 ground, 5 high vegetation, 6 building
+{{?lasFile=cloud.las}}	strength = round.(UInt16, clamp.(ifelse.(class .== 2, 1800, ifelse.(class .== 6, 2600, 900)) .+ 150 .* randn(rng, n), 0, 65535))
+{{?lasFile=cloud.las}}	sim = LAS(PointRecord{6}, (x = x, y = y, z = z, classification = class, intensity = strength, return_number = ones(Int, n), return_count = ifelse.(tree, 2, 1)); coord_scale = (0.001, 0.001, 0.001), has_well_known_text = true)  # coordinates kept to the millimetre
+{{?lasFile=cloud.las}}	push!(sim.vlrs, PointClouds.IO.VariableLengthRecord("LASF_Projection", 2112, Vector{UInt8}(ArchGDAL.toWKT(ArchGDAL.importEPSG(3763)) * "\0"), "OGC WKT"))  # the coordinate system, as OGC WKT
+{{?lasFile=cloud.las}}	write(path, sim)
+{{?lasFile=cloud.las}}end
+
+las = LAS(path)  # the header now; the points are read when used, decompressed if the file is LAZ
+keep = 1:{{every}}:length(las)  # the points to read
+xyz = coordinates(las, keep)  # x, y and z, the scale and offset of the header applied
+pts = (x = first.(xyz), y = getindex.(xyz, 2), z = last.(xyz), classification = classification(las, keep), intensity = intensity(las, keep), return_number = return_number(las, keep), return_count = return_count(las, keep))  # a Tables.jl table, one row per point
+{{?lasCrs=file}}file_crs = getcrs(las) === nothing ? "" : getcrs(String, las)  # the coordinate system the file records, as WKT, or none
+{{?lasCrs!=file}}file_crs = "{{lasCrs}}"
+println(length(pts.x), " of ", length(las), " points, LAS ", join(Int.(las.version), "."), "; x from ", minimum(pts.x), " to ", maximum(pts.x), ", y from ", minimum(pts.y), " to ", maximum(pts.y), ", z from ", minimum(pts.z), " to ", maximum(pts.z))
+isempty(file_crs) && println("The file records no coordinate system: give its EPSG code in the File Coordinate System input")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "plot-raster"
+label = "Plot the Raster"
+desc = "The band as a heat map drawn with ECharts, north up, at most 200 cells a side (larger rasters averaged over blocks of cells)"
+models = ["geotiff"]
+code = '''
+using ECharts
+
+f = max(1, cld(max(size(grid, X), size(grid, Y)), 200))  # at most 200 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, grid, f; skipmissingval = true) : grid, (X, Y))
+north_first = first(lookup(small, Y)) > last(lookup(small, Y))
+nx, ny = size(small)
+cells = [[i - 1, (north_first ? ny - j : j - 1), round(Float64(small[i, j]), digits = 2)] for i in 1:nx, j in 1:ny if !ismissing(small[i, j])]  # column, row from the south, value
+lo, hi = extrema(skipmissing(small))
+ylabels = string.(round.(Int, north_first ? reverse(lookup(small, Y)) : lookup(small, Y)))
+fig = EChart(ec_width = 760, ec_height = round(Int, 60 + 680 * ny / nx), title = [ECharts.Title(text = basename(path))], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "category", data = string.(round.(Int, lookup(small, X))), name = "x")],
+	yAxis = [ECharts.Axis(_type = "category", data = ylabels, name = "y")],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"])),
+	series = [ECharts.HeatmapSeries(name = "Value", data = cells)])
+'''
+
+[[actionGroups.actions]]
+id = "raster-histogram"
+label = "Histogram of Values"
+desc = "How the values of the cells are spread, in 40 bins, missing cells left out"
+models = ["geotiff"]
+code = '''
+using ECharts
+
+v = Float64.(collect(skipmissing(grid)))
+lo, hi = extrema(v)
+width = (hi - lo) / 40
+counts = zeros(Int, 40)
+for value in v
+	counts[clamp(floor(Int, (value - lo) / width) + 1, 1, 40)] += 1
+end
+mids = [round(lo + (k - 0.5) * width, digits = 2) for k in 1:40]
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Values of $(length(v)) cells")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Value", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Cells")],
+	series = [ECharts.XYSeries(name = "Cells", _type = "bar", data = [[m, c] for (m, c) in zip(mids, counts)])])
+'''
+
+[[actionGroups.actions]]
+id = "raster-map"
+label = "Show on a Map"
+desc = "The cells, coloured by value, on an OpenStreetMap base map in Pollis's map view, at most 80 cells a side (larger rasters averaged over blocks of cells); click a cell for its value"
+models = ["geotiff"]
+code = '''
+using DuckDB
+
+f = max(1, cld(max(size(grid, X), size(grid, Y)), 80))  # at most 80 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, grid, f; skipmissingval = true) : grid, (X, Y))
+edges(d) = [lo == hi ? (lo - abs(step(lookup(small, d))) / 2, hi + abs(step(lookup(small, d))) / 2) : (min(lo, hi), max(lo, hi)) for (lo, hi) in Rasters.intervalbounds(small, d)]  # each cell's two edges, also for a raster of points
+xe, ye = edges(X), edges(Y)
+rows = ["($(round(Float64(small[i, j]), digits = 3)), $(xe[i][1]), $(ye[j][1]), $(xe[i][2]), $(ye[j][2]))" for i in axes(small, 1), j in axes(small, 2) if !ismissing(small[i, j])]
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+shown = joinpath(mktempdir(), "cells.geojson")
+DBInterface.execute(con, "COPY (SELECT value, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), '$(file_crs)', 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(value, x0, y0, x1, y1)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = basename(path), column = "value", opacity = 0.7)))
+'''
+
+[[actionGroups.actions]]
+id = "plot-points"
+label = "Plot the Points"
+desc = "The points seen from above, coloured by height, drawn with ECharts: at most 20,000 of them, spread evenly over the file"
+models = ["las"]
+code = '''
+using ECharts
+
+shown = round.(Int, range(1, length(pts.x); length = min(20_000, length(pts.x))))  # evenly spread over the file
+lo, hi = extrema(pts.z)
+EChart(ec_width = 760, ec_height = 600, title = [ECharts.Title(text = "$(length(shown)) of $(length(pts.x)) points, coloured by z")],
+	xAxis = [ECharts.Axis(_type = "value", name = "x", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "y", scale = true)],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"])),
+	series = [ECharts.XYSeries(name = "Points", _type = "scatter", symbolSize = 2, large = true, data = [[pts.x[k], pts.y[k], round(pts.z[k], digits = 2)] for k in shown])])
+'''
+
+[[actionGroups.actions]]
+id = "cross-section"
+label = "Cross-Section"
+desc = "The points within 1 m of a line from west to east through the middle of the cloud: their height along the line, coloured by class"
+models = ["las"]
+code = '''
+using ECharts
+
+ymid = (minimum(pts.y) + maximum(pts.y)) / 2
+band = findall(abs.(pts.y .- ymid) .< 1)  # within 1 m of the line
+names = Dict(1 => "Unclassified", 2 => "Ground", 3 => "Low vegetation", 4 => "Medium vegetation", 5 => "High vegetation", 6 => "Building", 7 => "Low noise", 9 => "Water", 17 => "Bridge deck", 18 => "High noise")
+series = [ECharts.XYSeries(name = get(names, c, "Class $c"), _type = "scatter", symbolSize = 3, data = [[round(pts.x[k], digits = 2), round(pts.z[k], digits = 2)] for k in band if pts.classification[k] == c]) for c in sort(unique(pts.classification[band]))]
+EChart(ec_width = 800, ec_height = 360, title = [ECharts.Title(text = "Cross-section at y = $(round(ymid, digits = 1)): $(length(band)) points")],
+	xAxis = [ECharts.Axis(_type = "value", name = "x", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "z", scale = true)],
+	legend = ECharts.Legend(data = [s.name for s in series]), series = series)
+'''
+
+[[actionGroups.actions]]
+id = "points-map"
+label = "Show on a Map"
+desc = "Up to 5,000 points on an OpenStreetMap base map in Pollis's map view, coloured by class; click a point for its height and class"
+models = ["las"]
+code = '''
+using DuckDB
+
+if isempty(file_crs)
+	println("The file records no coordinate system: give its EPSG code in the File Coordinate System input")
+else
+	names = Dict(1 => "Unclassified", 2 => "Ground", 3 => "Low vegetation", 4 => "Medium vegetation", 5 => "High vegetation", 6 => "Building", 7 => "Low noise", 9 => "Water", 17 => "Bridge deck", 18 => "High noise")
+	shown = round.(Int, range(1, length(pts.x); length = min(5_000, length(pts.x))))
+	rows = ["($(pts.x[k]), $(pts.y[k]), $(round(pts.z[k], digits = 2)), '$(get(names, pts.classification[k], "Class $(pts.classification[k])"))')" for k in shown]
+	con = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(con, "LOAD spatial")
+	DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+	file = joinpath(mktempdir(), "points.geojson")
+	DBInterface.execute(con, "COPY (SELECT z, class, ST_Transform(ST_Point(x, y), '$(file_crs)', 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(x, y, z, class)) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	display(Pollis.webmap(Pollis.layer(file; name = basename(path), column = "class")))
+end
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "file-metadata"
+label = "File Metadata"
+desc = "What GDAL finds in the file: driver, size, bands and their data types and no-data values, tiling, compression, overviews, geotransform and coordinate system"
+models = ["geotiff"]
+code = '''
+ArchGDAL.read(path) do ds
+	println("Driver: ", ArchGDAL.shortname(ArchGDAL.getdriver(ds)), "; ", ArchGDAL.width(ds), " x ", ArchGDAL.height(ds), " cells, ", ArchGDAL.nraster(ds), " band(s)")
+	println("Geotransform: ", ArchGDAL.getgeotransform(ds))
+	m = match(r"^\w+\[\"([^\"]+)\"", ArchGDAL.getproj(ds))
+	println("Coordinate system: ", m === nothing ? "none recorded" : m[1])
+	println("Structure: ", join(ArchGDAL.metadata(ds; domain = "IMAGE_STRUCTURE"), ", "))
+	for b in 1:ArchGDAL.nraster(ds)
+		band = ArchGDAL.getband(ds, b)
+		println("Band ", b, ": ", ArchGDAL.pixeltype(band), ", no-data value ", something(ArchGDAL.getnodatavalue(band), "none"), ", blocks of ", join(ArchGDAL.blocksize(band), " x "), ", ", ArchGDAL.noverview(band), " overview(s)")
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "missing-range"
+label = "Missing Cells and Range"
+desc = "The no-data value the file records, how many cells are missing, and the smallest and largest values with the next ones, where an undeclared sentinel shows"
+models = ["geotiff"]
+code = '''
+v = sort(Float64.(collect(skipmissing(grid))))
+println("No-data value recorded: ", something(nodata, "none"))
+println("Missing cells: ", count(ismissing, grid), " of ", length(grid), " (", round(100 * count(ismissing, grid) / length(grid), digits = 2), "%)")
+println("Smallest values: ", join(round.(v[1:min(5, end)], digits = 3), ", "))
+println("Largest values: ", join(round.(v[max(1, end - 4):end], digits = 3), ", "))
+'''
+
+[[actionGroups.actions]]
+id = "header"
+label = "Header and Records"
+desc = "The header of the file: LAS version, point format, point count, scale and offset, extent, returns, the software that wrote it, and its variable-length records"
+models = ["las"]
+code = '''
+println(endswith(lowercase(path), ".laz") ? "LAZ (compressed)" : "LAS", " ", join(Int.(las.version), "."), ", point data record format ", match(r"PointRecord(\d+)", string(eltype(las)))[1])
+println(length(las), " points; written by ", isempty(las.software_id) ? "unknown software" : las.software_id, iszero(las.creation_date[2]) ? ", no date recorded" : string(" on day ", las.creation_date[1], " of ", las.creation_date[2]))
+println("Scale: ", las.coord_scale, "; offset: ", las.coord_offset)
+println("Extent: x ", las.coord_min[1], " to ", las.coord_max[1], ", y ", las.coord_min[2], " to ", las.coord_max[2], ", z ", las.coord_min[3], " to ", las.coord_max[3])
+println("Points by return number: ", all(iszero, las.return_counts) ? "none recorded" : join(["$(k) => $(c)" for (k, c) in enumerate(las.return_counts) if c > 0], ", "))
+m = match(r"^\w+\[\"([^\"]+)\"", file_crs)
+println("Coordinate system: ", isempty(file_crs) ? "none recorded" : m === nothing ? file_crs : m[1])
+for vlr in las.vlrs
+	println("Record ", vlr.user_id, " ", Int(vlr.record_id), ": ", vlr.description, " (", length(vlr.data), " bytes)")
+end
+'''
+
+[[actionGroups.actions]]
+id = "classes-returns"
+label = "Classes and Returns"
+desc = "The points of each ASPRS class, and of each return number out of the number of returns of its pulse"
+models = ["las"]
+code = '''
+names = Dict(0 => "Never classified", 1 => "Unclassified", 2 => "Ground", 3 => "Low vegetation", 4 => "Medium vegetation", 5 => "High vegetation", 6 => "Building", 7 => "Low noise", 9 => "Water", 10 => "Rail", 11 => "Road surface", 13 => "Wire guard", 14 => "Wire conductor", 15 => "Transmission tower", 16 => "Wire-structure connector", 17 => "Bridge deck", 18 => "High noise", 19 => "Overhead structure", 20 => "Ignored ground", 21 => "Snow", 22 => "Temporal exclusion")
+println(rpad("class", 24), rpad("points", 10), "share")
+for c in sort(unique(pts.classification))
+	k = count(==(c), pts.classification)
+	println(rpad("$c $(get(names, c, "user defined"))", 24), rpad(k, 10), round(100 * k / length(pts.x), digits = 2), "%")
+end
+println("\n", rpad("return", 24), "points")
+for (r, c) in sort(unique(zip(pts.return_number, pts.return_count)))
+	println(rpad("$r of $c", 24), count(k -> pts.return_number[k] == r && pts.return_count[k] == c, eachindex(pts.x)))
+end
+'''
+
+[[actionGroups.actions]]
+id = "point-density"
+label = "Point Density"
+desc = "Points per square unit in cells of the Cell Size input: the mean, the lowest and highest, and the share of empty cells"
+models = ["las"]
+code = '''
+cell = {{cellSize}}
+x0, y0 = minimum(pts.x), minimum(pts.y)
+nx, ny = floor(Int, (maximum(pts.x) - x0) / cell) + 1, floor(Int, (maximum(pts.y) - y0) / cell) + 1
+counts = zeros(Int, nx, ny)
+for k in eachindex(pts.x)
+	counts[floor(Int, (pts.x[k] - x0) / cell) + 1, floor(Int, (pts.y[k] - y0) / cell) + 1] += 1
+end
+density = counts ./ cell^2
+println("Cells of $(cell) x $(cell): ", nx * ny)
+println("Points per square unit: mean ", round(sum(density) / length(density), digits = 2), ", lowest ", minimum(density), ", highest ", maximum(density))
+println("Empty cells: ", count(==(0), counts), " (", round(100 * count(==(0), counts) / length(counts), digits = 2), "%)")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "compression"
+label = "Compression Side by Side"
+desc = "The band written as a GeoTIFF without compression, with LZW, DEFLATE and ZSTD, and as a Cloud-Optimised GeoTIFF: size on disk and time to read it back"
+models = ["geotiff"]
+code = '''
+dir = mktempdir()
+ways = [
+	"GeoTIFF, no compression" => ("GTiff", Dict("COMPRESS" => "NONE")),
+	"GeoTIFF, LZW" => ("GTiff", Dict("COMPRESS" => "LZW", "PREDICTOR" => "2")),
+	"GeoTIFF, DEFLATE" => ("GTiff", Dict("COMPRESS" => "DEFLATE", "PREDICTOR" => "2")),
+	"GeoTIFF, ZSTD" => ("GTiff", Dict("COMPRESS" => "ZSTD", "PREDICTOR" => "2")),
+	"Cloud-Optimised, DEFLATE" => ("COG", Dict("COMPRESS" => "DEFLATE")),
+]
+println(rpad("written as", 28), rpad("bytes", 12), "read (ms)")
+for (k, (name, (driver, options))) in enumerate(ways)
+	out = joinpath(dir, "band$(k).tif")
+	try
+		write(out, grid; driver = driver, options = options, missingval = fill_value)
+		read(Raster(out))  # the first read compiles
+		println(rpad(name, 28), rpad(filesize(out), 12), round(1000 * @elapsed(read(Raster(out))), digits = 2))
+	catch err
+		println(rpad(name, 28), "not written: ", first(sprint(showerror, err), 120))
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "classes-side-by-side"
+label = "Classes Side by Side"
+desc = "Each class's points: how many, their height and their mean intensity, which tells ground, vegetation and roofs apart"
+models = ["las"]
+code = '''
+names = Dict(1 => "Unclassified", 2 => "Ground", 3 => "Low vegetation", 4 => "Medium vegetation", 5 => "High vegetation", 6 => "Building", 7 => "Low noise", 9 => "Water", 17 => "Bridge deck", 18 => "High noise")
+println(rpad("class", 22), rpad("points", 10), rpad("z min", 10), rpad("z mean", 10), rpad("z max", 10), "intensity (0 to 1)")
+for c in sort(unique(pts.classification))
+	k = findall(==(c), pts.classification)
+	z = pts.z[k]
+	println(rpad(get(names, c, "Class $c"), 22), rpad(length(k), 10), rpad(round(minimum(z), digits = 2), 10), rpad(round(sum(z) / length(z), digits = 2), 10), rpad(round(maximum(z), digits = 2), 10), round(sum(pts.intensity[k]) / length(k), digits = 4))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "value-summary"
+label = "Value Summary"
+desc = "The mean, standard deviation and quantiles of the values of the cells, and the area they cover"
+models = ["geotiff"]
+code = '''
+v = Float64.(collect(skipmissing(grid)))
+q = quantile(v, [0.0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0])
+println("Cells with a value: ", length(v), ", covering ", round(length(v) * transform[2] * abs(transform[6]), digits = 1), " square units")
+println("Mean ", round(mean(v), digits = 3), ", standard deviation ", round(std(v), digits = 3))
+println("Quantiles 0, 5, 25, 50, 75, 95, 100%: ", join(round.(q, digits = 3), ", "))
+'''
+
+[[actionGroups.actions]]
+id = "values-at-points"
+label = "Values at Points"
+desc = "The value of the cell under each of five points: replace them with your own coordinates, in the raster's coordinate system"
+models = ["geotiff"]
+code = '''
+xlo, xhi = extrema(lookup(grid, X))
+ylo, yhi = extrema(lookup(grid, Y))
+places = [(xlo + (xhi - xlo) * a, ylo + (yhi - ylo) * b) for (a, b) in ((0.5, 0.5), (0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))]  # the centre and four points around it
+for p in extract(grid, places; geometry = true)
+	println("x = ", round(p.geometry[1], digits = 1), ", y = ", round(p.geometry[2], digits = 1), ": ", coalesce(last(values(p)), "missing"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "surface-terrain"
+label = "Surface and Terrain Grids"
+desc = "In cells of the Cell Size input: the surface model (highest point), the terrain model (mean height of ground points) and their difference, the height of buildings and trees above the ground"
+models = ["las"]
+code = '''
+cell = {{cellSize}}
+x0, y0 = minimum(pts.x), minimum(pts.y)
+nx, ny = floor(Int, (maximum(pts.x) - x0) / cell) + 1, floor(Int, (maximum(pts.y) - y0) / cell) + 1
+dsm = fill(-Inf, nx, ny)
+ground_sum, ground_n = zeros(nx, ny), zeros(Int, nx, ny)
+for k in eachindex(pts.x)
+	i, j = floor(Int, (pts.x[k] - x0) / cell) + 1, floor(Int, (pts.y[k] - y0) / cell) + 1
+	dsm[i, j] = max(dsm[i, j], pts.z[k])
+	if pts.classification[k] == 2  # ground
+		ground_sum[i, j] += pts.z[k]
+		ground_n[i, j] += 1
+	end
+end
+dtm = [ground_n[i, j] > 0 ? ground_sum[i, j] / ground_n[i, j] : NaN for i in 1:nx, j in 1:ny]
+ndsm = [isfinite(dsm[i, j]) && !isnan(dtm[i, j]) ? dsm[i, j] - dtm[i, j] : NaN for i in 1:nx, j in 1:ny]
+h = filter(!isnan, ndsm)
+println("Grids of ", nx, " x ", ny, " cells of ", cell, " x ", cell)
+println("Cells without points: ", count(!isfinite, dsm), "; without ground points (terrain unknown): ", count(isnan, dtm))
+println("Terrain: from ", round(minimum(filter(!isnan, dtm)), digits = 2), " to ", round(maximum(filter(!isnan, dtm)), digits = 2))
+println("Height above ground: cells above 2 = ", count(>(2), h), " (", round(100 * count(>(2), h) / length(h), digits = 1), "%), highest ", round(maximum(h), digits = 2))
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-cog"
+label = "Save as Cloud-Optimised GeoTIFF"
+desc = "Write the band to a Cloud-Optimised GeoTIFF next to the file read, tiled, with overviews and DEFLATE compression"
+models = ["geotiff"]
+code = '''
+out = first(splitext(path)) * "-cog.tif"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, grid; driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = fill_value)  # missing cells written as the file's no-data value
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-wgs84"
+label = "Reproject to Longitude and Latitude"
+desc = "Warp the band to longitude and latitude on WGS 84 (EPSG:4326), as web maps and global datasets use, and write it next to the file read"
+models = ["geotiff"]
+code = '''
+out = first(splitext(path)) * "-wgs84.tif"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	warped = resample(grid; crs = EPSG(4326))  # GDAL's warp, nearest neighbour by default
+	write(out, warped; missingval = fill_value)
+	println("Wrote ", out, ": ", size(warped, X), " x ", size(warped, Y), " cells")
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-grids"
+label = "Save Elevation Grids as GeoTIFF"
+desc = "Write the surface model, the terrain model and the height above ground, in cells of the Cell Size input, as three GeoTIFF files next to the file read, which the GeoTIFF tab reads"
+models = ["las"]
+code = '''
+using Rasters
+using Rasters.Lookups: Intervals, Center
+
+cell = {{cellSize}}
+x0, y0 = minimum(pts.x), minimum(pts.y)
+nx, ny = floor(Int, (maximum(pts.x) - x0) / cell) + 1, floor(Int, (maximum(pts.y) - y0) / cell) + 1
+dsm = fill(-Inf, nx, ny)
+ground_sum, ground_n = zeros(nx, ny), zeros(Int, nx, ny)
+for k in eachindex(pts.x)
+	i, j = floor(Int, (pts.x[k] - x0) / cell) + 1, floor(Int, (pts.y[k] - y0) / cell) + 1
+	dsm[i, j] = max(dsm[i, j], pts.z[k])
+	pts.classification[k] == 2 && (ground_sum[i, j] += pts.z[k]; ground_n[i, j] += 1)
+end
+dtm = [ground_n[i, j] > 0 ? ground_sum[i, j] / ground_n[i, j] : -9999.0 for i in 1:nx, j in 1:ny]
+dsm = [isfinite(d) ? d : -9999.0 for d in dsm]
+ndsm = [dsm[i, j] != -9999 && dtm[i, j] != -9999 ? dsm[i, j] - dtm[i, j] : -9999.0 for i in 1:nx, j in 1:ny]
+dimensions = (X(range(x0 + cell / 2; step = cell, length = nx); sampling = Intervals(Center())), Y(range(y0 + (ny - 0.5) * cell; step = -cell, length = ny); sampling = Intervals(Center())))  # cell centres, rows from north to south
+for (name, values) in ("dsm" => dsm, "dtm" => dtm, "ndsm" => ndsm)
+	out = first(splitext(path)) * "-$(name).tif"
+	if isfile(out)
+		println(out, " is there already: rename or move it first")
+	else
+		write(out, Raster(Float32.(values[:, end:-1:1]), dimensions; crs = isempty(file_crs) ? nothing : WellKnownText(file_crs), missingval = -9999f0))
+		println("Wrote ", out)
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the points read, with their height, class, intensity and returns, to a GeoParquet file next to the file read, for SQL with DuckDB"
+models = ["las"]
+code = '''
+using DuckDB
+
+out = first(splitext(path)) * ".parquet"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	csv = joinpath(mktempdir(), "points.csv")
+	open(csv, "w") do io
+		println(io, "x,y,z,classification,intensity,return_number,return_count")
+		for k in eachindex(pts.x)
+			println(io, pts.x[k], ",", pts.y[k], ",", pts.z[k], ",", pts.classification[k], ",", pts.intensity[k], ",", pts.return_number[k], ",", pts.return_count[k])
+		end
+	end
+	con = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(con, "LOAD spatial")
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (x, y), ST_Point(x, y) AS geom FROM read_csv('$(csv)')) TO '$(out)' (FORMAT parquet)")
+	println("Wrote ", out, ": ", length(pts.x), " points")
+end
+'''
