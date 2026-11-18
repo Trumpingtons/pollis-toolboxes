@@ -1,0 +1,677 @@
+# Eurostat GISCO: the NUTS regions, local administrative units, countries and Urban Audit cities of Europe, from
+# GISCO's distribution of geographic data, read with DuckDB, and joined with Eurostat's tables by their codes
+
+[meta]
+title = "Eurostat GISCO"
+viewType = "pollis.gisco"
+defaultModel = "nuts"
+decisionFirstColumn = "Units"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "gisco/factsheet.md"
+bundled = true
+description = "One-page reference: the four kinds of units, how the panel reads them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "gisco/overview.md"
+bundled = true
+description = "What GISCO distributes, and how regions, municipalities and cities serve European statistics"
+
+[[wikis]]
+name = "Diagnostics"
+file = "gisco/diagnostics.md"
+bundled = true
+description = "Codes of another NUTS version, generalised boundaries, invalid geometries, terms of use"
+
+[[wikis]]
+name = "Decision Guide"
+file = "gisco/decision-guide.md"
+bundled = true
+description = "Which units, which level, which scale and year, and which Eurostat table"
+
+[[wikis]]
+separator = true
+label = "Units and Data"
+
+[[wikis]]
+name = "NUTS Classification"
+file = "gisco/nuts-classification.md"
+bundled = true
+
+[[wikis]]
+name = "Local Administrative Units"
+file = "gisco/local-administrative-units.md"
+bundled = true
+
+[[wikis]]
+name = "GISCO Distribution"
+file = "gisco/gisco-distribution.md"
+bundled = true
+
+[[wikis]]
+name = "Eurostat Statistics by Region"
+file = "gisco/eurostat-statistics-by-region.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "LHKB2017a"
+
+[[references]]
+key = "Her2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "FW1991a"
+
+[[references]]
+key = "DPV2019a"
+
+[[references]]
+separator = true
+label = "Regulations and Documentation"
+
+[[references]]
+key = "EPCEU2003a"
+
+[[references]]
+key = "EC2023a"
+
+[[references]]
+key = "Eur2019a"
+
+[[references]]
+key = "Eur2026a"
+
+[[references]]
+key = "Eur2026b"
+
+[[references]]
+key = "Eur2026c"
+
+[[faq]]
+question = "Why do some codes of a Eurostat table find no region?"
+answer = '''
+NUTS changes every few years, and a Eurostat table may hold codes of several NUTS versions, or of several levels: a region that was split, merged or renumbered has a code that the regions of another version do not have. Codes and Eurostat lists the codes of the table that are not among the regions read, and the regions that have no value.
+
+Read the regions of the NUTS version the table uses, with the Year input, or leave those codes out.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Which scale should I use for NUTS regions?"
+answer = '''
+GISCO derives its 1:1 million, 3, 10, 20 and 60 million versions by generalising its 1:100,000 data, and its metadata says the small-scale versions are meant for cartographic purposes. 1:20 million draws a map of Europe quickly; 1:1 million follows the boundaries more closely, for maps of one country and for areas.
+
+Scales Side by Side shows how the number of vertices and the areas change from one scale to another.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Can I use GISCO boundaries in a commercial product?"
+answer = '''
+GISCO's page for administrative units grants the use of the data it distributes for communes, countries and postal codes on condition that they are not used for commercial purposes and that the source is acknowledged, with the notice © EuroGeographics for the administrative boundaries on any map or publication. For commercial use, it refers to EuroGeographics' licence agreements.
+
+Check the page of each dataset on GISCO's website for its own terms.
+'''
+wiki = "GISCO Distribution"
+
+[[faq]]
+question = "What is a functional urban area?"
+answer = '''
+A city together with its commuting zone, as the EU-OECD method defines it: it encompasses the economic and functional extent of a city, based on people's daily movements. The Cities and Functional Urban Areas tab reads either the cities or the functional urban areas of GISCO's Urban Audit; Cities and Their Areas sets each city beside its functional urban area.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "What are the NUTS levels?"
+answer = '''
+NUTS divides each member state into NUTS 1 regions, each divided into NUTS 2 regions, each divided into NUTS 3 regions; GISCO also distributes a country level, NUTS 0. Eurostat describes NUTS 1 as major socio-economic regions, NUTS 2 as basic regions for regional policies and NUTS 3 as small regions for specific diagnoses.
+'''
+wiki = "NUTS Classification"
+hidden = true
+
+[[faq]]
+question = "How often does NUTS change?"
+answer = '''
+Regulation (EC) No 1059/2003 allows amendments to the NUTS classification not more frequently than every three years, and Eurostat says the classification should stay stable for at least three years. GISCO distributes the versions of 2003, 2006, 2010, 2013, 2016, 2021 and 2024; Versions Side by Side shows the codes a version added and removed.
+'''
+wiki = "NUTS Classification"
+hidden = true
+
+[[faq]]
+question = "What does an SDMX key such as A.PER_KM2. select?"
+answer = '''
+One value for each dimension of a Eurostat table, in the order of its dimensions, separated by dots; an empty position selects every value of that dimension. For demo_r_d3dens, whose dimensions are frequency, unit and region, A.PER_KM2. selects the annual values in persons per km² for every region.
+'''
+wiki = "Eurostat Statistics by Region"
+hidden = true
+
+[[faq]]
+question = "Why does the panel download the LAU file only once?"
+answer = '''
+GISCO publishes the local administrative units of all of Europe in one file, at 1:1 million: about 78 MB as GeoPackage for 2024. The panel downloads it to the folder the first time and reads it from there afterwards, keeping the units of the Country chosen.
+'''
+wiki = "Local Administrative Units"
+hidden = true
+
+[[models]]
+id = "nuts"
+label = "NUTS Regions"
+
+[[models]]
+id = "lau"
+label = "Local Administrative Units"
+
+[[models]]
+id = "countries"
+label = "Countries"
+
+[[models]]
+id = "urau"
+label = "Cities and Functional Urban Areas"
+
+[[bullets]]
+text = "NUTS Regions"
+detail = "The regions of the Nomenclature of Territorial Units for Statistics, at NUTS level 0 to 3, by which Eurostat publishes regional statistics"
+
+[[bullets]]
+text = "Local Administrative Units"
+detail = "The municipalities and communes of Europe, the building blocks of NUTS 3 regions, with their population, density and area"
+
+[[bullets]]
+text = "Countries"
+detail = "The countries of the world, with their membership of the European Union, EFTA and candidate countries"
+
+[[bullets]]
+text = "Cities and Functional Urban Areas"
+detail = "The cities of the Urban Audit and their functional urban areas, a city with its commuting zone"
+
+[[decisionRows]]
+task = "NUTS Regions"
+context = "Regional statistics"
+purpose = "Map a Eurostat table of regions, compare NUTS versions and scales"
+
+[[decisionRows]]
+task = "Local Administrative Units"
+context = "Municipalities"
+purpose = "Map the municipalities of a country with their population and density"
+
+[[decisionRows]]
+task = "Countries"
+context = "National statistics"
+purpose = "Map a Eurostat table of countries, compare scales"
+
+[[decisionRows]]
+task = "Cities and Functional Urban Areas"
+context = "Urban statistics"
+purpose = "Map a Eurostat table of cities, set cities beside their functional urban areas"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where GISCO's files are kept once downloaded, and where the Next Steps save theirs: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "year"
+label = "Year"
+tooltip = "The version of the units: for NUTS 2003, 2006, 2010, 2013, 2016, 2021 or 2024; for LAU every year from 2011 to 2024; for countries 2001, 2006, 2010, 2013, 2016, 2020 or 2024; for the Urban Audit 2001, 2004, 2014, 2018, 2020, 2021 or 2024."
+default = "2024"
+
+[[inputs]]
+id = "nutsLevel"
+label = "Level"
+kind = "select"
+default = "3"
+models = ["nuts"]
+
+[[inputs.options]]
+value = "0"
+label = "NUTS 0"
+
+[[inputs.options]]
+value = "1"
+label = "NUTS 1"
+
+[[inputs.options]]
+value = "2"
+label = "NUTS 2"
+
+[[inputs.options]]
+value = "3"
+label = "NUTS 3"
+
+[[inputs]]
+id = "scale"
+label = "Scale"
+kind = "select"
+default = "20M"
+models = ["nuts", "countries"]
+
+[[inputs.options]]
+value = "01M"
+label = "1:1 Million"
+
+[[inputs.options]]
+value = "03M"
+label = "1:3 Million"
+
+[[inputs.options]]
+value = "10M"
+label = "1:10 Million"
+
+[[inputs.options]]
+value = "20M"
+label = "1:20 Million"
+
+[[inputs.options]]
+value = "60M"
+label = "1:60 Million"
+
+[[inputs]]
+id = "country"
+label = "Country"
+tooltip = "The two-letter code of the country whose units are read, as Eurostat writes it (EL for Greece), or all."
+default = "PT"
+models = ["nuts", "lau", "urau"]
+
+[[inputs]]
+id = "urauKind"
+label = "Units"
+kind = "select"
+default = "CITIES"
+models = ["urau"]
+
+[[inputs.options]]
+value = "CITIES"
+label = "Cities"
+
+[[inputs.options]]
+value = "FUA"
+label = "Functional Urban Areas"
+
+[[inputs]]
+id = "table"
+label = "Eurostat Table"
+tooltip = "The code of a Eurostat table with values by region or country, such as demo_r_d3dens, population density by NUTS 3 region."
+default = "demo_r_d3dens"
+models = ["nuts", "countries"]
+newRow = true
+
+[[inputs]]
+id = "tableKey"
+label = "Key"
+tooltip = "The SDMX key of the series: a value for each dimension of the table, in order, separated by dots, and an empty position for every value, as A.PER_KM2. for annual values in persons per km² for every region."
+default = "A.PER_KM2."
+models = ["nuts", "countries"]
+
+[[inputs]]
+id = "cityTable"
+label = "Eurostat Table"
+tooltip = "The code of a Eurostat table with values by city or functional urban area, such as urb_cpop1, population on 1 January by age groups and sex."
+default = "urb_cpop1"
+models = ["urau"]
+newRow = true
+
+[[inputs]]
+id = "cityKey"
+label = "Key"
+tooltip = "The SDMX key of the series: a value for each dimension of the table, in order, separated by dots, and an empty position for every value, as A.DE1001V. for the annual total population of every city."
+default = "A.DE1001V."
+models = ["urau"]
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "LOAD httpfs")  # DuckDB's extension for files over HTTPS, for Eurostat's tables
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # where GISCO's files are kept, and the Next Steps save theirs
+gisco = "https://gisco-services.ec.europa.eu/distribution/v2"  # GISCO's distribution of geographic data
+year = "{{year}}"
+{{?model=nuts}}theme, file = "nuts", "NUTS_RG_{{scale}}_$(year)_4326_LEVL_{{nutsLevel}}"  # the regions of one NUTS level at one scale, in longitude and latitude
+{{?model=nuts}}code, label, by = "NUTS_ID", "NAME_LATN", "parent"  # the columns of the code and the name, and the one the map colours by
+{{?model=lau}}theme, file = "lau", "LAU_RG_01M_$(year)_4326"  # the local administrative units of Europe, at 1:1 million
+{{?model=lau}}code, label, by = "GISCO_ID", "LAU_NAME", "POP_DENS_$(year)"  # the columns of the code and the name, and the one the map colours by
+{{?model=countries}}theme, file = "countries", "CNTR_RG_{{scale}}_$(year)_4326"  # the countries of the world at one scale
+{{?model=countries}}code, label, by = "CNTR_ID", "NAME_ENGL", "EU_STAT"  # the columns of the code and the name, and the one the map colours by
+{{?model=urau}}theme, file = "urau", "URAU_RG_100K_$(year)_4326_{{urauKind}}"  # the Urban Audit's cities or functional urban areas, at 1:100,000
+{{?model=urau}}code, label, by = "URAU_CODE", "URAU_NAME", "CNTR_CODE"  # the columns of the code and the name, and the one the map colours by
+{{?model=countries}}keep = "true"
+{{?model=nuts|lau|urau}}keep = "{{country}}" == "all" ? "true" : "CNTR_CODE = '{{country}}'"
+{{?model=nuts}}extra = ", CASE WHEN LEVL_CODE = 0 THEN CNTR_CODE ELSE left(NUTS_ID, length(NUTS_ID) - 1) END AS parent"  # the code of the region one level up
+{{?model=lau|countries|urau}}extra = ""
+
+listing = try
+	String(take!(Downloads.download("$(gisco)/$(theme)/$(theme)-$(year)-files.json", IOBuffer())))  # the files GISCO has for the year
+catch
+	error("GISCO has no $(theme) for the year $(year)")
+end
+occursin("\"$(file).gpkg\"", listing) || error("GISCO has no $(file).gpkg: $(gisco)/$(theme)/$(theme)-$(year)-files.json lists the files it has for $(year)")
+path = joinpath(folder, "$(file).gpkg")
+isfile(path) || Downloads.download("$(gisco)/$(theme)/gpkg/$(file).gpkg", path)  # downloaded once, then read from the folder
+function units(p)  # a file's units as SQL, its geometry column named geom whatever the file calls it (geom or Shape)
+	d = Tables.columntable(DBInterface.execute(con, "DESCRIBE SELECT * FROM ST_Read('$(p)')"))
+	g = d.column_name[findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)]
+	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('fid', 'ogc_fid', '$(lowercase(g))')), \"$(g)\" AS geom FROM ST_Read('$(p)'))"
+end
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2$(extra) FROM $(units(path)) WHERE $(keep)")  # areas in km² on the WGS 84 ellipsoid
+columns = Tables.columntable(DBInterface.execute(con, "DESCRIBE features")).column_name
+by in columns || (by = "CNTR_CODE")  # an older file may lack the column
+n = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM features"))))
+println(file, ": ", n, " units", "{{country}}" == "all" || theme == "countries" ? "" : " of {{country}}", ", read from ", path, " (", round(filesize(path) / 2^20, digits = 1), " MB)")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-on-map"
+label = "Show on a Map"
+desc = "The units on an OpenStreetMap base map in Pollis's map view, coloured by the region one level up, by population density, by EU membership or by country; click a unit for its code, name and area"
+code = '''
+dir = mktempdir()
+DBInterface.execute(con, "COPY (SELECT $(code) AS code, $(label) AS name, round(km2, 1) AS km2, $(by), geom FROM features) TO '$(joinpath(dir, "units.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "units.geojson"); name = file, column = by, opacity = 0.7)))
+println("© EuroGeographics for the administrative boundaries")
+'''
+
+[[actionGroups.actions]]
+id = "map-eurostat"
+label = "Map a Eurostat Table"
+desc = "The latest values of the Eurostat table and key chosen, joined to the units by their codes and drawn as a choropleth"
+models = ["nuts", "countries", "urau"]
+code = '''
+{{?model=nuts|countries}}dataset, key = "{{table}}", "{{tableKey}}"
+{{?model=urau}}dataset, key = "{{cityTable}}", "{{cityKey}}"
+url = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/$(dataset)/$(key)?format=SDMX-CSV"  # Eurostat's API: the series of the key, all periods
+DBInterface.execute(con, "CREATE OR REPLACE TABLE eurostat AS SELECT * FROM read_csv('$(url)', all_varchar = true)")
+cols = Tables.columntable(DBInterface.execute(con, "DESCRIBE eurostat")).column_name
+place = only(intersect(["geo", "cities"], cols))  # the column of the codes of regions, countries or cities
+dims = setdiff(cols, ["DATAFLOW", "LAST UPDATE", place, "TIME_PERIOD", "OBS_VALUE", "OBS_FLAG", "CONF_STATUS"])
+varying = filter(d -> only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(DISTINCT \"$(d)\") FROM eurostat")))) > 1, dims)
+isempty(varying) || error("The key selects several series per unit: give a value for $(join(varying, ", ")) in the Key")
+period = only(only(Tables.columntable(DBInterface.execute(con, "SELECT max(e.TIME_PERIOD) FROM eurostat e JOIN features f ON e.\"$(place)\" = f.$(code) WHERE e.OBS_VALUE IS NOT NULL"))))
+period === missing && error("No code of $(dataset) is among the units read: see Codes and Eurostat")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT f.$(code) AS code, f.$(label) AS name, TRY_CAST(e.OBS_VALUE AS DOUBLE) AS value, e.OBS_FLAG AS flag, f.geom FROM features f LEFT JOIN eurostat e ON e.\"$(place)\" = f.$(code) AND e.TIME_PERIOD = '$(period)'")
+m = Tables.columntable(DBInterface.execute(con, "SELECT count(value) AS valued, count(*) AS units FROM mapped"))
+println(dataset, " ", key, ", ", period, ": values for ", m.valued[1], " of ", m.units[1], " units")
+dir = mktempdir()
+DBInterface.execute(con, "COPY mapped TO '$(joinpath(dir, "mapped.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "mapped.geojson"); name = "$(dataset), $(period)", column = "value", opacity = 0.8)))
+println("© EuroGeographics for the administrative boundaries; data: Eurostat, $(dataset)")
+'''
+
+[[actionGroups.actions]]
+id = "areas-chart"
+label = "Largest Units by Area"
+desc = "The 25 largest units read, in km², as a bar chart drawn with ECharts"
+code = '''
+using ECharts
+
+d = Tables.columntable(DBInterface.execute(con, "SELECT coalesce($(label), $(code)) AS name, round(km2, 1) AS km2 FROM features ORDER BY km2 DESC LIMIT 25"))
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Largest units of $(file), km²")],
+	xAxis = [ECharts.Axis(_type = "category", data = collect(d.name), axisLabel = ECharts.AxisLabel(rotate = 45))], yAxis = [ECharts.Axis(_type = "value", name = "km²")],
+	series = [ECharts.XYSeries(name = "km²", _type = "bar", data = collect(d.km2))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "file-contents"
+label = "File and Columns"
+desc = "The file read, its units and columns, and the extent of the units"
+code = '''
+println(path, ", ", round(filesize(path) / 2^20, digits = 1), " MB; ", n, " units read")
+d = Tables.columntable(DBInterface.execute(con, "DESCRIBE features"))
+println("Columns: ", join(["$(d.column_name[i]) ($(d.column_type[i]))" for i in eachindex(d.column_name) if d.column_name[i] != "geom"], ", "))
+e = Tables.columntable(DBInterface.execute(con, "SELECT ST_XMin(ST_Extent_Agg(geom)) AS w, ST_XMax(ST_Extent_Agg(geom)) AS e, ST_YMin(ST_Extent_Agg(geom)) AS s, ST_YMax(ST_Extent_Agg(geom)) AS n FROM features"))
+println("Extent: longitude ", round(e.w[1], digits = 3), " to ", round(e.e[1], digits = 3), ", latitude ", round(e.s[1], digits = 3), " to ", round(e.n[1], digits = 3))
+'''
+
+[[actionGroups.actions]]
+id = "geometry-check"
+label = "Geometry Check"
+desc = "Invalid and empty geometries, units in several parts, the vertices of the boundaries, and the smallest units"
+code = '''
+g = Tables.columntable(DBInterface.execute(con, "SELECT count(*) FILTER (WHERE NOT ST_IsValid(geom)) AS invalid, count(*) FILTER (WHERE ST_IsEmpty(geom)) AS empty, count(*) FILTER (WHERE ST_NumGeometries(geom) > 1) AS multipart, sum(ST_NPoints(geom)) AS vertices, median(ST_NPoints(geom)) AS median_vertices FROM features"))
+println("Invalid geometries: ", g.invalid[1], "; empty: ", g.empty[1], "; units in several parts (islands, enclaves): ", g.multipart[1])
+println("Vertices: ", g.vertices[1], " in all, median ", g.median_vertices[1], " per unit")
+s = Tables.columntable(DBInterface.execute(con, "SELECT $(code) AS code, coalesce($(label), '') AS name, km2 FROM features ORDER BY km2 LIMIT 5"))
+println("Smallest units: ", join(["$(s.code[i]) $(s.name[i]) $(round(s.km2[i], digits = 3)) km²" for i in eachindex(s.code)], "; "))
+'''
+
+[[actionGroups.actions]]
+id = "codes-check"
+label = "Codes and Eurostat"
+desc = "The codes of the Eurostat table that are not among the units read, as codes of other NUTS versions or levels, and the units without values"
+models = ["nuts", "countries", "urau"]
+code = '''
+{{?model=nuts|countries}}dataset, key = "{{table}}", "{{tableKey}}"
+{{?model=urau}}dataset, key = "{{cityTable}}", "{{cityKey}}"
+url = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/$(dataset)/$(key)?format=SDMX-CSV"  # Eurostat's API: the series of the key, all periods
+DBInterface.execute(con, "CREATE OR REPLACE TABLE eurostat AS SELECT * FROM read_csv('$(url)', all_varchar = true)")
+place = only(intersect(["geo", "cities"], Tables.columntable(DBInterface.execute(con, "DESCRIBE eurostat")).column_name))
+{{?model=nuts}}same = "length(e.\"$(place)\") = $(2 + {{nutsLevel}}) AND left(e.\"$(place)\", 2) IN (SELECT DISTINCT CNTR_CODE FROM features)"  # codes of the same level and countries
+{{?model=countries}}same = "length(e.\"$(place)\") = 2"  # codes of countries
+{{?model=urau}}same = "left(e.\"$(place)\", 2) IN (SELECT DISTINCT CNTR_CODE FROM features) AND right(e.\"$(place)\", 1) = right((SELECT any_value($(code)) FROM features), 1)"  # codes of the same countries and kind
+c = Tables.columntable(DBInterface.execute(con, "SELECT e.\"$(place)\" AS code, min(e.TIME_PERIOD) AS first, max(e.TIME_PERIOD) AS last FROM eurostat e WHERE $(same) AND e.\"$(place)\" NOT IN (SELECT $(code) FROM features) GROUP BY ALL ORDER BY code"))
+println("Codes of ", dataset, " of the same level and countries that are not among the units: ", length(c.code))
+for i in eachindex(c.code)[1:min(end, 25)]
+	println("  ", rpad(c.code[i], 10), "values from ", c.first[i], " to ", c.last[i])
+end
+u = Tables.columntable(DBInterface.execute(con, "SELECT $(code) AS code, $(label) AS name FROM features WHERE $(code) NOT IN (SELECT \"$(place)\" FROM eurostat WHERE OBS_VALUE IS NOT NULL) ORDER BY code"))
+println("Units without any value in ", dataset, ": ", length(u.code), isempty(u.code) ? "" : ", " * join(first(u.code, 25), ", "))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "scales-side-by-side"
+label = "Scales Side by Side"
+desc = "The same units at each scale GISCO has for the year: their vertices, total area and the difference from 1:1 million"
+models = ["nuts", "countries"]
+code = '''
+{{?model=nuts}}names = ["NUTS_RG_$(s)_$(year)_4326_LEVL_{{nutsLevel}}" for s in ("01M", "03M", "10M", "20M", "60M")]
+{{?model=countries}}names = ["CNTR_RG_$(s)_$(year)_4326" for s in ("01M", "03M", "10M", "20M", "60M")]
+println(rpad("file", 36), rpad("units", 8), rpad("vertices", 12), rpad("km²", 14), "% from 1:1 million")
+reference = nothing
+for name in filter(f -> occursin("\"$(f).gpkg\"", listing), names)  # the scales GISCO has for the year
+	local_path = joinpath(folder, "$(name).gpkg")
+	isfile(local_path) || Downloads.download("$(gisco)/$(theme)/gpkg/$(name).gpkg", local_path)  # downloaded once
+	r = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS units, sum(ST_NPoints(geom)) AS vertices, sum(ST_Area_Spheroid(geom)) / 1e6 AS km2 FROM $(units(local_path)) WHERE $(keep)"))
+	global reference = something(reference, r.km2[1])
+	println(rpad(name, 36), rpad(r.units[1], 8), rpad(r.vertices[1], 12), rpad(round(r.km2[1], digits = 0), 14), round(100 * (r.km2[1] / reference - 1), digits = 2))
+end
+'''
+
+[[actionGroups.actions]]
+id = "versions-side-by-side"
+label = "Versions Side by Side"
+desc = "The NUTS regions of the year read beside those of the version before: codes kept, added and removed, and regions whose area changed"
+models = ["nuts"]
+code = '''
+versions = ["2003", "2006", "2010", "2013", "2016", "2021", "2024"]
+k = findfirst(==(year), versions)
+(k === nothing || k == 1) && error("No NUTS version before $(year) to compare with")
+before = "NUTS_RG_{{scale}}_$(versions[k - 1])_4326_LEVL_{{nutsLevel}}"
+before_path = joinpath(folder, "$(before).gpkg")
+isfile(before_path) || Downloads.download("$(gisco)/nuts/gpkg/$(before).gpkg", before_path)  # downloaded once
+DBInterface.execute(con, "CREATE OR REPLACE TABLE previous AS SELECT NUTS_ID, NAME_LATN, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(units(before_path)) WHERE $(keep)")
+v = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT count(*) FROM features WHERE NUTS_ID IN (SELECT NUTS_ID FROM previous)) AS kept, (SELECT count(*) FROM features WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM previous)) AS added, (SELECT count(*) FROM previous WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM features)) AS removed"))
+println("NUTS ", versions[k - 1], " to ", year, ", level {{nutsLevel}}: ", v.kept[1], " codes kept, ", v.added[1], " added, ", v.removed[1], " removed")
+a = Tables.columntable(DBInterface.execute(con, "SELECT NUTS_ID AS code, NAME_LATN AS name FROM features WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM previous) ORDER BY code LIMIT 20"))
+isempty(a.code) || println("Added: ", join(["$(a.code[i]) $(a.name[i])" for i in eachindex(a.code)], "; "))
+r = Tables.columntable(DBInterface.execute(con, "SELECT NUTS_ID AS code, NAME_LATN AS name FROM previous WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM features) ORDER BY code LIMIT 20"))
+isempty(r.code) || println("Removed: ", join(["$(r.code[i]) $(r.name[i])" for i in eachindex(r.code)], "; "))
+c = Tables.columntable(DBInterface.execute(con, "SELECT f.NUTS_ID AS code, round(p.km2) AS before, round(f.km2) AS now FROM features f JOIN previous p USING (NUTS_ID) WHERE abs(f.km2 / p.km2 - 1) > 0.01 ORDER BY abs(f.km2 / p.km2 - 1) DESC LIMIT 20"))
+println("Codes kept whose area changed by more than 1%: ", length(c.code), isempty(c.code) ? "" : ", " * join(["$(c.code[i]) $(c.before[i]) to $(c.now[i]) km²" for i in eachindex(c.code)], "; "))
+'''
+
+[[actionGroups.actions]]
+id = "countries-side-by-side"
+label = "Countries Side by Side"
+desc = "The local administrative units of every country in the file: how many, their median area and population, and the share of units under 1,000 inhabitants"
+models = ["lau"]
+code = '''
+pop = "POP_$(year)" in columns ? "nullif(POP_$(year), 0)" : "NULL"  # the population of the year, when the file has it; a population of 0 is left out
+c = Tables.columntable(DBInterface.execute(con, "SELECT CNTR_CODE AS country, count(*) AS units, round(median(ST_Area_Spheroid(geom)) / 1e6, 1) AS km2, median($(pop))::BIGINT AS population, round(100 * avg(($(pop) < 1000)::INT), 1) AS small FROM $(units(path)) GROUP BY ALL ORDER BY units DESC"))
+println(rpad("country", 9), rpad("units", 8), rpad("median km²", 12), rpad("median population", 19), "% under 1,000 (of units with a population above 0)")
+for i in eachindex(c.country)
+	println(rpad(c.country[i], 9), rpad(c.units[i], 8), rpad(c.km2[i], 12), rpad(coalesce(c.population[i], ""), 19), coalesce(c.small[i], ""))
+end
+'''
+
+[[actionGroups.actions]]
+id = "cities-and-fuas"
+label = "Cities and Their Areas"
+desc = "Each city beside its functional urban area, the city with its commuting zone: the areas of both and how many times larger the functional urban area is"
+models = ["urau"]
+code = '''
+other = replace(file, r"_(CITIES|FUA)$" => "_" * ("{{urauKind}}" == "CITIES" ? "FUA" : "CITIES"))
+other_path = joinpath(folder, "$(other).gpkg")
+isfile(other_path) || Downloads.download("$(gisco)/urau/gpkg/$(other).gpkg", other_path)  # downloaded once
+cities, fuas = "{{urauKind}}" == "CITIES" ? ("features", units(other_path)) : (units(other_path), "features")
+c = Tables.columntable(DBInterface.execute(con, """
+SELECT c.URAU_CODE AS city, c.URAU_NAME AS name, round(ST_Area_Spheroid(c.geom) / 1e6, 1) AS city_km2, f.URAU_CODE AS fua, round(ST_Area_Spheroid(f.geom) / 1e6, 1) AS fua_km2
+FROM $(cities) c JOIN $(fuas) f ON f.URAU_CODE = c.FUA_CODE WHERE $(replace(keep, "CNTR_CODE" => "c.CNTR_CODE")) ORDER BY fua_km2 DESC LIMIT 25
+"""))
+w = maximum(length, c.name; init = 4) + 2
+println(rpad("city", w), rpad("km²", 10), rpad("functional urban area", 23), rpad("km²", 10), "times the city")
+for i in eachindex(c.city)
+	println(rpad(c.name[i], w), rpad(c.city_km2[i], 10), rpad(c.fua[i], 23), rpad(c.fua_km2[i], 10), round(c.fua_km2[i] / c.city_km2[i], digits = 1))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "region-areas"
+label = "Areas Within Their Parents"
+desc = "Each region's area and its share of the region one level up, and the spread of the areas of the level"
+models = ["nuts"]
+code = '''
+s = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n, round(min(km2)) AS low, round(median(km2)) AS mid, round(max(km2)) AS high FROM features"))
+println("NUTS {{nutsLevel}} regions read: ", s.n[1], "; area from ", s.low[1], " to ", s.high[1], " km², median ", s.mid[1], " (at scale {{scale}}, approximate)")
+r = Tables.columntable(DBInterface.execute(con, "SELECT NUTS_ID AS code, NAME_LATN AS name, parent, round(km2) AS km2, round(100 * km2 / sum(km2) OVER (PARTITION BY parent), 1) AS share FROM features ORDER BY parent, km2 DESC LIMIT 40"))
+w = maximum(length, r.name; init = 4) + 2
+println(rpad("code", 8), rpad("name", w), rpad("parent", 8), rpad("km²", 10), "% of the parent read")
+for i in eachindex(r.code)
+	println(rpad(r.code[i], 8), rpad(r.name[i], w), rpad(r.parent[i], 8), rpad(r.km2[i], 10), r.share[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "population-density"
+label = "Population and Density"
+desc = "The population of the units read, their median density, the most populous and the densest units"
+models = ["lau"]
+code = '''
+pop, dens = "POP_$(year)", "POP_DENS_$(year)"
+(pop in columns && dens in columns) || error("The LAU file of $(year) has no population columns: they are $(join(columns, ", "))")
+t = Tables.columntable(DBInterface.execute(con, "SELECT count(nullif($(pop), 0)) AS counted, sum($(pop))::BIGINT AS people, round(sum(km2)) AS km2, round(median(nullif($(dens), 0)), 1) AS density FROM features"))
+t.counted[1] == 0 && error("The LAU file of $(year) gives a population of 0 for every unit read: try another Year or Country")
+println(n, " units, ", t.counted[1], " with a population above 0: ", t.people[1], " inhabitants on ", t.km2[1], " km²; median density ", t.density[1], " per km²")
+for (title, column) in (("Most populous", pop), ("Densest", dens))
+	r = Tables.columntable(DBInterface.execute(con, "SELECT LAU_NAME AS name, $(pop)::BIGINT AS people, round($(dens))::BIGINT AS density FROM features ORDER BY $(column) DESC NULLS LAST LIMIT 10"))
+	println(title, ": ", join(["$(r.name[i]) ($(r.people[i]), $(r.density[i]) per km²)" for i in eachindex(r.name)], "; "))
+end
+'''
+
+[[actionGroups.actions]]
+id = "country-groups"
+label = "Countries by Status"
+desc = "The countries read by membership of the European Union, EFTA and the candidate countries, with their areas"
+models = ["countries"]
+code = '''
+g = Tables.columntable(DBInterface.execute(con, "SELECT CASE WHEN EU_STAT = 'T' THEN 'European Union' WHEN EFTA_STAT = 'T' THEN 'EFTA' WHEN CC_STAT = 'T' THEN 'Candidate country' ELSE 'Other' END AS status, count(*) AS countries, round(sum(km2) / 1e6, 2) AS million_km2, string_agg(CNTR_ID, ', ' ORDER BY CNTR_ID) AS codes FROM features GROUP BY ALL ORDER BY countries"))
+for i in eachindex(g.status)
+	println(rpad(g.status[i], 20), rpad(g.countries[i], 6), rpad("$(g.million_km2[i]) million km²", 22), g.status[i] == "Other" ? "" : g.codes[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "city-areas"
+label = "City Areas"
+desc = "The cities or functional urban areas read, with their area, and the capitals"
+models = ["urau"]
+code = '''
+r = Tables.columntable(DBInterface.execute(con, "SELECT URAU_CODE AS code, URAU_NAME AS name, round(km2, 1) AS km2, coalesce(CITY_CPTL, '') = 'Y' AS capital FROM features ORDER BY km2 DESC"))
+println(n, " units, ", round(sum(r.km2), digits = 0), " km² in all; capitals: ", join(r.name[r.capital], ", "))
+w = maximum(length, r.name; init = 4) + 2
+for i in eachindex(r.code)[1:min(end, 20)]
+	println(rpad(r.code[i], 10), rpad(r.name[i], w), r.km2[i], " km²")
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-gpkg"
+label = "Save as GeoPackage"
+desc = "The units read, with every column and their area, to a GeoPackage in the folder, for the Geospatial Vector Files panel and any GIS"
+code = '''
+out = joinpath(folder, "$(file)-$("{{country}}" == "all" || theme == "countries" ? "all" : "{{country}}")-units.gpkg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME '$(theme)', SRS 'EPSG:4326')")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "The units read, with every column and their area, to a GeoParquet file in the folder"
+code = '''
+out = joinpath(folder, "$(file)-$("{{country}}" == "all" || theme == "countries" ? "all" : "{{country}}")-units.parquet")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT parquet)")  # DuckDB writes GeoParquet metadata for the geometry column
+	println("Wrote ", out)
+end
+'''

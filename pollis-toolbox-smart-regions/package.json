@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
-  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, CityGML and CityJSON 3D city models, GTFS transit feeds and OpenStreetMap PBF extracts, reads the places, buildings, roads, boundaries and addresses of an area from Overture Maps, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
-  "version": "0.1.12",
+  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, CityGML and CityJSON 3D city models, GTFS transit feeds and OpenStreetMap PBF extracts, reads the places, buildings, roads, boundaries and addresses of an area from Overture Maps, reads the NUTS regions, local administrative units, countries and Urban Audit cities of Eurostat GISCO and maps Eurostat's tables on them, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
+  "version": "0.1.13",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -56,11 +56,13 @@
           },
           {
             "id": "overture", "command": "pollis.smartRegions.overture", "title": "Overture Maps", "submenu": "accessDataLibraries", "group": "1_vector", "order": 2, "data": "panels/overture.toml", "defaultModel": "places", "decisionFirstColumn": "Theme"
+          },
+          {
+            "id": "gisco", "command": "pollis.smartRegions.gisco", "title": "Eurostat GISCO", "submenu": "accessDataLibraries", "group": "1_vector", "order": 3, "data": "panels/gisco.toml", "defaultModel": "nuts", "decisionFirstColumn": "Units"
           }
         ],
         "planned": [
           { "title": "OpenStreetMap Data", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1 },
-          { "title": "Eurostat GISCO (NUTS Regions)", "submenu": "accessDataLibraries", "group": "1_vector", "order": 3 },
           { "title": "Copernicus Data Space", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 1 },
           { "title": "USGS EarthExplorer", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 2 },
           { "title": "OpenTopography", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 3 },
