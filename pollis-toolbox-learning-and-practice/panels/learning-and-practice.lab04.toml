@@ -1,0 +1,186 @@
+# Lab Course 04 of Data-Driven Decisions: Computational Lab Series, a page in the Time Arrow style: one step a lab
+[meta]
+title = "Causal Inference & Policy Evaluation: From Natural Experiments to Double Machine Learning"
+style = "timeArrow"
+intro = "Course 04 addresses the fundamental question of counterfactual intervention: what happens when we actively change a treatment, price or policy? Students progress from experimental benchmarks and observational selection bias, to quasi-experimental panel designs, to high-dimensional Double/Debiased Machine Learning, and finally to heterogeneous treatment effects and optimal policy learning."
+
+[matrix]
+columns = ["Lab", "Dataset", "Identification Strategy", "Primary Paradigm Shift", "Core Evaluation Metric"]
+
+[[matrix.rows]]
+cells = ["1", "LaLonde NSW + CPS/PSID", "Conditional independence (unconfoundedness)", "Naive OLS → doubly robust and overlap balancing", "ATT bias against the RCT, and Love plots"]
+
+[[matrix.rows]]
+cells = ["2", "Card-Krueger and Proposition 99", "Parallel trends and synthetic counterfactuals", "Static TWFE → heterogeneity-robust DiD and SDID", "Pre-trend event study and placebo RMSPE"]
+
+[[matrix.rows]]
+cells = ["3", "SIPP 401(k) and ACIC benchmark", "High-dimensional selection and conditional IV", "Naive ML plug-in → cross-fitted orthogonal DML", "ATE, LATE and the empirical coverage of 95% intervals"]
+
+[[matrix.rows]]
+cells = ["4", "Hillstrom and Criteo Uplift", "Randomized and conditional heterogeneity", "Population ATE → CATE meta-learners and policy trees", "Qini, AUUC and budget-constrained welfare"]
+
+[[steps]]
+title = "Lab 1: Experimental Benchmarks, Selection Bias and Covariate Balancing"
+datasetText = "LaLonde (1986) National Supported Work (NSW) Demonstration with the Dehejia-Wahba CPS and PSID observational controls: the canonical benchmark pairing randomized job-training trial data with non-experimental survey controls"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Formalize the Rubin Causal Model (potential outcomes), the Average Treatment Effect (ATE) and the Average Treatment Effect on the Treated (ATT), separating the identification assumptions (unconfoundedness, overlap or positivity, SUTVA) from the mechanics of estimation.", "Reproduce LaLonde’s famous empirical warning: show how naive regression and unverified observational comparisons fail dramatically when covariate overlap breaks down.", "Diagnose overlap failures through propensity score distributions and standardized mean differences (Love plots) before looking at outcome data."]
+
+[[steps.sections]]
+heading = "Baseline Models (Naive and Parametric)"
+items = ["The experimental benchmark: the difference in means on the randomized NSW sample, the ground-truth target.", "Naive observational OLS and unclipped Inverse Probability Weighting (IPW) on the CPS and PSID observational samples, exposing the extreme instability of the weights when the propensity score e(X) is close to 0 or 1."]
+
+[[steps.sections]]
+heading = "Target Models (Doubly Robust and Balancing Estimators)"
+items = ["Augmented Inverse Probability Weighting (AIPW, doubly robust), combining an outcome regression with stabilized propensity scores.", "Entropy Balancing (Hainmueller) and Coarsened Exact Matching (CEM), with the optimal overlap trimming of Crump, Hotz, Imbens and Mitnik."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A Love plot and bias-recovery audit comparing every observational estimator with the randomized NSW ground-truth ATT of +$1,794, showing how covariate balancing with overlap trimming recovers the experimental benchmark while naive OLS gives the wrong sign."
+
+[[steps]]
+title = "Lab 2: Panel Quasi-Experiments, Staggered Adoption and Synthetic Controls"
+datasetText = "Card and Krueger (1994) minimum wage panel (fast-food employment in New Jersey and Pennsylvania), with the California Proposition 99 tobacco control panel of Abadie, Diamond and Hainmueller (2010): 39 US states, 1970–2000"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Master identification through parallel trends and pre-trend event-study diagnostics, understanding why the statistical insignificance of pre-trends is neither necessary nor sufficient for causal validity (Roth’s critique of pre-testing).", "Expose the negative-weighting bias of Two-Way Fixed Effects (TWFE) under staggered treatment adoption and dynamic treatment effects (the Goodman-Bacon decomposition).", "Construct data-driven counterfactuals for single treated macro units with Synthetic Control Methods (SCM), and perform exact placebo-in-space permutation inference."]
+
+[[steps.sections]]
+heading = "Baseline Models (Canonical Panel Estimators)"
+items = ["The 2×2 Difference-in-Differences (DiD) and standard static TWFE OLS with state and time fixed effects."]
+
+[[steps.sections]]
+heading = "Target Models (Heterogeneity-Robust DiD and Synthetic Counterfactuals)"
+items = ["The group-time ATT estimator of Callaway and Sant’Anna (2021) and the interaction-weighted event-study estimator of Sun and Abraham (2021).", "The Synthetic Control Method (SCM) and Synthetic Difference-in-Differences (SDID, Arkhangelsky, Athey, Hirshberg, Imbens and Wager, 2021), combining unit weights and time weights."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A Goodman-Bacon weight decomposition and placebo inference report showing (a) how forbidden comparisons distort static TWFE estimates in staggered settings, and (b) the ratios of post- to pre-treatment RMSPE across all 38 control states of the Proposition 99 dataset."
+
+[[steps]]
+title = "Lab 3: High-Dimensional Confounding and Double/Debiased Machine Learning (DML)"
+datasetText = "The 401(k) pension eligibility and net financial assets dataset of Chernozhukov and coauthors (2018): SIPP survey data on about 9,915 households with rich demographic, income and portfolio covariates, with the semi-synthetic ACIC (Atlantic Causal Inference Conference) benchmark"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Understand why plugging regularized machine learning models (Lasso, random forests, gradient boosting) directly into causal regressions induces regularization bias and overfitting bias, ruining root-n consistency and the coverage of confidence intervals.", "Derive and implement Neyman orthogonality and K-fold cross-fitting, the two mathematical pillars of Double/Debiased Machine Learning (DML).", "Compare Partially Linear Models (PLM) with Interactive Regression Models (IRM) when treatment effects vary with the covariates."]
+
+[[steps.sections]]
+heading = "Baseline Models (Parametric and Naive ML Plug-In)"
+items = ["Linear OLS and 2SLS, with 401(k) eligibility as an instrument for participation, and linear controls.", "A naive single-split machine learning plug-in estimator, showing a severe downward bias and the under-coverage of 95% confidence intervals."]
+
+[[steps.sections]]
+heading = "Target Models (Orthogonalized DML and Local IV)"
+items = ["DML Partially Linear Regression (PLR) and DML Interactive Regression (IRM), with cross-fitted LightGBM or random forests for the nuisance functions, the conditional expectations of the outcome and of the treatment given the covariates.", "Double Machine Learning Instrumental Variables (DML-IV), estimating the Local Average Treatment Effect (LATE) of 401(k) participation with eligibility as a high-dimensional conditional instrument."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A Monte Carlo coverage and bias simulation on the semi-synthetic ACIC benchmark showing that naive machine learning plug-in estimators reach less than 50% coverage with nominal 95% confidence intervals, because of regularization bias, whereas cross-fitted orthogonal DML restores the nominal 95% coverage."
+
+[[steps]]
+title = "Lab 4: Heterogeneous Treatment Effects (CATE) and Optimal Policy Learning"
+datasetText = "Hillstrom MineThatData email marketing experiment (64,000 customers randomized across a men’s email, a women’s email and a no-email control, with spend and visit outcomes), with the Criteo uplift modeling benchmark"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Move beyond population averages (the ATE) to estimate Conditional Average Treatment Effects, τ(x) = E[Y(1) − Y(0) | X = x].", "Understand why predicting the outcomes of the two arms separately and differencing them fails when treatment effects are smaller and smoother than the variation of baseline outcomes, motivating meta-learners and causal trees and forests.", "Translate CATE estimates into constrained treatment assignment policies, each customer treated or not, evaluating the economic uplift with Qini curves, the AUUC (Area Under the Uplift Curve) and regret bounds under budget constraints."]
+
+[[steps.sections]]
+heading = "Baseline Models (Heuristic and Naive Meta-Learners)"
+items = ["Uniform targeting (treat everyone or treat no one) and predictive outcome targeting, which targets the customers with the highest baseline spend, showing the classic “sure-thing” targeting trap.", "The S-learner and the T-learner, built with standard gradient boosted trees."]
+
+[[steps.sections]]
+heading = "Target Models (Orthogonal Uplift and Policy Trees)"
+items = ["The R-learner (Nie and Wager) and the DR-learner (Kennedy), using cross-fitted pseudo-outcomes to isolate τ(x) cleanly.", "Generalized Random Forests and causal forests (Athey, Tibshirani and Wager) with honest splitting, paired with Empirical Welfare Maximization (policy trees) under a 30% cap on the marketing budget."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "An uplift Qini curve and policy welfare audit comparing the incremental net revenue of the targeting strategies under a fixed treatment budget, quantifying the dollar gain of orthogonal DR-learner and causal forest targeting over naive T-learners and baseline spend targeting."
+
+[[references]]
+separator = true
+label = "Datasets and Benchmarks"
+
+[[references]]
+key = "LaL1986a"
+
+[[references]]
+key = "CK1994a"
+
+[[references]]
+key = "DW1999a"
+
+[[references]]
+key = "DW2002b"
+
+[[references]]
+key = "ADH2010a"
+
+[[references]]
+key = "DBRA2018a"
+
+[[references]]
+key = "DHSSC2019a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Rub1974a"
+
+[[references]]
+key = "RR1983a"
+
+[[references]]
+key = "RRZ1994a"
+
+[[references]]
+key = "CHIM2009a"
+
+[[references]]
+key = "Hai2012a"
+
+[[references]]
+key = "IKP2012a"
+
+[[references]]
+key = "CCDDH...2018a"
+
+[[references]]
+key = "KT2018a"
+
+[[references]]
+key = "WA2018a"
+
+[[references]]
+key = "ATW2019a"
+
+[[references]]
+key = "KSBY2019a"
+
+[[references]]
+key = "AAHIW2021a"
+
+[[references]]
+key = "AW2021a"
+
+[[references]]
+key = "CS2021a"
+
+[[references]]
+key = "Goo2021a"
+
+[[references]]
+key = "NW2021a"
+
+[[references]]
+key = "SA2021a"
+
+[[references]]
+key = "Rot2022a"
+
+[[references]]
+key = "Ken2023a"

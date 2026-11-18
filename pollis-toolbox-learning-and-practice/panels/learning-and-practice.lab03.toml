@@ -1,0 +1,174 @@
+# Lab Course 03 of Data-Driven Decisions: Computational Lab Series, a page in the Time Arrow style: one step a lab
+[meta]
+title = "Enterprise Valuation: From Discounted Cash Flows to Stochastic Simulation"
+style = "timeArrow"
+intro = "Course 03 confronts the central challenge of corporate finance: valuation under endogenous financing, structural debt tax shields and stochastic cash-flow uncertainty. Students move from deterministic textbook WACC models, to circularity-free Capital Cash Flow and APV frameworks, to Monte Carlo simulation with endogenous financial distress, and finally to real options and structural credit pricing."
+
+[matrix]
+columns = ["Lab", "Data and Calibration Source", "Core Modeling Challenge", "Primary Paradigm Shift", "Key Valuation Output"]
+
+[[matrix.rows]]
+cells = ["1", "Corporate fundamentals panel", "Leverage circularity and terminal fade", "Static WACC → exact APV and CCF equivalence", "Enterprise and equity value (V0, E0)"]
+
+[[matrix.rows]]
+cells = ["2", "S&P 500 / Russell 1000 panel", "Peer selection bias and growth-ROIC confounding", "Naive GICS multiples → conditional cross-sectional models", "Out-of-sample MdAPE and peer intervals"]
+
+[[matrix.rows]]
+cells = ["3", "Operating volatility and default data", "Asymmetric tax shields and distress triggers", "Point DCF → joint stochastic simulation (QMC)", "Full valuation distribution and expected distress cost"]
+
+[[matrix.rows]]
+cells = ["4", "Commodity, R&D and credit spreads", "Managerial flexibility and contingent claims", "Static NPV → Longstaff-Schwartz LSM and structural debt", "Expanded NPV and optimal exercise threshold V*(t)"]
+
+[[steps]]
+title = "Lab 1: Deterministic Foundations, Terminal Value Sensitivity and Valuation Equivalence"
+datasetText = "Compustat or Damodaran corporate fundamentals panel: multi-year historical income statements, balance sheets and cash flow statements of mature and high-growth non-financial firms"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Construct fully integrated, self-balancing three-statement financial projections, and derive the Free Cash Flow to the Firm (FCFF) and the Free Cash Flow to Equity (FCFE) from raw accounting line items.", "Resolve the WACC circularity problem, where the WACC depends on market-value leverage weights that in turn depend on the enterprise value, with exact algebraic or fixed-point solvers rather than iterative spreadsheet workarounds.", "Prove and verify empirically the valuation equivalence of FCFF (WACC), Adjusted Present Value (APV) and Capital Cash Flows (CCF) under consistent leverage policies: constant dollar debt against a constant market-value leverage ratio."]
+
+[[steps.sections]]
+heading = "Baseline Models (Standard Textbook WACC)"
+items = ["A static constant-WACC DCF, with a historical CAPM beta and a Gordon growth terminal value whose growth rate tends to that of GDP."]
+
+[[steps.sections]]
+heading = "Target Models (Dynamic Leverage and Multi-Stage Valuation)"
+items = ["Capital Cash Flow (CCF) and Miles-Ezzell or Modigliani-Miller APV engines, separating the unlevered operating value from the present value of the interest tax shields.", "H-model and fade-period ROIC models, where the return on invested capital converges toward the WACC during the competitive fade window, preventing an explosion of the terminal value."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A valuation equivalence and terminal value sensitivity matrix verifying that FCFF, APV and CCF reconcile to the exact cent under matching debt-rebalancing assumptions, paired with a tornado or sensitivity audit showing how small perturbations of the terminal ROIC and growth rate dominate the enterprise value."
+
+[[steps]]
+title = "Lab 2: Empirical Multiples, Cross-Sectional Peer Selection and Nonlinear Valuation"
+datasetText = "S&P 500 or Russell 1000 cross-sectional valuation panel: EV/EBITDA, EV/EBIT, P/E and EV/Sales paired with forward consensus growth, ROIC, operating margins, capex intensity and leverage"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Expose the statistical flaws of naive peer-group valuation: the distortion of the arithmetic mean against the harmonic mean, the selection bias of hand-picked “comparable” companies, and the confounding of growth and profitability.", "Estimate fundamental valuation multiples from cross-sectional regressions and machine learning models, decomposing market multiples into growth, risk and capital-efficiency drivers.", "Benchmark valuation accuracy out of sample with the Median Absolute Percentage Error (MdAPE) and log-valuation residuals, the log of the ratio of the predicted to the actual value, across industries and business cycles."]
+
+[[steps.sections]]
+heading = "Baseline Models (Traditional Comparable Analysis)"
+items = ["GICS-sector median and harmonic mean multiples: naive industry EV/EBITDA and P/E peers.", "Algorithmic nearest-neighbor peer selection, by the Mahalanobis distance on growth, ROIC and size."]
+
+[[steps.sections]]
+heading = "Target Models (Cross-Sectional Econometric and ML Multiples)"
+items = ["Log-linear cross-sectional factor regressions with sector fixed effects and interaction terms, such as growth times the spread of ROIC over the WACC.", "Regularized gradient boosted trees or quantile regression forests predicting conditional valuation multiples and their prediction intervals, audited with SHAP values for economic interpretability."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "An out-of-sample valuation error and bias audit comparing naive GICS peer multiples with cross-sectional econometric and machine learning models, showing why harmonic means outperform arithmetic means and how controlling for ROIC removes the systematic overvaluation of low-margin growers."
+
+[[steps]]
+title = "Lab 3: Stochastic Cash Flows, Dynamic Tax Shields and Financial Distress"
+datasetText = "Historical revenue and margin volatility panel, with corporate default and recovery benchmarks: Moody’s and S&P historical default rates, recovery rates by seniority, and sector operating margin distributions"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Replace deterministic point forecasts with coupled stochastic processes for revenue growth, operating margins (mean-reverting Ornstein-Uhlenbeck dynamics), working capital and capital expenditures.", "Model nonlinear debt tax shields accurately: interest deductions generate cash tax savings only when EBIT exceeds the interest expense, with tax-loss carryforwards and statutory caps on interest deductibility such as EBITDA-based limits.", "Endogenize financial distress and bankruptcy costs, triggering default when cash balances plus revolving credit lines breach covenants or liquidity thresholds, and deducting deadweight distress costs from the enterprise value."]
+
+[[steps.sections]]
+heading = "Baseline Models (Deterministic and Naive Static Monte Carlo)"
+items = ["A deterministic base, bull and bear scenario DCF: three discrete scenarios.", "An uncorrelated naive Monte Carlo simulating revenue growth independently, without margin mean reversion, tax-shield asymmetry or bankruptcy triggers."]
+
+[[steps.sections]]
+heading = "Target Models (Structural Stochastic DCF Engine)"
+items = ["A jointly correlated Monte Carlo valuation engine, implemented in Julia, with mean-reverting margins, asymmetric realization of the tax shields, dynamic debt sweep and revolver mechanics, and endogenous distress triggers.", "Variance reduction and quasi-Monte Carlo (Sobol sequences), benchmarking the speed of convergence and the reduction of the standard error against crude pseudo-random sampling."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A Jensen’s inequality and tax-shield asymmetry report quantifying the exact valuation wedge between deterministic DCF and stochastic simulation, showing how deterministic DCF systematically overvalues levered firms by ignoring the truncation of tax shields in low-EBIT states and the deadweight costs of distress."
+
+[[steps]]
+title = "Lab 4: Real Options, Capital Allocation and Structural Contingent Claims"
+datasetText = "Natural resource and R&D-intensive project panel with corporate bond spreads: commodity forward curves, volatility surfaces and corporate credit spreads for structural calibration"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Overcome the fundamental flaw of static DCF: its inability to value managerial flexibility, the options to defer, expand, abandon or mothball irreversible capital investments under uncertainty.", "Implement Least-Squares Monte Carlo (the Longstaff-Schwartz LSM) to price multi-stage American and Bermudan real options whose cash flows depend on several correlated state variables.", "Connect corporate valuation to Merton’s structural credit model, valuing equity as a European or barrier call option on the firm’s assets, and extracting implied default probabilities and credit spreads directly from the enterprise valuation engine."]
+
+[[steps.sections]]
+heading = "Baseline Models (Static Net Present Value)"
+items = ["Static NPV, commit or reject at time 0 discounted at a risk-adjusted WACC, and Decision-Tree Analysis (DTA) with constant discount rates, showing why DTA misprices risk when the option's leverage changes across nodes."]
+
+[[steps.sections]]
+heading = "Target Models (Contingent Claims and LSM Real Options)"
+items = ["A binomial lattice and the closed-form McDonald-Siegel investment timing model, with its continuous-time optimal stopping threshold V*.", "Longstaff-Schwartz Least-Squares Monte Carlo (LSM) pricing an interactive multi-stage R&D or capacity-expansion project with both expansion and abandonment options, paired with a Merton structural decomposition of debt and equity."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "An optimal exercise boundary and volatility value-driver plot mapping the critical asset value threshold V*(t) at which investment becomes optimal, showing why higher cash-flow volatility lowers the static DCF value, through higher discount rates, yet raises the real-option enterprise value."
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "DP1994a"
+
+[[references]]
+key = "Dam2012a"
+
+[[references]]
+key = "KGW2020a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "UO1930a"
+
+[[references]]
+key = "GS1956a"
+
+[[references]]
+key = "MM1958a"
+
+[[references]]
+key = "MM1963a"
+
+[[references]]
+key = "Sha1964a"
+
+[[references]]
+key = "Sob1967a"
+
+[[references]]
+key = "Mer1974a"
+
+[[references]]
+key = "Mye1974a"
+
+[[references]]
+key = "CRR1979a"
+
+[[references]]
+key = "ME1980a"
+
+[[references]]
+key = "FH1984a"
+
+[[references]]
+key = "MS1986a"
+
+[[references]]
+key = "Alf1992a"
+
+[[references]]
+key = "LS2001a"
+
+[[references]]
+key = "BL2002a"
+
+[[references]]
+key = "LNT2002a"
+
+[[references]]
+key = "Rub2002a"
+
+[[references]]
+key = "Mei2006a"
+
+[[references]]
+key = "LL2017a"

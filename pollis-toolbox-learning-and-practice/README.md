@@ -18,6 +18,10 @@ A submenu of graduate lab courses, each a page of numbered steps, one a lab, wit
 | Lab course | What it covers |
 |---|---|
 | Forecasting: From Univariate Parsimony to Probabilistic Ensembles | Three labs, from univariate parsimony on Tourism (2011), to global cross-learning and multiple seasonalities on NN5, and probabilistic covariate modeling on GEFCom 2014 |
+| Financial Volatility & Return Predictability: From Parametric GARCH to High-Frequency Limit Order Books | Four labs, from daily volatility and tail risk on the Oxford-Man Realized Library, to intraday volatility on Optiver, cross-sectional asset pricing on OSAP and Gu, Kelly and Xiu (2020), and limit order book dynamics on FI-2010 |
+| Enterprise Valuation: From Discounted Cash Flows to Stochastic Simulation | Four labs, from WACC, APV and Capital Cash Flow equivalence, to cross-sectional multiples, stochastic cash flows with tax shields and distress, and real options with structural credit pricing |
+| Causal Inference & Policy Evaluation: From Natural Experiments to Double Machine Learning | Four labs, from LaLonde's NSW benchmark, to Card and Krueger and Proposition 99, Double Machine Learning on 401(k) eligibility, and uplift and policy learning on Hillstrom and Criteo |
+| Operations, Pricing & Supply Chain Optimization: From Classical Inventory Rules to Decision-Focused Learning | Four labs, from censored newsvendor policies on VN2 and Favorita, to vehicle routing on Amazon Last-Mile, dynamic pricing with contextual bandits, and decision-focused learning on ICON scheduling |
 
 ## Requirements
 

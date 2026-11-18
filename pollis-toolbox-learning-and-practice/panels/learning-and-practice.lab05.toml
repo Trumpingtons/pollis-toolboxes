@@ -1,0 +1,189 @@
+# Lab Course 05 of Data-Driven Decisions: Computational Lab Series, a page in the Time Arrow style: one step a lab
+[meta]
+title = "Operations, Pricing & Supply Chain Optimization: From Classical Inventory Rules to Decision-Focused Learning"
+style = "timeArrow"
+intro = "Course 05 closes the loop from statistical estimation to downstream operational optimization. Students learn why minimizing a symmetric forecast error (RMSE or MAE) often produces suboptimal business decisions, progressing from classical stochastic inventory policies, to network routing and robust optimization, to dynamic pricing under censored demand, and finally to end-to-end “Predict-then-Optimize” and Decision-Focused Learning."
+
+[matrix]
+columns = ["Lab", "Dataset and Benchmark", "Core OR and Pricing Structure", "Primary Paradigm Shift", "Core Evaluation Metric"]
+
+[[matrix.rows]]
+cells = ["1", "VN2 and Favorita Retail", "Censored newsvendor and (s, S) policies", "Point forecast + normal safety stock → censored quantile policy", "Realized inventory cost and fill rate"]
+
+[[matrix.rows]]
+cells = ["2", "Amazon Last-Mile Routing", "Capacitated Vehicle Routing (CVRP)", "Deterministic MILP → stochastic recourse and ML routing", "Route adherence and the Value of the Stochastic Solution"]
+
+[[matrix.rows]]
+cells = ["3", "Expedia / airline RM", "Perishable capacity and endogenous elasticity", "Naive OLS elasticity → causal DP and contextual bandits", "Cumulative revenue and policy regret"]
+
+[[matrix.rows]]
+cells = ["4", "ICON scheduling and allocation", "Constrained combinatorial scheduling", "Two-stage MSE → end-to-end SPO+ and differentiable optimization", "Out-of-sample optimization regret"]
+
+[[steps]]
+title = "Lab 1: Stochastic Inventory Control, Censored Demand and Newsvendor Economics"
+dataset = "vn2"
+datasetText = "VN2 Inventory Planning Challenge (2025) and the Favorita retail SKU panel: multi-SKU weekly and daily retail demand with stockout flags, replenishment lead times, holding costs and lost-sales penalties"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Formulate the single-period newsvendor problem and multi-period (s, S) and base-stock inventory policies under asymmetric underage and overage costs.", "Diagnose and correct the bias of demand censoring, when historical sales reflect stockouts rather than the true unconstrained demand of customers, causing naive machine learning models to spiral downward into chronic under-ordering.", "Compare parametric demand distributions (Gamma, Negative Binomial) with nonparametric quantile and Sample Average Approximation (SAA) inventory policies."]
+
+[[steps.sections]]
+heading = "Baseline Models (Classical OR Heuristics)"
+items = ["The normal-approximation base-stock policy: the forecast demand over the lead time plus a normal quantile times its standard deviation, from point forecasts and a Gaussian safety stock.", "The naive historical-sales newsvendor, which ignores the censoring by stockouts."]
+
+[[steps.sections]]
+heading = "Target Models (Censored-Demand Estimators and Data-Driven Newsvendor)"
+items = ["A Kaplan-Meier or Tobit censored demand estimator, paired with an empirical quantile newsvendor targeting the exact critical fractile, the underage cost over the sum of the underage and overage costs.", "The feature-based data-driven newsvendor (Ban and Rudin, 2019), mapping exogenous features (promotions, day of the week, weather) directly to order quantities with a regularized quantile (pinball) loss, without intermediate distributional assumptions."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A total inventory cost and service-level frontier audit comparing holding costs, stockout penalties and realized fill rates across critical fractiles of 0.50, 0.75, 0.90 and 0.95, showing why point-forecast accuracy decouples from realized profit under high stockout penalties."
+
+[[steps]]
+title = "Lab 2: Combinatorial Network Optimization, Vehicle Routing and Stochastic Recourse"
+datasetText = "Amazon Last-Mile Routing Research Challenge (the MIT and Amazon dataset): 6,112 historical delivery routes across US metropolitan areas, with stop coordinates, package dimensions, time windows, travel-time matrices and scores of the quality of the drivers’ sequences"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Formulate Mixed-Integer Linear Programs (MILPs) for Capacitated Vehicle Routing (CVRP) and multi-echelon supply chain network design in Julia, with JuMP.jl and HiGHS or Gurobi.", "Confront the gap between theoretically distance-optimal MILP tours and real-world operational feasibility: unobserved parking constraints, zone sequencing preferences and stochastic travel-time delays.", "Implement two-stage stochastic programming with recourse and Distributionally Robust Optimization (DRO) to protect supply chains against supplier disruptions and spikes in transit times."]
+
+[[steps.sections]]
+heading = "Baseline Models (Deterministic Classical OR)"
+items = ["A deterministic shortest-distance TSP and CVRP MILP, minimizing the raw Euclidean or road travel time without uncertainty buffers or zone constraints.", "The greedy nearest-neighbor and Clarke-Wright savings heuristics."]
+
+[[steps.sections]]
+heading = "Target Models (Stochastic Recourse and ML-Guided Routing)"
+items = ["A two-stage stochastic CVRP, optimizing the first-stage route assignments against second-stage overtime and late-delivery recourse penalties across scenario trees.", "Inverse optimization and ML-augmented routing, combining zone-transition costs learned from the historical behavior of drivers with Adaptive Large Neighborhood Search (ALNS), to generate routes that score high on real-world operational adherence."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A determinism-versus-robustness stress test evaluating deterministic MILP routes against out-of-sample traffic surges and demand spikes, quantifying the Value of the Stochastic Solution (VSS) and the route adherence scores."
+
+[[steps]]
+title = "Lab 3: Dynamic Pricing, Revenue Management and Contextual Bandits"
+datasetText = "Expedia Personalized Sort (the hotel pricing benchmark) and a synthetic airline revenue management simulator: search impressions, competitive price rankings, booking windows, remaining capacity and customer conversion outcomes"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Solve the finite-horizon perishable-inventory revenue management problem (airlines, hotels, event tickets) with dynamic programming, the Bellman equations, and bid-price controls.", "Overcome price endogeneity in observational transaction logs, where firms raise prices during demand peaks, causing naive regressions to estimate positive price elasticities, with instrumental variables and control functions.", "Balance exploration and exploitation in online pricing when the true demand curve, demand given price and context, is unknown, moving from static price optimization to contextual bandits."]
+
+[[steps.sections]]
+heading = "Baseline Models (Static and Naive Elasticity)"
+items = ["A naive log-log OLS price elasticity, exposing the positive elasticity bias of endogenous peak pricing, paired with static uniform pricing.", "The deterministic Expected Marginal Seat Revenue (EMSR-b) heuristic."]
+
+[[steps.sections]]
+heading = "Target Models (Causal Elasticity and Online Dynamic Pricing)"
+items = ["An instrumental-variable or Double-ML logit demand model, paired with stochastic dynamic programming computing state-dependent shadow prices, the opportunity cost of capacity.", "A Thompson Sampling or Upper Confidence Bound (LinUCB) contextual pricing bandit, adapting prices dynamically across customer segments and levels of remaining inventory."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A cumulative revenue and regret simulation comparing static pricing, naive OLS elasticity pricing, EMSR-b and contextual bandits over a 90-day booking horizon, showing how naive elasticity estimates destroy revenue while contextual bandits converge to the full-information Bellman frontier."
+
+[[steps]]
+title = "Lab 4: End-to-End Predict-then-Optimize and Decision-Focused Learning (DFL)"
+datasetText = "ICON energy-aware scheduling benchmark and a multi-product portfolio and supply allocation panel: stochastic electricity prices and renewable generation, paired with combinatorial machine scheduling and capacity allocation constraints"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Expose the core flaw of standard two-stage pipelines (“Predict, then Optimize”): training a predictive model with a symmetric MSE treats all prediction errors equally, even when errors along constraint boundaries cause massive optimization regret while large errors in non-binding directions cost nothing.", "Implement the Smart “Predict, then Optimize” loss (SPO+, Elmachtoub and Grigas, 2022) and differentiable optimization layers (DiffOpt.jl), which backpropagate the downstream optimization regret directly into the weights of the machine learning model.", "Benchmark Decision-Focused Learning (DFL) against two-stage machine learning pipelines on the out-of-sample optimization regret, the suboptimality gap relative to oracle decisions."]
+
+[[steps.sections]]
+heading = "Baseline Models (Two-Stage Predict-then-Optimize)"
+items = ["A two-stage MSE ridge regression, LightGBM or neural net predicting future prices and demands first, followed by an exact JuMP.jl linear or integer solver."]
+
+[[steps.sections]]
+heading = "Target Models (End-to-End Decision-Focused Architectures)"
+items = ["An SPO+ convex surrogate linear or neural model, minimizing the suboptimality regret directly.", "A differentiable quadratic or linear programming layer (DiffOpt.jl with Flux.jl), differentiating through the KKT conditions of the constrained optimization problem end to end."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A prediction-error versus decision-regret trade-off curve showing a counterintuitive empirical result: Decision-Focused Learning reaches a higher raw forecast RMSE than MSE-trained models, yet cuts the regret of the realized operational cost by 20% to 40% by concentrating predictive accuracy where the constraints bind."
+
+[[references]]
+separator = true
+label = "Datasets and Benchmarks"
+
+[[references]]
+key = "MAPKW...2024a"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "DHL2017a"
+
+[[references]]
+key = "HH2018a"
+
+[[references]]
+key = "BGLS2024a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "TR2004a"
+
+[[references]]
+key = "BL2011a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Tho1933a"
+
+[[references]]
+key = "AHM1951a"
+
+[[references]]
+key = "KM1958a"
+
+[[references]]
+key = "Tob1958a"
+
+[[references]]
+key = "DR1959a"
+
+[[references]]
+key = "CW1964a"
+
+[[references]]
+key = "Bel1989a"
+
+[[references]]
+key = "GR1994a"
+
+[[references]]
+key = "BLP1995a"
+
+[[references]]
+key = "KSH2002a"
+
+[[references]]
+key = "RP2006a"
+
+[[references]]
+key = "DY2010a"
+
+[[references]]
+key = "LCLS2010a"
+
+[[references]]
+key = "AK2017a"
+
+[[references]]
+key = "BR2019a"
+
+[[references]]
+key = "MDSG2020a"
+
+[[references]]
+key = "EG2022a"
+
+[[references]]
+key = "MKBMB...2024a"

@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-learning-and-practice",
   "displayName": "Self-Study: Learn and Practise",
   "description": "Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For students, and for teachers preparing their classes.",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -65,6 +65,42 @@
             "order": 1,
             "submenu": "labSeries",
             "data": "panels/learning-and-practice.lab01.toml"
+          },
+          {
+            "id": "learning-and-practice.lab02",
+            "command": "pollis.pollis-toolbox-learning-and-practice.lab02",
+            "title": "Financial Volatility & Return Predictability: From Parametric GARCH to High-Frequency Limit Order Books",
+            "group": "1_labs",
+            "order": 2,
+            "submenu": "labSeries",
+            "data": "panels/learning-and-practice.lab02.toml"
+          },
+          {
+            "id": "learning-and-practice.lab03",
+            "command": "pollis.pollis-toolbox-learning-and-practice.lab03",
+            "title": "Enterprise Valuation: From Discounted Cash Flows to Stochastic Simulation",
+            "group": "1_labs",
+            "order": 3,
+            "submenu": "labSeries",
+            "data": "panels/learning-and-practice.lab03.toml"
+          },
+          {
+            "id": "learning-and-practice.lab04",
+            "command": "pollis.pollis-toolbox-learning-and-practice.lab04",
+            "title": "Causal Inference & Policy Evaluation: From Natural Experiments to Double Machine Learning",
+            "group": "1_labs",
+            "order": 4,
+            "submenu": "labSeries",
+            "data": "panels/learning-and-practice.lab04.toml"
+          },
+          {
+            "id": "learning-and-practice.lab05",
+            "command": "pollis.pollis-toolbox-learning-and-practice.lab05",
+            "title": "Operations, Pricing & Supply Chain Optimization: From Classical Inventory Rules to Decision-Focused Learning",
+            "group": "1_labs",
+            "order": 5,
+            "submenu": "labSeries",
+            "data": "panels/learning-and-practice.lab05.toml"
           }
         ]
       }

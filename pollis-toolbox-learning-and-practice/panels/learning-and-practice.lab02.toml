@@ -1,0 +1,224 @@
+# Lab Course 02 of Data-Driven Decisions: Computational Lab Series, a page in the Time Arrow style: one step a lab
+[meta]
+title = "Financial Volatility & Return Predictability: From Parametric GARCH to High-Frequency Limit Order Books"
+style = "timeArrow"
+intro = "Course 02 pits classic financial econometrics against modern high-frequency and machine learning models across canonical empirical datasets, moving from daily univariate volatility, to realized high-frequency estimators, to cross-sectional factor asset pricing, and finally to microsecond limit order book dynamics."
+
+[matrix]
+columns = ["Lab", "Dataset", "Frequency and Scale", "Primary Paradigm Shift", "Core Scoring Metric"]
+
+[[matrix.rows]]
+cells = ["1", "Oxford-Man / S&P 500", "Daily (20+ years)", "Symmetric GARCH → asymmetric HAR and tail density", "QLIKE and VaR coverage"]
+
+[[matrix.rows]]
+cells = ["2", "Optiver Volatility", "10-minute order book buckets (about 112 stocks)", "Single-stock ARMA → cross-sectional panel ML", "RMSPE and QLIKE"]
+
+[[matrix.rows]]
+cells = ["3", "OSAP / Gu-Kelly-Xiu", "Monthly (about 94 firm characteristics)", "Linear factors → regularized nonlinear portfolios", "Out-of-sample R² and net Sharpe ratio"]
+
+[[matrix.rows]]
+cells = ["4", "FI-2010 LOB", "Tick level (4M+ events)", "Handcrafted OFI → spatiotemporal DeepLOB", "F1-macro and MCC"]
+
+[[steps]]
+title = "Lab 1: Volatility Clustering, Leverage Effects and Density Forecasting"
+datasetText = "Oxford-Man Institute Realized Library, or S&P 500 and FTSE 100 daily close-to-close returns paired with intraday realized variance benchmarks, 2000–2022"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Diagnose the stylized facts of daily asset returns: fat tails, the absence of return autocorrelation, strong autocorrelation in squared returns, and the asymmetric leverage effect, where negative shocks amplify volatility more than positive shocks.", "Understand why latent volatility cannot be evaluated with the standard MSE on squared returns alone, motivating robust loss functions such as QLIKE (the quasi-likelihood loss) and Mincer-Zarnowitz regressions against realized variance proxies.", "Move from point forecasts of the next day's variance to conditional Value-at-Risk (VaR) and Expected Shortfall (ES) tail-risk estimation."]
+
+[[steps.sections]]
+heading = "Baseline Models (Symmetric and Normal)"
+items = ["RiskMetrics EWMA, with decay factor λ = 0.94, and the standard GARCH(1,1) with Gaussian innovations."]
+
+[[steps.sections]]
+heading = "Target Models (Asymmetric and Heavy-Tailed)"
+items = ["GJR-GARCH(1,1) and EGARCH(1,1) with Student-t or skewed-t error distributions.", "HAR-RV (Heterogeneous Autoregressive Realized Volatility), with daily, weekly and monthly realized volatility components."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A tail-risk backtesting and QLIKE comparison across calm regimes (2017) and crisis regimes (the 2008 Global Financial Crisis and March 2020), using the Kupiec and Christoffersen tests to show where Gaussian GARCH violates VaR coverage."
+
+[[steps]]
+title = "Lab 2: High-Frequency Intraday Volatility and Cross-Asset Spillovers"
+dataset = "optiver_rv"
+datasetText = "Optiver Realized Volatility Prediction (Kaggle): 10-minute order book and trade execution snapshots across about 112 stocks and 3,830 time buckets"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Construct nonparametric volatility estimators directly from Level-1 and Level-2 order book snapshots (the Weighted Average Price, or WAP, log returns, the bid-ask spread and the order book imbalance) while mitigating microstructure noise.", "Capture cross-sectional volatility spillovers: how market-wide shocks and the realized volatility of peer stocks improve single-stock volatility forecasts.", "Evaluate the trade-off between interpretable structural features (order book depth, trade counts) and nonlinear gradient boosting and neural architectures under heavy-tailed financial noise."]
+
+[[steps.sections]]
+heading = "Baseline Models (Local Time Series)"
+items = ["Naive last-window persistence, where the forecast of the next window's volatility is the current window's, and stock-specific ARMA and HAR regressions on 10-minute realized volatility."]
+
+[[steps.sections]]
+heading = "Target Models (Cross-Sectional Panel ML)"
+items = ["Global LightGBM or CatBoost trained across all stocks at once on engineered microstructure features: spread-to-depth ratios, realized bipower variation and cross-stock peer aggregations.", "A 1D-CNN, TabNet or an MLP with entity embeddings, conditioned on both the dynamics of the time sub-windows and the cross-sectional market state."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A feature ablation and regime sensitivity audit quantifying how much of the RMSPE and QLIKE improvement comes from (a) local order book microstructure features and (b) cross-sectional market-wide aggregations, across low- and high-volatility buckets."
+
+[[steps]]
+title = "Lab 3: Empirical Asset Pricing and Cross-Sectional Return Predictability"
+datasetText = "Gu, Kelly and Xiu (2020) and the Open Source Asset Pricing (OSAP) benchmark panel: CRSP and Compustat monthly US equities with about 94 firm-level characteristics and macroeconomic interactions, plus the M6 Financial Forecasting equity subset for fast prototyping"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Navigate the extremely low signal-to-noise ratio of monthly equity returns, where an out-of-sample R² of 0.5% to 1.5% translates into substantial economic Sharpe ratios.", "Implement strict expanding-window walk-forward validation, with purging and embargoing to prevent look-ahead bias from accounting reporting lags.", "Evaluate models not only by statistical fit (the out-of-sample R²) but by economic portfolio metrics: the Sharpe ratio of a long-short decile sort, turnover and the maximum drawdown, net of transaction costs."]
+
+[[steps.sections]]
+heading = "Baseline Models (Linear Factor and Regularized Regressions)"
+items = ["Fama-French 3- and 5-factor cross-sectional regressions, and OLS on all firm characteristics.", "Elastic Net (L1 + L2), Principal Component Regression (PCR) and Partial Least Squares (PLS)."]
+
+[[steps.sections]]
+heading = "Target Models (Nonlinear Interactions and Trees)"
+items = ["Gradient boosted regression trees (LightGBM) with shallow trees, of depth 1, 2 or 3, to capture pairwise characteristic-macro interactions without overfitting noise.", "Shallow feedforward neural networks (NN1 to NN3) with heavy dropout, weight decay and ensemble averaging across random seeds, the Gu, Kelly and Xiu architecture."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A statistical-versus-economic performance matrix comparing the out-of-sample R² with the Sharpe ratios of zero-investment decile portfolios, before and after realistic transaction costs of 10 to 25 basis points, showing why high-turnover machine learning signals can lose their statistical edge net of fees."
+
+[[steps]]
+title = "Lab 4: High-Frequency Microstructure and Limit Order Book Dynamics"
+datasetText = "FI-2010 Benchmark Dataset (Ntakaris, Magris, Kanniainen, Gabbouj and Iosifidis, 2018): over 4 million limit order book events across 5 Finnish equities over 10 trading days, standardized, with 10 price and volume levels and mid-price direction labels at several horizons"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Model event-driven, irregular tick-time financial data directly from raw limit order book (LOB) states: the top 10 bid and ask prices and volumes.", "Construct stationary microstructure features: proxies of the Volume-Synchronized Probability of Informed Trading (VPIN), the multi-level Order Flow Imbalance (OFI) and queue depth ratios.", "Address the severe class imbalance of tick-level mid-price movements (stationary against upward and downward ticks) with the F1-macro score and the Matthews Correlation Coefficient (MCC)."]
+
+[[steps.sections]]
+heading = "Baseline Models (Linear Microstructure)"
+items = ["Multinomial logistic regression and Support Vector Machines (SVM) trained on raw 40-dimensional LOB snapshots and the basic Order Flow Imbalance (OFI)."]
+
+[[steps.sections]]
+heading = "Target Models (Spatiotemporal Deep LOB Architectures)"
+items = ["DeepLOB (Zhang, Zohren and Roberts), combining convolutional filters across price and volume levels with Inception modules and an LSTM layer, to capture the spatial geometry of the book and the temporal order flow at once.", "A Transformer or axial-attention LOB classifier, benchmarked against DeepLOB on latency and accuracy."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A horizon decay and latency trade-off curve evaluating the F1-macro score and the MCC across prediction horizons of k = 10, 20, 50 and 100 ticks, alongside the inference latency per tick, showing how microstructure predictability decays rapidly as the horizon grows."
+
+[[references]]
+separator = true
+label = "Datasets and Competitions"
+
+[[references]]
+key = "NMKGI2018a"
+
+[[references]]
+key = "CZ2022a"
+
+[[references]]
+key = "MSHPS...2025a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "HTF2009a"
+
+[[references]]
+key = "Pra2018a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "MZ1969a"
+
+[[references]]
+key = "Mat1975a"
+
+[[references]]
+key = "Eng1982a"
+
+[[references]]
+key = "Bol1986a"
+
+[[references]]
+key = "Bol1987a"
+
+[[references]]
+key = "Nel1991a"
+
+[[references]]
+key = "FF1993a"
+
+[[references]]
+key = "GJR1993a"
+
+[[references]]
+key = "Han1994a"
+
+[[references]]
+key = "Kup1995a"
+
+[[references]]
+key = "JPMR1996a"
+
+[[references]]
+key = "HS1997a"
+
+[[references]]
+key = "AB1998a"
+
+[[references]]
+key = "Chr1998a"
+
+[[references]]
+key = "Con2001a"
+
+[[references]]
+key = "WSE2001a"
+
+[[references]]
+key = "AT2002a"
+
+[[references]]
+key = "BS2004a"
+
+[[references]]
+key = "ZH2005a"
+
+[[references]]
+key = "ZMA2005a"
+
+[[references]]
+key = "Cor2009a"
+
+[[references]]
+key = "Pat2011a"
+
+[[references]]
+key = "EPO2012a"
+
+[[references]]
+key = "CKS2014a"
+
+[[references]]
+key = "FF2015a"
+
+[[references]]
+key = "GB2016a"
+
+[[references]]
+key = "KMFWC...2017a"
+
+[[references]]
+key = "VSPUJ...2017a"
+
+[[references]]
+key = "PGVDG2018a"
+
+[[references]]
+key = "ZZR2019a"
+
+[[references]]
+key = "GKX2020a"
+
+[[references]]
+key = "AP2021a"
