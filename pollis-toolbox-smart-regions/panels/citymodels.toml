@@ -1,0 +1,597 @@
+# City Model Files: semantic 3D city models in CityGML, read through GDAL's GML driver in DuckDB's spatial extension,
+# and in CityJSON, read with DuckDB's JSON reader
+
+[meta]
+title = "City Model Files"
+viewType = "pollis.citymodels"
+defaultModel = "citygml"
+decisionFirstColumn = "Format"
+
+[[packages]]
+name = "EzXML.jl"
+github = "https://github.com/JuliaIO/EzXML.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "citymodels/factsheet.md"
+bundled = true
+description = "One-page reference: the two formats, how they are read, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "citymodels/overview.md"
+bundled = true
+description = "Semantic 3D city models: city objects, their geometry and attributes, and what they are used for"
+
+[[wikis]]
+name = "Levels of Detail"
+file = "citymodels/levels-of-detail.md"
+bundled = true
+description = "LoD0 to LoD4 in CityGML 2.0, the refined levels of 3D building models, and which to read"
+
+[[wikis]]
+name = "Diagnostics"
+file = "citymodels/diagnostics.md"
+bundled = true
+description = "Coordinate systems and heights, objects without geometry, solids and their faces, attributes"
+
+[[wikis]]
+name = "Decision Guide"
+file = "citymodels/decision-guide.md"
+bundled = true
+description = "CityGML or CityJSON, which level of detail, and what to save for other tools"
+
+[[wikis]]
+separator = true
+label = "Formats"
+
+[[wikis]]
+name = "CityGML"
+file = "citymodels/citygml.md"
+bundled = true
+
+[[wikis]]
+name = "CityJSON"
+file = "citymodels/cityjson.md"
+bundled = true
+
+[[wikis]]
+name = "Measuring Buildings"
+file = "citymodels/measuring-buildings.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Sat2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "GP2012a"
+
+[[references]]
+key = "KCK2020a"
+
+[[references]]
+key = "LAKDL...2019a"
+
+[[references]]
+key = "BLS2016a"
+
+[[references]]
+key = "BSLZC2015a"
+
+[[references]]
+separator = true
+label = "Standards"
+
+[[references]]
+key = "OGC2012a"
+
+[[references]]
+key = "LD2024a"
+
+[[faq]]
+question = "Where does the CityGML tab find the geometry of a building?"
+answer = '''
+Under the building's geometry properties, whose names start with the level of detail: lod1Solid, lod2Solid, lod2MultiSurface and the others. From LoD2, a building's geometry is often in its boundary surfaces, WallSurface, RoofSurface and GroundSurface, and in its BuildingParts, each with its own lod2MultiSurface; the tab collects the polygons under all of them.
+
+A property given only as xlink:href references holds no polygons of its own, so the polygons are read where they are written. The Level of Detail input picks the level kept.
+'''
+wiki = "CityGML"
+
+[[faq]]
+question = "Which level of detail should I read?"
+answer = '''
+The one with the detail the work needs. In CityGML 2.0, LoD1 is the block model, buildings as prisms with flat roofs, which gives heights and footprints; LoD2 adds the shapes of roofs and the wall, roof and ground surfaces; LoD3 adds doors and windows.
+
+An object can have geometries of several levels at once. The Level of Detail input of the CityJSON tab keeps the highest or the lowest of each object.
+'''
+wiki = "Levels of Detail"
+
+[[faq]]
+question = "Should I keep my city model in CityGML or CityJSON?"
+answer = '''
+CityJSON encodes the CityGML data model in JSON, each vertex stored once, which makes files about six times smaller and simpler in structure, read by any JSON parser. CityGML, as XML, is what many national agencies publish and what GML software reads.
+
+CityJSON 2.0 implements part of the CityGML 3.0 data model, not all its modules, and keeps a whole file in one coordinate system, where CityGML allows one per object.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How is the footprint of a building computed?"
+answer = '''
+Building Measures takes the faces of each building's geometry, drops the vertical ones, whose plan area is zero, projects the rest onto the ground plane, and unites them: the union is the footprint, the building's outline in plan.
+
+For an LoD1 or LoD2 building, the footprint is the outline of its walls, and its area the built-up area. Save Footprints as GeoPackage writes the footprints with height and area for the Geospatial Vector Files panel.
+'''
+wiki = "Measuring Buildings"
+
+[[faq]]
+question = "Why are the coordinates of a CityJSON file integers?"
+answer = '''
+A CityJSON file stores each vertex once, in the array vertices, as integers, and gives a transform with a scale and a translate for each axis: the real coordinate is the integer times the scale plus the translate. A scale of 0.001 keeps coordinates to the millimetre.
+
+Integers make the file smaller and keep a fixed number of digits. The CityJSON tab applies the transform in SQL before building the geometries.
+'''
+wiki = "CityJSON"
+hidden = true
+
+[[faq]]
+question = "What are the levels of detail of CityGML 2.0?"
+answer = '''
+CityGML 2.0 defines five levels of detail. LoD0 is a regional model, terrain and footprints or roof edges in 2.5D. LoD1 is the block model, buildings as prisms with flat roofs. LoD2 adds roof structures and thematic boundary surfaces, wall, roof and ground. LoD3 is the architectural model, with openings such as windows and doors. LoD4 adds interiors.
+
+The same object may be represented at several levels of detail at once, and the standard gives each level its own accuracy, 5 m for LoD1 down to 0.2 m for LoD4.
+'''
+wiki = "Levels of Detail"
+hidden = true
+
+[[faq]]
+question = "What do the city object types of CityJSON include?"
+answer = '''
+Every CityJSON city object has a type: Building, Bridge, CityFurniture, CityObjectGroup, GenericCityObject, LandUse, OtherConstruction, PlantCover, SolitaryVegetationObject, TINRelief, the transportation objects, Tunnel or WaterBody, and second-level types such as BuildingPart and BuildingInstallation, which need a parent.
+
+Parents list their children and children their parents. File Contents counts the objects of each type and level of detail.
+'''
+wiki = "CityJSON"
+hidden = true
+
+[[models]]
+id = "citygml"
+label = "CityGML"
+
+[[models]]
+id = "cityjson"
+label = "CityJSON"
+
+[[bullets]]
+text = "CityGML"
+detail = "The OGC standard of semantic 3D city models, in XML: buildings, roads, vegetation and terrain as city objects, each with its geometry at one or more levels of detail and its attributes"
+
+[[bullets]]
+text = "CityJSON"
+detail = "The CityGML data model in JSON, with every vertex stored once as integers: smaller, simpler to read, and the format of datasets such as 3D BAG"
+
+[[decisionRows]]
+task = "CityGML"
+context = "Agency 3D models"
+purpose = "Read the 3D building models that cities and national agencies publish in XML"
+
+[[decisionRows]]
+task = "CityJSON"
+context = "Compact 3D models"
+purpose = "Read a city model in its JSON encoding, with several levels of detail per building"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "gmlFile"
+label = "File"
+tooltip = "The CityGML file (.gml or .xml), in the folder above, or an absolute path. With the default, buildings.gml, the example first writes three LoD1 buildings of Coimbra to it, unless the folder has a buildings.gml already."
+default = "buildings.gml"
+models = ["citygml"]
+
+[[inputs]]
+id = "gmlClass"
+label = "Class"
+tooltip = "The class of the top-level city objects to read: Building, Bridge, Tunnel, Road, PlantCover, WaterBody, ... File Contents lists the classes of the file. The geometry of a building's parts and boundary surfaces is read with the building."
+default = "Building"
+models = ["citygml"]
+
+[[inputs]]
+id = "jsonFile"
+label = "File"
+tooltip = "The CityJSON file (.city.json or .json), in the folder above, or an absolute path. With the default, buildings.city.json, the example first writes three LoD1 buildings of Coimbra to it, unless the folder has a buildings.city.json already."
+default = "buildings.city.json"
+models = ["cityjson"]
+
+[[inputs]]
+id = "jsonType"
+label = "Object Type"
+tooltip = "all, or one type of city object, such as Building or BuildingPart. A file may give a Building its footprint and the parts of the building their 3D geometry: File Contents lists the types and their levels of detail."
+default = "all"
+models = ["cityjson"]
+
+[[inputs]]
+id = "lod"
+label = "Level of Detail"
+tooltip = "Which geometry to keep of an object that has several: the one of the highest level of detail, or of the lowest."
+kind = "select"
+default = "highest"
+
+[[inputs.options]]
+value = "highest"
+label = "Highest"
+
+[[inputs.options]]
+value = "lowest"
+label = "Lowest"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "file: the coordinate system the file records. For a file that records none, give it as an EPSG code, e.g. EPSG:3763 (ETRS89 / Portugal TM06) or EPSG:28992 (Amersfoort / RD New)."
+default = "file"
+newRow = true
+
+[[codeBranches]]
+model = "citygml"
+code = '''
+using EzXML, DuckDB, Tables
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+path = joinpath(folder, "{{gmlFile}}")  # an absolute path is kept as it is
+{{?gmlFile=buildings.gml}}# Example file: three buildings in the centre of Coimbra in ETRS89 / Portugal TM06 (EPSG:3763), heights in metres, in CityGML 2.0: two LoD1 blocks, and a third both as an LoD1 block and in LoD2, with a gabled roof and its wall, roof and ground surfaces. Written to buildings.gml unless the folder has one already. Replace "buildings.gml" with your own file.
+{{?gmlFile=buildings.gml}}if !isfile(path)
+{{?gmlFile=buildings.gml}}	face(points) = "<gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList srsDimension=\"3\">" * join([join(p, " ") for p in [points; points[1:1]]], " ") * "</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember>"
+{{?gmlFile=buildings.gml}}	function block(x, y, w, d, h; ground = 60.0)  # an LoD1 solid of six faces: floor, roof and four walls
+{{?gmlFile=buildings.gml}}		corners = [(x, y), (x + w, y), (x + w, y + d), (x, y + d)]
+{{?gmlFile=buildings.gml}}		faces = [face([(c..., ground) for c in reverse(corners)]), face([(c..., ground + h) for c in corners])]
+{{?gmlFile=buildings.gml}}		for i in 1:4
+{{?gmlFile=buildings.gml}}			a, b = corners[i], corners[mod1(i + 1, 4)]
+{{?gmlFile=buildings.gml}}			push!(faces, face([(a..., ground), (b..., ground), (b..., ground + h), (a..., ground + h)]))
+{{?gmlFile=buildings.gml}}		end
+{{?gmlFile=buildings.gml}}		return "<bldg:lod1Solid><gml:Solid><gml:exterior><gml:CompositeSurface>" * join(faces) * "</gml:CompositeSurface></gml:exterior></gml:Solid></bldg:lod1Solid>"
+{{?gmlFile=buildings.gml}}	end
+{{?gmlFile=buildings.gml}}	function gabled(x, y, w, d, eaves, ridge; ground = 60.0)  # LoD2 boundary surfaces: a ground surface, two roof planes and four walls, the ridge along x
+{{?gmlFile=buildings.gml}}		surface(kind, polygons) = "<bldg:boundedBy><bldg:$kind><bldg:lod2MultiSurface><gml:MultiSurface>" * join(face.(polygons)) * "</gml:MultiSurface></bldg:lod2MultiSurface></bldg:$kind></bldg:boundedBy>"
+{{?gmlFile=buildings.gml}}		e, r, m = ground + eaves, ground + ridge, y + d / 2
+{{?gmlFile=buildings.gml}}		return join([surface("GroundSurface", [[(x, y, ground), (x, y + d, ground), (x + w, y + d, ground), (x + w, y, ground)]]),
+{{?gmlFile=buildings.gml}}			surface("RoofSurface", [[(x, y, e), (x + w, y, e), (x + w, m, r), (x, m, r)], [(x, m, r), (x + w, m, r), (x + w, y + d, e), (x, y + d, e)]]),
+{{?gmlFile=buildings.gml}}			surface("WallSurface", [[(x, y, ground), (x + w, y, ground), (x + w, y, e), (x, y, e)], [(x + w, y + d, ground), (x, y + d, ground), (x, y + d, e), (x + w, y + d, e)],
+{{?gmlFile=buildings.gml}}				[(x, y + d, ground), (x, y, ground), (x, y, e), (x, m, r), (x, y + d, e)], [(x + w, y, ground), (x + w, y + d, ground), (x + w, y + d, e), (x + w, m, r), (x + w, y, e)]])])
+{{?gmlFile=buildings.gml}}	end
+{{?gmlFile=buildings.gml}}	blocks = [("B1", -23640.0, 59420.0, 20.0, 12.0, 15.0, 15.0, "residential", 1965, 5), ("B2", -23610.0, 59420.0, 18.0, 18.0, 9.0, 9.0, "office", 1990, 3), ("B3", -23640.0, 59445.0, 30.0, 10.0, 22.0, 24.5, "residential", 2008, 8)]  # id, west edge, south edge, width, depth, LoD1 height, measured height, function, year, storeys
+{{?gmlFile=buildings.gml}}	members = ["<core:cityObjectMember><bldg:Building gml:id=\"$id\"><bldg:function>$fn</bldg:function><bldg:yearOfConstruction>$year</bldg:yearOfConstruction><bldg:measuredHeight uom=\"m\">$measured</bldg:measuredHeight><bldg:storeysAboveGround>$storeys</bldg:storeysAboveGround>$(block(x, y, w, d, h))$(id == "B3" ? gabled(x, y, w, d, 20.0, measured) : "")</bldg:Building></core:cityObjectMember>" for (id, x, y, w, d, h, measured, fn, year, storeys) in blocks]
+{{?gmlFile=buildings.gml}}	write(path, join(["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<core:CityModel xmlns:core=\"http://www.opengis.net/citygml/2.0\" xmlns:bldg=\"http://www.opengis.net/citygml/building/2.0\" xmlns:gml=\"http://www.opengis.net/gml\">", "<gml:boundedBy><gml:Envelope srsName=\"EPSG:3763\" srsDimension=\"3\"><gml:lowerCorner>-23640 59420 60</gml:lowerCorner><gml:upperCorner>-23592 59455 84.5</gml:upperCorner></gml:Envelope></gml:boundedBy>", members..., "</core:CityModel>"], "\n"))
+{{?gmlFile=buildings.gml}}end
+
+doc = readxml(path)  # the whole XML tree
+nons = Pair{String, String}[]  # XPath below matches elements by local-name(), without namespace prefixes, so CityGML 1.0, 2.0 and 3.0 read alike
+function rings(polygon)  # the exterior and interior rings of a gml:Polygon or gml:Triangle, as WKT
+	map(findall("./*[local-name()='exterior' or local-name()='interior']", polygon, nons)) do boundary
+		coordinates = findall(".//*[local-name()='posList' or local-name()='pos']", boundary, nons)
+		dim = haskey(first(coordinates), "srsDimension") ? parse(Int, first(coordinates)["srsDimension"]) : 3  # 3D unless the file says 2D
+		v = parse.(Float64, split(join(nodecontent.(coordinates), " ")))
+		"(" * join([join(dim == 3 ? v[i:i + 2] : [v[i], v[i + 1], 0.0], " ") for i in 1:dim:length(v) - dim + 1], ", ") * ")"
+	end
+end
+pick = "{{lod}}" == "highest" ? maximum : minimum  # keep each object's geometry of the highest or the lowest level of detail
+objects, attrs, classes = [], [], Dict{String, Tuple{Int, Set{Int}}}()  # the objects read, their attributes, and every class of the file with its objects and levels of detail
+for member in findall("./*[local-name()='cityObjectMember']/*", root(doc), nons)  # the top-level city objects
+	levels = Dict{Int, Vector{String}}()  # the polygons under each level's geometry properties: lod1Solid, lod2MultiSurface of the boundary surfaces, those of building parts, ...
+	names = Dict{Int, Set{String}}()
+	for property in findall(".//*[starts-with(local-name(), 'lod') and not(contains(local-name(), 'Implicit'))]", member, nons)
+		level = match(r"^lod(\d)", nodename(property))
+		level === nothing && continue
+		polygons = ["(" * join(rings(p), ", ") * ")" for p in findall(".//*[local-name()='Polygon' or local-name()='Triangle']", property, nons)]
+		isempty(polygons) && continue  # a property given only by xlink:href to polygons read elsewhere
+		append!(get!(levels, parse(Int, level[1]), String[]), polygons)
+		push!(get!(names, parse(Int, level[1]), Set{String}()), nodename(property))
+	end
+	n, seen = get(classes, nodename(member), (0, Set{Int}()))
+	classes[nodename(member)] = (n + 1, union(seen, keys(levels)))
+	nodename(member) == "{{gmlClass}}" || continue
+	id = haskey(member, "gml:id") ? member["gml:id"] : string("object ", length(objects) + 1)
+	kept = isempty(levels) ? nothing : pick(keys(levels))
+	push!(objects, (id, nodename(member), kept === nothing ? missing : string(kept), kept === nothing ? missing : join(sort(collect(names[kept])), ", "), kept === nothing ? missing : "MULTIPOLYGON Z (" * join(levels[kept], ", ") * ")"))
+	for e in eachelement(member)  # attributes: elements with text only, and generic attributes
+		if countelements(e) == 0 && !isempty(strip(nodecontent(e)))
+			push!(attrs, (id, nodename(e), strip(nodecontent(e))))
+		elseif haskey(e, "name") && countelements(e) == 1 && nodename(firstelement(e)) == "value"  # CityGML 2.0: <gen:stringAttribute name="..."><gen:value>
+			push!(attrs, (id, e["name"], strip(nodecontent(firstelement(e)))))
+		elseif nodename(e) == "genericAttribute" && countelements(e) == 1  # CityGML 3.0: <core:genericAttribute><gen:StringAttribute><gen:name>, <gen:value>
+			g = Dict(nodename(c) => strip(nodecontent(c)) for c in eachelement(firstelement(e)))
+			haskey(g, "name") && haskey(g, "value") && push!(attrs, (id, g["name"], g["value"]))
+		end
+	end
+end
+DBInterface.execute(con, "CREATE OR REPLACE TABLE objects (id VARCHAR, type VARCHAR, lod VARCHAR, geometry_type VARCHAR, wkt VARCHAR)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE attrs (id VARCHAR, name VARCHAR, value VARCHAR)")
+for (table, rows) in (("objects", objects), ("attrs", attrs))
+	appender = DuckDB.Appender(con, table)  # row by row into DuckDB
+	for row in rows
+		foreach(x -> DuckDB.append(appender, x), row)
+		DuckDB.end_row(appender)
+	end
+	DuckDB.close(appender)
+end
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT o.id, o.type, a.attributes, o.lod, o.geometry_type, ST_GeomFromText(o.wkt) AS geom FROM objects o LEFT JOIN (SELECT id, json_group_object(name, value) AS attributes FROM attrs GROUP BY id) a USING (id)")  # one row per city object, with its attributes as JSON and its geometry as a MultiPolygon Z, one polygon per face
+srs = findfirst("//*[@srsName]", root(doc), nons)  # the first srsName of the file, usually on the envelope of the whole model
+{{?fileCrs=file}}code = srs === nothing ? nothing : match(r"EPSG[:/]+(?:[\d.]*[:/]+)?(\d+)", srs["srsName"])
+{{?fileCrs=file}}file_crs = code === nothing ? "" : "EPSG:" * code[1]  # the first EPSG code: EPSG:3763, urn:ogc:def:crs:EPSG::25832, a compound urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::7837
+{{?fileCrs!=file}}file_crs = "{{fileCrs}}"
+println(length(objects), " objects of class {{gmlClass}}, ", count(o -> !ismissing(o[5]), objects), " with geometry; srsName ", srs === nothing ? "none recorded" : srs["srsName"], ", coordinate system ", isempty(file_crs) ? "none recognised" : file_crs)
+'''
+
+[[codeBranches]]
+model = "cityjson"
+code = '''
+using DuckDB, Tables
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+path = joinpath(folder, "{{jsonFile}}")  # an absolute path is kept as it is
+{{?jsonFile=buildings.city.json}}# Example file: three buildings in the centre of Coimbra as LoD1 blocks, flat roofs over straight walls, in ETRS89 / Portugal TM06 (EPSG:3763) with heights in metres, in CityJSON 2.0, written to buildings.city.json unless the folder has one already. Replace "buildings.city.json" with your own file.
+{{?jsonFile=buildings.city.json}}if !isfile(path)
+{{?jsonFile=buildings.city.json}}	blocks = [("B1", -23640.0, 59420.0, 20.0, 12.0, 15.0, "residential", 1965, 5), ("B2", -23610.0, 59420.0, 18.0, 18.0, 9.0, "office", 1990, 3), ("B3", -23640.0, 59445.0, 30.0, 10.0, 24.5, "residential", 2008, 8)]  # id, west edge, south edge, width, depth, height, function, year, storeys
+{{?jsonFile=buildings.city.json}}	vertices, objects = String[], String[]
+{{?jsonFile=buildings.city.json}}	for (id, x, y, w, d, h, fn, year, storeys) in blocks
+{{?jsonFile=buildings.city.json}}		first_vertex = length(vertices)  # vertices are numbered from 0, shared by all objects
+{{?jsonFile=buildings.city.json}}		for z in (60.0, 60.0 + h), (cx, cy) in ((x, y), (x + w, y), (x + w, y + d), (x, y + d))
+{{?jsonFile=buildings.city.json}}			push!(vertices, "[$(round(Int, (cx + 24000) * 1000)), $(round(Int, (cy - 59000) * 1000)), $(round(Int, z * 1000))]")  # integers in millimetres from the translate
+{{?jsonFile=buildings.city.json}}		end
+{{?jsonFile=buildings.city.json}}		floor, roof = collect(first_vertex .+ (0:3)), collect(first_vertex .+ (4:7))
+{{?jsonFile=buildings.city.json}}		surfaces = [[reverse(floor)], [roof]]
+{{?jsonFile=buildings.city.json}}		for i in 1:4
+{{?jsonFile=buildings.city.json}}			j = mod1(i + 1, 4)
+{{?jsonFile=buildings.city.json}}			push!(surfaces, [[floor[i], floor[j], roof[j], roof[i]]])  # a wall
+{{?jsonFile=buildings.city.json}}		end
+{{?jsonFile=buildings.city.json}}		push!(objects, "\"$id\": {\"type\": \"Building\", \"attributes\": {\"function\": \"$fn\", \"yearOfConstruction\": $year, \"measuredHeight\": $h, \"storeysAboveGround\": $storeys}, \"geometry\": [{\"type\": \"Solid\", \"lod\": \"1\", \"boundaries\": [$(string(surfaces))]}]}")
+{{?jsonFile=buildings.city.json}}	end
+{{?jsonFile=buildings.city.json}}	write(path, "{\"type\": \"CityJSON\", \"version\": \"2.0\", \"transform\": {\"scale\": [0.001, 0.001, 0.001], \"translate\": [-24000.0, 59000.0, 0.0]}, \"metadata\": {\"referenceSystem\": \"https://www.opengis.net/def/crs/EPSG/0/3763\"}, \"CityObjects\": {$(join(objects, ", "))}, \"vertices\": [$(join(vertices, ", "))]}")
+{{?jsonFile=buildings.city.json}}end
+
+order = "{{lod}}" == "highest" ? "DESC" : "ASC"  # keep each object's geometry of the highest or the lowest level of detail
+city = "read_json('$(path)', columns = {version: 'VARCHAR', metadata: 'JSON', transform: 'STRUCT(scale DOUBLE[], translate DOUBLE[])', CityObjects: 'MAP(VARCHAR, JSON)', vertices: 'BIGINT[][]'}, maximum_object_size = 1000000000)"  # the whole file is one JSON object, read whole up to 1 GB
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE features AS
+WITH file AS (SELECT * FROM $city),
+v AS (SELECT list_transform(vertices, lambda p: [p[1] * transform.scale[1] + transform.translate[1], p[2] * transform.scale[2] + transform.translate[2], p[3] * transform.scale[3] + transform.translate[3]]) AS xyz FROM file),
+objects AS (SELECT e.key AS id, e.value AS obj FROM file, UNNEST(map_entries(CityObjects)) t(e) WHERE '{{jsonType}}' = 'all' OR e.value->>'\$.type' = '{{jsonType}}'),
+geometries AS (SELECT id, obj, UNNEST(CAST(obj->'\$.geometry' AS JSON[])) AS g FROM objects),
+kept AS (SELECT *, row_number() OVER (PARTITION BY id ORDER BY TRY_CAST(g->>'\$.lod' AS DOUBLE) $order) AS k FROM geometries WHERE g->>'\$.type' IN ('MultiSurface', 'CompositeSurface', 'Solid', 'MultiSolid', 'CompositeSolid'))
+SELECT id, obj->>'\$.type' AS type, obj->'\$.attributes' AS attributes, g->>'\$.lod' AS lod, g->>'\$.type' AS geometry_type,
+	ST_GeomFromText('MULTIPOLYGON Z (' || array_to_string(list_transform(
+		CASE g->>'\$.type' WHEN 'Solid' THEN flatten(CAST(g->'\$.boundaries' AS BIGINT[][][][])) WHEN 'MultiSolid' THEN flatten(flatten(CAST(g->'\$.boundaries' AS BIGINT[][][][][]))) WHEN 'CompositeSolid' THEN flatten(flatten(CAST(g->'\$.boundaries' AS BIGINT[][][][][]))) ELSE CAST(g->'\$.boundaries' AS BIGINT[][][]) END,  -- solids and their shells, flattened into their surfaces
+		lambda surface: '(' || array_to_string(list_transform(surface, lambda ring: '(' || array_to_string(list_transform(ring || [ring[1]], lambda i: array_to_string(v.xyz[i + 1], ' ')), ', ') || ')'), ', ') || ')'), ', ') || ')') AS geom
+FROM kept, v WHERE k = 1
+""")  # one row per city object, with the geometry of the level of detail chosen, as a MultiPolygon Z, one polygon per surface
+header = Tables.columntable(DBInterface.execute(con, "SELECT version, metadata->>'\$.referenceSystem' AS crs, len(vertices) AS n FROM $city"))
+{{?fileCrs=file}}file_crs = ismissing(header.crs[1]) ? "" : "EPSG:" * match(r"(\d+)\D*$", header.crs[1])[1]  # the EPSG code at the end of the referenceSystem the file records
+{{?fileCrs!=file}}file_crs = "{{fileCrs}}"
+tbl = Tables.columntable(DBInterface.execute(con, "SELECT id, type, lod, geometry_type, attributes FROM features"))
+println("CityJSON ", header.version[1], ": ", length(tbl.id), " objects with geometry, ", header.n[1], " vertices, coordinate system ", isempty(file_crs) ? "none recorded" : file_crs)
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-on-map"
+label = "Show on a Map"
+desc = "The footprints of the objects on an OpenStreetMap base map in Pollis's map view, coloured by height; click one for its attributes"
+code = '''
+if isempty(file_crs)
+	println("The file records no coordinate system: give its EPSG code in the File Coordinate System input")
+else
+	shown = joinpath(mktempdir(), "footprints.geojson")
+	DBInterface.execute(con, """
+	COPY (
+		WITH faces AS (SELECT id, UNNEST(ST_Dump(geom)).geom AS face, ST_ZMax(geom) - ST_ZMin(geom) AS height FROM features WHERE geom IS NOT NULL)
+		SELECT id, round(any_value(height), 2) AS height, ST_Transform(ST_Union_Agg(ST_Force2D(face)), '$(file_crs)', 'EPSG:4326') AS geom
+		FROM faces WHERE ST_Area(ST_Force2D(face)) > 1e-6 GROUP BY id
+	) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')
+	""")  # the faces with an area in plan, vertical walls left out, united into a footprint
+	display(Pollis.webmap(Pollis.layer(shown; name = "Footprints", column = "height", opacity = 0.75)))
+end
+'''
+
+[[actionGroups.actions]]
+id = "heights-chart"
+label = "Heights of the Objects"
+desc = "How tall the objects are, from the lowest to the highest point of each geometry, as a histogram drawn with ECharts"
+code = '''
+using ECharts
+
+h = Tables.columntable(DBInterface.execute(con, "SELECT ST_ZMax(geom) - ST_ZMin(geom) AS height FROM features WHERE geom IS NOT NULL")).height
+width = max(1.0, ceil((maximum(h) - minimum(h)) / 30))  # about 30 bins of whole metres
+lo = floor(minimum(h))
+bins = Dict{Float64, Int}()
+for x in h
+	b = lo + width * floor((x - lo) / width)
+	bins[b] = get(bins, b, 0) + 1
+end
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Heights of $(length(h)) objects")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Height", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Objects")],
+	series = [ECharts.XYSeries(name = "Objects", _type = "bar", data = [[b + width / 2, c] for (b, c) in sort(collect(bins))])])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "file-contents"
+label = "File Contents"
+desc = "CityGML: the namespace and srsName, the classes of top-level objects with their levels of detail, and the geometry kept. CityJSON: the version, transform and coordinate system, and the objects of each type and level of detail"
+code = '''
+{{?model=citygml}}println("CityGML namespace ", namespace(root(doc)), "; srsName ", srs === nothing ? "none recorded" : srs["srsName"])
+{{?model=citygml}}println(rpad("class", 26), rpad("levels of detail", 22), "objects")
+{{?model=citygml}}for (name, (n, levels)) in sort(collect(classes), by = c -> -c[2][1])
+{{?model=citygml}}	println(rpad(name, 26), rpad(string(sort(collect(levels))), 22), n)
+{{?model=citygml}}end
+{{?model=citygml}}g = Tables.columntable(DBInterface.execute(con, "SELECT lod, geometry_type, count(*) AS n FROM features GROUP BY ALL ORDER BY ALL"))
+{{?model=citygml}}println("Geometry kept for class {{gmlClass}}:")
+{{?model=citygml}}for i in eachindex(g.n)
+{{?model=citygml}}	println("  LoD ", coalesce(g.lod[i], "none"), ", from ", coalesce(g.geometry_type[i], "no geometry"), ": ", g.n[i], " objects")
+{{?model=citygml}}end
+{{?model=cityjson}}info = Tables.columntable(DBInterface.execute(con, "SELECT version, transform, metadata->>'\$.referenceSystem' AS crs, len(vertices) AS n, cardinality(CityObjects) AS objects FROM $city"))
+{{?model=cityjson}}println("CityJSON ", info.version[1], "; coordinate system ", coalesce(info.crs[1], "none recorded"), "; ", info.objects[1], " city objects, ", info.n[1], " vertices; transform: scale ", join(info.transform[1].scale, ", "), ", translate ", join(info.transform[1].translate, ", "))
+{{?model=cityjson}}types = Tables.columntable(DBInterface.execute(con, "SELECT e.value->>'\$.type' AS type, coalesce(list_sort(list_distinct(list_transform(CAST(e.value->'\$.geometry' AS JSON[]), lambda g: g->>'\$.lod')))::VARCHAR, '[]') AS lods, count(*) AS n FROM $city, UNNEST(map_entries(CityObjects)) t(e) GROUP BY ALL ORDER BY n DESC"))
+{{?model=cityjson}}println(rpad("type", 26), rpad("levels of detail", 22), "objects")
+{{?model=cityjson}}for i in eachindex(types.type)
+{{?model=cityjson}}	println(rpad(types.type[i], 26), rpad(types.lods[i], 22), types.n[i])
+{{?model=cityjson}}end
+'''
+
+[[actionGroups.actions]]
+id = "geometry-check"
+label = "Geometry Check"
+desc = "Objects without geometry, the faces of each geometry, how many are vertical walls and how many have an area in plan, and objects with no face in plan"
+code = '''
+{{?model=citygml}}missing_geometry = Tables.columntable(DBInterface.execute(con, "SELECT count(*) FILTER (WHERE geom IS NULL OR ST_IsEmpty(geom)) AS n FROM features")).n[1]
+{{?model=cityjson}}missing_geometry = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM $city, UNNEST(map_entries(CityObjects)) t(e) WHERE json_array_length(e.value->'\$.geometry') IS NULL OR json_array_length(e.value->'\$.geometry') = 0")).n[1]
+c = Tables.columntable(DBInterface.execute(con, """
+WITH faces AS (SELECT id, UNNEST(ST_Dump(geom)).geom AS face FROM features WHERE geom IS NOT NULL),
+per AS (SELECT id, count(*) AS faces, count(*) FILTER (WHERE ST_Area(ST_Force2D(face)) <= 1e-6) AS walls FROM faces GROUP BY id)
+SELECT count(*) AS objects, min(faces) AS fmin, round(avg(faces), 1) AS fmean, max(faces) AS fmax, sum(walls) AS walls, sum(faces - walls) AS flat, count(*) FILTER (WHERE faces = walls) AS no_plan FROM per
+"""))
+println("Objects without geometry: ", missing_geometry)
+println("Objects with geometry: ", c.objects[1], "; faces per object from ", c.fmin[1], " to ", c.fmax[1], ", mean ", c.fmean[1])
+println("Faces that are vertical walls: ", c.walls[1], "; faces with an area in plan (floors, roofs, slopes): ", c.flat[1])
+println("Objects with no face in plan, so no footprint: ", c.no_plan[1])
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "heights-side-by-side"
+label = "Heights Side by Side"
+desc = "Each building's measuredHeight attribute beside the height of its geometry, from the lowest to the highest point, and their difference"
+code = '''
+h = Tables.columntable(DBInterface.execute(con, "SELECT id, TRY_CAST(attributes->>'\$.measuredHeight' AS DOUBLE) AS measured, round(ST_ZMax(geom) - ST_ZMin(geom), 2) AS geometric FROM features WHERE geom IS NOT NULL ORDER BY id LIMIT 30"))
+w = maximum(length, h.id; init = 6) + 2  # the width of the longest identifier
+println(rpad("object", w), rpad("measuredHeight", 16), rpad("geometry", 12), "difference")
+for i in eachindex(h.id)
+	println(rpad(h.id[i], w), rpad(coalesce(h.measured[i], "none"), 16), rpad(h.geometric[i], 12), ismissing(h.measured[i]) ? "" : round(h.geometric[i] - h.measured[i], digits = 2))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "building-measures"
+label = "Building Measures"
+desc = "For each object: the footprint area, the height, and the volume of the prism of footprint and height, with totals for the file"
+code = '''
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE measures AS
+WITH faces AS (SELECT id, UNNEST(ST_Dump(geom)).geom AS face, ST_ZMax(geom) - ST_ZMin(geom) AS height FROM features WHERE geom IS NOT NULL)
+SELECT id, ST_Area(ST_Union_Agg(ST_Force2D(face))) AS footprint, any_value(height) AS height FROM faces WHERE ST_Area(ST_Force2D(face)) > 1e-6 GROUP BY id
+""")  # the footprint is the union of the faces with an area in plan
+m = Tables.columntable(DBInterface.execute(con, "SELECT id, round(footprint, 1) AS footprint, round(height, 2) AS height, round(footprint * height, 1) AS volume FROM measures ORDER BY volume DESC"))
+w = maximum(length, m.id; init = 6) + 2  # the width of the longest identifier
+println(rpad("object", w), rpad("footprint", 12), rpad("height", 10), "prism volume")
+for i in 1:min(20, length(m.id))
+	println(rpad(m.id[i], w), rpad(m.footprint[i], 12), rpad(m.height[i], 10), m.volume[i])
+end
+println("Totals over ", length(m.id), " objects: footprint ", round(sum(m.footprint), digits = 1), ", prism volume ", round(sum(m.volume), digits = 1), " (square and cubic units of the coordinate system)")
+'''
+
+[[actionGroups.actions]]
+id = "attribute-summary"
+label = "Attribute Summary"
+desc = "Each attribute name, how many objects have it, and an example value"
+code = '''
+a = Tables.columntable(DBInterface.execute(con, "SELECT k AS name, count(*) AS n, any_value(attributes->>k) AS example FROM features, UNNEST(json_keys(attributes)) t(k) WHERE attributes IS NOT NULL GROUP BY k ORDER BY n DESC, k"))
+println(rpad("attribute", 30), rpad("objects", 10), "example")
+for i in eachindex(a.name)
+	println(rpad(a.name[i], 30), rpad(a.n[i], 10), first(coalesce(a.example[i], ""), 40))
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-footprints"
+label = "Save Footprints as GeoPackage"
+desc = "Write each object's footprint, with its height and area, to a GeoPackage next to the file read, for the Geospatial Vector Files panel and any GIS"
+code = '''
+out = replace(path, r"(\.city)?\.json$|\.[^./]*$" => "") * "-footprints.gpkg"  # buildings.city.json gives buildings-footprints.gpkg
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, """
+	COPY (
+		WITH faces AS (SELECT id, UNNEST(ST_Dump(geom)).geom AS face, ST_ZMax(geom) - ST_ZMin(geom) AS height FROM features WHERE geom IS NOT NULL)
+		SELECT id AS object_id, any_value(height) AS height, ST_Area(ST_Union_Agg(ST_Force2D(face))) AS area, ST_Union_Agg(ST_Force2D(face)) AS geom
+		FROM faces WHERE ST_Area(ST_Force2D(face)) > 1e-6 GROUP BY id
+	) TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'footprints'$(isempty(file_crs) ? "" : ", SRS '$(file_crs)'"))
+	""")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the objects, with their attributes and 3D geometries as MultiPolygon Z, to a GeoParquet file next to the file read, for SQL with DuckDB"
+code = '''
+out = replace(path, r"(\.city)?\.json$|\.[^./]*$" => "") * ".parquet"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT parquet)")
+	println("Wrote ", out)
+end
+'''

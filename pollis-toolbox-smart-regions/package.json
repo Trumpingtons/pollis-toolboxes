@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
-  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters and LAS and LAZ lidar point clouds, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
-  "version": "0.1.9",
+  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, and CityGML and CityJSON 3D city models, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
+  "version": "0.1.10",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -40,6 +40,9 @@
             "id": "rasterfiles", "command": "pollis.smartRegions.rasterfiles", "title": "Raster and Point Cloud Files", "submenu": "accessFiles", "group": "2_raster", "order": 1, "data": "panels/rasterfiles.toml", "defaultModel": "geotiff", "decisionFirstColumn": "Format"
           },
           {
+            "id": "citymodels", "command": "pollis.smartRegions.citymodels", "title": "City Model Files", "submenu": "accessFiles", "group": "3_networks", "order": 1, "data": "panels/citymodels.toml", "defaultModel": "citygml", "decisionFirstColumn": "Format"
+          },
+          {
             "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "Base Map", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map"
           },
           {
@@ -50,7 +53,6 @@
           }
         ],
         "planned": [
-          { "title": "CityGML and CityJSON Files", "submenu": "accessFiles", "group": "3_networks", "order": 1 },
           { "title": "GTFS Feeds", "submenu": "accessFiles", "group": "3_networks", "order": 2 },
           { "title": "OpenStreetMap PBF Files", "submenu": "accessFiles", "group": "3_networks", "order": 3 },
           { "title": "OpenStreetMap Data", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1 },
