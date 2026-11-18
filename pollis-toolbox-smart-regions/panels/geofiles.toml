@@ -17,7 +17,7 @@ github = "https://github.com/JuliaData/Tables.jl"
 
 # Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
 [requires]
-packages = ["Plots.jl", "GeoInterfaceRecipes.jl", "WellKnownGeometry.jl", "GeoFormatTypes.jl"]
+packages = ["ECharts.jl"]
 
 [[wikis]]
 name = "Factsheet"
@@ -540,18 +540,36 @@ end
 [[actionGroups.actions]]
 id = "plot-features"
 label = "Plot the Features"
-desc = "Every geometry drawn in its coordinates: points as markers, lines as paths, polygons as filled shapes"
+desc = "Every geometry drawn with ECharts in longitude and latitude: polygons and lines as shapes, points as markers; drag and scroll to move and zoom"
 code = '''
-using Plots, GeoInterfaceRecipes, WellKnownGeometry, GeoFormatTypes
+using ECharts
 
-wkb = Tables.columntable(DBInterface.execute(con, "SELECT ST_AsWKB(geom) AS wkb FROM features WHERE geom IS NOT NULL")).wkb
-geoms = [GeoFormatTypes.WellKnownBinary(GeoFormatTypes.Geom(), collect(w)) for w in wkb]  # WKB, which GeoInterface reads
-centre = Tables.columntable(DBInterface.execute(con, "SELECT avg(ST_Y(ST_Centroid(geom))) AS y, max(abs(ST_XMax(geom))) <= 180 AND max(abs(ST_YMax(geom))) <= 90 AS geographic FROM features"))
-geographic = coalesce(centre.geographic[1], false)  # longitude and latitude, or metres
-fig = plot(; legend = false, xlabel = geographic ? "Longitude" : "x", ylabel = geographic ? "Latitude" : "y",
-	aspect_ratio = geographic ? 1 / cosd(centre.y[1]) : 1)  # a degree of longitude is shorter than one of latitude away from the equator
-foreach(g -> plot!(fig, g), geoms)
-fig
+lonlat = "SELECT * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM features WHERE geom IS NOT NULL"  # in longitude and latitude
+shapes = joinpath(mktempdir(), "shapes.geojson")
+DBInterface.execute(con, "COPY (SELECT * FROM ($lonlat) WHERE ST_GeometryType(geom) NOT IN ('POINT', 'MULTIPOINT')) TO '$(shapes)' (FORMAT GDAL, DRIVER 'GeoJSON')")  # polygons and lines, which ECharts draws as a map
+pts = Tables.columntable(DBInterface.execute(con, "SELECT ST_X(d.geom) AS x, ST_Y(d.geom) AS y FROM (SELECT UNNEST(ST_Dump(geom)) AS d FROM ($lonlat) WHERE ST_GeometryType(geom) IN ('POINT', 'MULTIPOINT'))"))
+box = Tables.columntable(DBInterface.execute(con, "SELECT min(ST_XMin(geom)) AS x0, max(ST_XMax(geom)) AS x1, min(ST_YMin(geom)) AS y0, max(ST_YMax(geom)) AS y1 FROM ($lonlat)"))
+if ismissing(box.x0[1])
+	println("No geometries to plot")
+else
+	x0, x1, y0, y1 = box.x0[1], box.x1[1], box.y0[1], box.y1[1]
+	pad = max(x1 - x0, y1 - y0, 0.001) * 0.05
+	fig = EChart(ec_mapname = "features", ec_mapdata = read(shapes, String), ec_width = 800, ec_height = 500, title = nothing, grid = nothing,
+		geo = ECharts.Geo(map = "features", roam = true, aspectScale = cosd((y0 + y1) / 2),  # a degree of longitude is shorter than one of latitude away from the equator
+			boundingCoords = [[x0 - pad, y1 + pad], [x1 + pad, y0 - pad]], layoutCenter = [400, 250], layoutSize = "92%",
+			itemStyle = ECharts.ItemStyle(borderColor = "#3182bd")),
+		series = [ECharts.XYSeries(_type = "scatter", coordinateSystem = "geo", symbolSize = 7, data = [[x, y] for (x, y) in zip(pts.x, pts.y)])])
+end
+'''
+
+[[actionGroups.actions]]
+id = "show-on-map"
+label = "Show on a Map"
+desc = "The features on an OpenStreetMap base map, in Pollis's map view; click a feature for its attributes"
+code = '''
+shown = joinpath(mktempdir(), "features.geojson")
+DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM features WHERE geom IS NOT NULL) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")  # in longitude and latitude, as web maps need
+Pollis.webmap(Pollis.layer(shown; name = "Features"))
 '''
 
 [[actionGroups]]

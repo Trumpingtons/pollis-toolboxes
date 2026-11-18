@@ -20,7 +20,8 @@ The Example Code of the Geospatial Vector Files panel opens an in-memory DuckDB 
 | Group | Action | What it shows |
 |---|---|---|
 | Visualise | Preview Features | The first rows, with each geometry as text |
-| Visualise | Plot the Features | Points, lines and polygon outlines in their coordinates |
+| Visualise | Plot the Features | Points, lines and polygons drawn with ECharts in longitude and latitude |
+| Visualise | Show on a Map | The features on an OpenStreetMap base map |
 | Diagnose | Layers and Coordinate System | GDAL's driver, the layers, feature counts, geometry types, coordinate systems and fields |
 | Diagnose | File Metadata | The geo metadata of a GeoParquet file, or the header of a FlatGeobuf file |
 | Diagnose | Geometry Check | Missing, empty and invalid geometries by type |
