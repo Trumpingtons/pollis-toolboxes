@@ -10,11 +10,13 @@ Installing it adds the **Spatial Econometrics** submenu to the end of the **Exte
 
 **Geographically Weighted Regression**: regressions whose coefficients vary over the map, with a fixed or an adaptive bandwidth chosen by AICc, and multiscale GWR (MGWR), with one bandwidth per coefficient, on SpatialEconometrics.jl. Its Next Steps map the local coefficients, t-values and R-squared, adjust the local tests for multiple testing, test whether a coefficient varies over the map, and compare GWR with least squares and with MGWR. Its Replicate steps set the panel's results beside GWR4 and beside Oshan, Li, Kang, Wolf and Fotheringham (2019), on the Georgia counties of libpysal.
 
+**Eigenvector Spatial Filtering**: regressions with a spatial filter made of Moran eigenvectors of the spatial weights, which removes the spatial autocorrelation of the residuals so that the coefficients can be read as in an ordinary regression, on SpatialEconometrics.jl. The eigenvectors are selected one at a time by the Moran coefficient of the residuals or by AIC, enter a Poisson or negative binomial regression for counts, or are all kept with their coefficients shrunk, in random-effects ESF. Its Next Steps map the filter and the selected eigenvectors, test the residuals with Moran's I before and after the filter, and compare the filter with least squares, SAR and SEM, the two criteria with each other, and stepwise with random-effects ESF. Its Replicate step sets the panel's results beside the case study examples of Murakami's R package spmoran, on the Boston data of the spData package.
+
 The other items of the menu are greyed out:
 
 | Group | Panels |
 |---|---|
-| Cross-section | Eigenvector Spatial Filtering, Spatial Discrete Choice |
+| Cross-section | Spatial Discrete Choice |
 | Space and time | Spatial Panel Data, Spatio-Temporal Forecasting |
 | Regions and policy | Spatial Causal Inference, Regionalisation and Spatial Regimes |
 
