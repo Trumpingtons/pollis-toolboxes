@@ -331,9 +331,10 @@ purpose = "Read the tracks and waypoints a GPS device or a sports app records"
 [[inputs]]
 id = "folder"
 label = "Folder"
-tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is."
 default = "~/.pollis/data/examples"
 folder = "data/examples"
+chooseFolder = false
 
 [[inputs]]
 id = "geojsonFile"
@@ -473,7 +474,7 @@ using DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
-folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 {{?model=geojson}} path = joinpath(folder, "{{geojsonFile}}")  # an absolute path is kept as it is
 {{?model=gpkg}} path = joinpath(folder, "{{gpkgFile}}")  # an absolute path is kept as it is
 {{?model=shapefile}} path = joinpath(folder, "{{shapefileFile}}")  # its .shx, .dbf and .prj files are beside it
