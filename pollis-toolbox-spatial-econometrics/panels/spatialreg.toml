@@ -1,0 +1,820 @@
+# Spatial Lag and Error Models: least squares with Lagrange multiplier tests, and the spatial lag (SAR), spatial error (SEM),
+# spatial lag of X (SLX) and spatial Durbin (SDM) models, with SpatialEconometrics.jl; the areas are read, and their
+# neighbours found, through DuckDB's spatial extension. Replications of R spatialreg and of Bivand and Piras (2015).
+
+[meta]
+title = "Spatial Lag and Error Models"
+viewType = "pollis.spatialreg"
+defaultModel = "ols"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "spatialreg/factsheet.md"
+bundled = true
+description = "One-page reference: the five tabs, the inputs, the neighbours found with SQL and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "spatialreg/overview.md"
+bundled = true
+description = "Regression on areas whose outcomes depend on their neighbours: the family of spatial models"
+
+[[wikis]]
+name = "Lagrange Multiplier Tests"
+file = "spatialreg/lm-tests.md"
+bundled = true
+description = "Moran's I of regression residuals, the LM lag and LM error tests and their robust forms"
+
+[[wikis]]
+name = "Maximum Likelihood Estimation"
+file = "spatialreg/maximum-likelihood.md"
+bundled = true
+description = "The likelihood of the spatial models, the log-determinant, and comparing models by likelihood"
+
+[[wikis]]
+name = "Direct and Indirect Effects"
+file = "spatialreg/effects.md"
+bundled = true
+description = "Why coefficients are not marginal effects in a spatial lag model, and the spillovers to the neighbours"
+
+[[wikis]]
+name = "Decision Guide"
+file = "spatialreg/decision-guide.md"
+bundled = true
+description = "From the LM tests to a model, and from the spatial Durbin model down to a simpler one"
+
+[[wikis]]
+name = "Replications"
+file = "spatialreg/replications.md"
+bundled = true
+description = "The R packages, the article and the open datasets the panel's results are checked against"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "OLS and LM Tests"
+file = "spatialreg/ols.md"
+bundled = true
+
+[[wikis]]
+name = "Spatial Lag (SAR)"
+file = "spatialreg/sar.md"
+bundled = true
+
+[[wikis]]
+name = "Spatial Error (SEM)"
+file = "spatialreg/sem.md"
+bundled = true
+
+[[wikis]]
+name = "Lag of X (SLX)"
+file = "spatialreg/slx.md"
+bundled = true
+
+[[wikis]]
+name = "Spatial Durbin (SDM)"
+file = "spatialreg/sdm.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Ans1988a"
+
+[[references]]
+key = "LP2009a"
+
+[[references]]
+key = "Elh2014a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "CO1972a"
+
+[[references]]
+key = "Ord1975a"
+
+[[references]]
+key = "ABFY1996a"
+
+[[references]]
+key = "HE2015a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "BP2015a"
+
+[[references]]
+key = "HR1978a"
+
+[[references]]
+key = "GP1996a"
+
+[[references]]
+key = "PG1997a"
+
+[[faq]]
+question = "Which spatial model should I start with?"
+answer = '''
+Start on the OLS and LM Tests tab. If Moran's I of the least-squares residuals is significant, the Lagrange multiplier tests point to a model: a significant LM lag test with an insignificant LM error test points to the spatial lag model (SAR), the reverse to the spatial error model (SEM). When both are significant, the robust forms decide.
+
+Another route starts from the spatial Durbin model (SDM) and tests it down: Likelihood Ratio Tests of the SDM compares it with the SAR, SLX and SEM models it nests.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why are the coefficients of the spatial lag model not the effects of the explanatory variables?"
+answer = '''
+In the spatial lag model, a change in an explanatory variable in one area changes the outcome there, which changes the outcome of its neighbours through the spatial lag, which feeds back to the first area, and so on. The coefficient is only the first round of that chain.
+
+The direct effect is the average change in an area's own outcome, feedback included; the indirect effect is the average change in all the other areas' outcomes together. The Spatial Lag (SAR) and Spatial Durbin (SDM) tabs print both, with standard errors.
+'''
+wiki = "Direct and Indirect Effects"
+
+[[faq]]
+question = "What does rho measure, and what does lambda measure?"
+answer = '''
+rho, in the spatial lag (SAR) and spatial Durbin (SDM) models, is the strength with which an area's outcome depends on the average outcome of its neighbours. lambda, in the spatial error model (SEM), is the strength of the spatial dependence in the error term, between the parts of the outcomes that the explanatory variables leave unexplained.
+
+With row-standardised weights both lie below 1. A rho of zero turns the SAR model into least squares, and a lambda of zero turns the SEM model into least squares.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "How do I know the panel gives the same results as R?"
+answer = '''
+The Replicate group of the Next Steps downloads open data and prints Julia's estimates beside values recorded from R's spatialreg and spdep packages: Columbus crime and Boston house prices, from the spData package. A third step reproduces Tables 2, 14, 17 and 18 of Bivand and Piras (2015) from the article's own replication archive.
+
+Each line shows the difference: differences in the last printed digit come from rounding.
+'''
+wiki = "Replications"
+
+[[faq]]
+question = "Why are the spatial lags of X called SLX?"
+answer = '''
+SLX stands for spatial lag of X: the model adds the average of each explanatory variable over an area's neighbours, WX, to the explanatory variables, and has no spatial lag of the outcome. It is estimated by least squares, and its coefficients on WX are the indirect effects directly.
+'''
+wiki = "Lag of X (SLX)"
+hidden = true
+
+[[faq]]
+question = "What does the common factor test compare?"
+answer = '''
+The spatial Durbin model nests the spatial error model when the coefficients of the spatial lags of X equal minus rho times the coefficients of X. The likelihood ratio test of the SEM against the SDM tests that restriction: a small p-value rejects the spatial error model in favour of the spatial Durbin model.
+'''
+wiki = "Spatial Durbin (SDM)"
+hidden = true
+
+[[faq]]
+question = "Why does the panel compute Moran's I of the residuals differently on the OLS tab?"
+answer = '''
+Least-squares residuals sum to zero and depend on each other through the explanatory variables, so the moments of Moran's I for a raw variable do not apply to them. The OLS and LM Tests tab uses the expectation and variance that Cliff and Ord (1972) derived for regression residuals. For the spatial models, the panel gives a pseudo p-value from random permutations of the residuals instead.
+'''
+wiki = "Lagrange Multiplier Tests"
+hidden = true
+
+[[faq]]
+question = "What happens in the other areas when one area's explanatory variable changes in the spatial error model?"
+answer = '''
+Nothing: in the spatial error model the spatial dependence lies in the error term, so a change in an explanatory variable in one area changes the expected outcome of that area alone. The Change One Area step shows it: only the area changed moves on the map.
+'''
+wiki = "Spatial Error (SEM)"
+hidden = true
+
+[[faq]]
+question = "Why does the panel's spatial lag model take longer on several thousand areas?"
+answer = '''
+The likelihood of the spatial lag and spatial error models holds the log-determinant of I - rho W, a matrix with one row per area. SpatialEconometrics.jl computes it exactly up to 1000 areas, by default, and with a Chebyshev approximation beyond; its traces, used by the standard errors and the effects, grow with the number of areas too.
+'''
+wiki = "Maximum Likelihood Estimation"
+hidden = true
+
+[[models]]
+id = "ols"
+label = "OLS and LM Tests"
+
+[[models]]
+id = "sar"
+label = "Spatial Lag (SAR)"
+
+[[models]]
+id = "sem"
+label = "Spatial Error (SEM)"
+
+[[models]]
+id = "slx"
+label = "Lag of X (SLX)"
+
+[[models]]
+id = "sdm"
+label = "Spatial Durbin (SDM)"
+
+[[bullets]]
+text = "OLS and LM Tests"
+detail = "Least squares, Moran's I of its residuals and the Lagrange multiplier tests: is there spatial dependence left, and of which kind?"
+
+[[bullets]]
+text = "Spatial Lag (SAR)"
+detail = "Each area's outcome depends on its neighbours' outcomes, with direct and indirect (spillover) effects"
+
+[[bullets]]
+text = "Spatial Error (SEM)"
+detail = "The spatial dependence lies in the error term: what the explanatory variables leave unexplained is shared by neighbours"
+
+[[bullets]]
+text = "Lag of X (SLX)"
+detail = "The neighbours' explanatory variables enter beside the area's own, by least squares"
+
+[[bullets]]
+text = "Spatial Durbin (SDM)"
+detail = "Both the neighbours' outcomes and their explanatory variables: it nests the SAR, SEM and SLX models"
+
+[[decisionRows]]
+task = "OLS and LM Tests"
+context = "First look"
+purpose = "Test the least-squares residuals for spatial dependence, and see whether a lag or an error model fits it"
+
+[[decisionRows]]
+task = "Spatial Lag (SAR)"
+context = "Outcomes spill over"
+purpose = "Model an outcome that depends on the neighbours' outcomes, and measure the spillovers"
+
+[[decisionRows]]
+task = "Spatial Error (SEM)"
+context = "Shared unobservables"
+purpose = "Correct the estimates and their standard errors for spatially dependent errors, with no spillovers"
+
+[[decisionRows]]
+task = "Lag of X (SLX)"
+context = "Local spillovers"
+purpose = "Let the neighbours' explanatory variables matter, without a spatial multiplier"
+
+[[decisionRows]]
+task = "Spatial Durbin (SDM)"
+context = "General start"
+purpose = "Fit the model that nests the others, then test it down"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Results as GeoParquet writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbra.gpkg, the example first writes a grid of 225 square cells of 1 km around Coimbra with a simulated annual mean of nitrogen dioxide (no2, in micrograms per cubic metre), traffic (thousands of vehicles a day) and green space (percent of the cell), unless the folder has a coimbra.gpkg already."
+default = "coimbra.gpkg"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The numeric column explained by the model. Areas without a value in it, or in an explanatory variable, are left out."
+default = "no2"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns that explain it, separated by commas. Every model adds an intercept. Change One Area changes the first of them."
+default = "traffic, green"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and for the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:3763"
+newRow = true
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. The weights of each area's neighbours sum to 1."
+kind = "select"
+default = "queen"
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest, and in Weights: Contiguity and k Nearest."
+default = "6"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+{{?file=coimbra.gpkg}} # Example file: a grid of 15 by 15 square cells of 1 km around Coimbra, in EPSG:3763, with simulated nitrogen dioxide (no2), traffic and green space, written to coimbra.gpkg unless the folder has one already. Replace "coimbra.gpkg" with your own file.
+{{?file=coimbra.gpkg}} if !isfile(path)
+{{?file=coimbra.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+{{?file=coimbra.gpkg}} 	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre cell, row by row from the south-west
+{{?file=coimbra.gpkg}} 	traffic = 4 .+ 16 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 18) .+ randn(rng, 225)  # thousands of vehicles a day, most in the centre
+{{?file=coimbra.gpkg}} 	green = clamp.(30 .+ 2 .* u .- 0.8 .* traffic .+ 6 .* randn(rng, 225), 2, 90)  # percent of green space, more to the east
+{{?file=coimbra.gpkg}} 	no2 = (I - 0.5 * make_queen_weights(15)) \ (10 .+ 0.8 .* traffic .- 0.12 .* green .+ 2 .* randn(rng, 225))  # a spatial lag process with rho = 0.5
+{{?file=coimbra.gpkg}} 	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:225]
+{{?file=coimbra.gpkg}} 	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+{{?file=coimbra.gpkg}} end
+yname = "{{dependent}}"
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
+# The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE $(present)")
+DBInterface.execute(con, "ALTER TABLE areas DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM areas ORDER BY i")).v)
+y = column(yname)
+X = reduce(hcat, column.(xnames))  # without the intercept, which every model adds
+n, p = size(X)
+
+# The neighbours of each area, as pairs (i, j), found with SQL
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+function weights(kind)
+	pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs[kind]))
+	return row_standardize(sparse(pairs.i, pairs.j, 1.0, n, n))  # the weights of each area's neighbours sum to 1
+end
+W = weights("{{neighbours}}")
+
+# Moran's I of least-squares residuals, with the expectation and variance of Cliff and Ord (1972) for row-standardised weights
+function moran_residuals(y, Xi, W)
+	n, k = size(Xi)
+	M = I - Xi * ((transpose(Xi) * Xi) \ transpose(Xi))  # the residual maker
+	e = M * y
+	MW = M * Matrix(W)
+	mi = dot(e, W * e) / dot(e, e)
+	expected = tr(MW) / (n - k)
+	variance = (tr(MW * M * transpose(Matrix(W))) + tr(MW * MW) + tr(MW)^2) / ((n - k) * (n - k + 2)) - expected^2
+	return mi, (mi - expected) / sqrt(variance)
+end
+
+{{?model=ols}} Xi = hcat(ones(n), X)  # with the intercept
+{{?model=ols}} b = Xi \ y  # least squares
+{{?model=ols}} res = y - Xi * b  # the residuals
+{{?model=ols}} se = sqrt.(diag(dot(res, res) / (n - p - 1) * inv(transpose(Xi) * Xi)))
+{{?model=ols}} println(rpad("", 14), rpad("Estimate", 12), rpad("Std. Error", 12), "t")
+{{?model=ols}} for (name, bk, sk) in zip(["(Intercept)"; xnames], b, se)
+{{?model=ols}} 	println(rpad(name, 14), rpad(round(bk, digits = 4), 12), rpad(round(sk, digits = 4), 12), round(bk / sk, digits = 2))
+{{?model=ols}} end
+{{?model=ols}} mi, z = moran_residuals(y, Xi, W)
+{{?model=ols}} println("\nMoran's I of the residuals: ", round(mi, digits = 4), ", z = ", round(z, digits = 2), abs(z) > 1.96 ? ", beyond 1.96: spatial autocorrelation at the 5% level" : ", within 1.96")
+{{?model=ols}} tests = lm_tests(y, Xi, W)  # the Lagrange multiplier tests of Anselin, Bera, Florax and Yoon (1996)
+{{?model=ols}} foreach(print, tests)
+{{?model=sar}} m = fit_spatial(SAR(), W, X, y; varnames = xnames)  # maximum likelihood, with the intercept added
+{{?model=sem}} m = fit_spatial_error(W, X, y; varnames = xnames)  # maximum likelihood, with the intercept added
+{{?model=slx}} m = fit_slx(W, X, y; varnames = xnames)  # least squares on X and WX, with the intercept added
+{{?model=sdm}} m = fit_spatial(SDM(), W, X, y; varnames = xnames)  # maximum likelihood on X and WX, with the intercept added
+{{?model!=ols}} res = m.residuals
+{{?model!=ols}} println(coeftable(m))
+{{?model!=ols}} println("Log-likelihood ", round(m.loglik, digits = 3), ", n = ", n)
+{{?model=sar|sdm}} println(spatial_effects(m))  # direct and indirect effects, with standard errors
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-values"
+label = "Map of the Dependent Variable"
+desc = "The areas on a base map, coloured by the dependent variable, from its smallest to its largest value; click an area for its attributes"
+code = '''
+values = joinpath(mktempdir(), "values.geojson")
+DBInterface.execute(con, "COPY (SELECT * FROM areas) TO '$(values)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(values; name = "{{dependent}}", column = "{{dependent}}", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "map-residuals"
+label = "Map of the Residuals"
+desc = "The residuals of the tab's model on a base map: clusters of large residuals of the same sign are spatial dependence the model leaves"
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT i, residual::DOUBLE AS residual FROM (VALUES $(join(("($i, $(res[i]))" for i in 1:n), ", "))) t(i, residual)")
+rmap = joinpath(mktempdir(), "residuals.geojson")
+DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom), round(f.residual, 3) AS residual, a.geom FROM areas a JOIN fit f USING (i)) TO '$(rmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(rmap; name = "Residuals", column = "residual", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "effects-chart"
+label = "Chart of the Effects"
+desc = "The direct and indirect effects of each explanatory variable, side by side"
+models = ["sar", "sdm"]
+code = '''
+using ECharts
+
+ef = spatial_effects(m)
+fig = EChart(ec_width = 700, ec_height = 420, title = [ECharts.Title(text = "Direct (first bar) and Indirect (second bar) Effects on {{dependent}}")],
+	xAxis = [ECharts.Axis(_type = "category", data = ef.varnames)], yAxis = [ECharts.Axis(_type = "value", name = "Effect")],
+	series = [ECharts.XYSeries(name = "Direct", _type = "bar", data = ef.direct), ECharts.XYSeries(name = "Indirect", _type = "bar", data = ef.indirect)])
+fig
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "residual-moran"
+label = "Moran's I of the Residuals"
+desc = "Is there spatial dependence left in the residuals of the tab's model? For least squares with the moments of Cliff and Ord (1972), for the spatial models from random permutations"
+code = '''
+{{?model=ols}} mi, z = moran_residuals(y, hcat(ones(n), X), W)
+{{?model=ols}} println("Moran's I of the least-squares residuals ", round(mi, digits = 4), ", z = ", round(z, digits = 2), " (beyond 1.96: significant at the 5% level)")
+{{?model!=ols}} mr = moran_global(res, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+{{?model!=ols}} println("Moran's I of the residuals ", round(mr.I_stat, digits = 4), " (expected ", round(mr.E_I, digits = 4), "), pseudo p-value ", mr.p_value, " from 999 permutations")
+'''
+
+[[actionGroups.actions]]
+id = "durbin-tests"
+label = "LM Tests for the Durbin Terms"
+desc = "Lagrange multiplier tests, from the least-squares residuals, of the spatial lag and of the spatial lags of X, jointly and each robust to the other"
+models = ["ols", "slx", "sdm"]
+code = '''
+tests = sdm_tests(y, hcat(ones(n), X), W)
+for t in (tests.joint, tests.lag, tests.robust_lag, tests.durbin, tests.robust_durbin)
+	print(t)
+end
+'''
+
+[[actionGroups.actions]]
+id = "neighbour-counts"
+label = "Neighbour Counts"
+desc = "How many areas have 0, 1, 2, ... neighbours, and the islands: the areas without a neighbour"
+code = '''
+counts = vec(sum(W .> 0, dims = 2))  # the number of neighbours of each area
+println("Neighbours of {{neighbours}}: mean ", round(sum(counts) / n, digits = 2), ", from ", minimum(counts), " to ", maximum(counts))
+println(rpad("neighbours", 12), "areas")
+for c in sort(unique(counts))
+	println(rpad(c, 12), count(==(c), counts))
+end
+islands = findall(==(0), counts)
+println(isempty(islands) ? "No islands" : "Islands, areas without a neighbour: i = $(join(islands, ", ")). Leave them out, or choose k Nearest")
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "change-one-area"
+label = "Change One Area"
+desc = "One more unit of the first explanatory variable in the area nearest the middle of the map: the change in the dependent variable there and in every other area, on a base map"
+code = '''
+middle = only(Tables.columntable(DBInterface.execute(con, "WITH m AS (SELECT ST_Centroid(ST_Envelope_Agg(geom)) AS p FROM areas) SELECT i FROM areas, m ORDER BY ST_Distance_Sphere(ST_Centroid(geom), m.p) LIMIT 1")).i)
+shock = zeros(n)
+shock[middle] = 1.0  # one more unit in that area alone
+{{?model=ols}} change = b[2] .* shock
+{{?model=sem}} change = m.coef[2] .* shock  # the spatial dependence of the errors carries nothing to the neighbours
+{{?model=slx}} change = m.coef[2] .* shock .+ m.coef[2 + p] .* (W * shock)  # the area itself, and its neighbours through WX
+{{?model=sar}} change = (I - m.rho * W) \ (m.coef[2] .* shock)  # the spatial multiplier carries it to every connected area
+{{?model=sdm}} change = (I - m.rho * W) \ (m.coef[2] .* shock .+ m.coef[2 + p] .* (W * shock))
+println("One more unit of $(xnames[1]) in area i = $(middle): $(round(change[middle], digits = 4)) there, $(round(sum(change) - change[middle], digits = 4)) in all the other areas together, $(count(abs.(change) .> 1e-8) - 1) of which change")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE spill AS SELECT i, change::DOUBLE AS change FROM (VALUES $(join(("($i, $(change[i]))" for i in 1:n), ", "))) t(i, change)")
+smap = joinpath(mktempdir(), "change.geojson")
+DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom), round(s.change, 4) AS change, a.geom FROM areas a JOIN spill s USING (i)) TO '$(smap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(smap; name = "Change in {{dependent}}", column = "change", opacity = 0.75)))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "models-compared"
+label = "Models Compared"
+desc = "Least squares and the four spatial models on the same data and weights: parameters, log-likelihood, AIC, BIC and the spatial parameter"
+code = '''
+Xi = hcat(ones(n), X)
+e = y - Xi * (Xi \ y)
+ols_loglik = -n / 2 * (log(2 * pi) + log(dot(e, e) / n) + 1)  # the log-likelihood of least squares
+rows = ["OLS" => (ols_loglik, p + 2, "")]
+fitted = ["SAR" => fit_spatial(SAR(), W, X, y; varnames = xnames), "SEM" => fit_spatial_error(W, X, y; varnames = xnames), "SLX" => fit_slx(W, X, y; varnames = xnames), "SDM" => fit_spatial(SDM(), W, X, y; varnames = xnames)]
+for (name, fm) in fitted
+	spatial = name == "SEM" ? "lambda = $(round(fm.lambda, digits = 4))" : name in ("SAR", "SDM") ? "rho = $(round(fm.rho, digits = 4))" : ""
+	push!(rows, name => (fm.loglik, length(fm.coef) + 1, spatial))  # the coefficients and the variance
+end
+println(rpad("model", 8), rpad("parameters", 12), rpad("log-likelihood", 16), rpad("AIC", 12), rpad("BIC", 12), "spatial parameter")
+for (name, (ll, k, spatial)) in rows
+	println(rpad(name, 8), rpad(k, 12), rpad(round(ll, digits = 3), 16), rpad(round(-2 * ll + 2 * k, digits = 2), 12), rpad(round(-2 * ll + k * log(n), digits = 2), 12), spatial)
+end
+println("The smallest AIC or BIC fits best for its number of parameters")
+'''
+
+[[actionGroups.actions]]
+id = "lr-tests"
+label = "Likelihood Ratio Tests of the SDM"
+desc = "The spatial Durbin model against the three models it nests: the spatial lag model (no lags of X), the SLX model (rho zero) and the spatial error model (the common factor restriction)"
+code = '''
+sar_fit = fit_spatial(SAR(), W, X, y; varnames = xnames)
+sem_fit = fit_spatial_error(W, X, y; varnames = xnames)
+slx_fit = fit_slx(W, X, y; varnames = xnames)
+sdm_fit = fit_spatial(SDM(), W, X, y; varnames = xnames)
+for (question, restricted) in ("Are the spatial lags of X zero? SAR against SDM" => sar_fit, "Is rho zero? SLX against SDM" => slx_fit, "Does the common factor restriction hold? SEM against SDM" => sem_fit)
+	println(question)
+	println(lr_test(restricted, sdm_fit))
+end
+'''
+
+[[actionGroups.actions]]
+id = "weights-compared"
+label = "Weights: Contiguity and k Nearest"
+desc = "The spatial parameter of the tab's model, its standard error and the log-likelihood with queen and rook contiguity and with k nearest neighbours"
+models = ["sar", "sem", "sdm"]
+code = '''
+println(rpad("neighbours", 22), rpad("spatial parameter", 20), rpad("std. error", 12), "log-likelihood")
+for (kind, name) in ("queen" => "Queen", "rook" => "Rook", "knn" => "k Nearest, k = {{k}}")
+	Wk = weights(kind)
+{{?model=sar}} 	fk = fit_spatial(SAR(), Wk, X, y); est, sek = fk.rho, fk.rho_se
+{{?model=sdm}} 	fk = fit_spatial(SDM(), Wk, X, y); est, sek = fk.rho, fk.rho_se
+{{?model=sem}} 	fk = fit_spatial_error(Wk, X, y); est, sek = fk.lambda, fk.lambda_se
+	println(rpad(name, 22), rpad(round(est, digits = 4), 20), rpad(round(sek, digits = 4), 12), round(fk.loglik, digits = 3))
+end
+println("The same data and the same number of parameters: the largest log-likelihood fits best")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "spatial-multiplier"
+label = "Spatial Multiplier"
+desc = "The multiplier 1/(1 - rho), and each variable's total effect as its first-round effect times the multiplier"
+models = ["sar", "sdm"]
+code = '''
+multiplier = 1 / (1 - m.rho)
+ef = spatial_effects(m)
+println("Spatial multiplier 1/(1 - rho) = ", round(multiplier, digits = 3))
+println(rpad("variable", 14), rpad("first round", 14), rpad("x multiplier", 14), "total effect")
+for k in 1:p
+{{?model=sar}} 	start = m.coef[1 + k]  # beta: the change before it travels through the neighbours
+{{?model=sdm}} 	start = m.coef[1 + k] + m.coef[1 + p + k]  # beta + theta: the change before it travels through the neighbours
+	println(rpad(xnames[k], 14), rpad(round(start, digits = 4), 14), rpad(round(start * multiplier, digits = 4), 14), round(ef.total[k], digits = 4))
+end
+println("With row-standardised weights, the total effect is the first round times the multiplier")
+'''
+
+[[actionGroups.actions]]
+id = "slx-effects"
+label = "Direct and Indirect Effects"
+desc = "In the SLX model, the coefficient of each variable is its direct effect, and that of its spatial lag its indirect effect, with standard errors"
+models = ["slx"]
+code = '''
+sek = sqrt.(diag(m.vcov))
+println(rpad("variable", 14), rpad("direct", 22), "indirect")
+for k in 1:p
+	println(rpad(xnames[k], 14), rpad("$(round(m.coef[1 + k], digits = 4)) ($(round(sek[1 + k], digits = 4)))", 22), "$(round(m.coef[1 + p + k], digits = 4)) ($(round(sek[1 + p + k], digits = 4)))")
+end
+println("Standard errors in parentheses")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-article"
+label = "Bivand and Piras (2015)"
+desc = "Tables 2, 14, 17 and 18 of the article: least squares, the spatial lag and spatial error models, and the impacts, on its 3109 US counties, from the article's replication archive at the Journal of Statistical Software"
+code = '''
+using Downloads, p7zip_jll
+
+let
+	rcon = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(rcon, "LOAD spatial")
+	zip = joinpath(mktempdir(), "v063i18.zip")
+	Downloads.download("https://www.jstatsoft.org/index.php/jss/article/download/v063i18/2971", zip)  # the article's replication archive
+	DBInterface.execute(rcon, "CREATE TABLE counties AS SELECT row_number() OVER () AS i, * FROM ST_Read('/vsizip/$(zip)/ccountyR.shp')")  # GDAL reads the shapefile inside the zip
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM counties ORDER BY i")).v)
+	dir = mktempdir()
+	run(pipeline(`$(p7zip_jll.p7zip()) e $(zip) -o$(dir) ccountyR_w.gal -y`, devnull))  # the queen contiguities of the counties
+	Wg, ids = read_gal(joinpath(dir, "ccountyR_w.gal"))
+	Wd = row_standardize(Wg)
+	yd = cols("dui")
+	Xd = hcat(cols("police"), cols("nondui"), cols("vehicles"), cols("dry"))
+	nd = length(yd)
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 26), rpad("Julia", 14), rpad("article", 14), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 26), rpad(round(julia, digits = 7), 14), rpad(published, 14), round(julia - published, sigdigits = 2))
+		end
+	end
+	names = ["Intercept", "police", "nondui", "vehicles", "dry"]
+	Xi = hcat(ones(nd), Xd)
+	b = Xi \ yd
+	e = yd - Xi * b
+	se = sqrt.(diag(dot(e, e) / (nd - 5) * inv(transpose(Xi) * Xi)))
+	report("Table 2, least squares (R lm)", [[(names[k], b[k], v) for (k, v) in enumerate([-5.4428237, 0.5990957, 0.0002746, 0.0156842, 0.1060904])];
+		[("se " * names[k], se[k], v) for (k, v) in enumerate([0.229431, 0.014935, 0.001088, 0.000670, 0.035011])]])
+	sar = fit_spatial(SAR(), Wd, Xd, yd; max_exact_n = 5000)  # exact log-determinants for the 3109 counties, as the article's eigenvalues
+	ssar = sqrt.(diag(sar.vcov))
+	report("Table 14, spatial lag model (R lagsarlm)", [[(names[k], sar.coef[k], v) for (k, v) in enumerate([-6.337479, 0.598157, 0.000249, 0.015711, 0.106131])];
+		[("rho", sar.rho, 0.043423)]; [("se " * names[k], ssar[k], v) for (k, v) in enumerate([0.382022, 0.014908, 0.001086, 0.000668, 0.034931])];
+		[("se rho", sar.rho_se, 0.014922), ("log-likelihood", sar.loglik, -2628.58)]])
+	sem = fit_spatial_error(Wd, Xd, yd; max_exact_n = 5000)
+	ssem = sqrt.(diag(sem.vcov))
+	report("Table 17, spatial error model (R errorsarlm)", [[(names[k], sem.coef[k], v) for (k, v) in enumerate([-5.432939, 0.599777, 0.000258, 0.015619, 0.103890])];
+		[("lambda", sem.lambda, 0.045856)]; [("se " * names[k], ssem[k], v) for (k, v) in enumerate([0.229072, 0.014891, 0.001087, 0.000667, 0.034967])];
+		[("se lambda", sem.lambda_se, 0.029878)]])
+	ef = spatial_effects(sar)
+	report("Table 18, impacts of the spatial lag model (R)", [[("direct " * names[k + 1], ef.direct[k], v) for (k, v) in enumerate([0.598350, 0.000249, 0.015717, 0.106165])];
+		[("total " * names[k + 1], ef.total[k], v) for (k, v) in enumerate([0.625310, 0.000261, 0.016425, 0.110948])]])
+end
+'''
+
+[[actionGroups.actions]]
+id = "replicate-columbus"
+label = "Columbus Crime: R spatialreg"
+desc = "Crime in the 49 neighbourhoods of Columbus, Ohio, explained by income and house value, from spData: every model of the panel beside the values of R's spatialreg and spdep, with queen contiguity"
+code = '''
+using Downloads
+
+let
+	rcon = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(rcon, "LOAD spatial")
+	file = joinpath(mktempdir(), "columbus.gpkg")
+	Downloads.download("https://raw.githubusercontent.com/Nowosad/spData/master/inst/shapes/columbus.gpkg", file)  # spData, CC0
+	DBInterface.execute(rcon, "CREATE TABLE areas AS SELECT row_number() OVER () AS i, * FROM ST_Read('$(file)')")
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM areas ORDER BY i")).v)
+	yc = cols("CRIME")
+	Xc = hcat(cols("INC"), cols("HOVAL"))
+	nc = length(yc)
+	pairs = Tables.columntable(DBInterface.execute(rcon, "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)"))  # queen contiguity, as poly2nb in R
+	Wc = row_standardize(sparse(pairs.i, pairs.j, 1.0, nc, nc))
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 26), rpad("Julia", 14), rpad("R", 14), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 26), rpad(round(julia, digits = 6), 14), rpad(published, 14), round(julia - published, sigdigits = 2))
+		end
+	end
+	names = ["Intercept", "INC", "HOVAL"]
+	Xi = hcat(ones(nc), Xc)
+	b = Xi \ yc
+	e = yc - Xi * b
+	se = sqrt.(diag(dot(e, e) / (nc - 3) * inv(transpose(Xi) * Xi)))
+	mi, z = moran_residuals(yc, Xi, Wc)
+	lt = lm_tests(yc, Xi, Wc)
+	report("Least squares (lm, lm.morantest, lm.RStests)", [[(names[k], b[k], v) for (k, v) in enumerate([68.61896, -1.597311, -0.273931])];
+		[("se " * names[k], se[k], v) for (k, v) in enumerate([4.735486, 0.334131, 0.103199])];
+		[("Moran's I of residuals", mi, 0.222109), ("z", z, 2.839319), ("LM error", lt.error.stat, 5.206214), ("LM lag", lt.lag.stat, 8.897999),
+		("robust LM error", lt.robust_error.stat, 0.043906), ("robust LM lag", lt.robust_lag.stat, 3.735691)]])
+	sar = fit_spatial(SAR(), Wc, Xc, yc)
+	ssar = sqrt.(diag(sar.vcov))
+	ef = spatial_effects(sar)
+	report("Spatial lag model (lagsarlm, impacts)", [[(names[k], sar.coef[k], v) for (k, v) in enumerate([45.60325, -1.048728, -0.266335])];
+		[("rho", sar.rho, 0.423325)]; [("se " * names[k], ssar[k], v) for (k, v) in enumerate([7.257404, 0.307406, 0.089096])];
+		[("se rho", sar.rho_se, 0.11951), ("log-likelihood", sar.loglik, -182.674)];
+		[("direct " * names[k + 1], ef.direct[k], v) for (k, v) in enumerate([-1.100895, -0.279583])];
+		[("indirect " * names[k + 1], ef.indirect[k], v) for (k, v) in enumerate([-0.717683, -0.182263])]])
+	sem = fit_spatial_error(Wc, Xc, yc)
+	ssem = sqrt.(diag(sem.vcov))
+	report("Spatial error model (errorsarlm)", [[(names[k], sem.coef[k], v) for (k, v) in enumerate([60.27947, -0.957305, -0.304559])];
+		[("lambda", sem.lambda, 0.546753)]; [("se " * names[k], ssem[k], v) for (k, v) in enumerate([5.365594, 0.334231, 0.092047])];
+		[("se lambda", sem.lambda_se, 0.138051), ("log-likelihood", sem.loglik, -183.7494)]])
+	slx = fit_slx(Wc, Xc, yc)
+	report("SLX model (lmSLX)", [(what, slx.coef[k], v) for (k, (what, v)) in enumerate(["Intercept" => 74.55343, "INC" => -1.09739, "HOVAL" => -0.29439, "lag INC" => -1.398746, "lag HOVAL" => 0.214841])])
+	sdm = fit_spatial(SDM(), Wc, Xc, yc)
+	ef = spatial_effects(sdm)
+	report("Spatial Durbin model (lagsarlm, Durbin = TRUE)", [[(what, sdm.coef[k], v) for (k, (what, v)) in enumerate(["Intercept" => 44.32, "INC" => -0.919906, "HOVAL" => -0.297129, "lag INC" => -0.583913, "lag HOVAL" => 0.257684])];
+		[("rho", sdm.rho, 0.403463), ("se rho", sdm.rho_se, 0.161334), ("log-likelihood", sdm.loglik, -181.6393)];
+		[("direct " * names[k + 1], ef.direct[k], v) for (k, v) in enumerate([-1.024988, -0.281967])];
+		[("indirect " * names[k + 1], ef.indirect[k], v) for (k, v) in enumerate([-1.495926, 0.215844])]])
+end
+'''
+
+[[actionGroups.actions]]
+id = "replicate-boston"
+label = "Boston House Prices: R spatialreg"
+desc = "The median house values of the 506 census tracts of Boston (Harrison and Rubinfeld, 1978, corrected by Gilley and Pace, 1996), from spData: the tests and the spatial lag, error and Durbin models beside R's values, with queen contiguity"
+code = '''
+using Downloads
+
+let
+	rcon = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(rcon, "LOAD spatial")
+	file = joinpath(mktempdir(), "boston_tracts.gpkg")
+	Downloads.download("https://raw.githubusercontent.com/Nowosad/spData/master/inst/shapes/boston_tracts.gpkg", file)  # spData, CC0
+	DBInterface.execute(rcon, "CREATE TABLE tracts AS SELECT row_number() OVER () AS i, * FROM ST_Read('$(file)')")
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM tracts ORDER BY i")).v)
+	# The model of Harrison and Rubinfeld (1978): log(CMEDV) on 13 variables, some squared or in logs
+	yb = log.(cols("CMEDV"))
+	Xb = hcat(cols("CRIM"), cols("ZN"), cols("INDUS"), cols("CHAS"), cols("NOX") .^ 2, cols("RM") .^ 2, cols("AGE"), log.(cols("DIS")), log.(cols("RAD")), cols("TAX"), cols("PTRATIO"), cols("B"), log.(cols("LSTAT")))
+	nb = length(yb)
+	pairs = Tables.columntable(DBInterface.execute(rcon, "SELECT a.i, b.i AS j FROM tracts a JOIN tracts b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)"))  # queen contiguity, as poly2nb in R
+	Wb = row_standardize(sparse(pairs.i, pairs.j, 1.0, nb, nb))
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 26), rpad("Julia", 14), rpad("R", 14), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 26), rpad(round(julia, digits = 6), 14), rpad(published, 14), round(julia - published, sigdigits = 2))
+		end
+	end
+	Xi = hcat(ones(nb), Xb)
+	b = Xi \ yb
+	e = yb - Xi * b
+	mi, z = moran_residuals(yb, Xi, Wb)
+	lt = lm_tests(yb, Xi, Wb)
+	report("Least squares (lm, lm.morantest, lm.RStests)", [("Intercept", b[1], 4.562464), ("log(LSTAT)", b[14], -0.374895), ("log-likelihood", -nb / 2 * (log(2 * pi) + log(dot(e, e) / nb) + 1), 156.9788),
+		("Moran's I of residuals", mi, 0.406682), ("z", z, 16.10539), ("LM error", lt.error.stat, 224.939688), ("LM lag", lt.lag.stat, 222.595622),
+		("robust LM error", lt.robust_error.stat, 57.337026), ("robust LM lag", lt.robust_lag.stat, 54.99296)])
+	sar = fit_spatial(SAR(), Wb, Xb, yb)
+	ef = spatial_effects(sar)
+	report("Spatial lag model (lagsarlm, impacts)", [("Intercept", sar.coef[1], 2.267616), ("CRIM", sar.coef[2], -0.007564), ("log(LSTAT)", sar.coef[14], -0.247399),
+		("rho", sar.rho, 0.487356), ("se rho", sar.rho_se, 0.031095), ("log-likelihood", sar.loglik, 259.1874),
+		("direct log(LSTAT)", ef.direct[13], -0.261106), ("indirect log(LSTAT)", ef.indirect[13], -0.221489)])
+	sem = fit_spatial_error(Wb, Xb, yb)
+	report("Spatial error model (errorsarlm)", [("Intercept", sem.coef[1], 3.814322), ("log(LSTAT)", sem.coef[14], -0.260021),
+		("lambda", sem.lambda, 0.747892), ("se lambda", sem.lambda_se, 0.035346), ("log-likelihood", sem.loglik, 262.3411)])
+	sdm = fit_spatial(SDM(), Wb, Xb, yb)
+	ef = spatial_effects(sdm)
+	report("Spatial Durbin model (lagsarlm, Durbin = TRUE)", [("Intercept", sdm.coef[1], 2.027665), ("rho", sdm.rho, 0.6116), ("se rho", sdm.rho_se, 0.044143),
+		("log-likelihood", sdm.loglik, 289.9089), ("direct log(LSTAT)", ef.direct[13], -0.251883), ("indirect log(LSTAT)", ef.indirect[13], -0.27698)])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save the Results as GeoParquet"
+desc = "Write the areas, in longitude and latitude, with the residuals of the tab's model, to spatial-regression.parquet in the folder above"
+code = '''
+out = joinpath(folder, "spatial-regression.parquet")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT i, residual::DOUBLE AS residual FROM (VALUES $(join(("($i, $(res[i]))" for i in 1:n), ", "))) t(i, residual)")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom), f.residual, a.geom FROM areas a JOIN fit f USING (i) ORDER BY i) TO '$(out)' (FORMAT PARQUET)")  # GeoParquet: DuckDB writes the geometry column's metadata
+	println("Wrote ", out)
+end
+'''

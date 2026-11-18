@@ -2,15 +2,17 @@
 
 **Spatial Econometrics: Regression Models for Regions.** Models for data on regions, municipalities and other areas, where an area's outcome depends on its neighbours: through their outcomes, their characteristics or the shocks they share. For economists, regional scientists and analysts of regional policy.
 
-Installing it adds the **Spatial Econometrics** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis and notebook tutorials.
+Installing it adds the **Spatial Econometrics** submenu to the end of the **Extend** menu; its **Edit** button in the Installed section of the Extensions pane moves it, or any of its panels, to another menu. Each panel has key points, a decision table, example code you can send to the Julia REPL or a notebook, reference wikis, and Next Steps that replicate its results against R and published articles.
 
 ## Panels
 
-The menu shows the panels planned for the toolbox, greyed out, in their places:
+**Spatial Lag and Error Models**: least squares with Moran's I of its residuals and the Lagrange multiplier tests, and the spatial lag (SAR), spatial error (SEM), spatial lag of X (SLX) and spatial Durbin (SDM) models, with their direct and indirect effects, on SpatialEconometrics.jl. Its Replicate steps reproduce Tables 2, 14, 17 and 18 of Bivand and Piras (2015) from the article's replication archive, and set the panel's estimates beside R's spatialreg on the Columbus and Boston data of the spData package.
+
+The menu also shows the panels planned for the toolbox, greyed out, in their places:
 
 | Group | Panels |
 |---|---|
-| Cross-section | Spatial Lag and Error Models, Geographically Weighted Regression, Eigenvector Spatial Filtering, Spatial Discrete Choice |
+| Cross-section | Geographically Weighted Regression, Eigenvector Spatial Filtering, Spatial Discrete Choice |
 | Space and time | Spatial Panel Data, Spatio-Temporal Forecasting |
 | Regions and policy | Spatial Causal Inference, Regionalisation and Spatial Regimes |
 
