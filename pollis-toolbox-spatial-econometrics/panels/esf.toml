@@ -1,0 +1,637 @@
+# Eigenvector Spatial Filtering: regressions with Moran eigenvectors of the spatial weights as extra regressors,
+# selected by Moran's I or AIC, for continuous and count outcomes, and random-effects ESF, with SpatialEconometrics.jl;
+# the areas are read, and their neighbours found, through DuckDB's spatial extension.
+
+[meta]
+title = "Eigenvector Spatial Filtering"
+viewType = "pollis.esf"
+defaultModel = "esfmoran"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[models]]
+id = "esfmoran"
+label = "ESF, Moran Criterion"
+
+[[models]]
+id = "esfaic"
+label = "ESF, AIC Criterion"
+
+[[models]]
+id = "esfcounts"
+label = "ESF for Counts"
+
+[[models]]
+id = "reesf"
+label = "Random-Effects ESF"
+
+[[bullets]]
+text = "ESF, Moran Criterion"
+detail = "Moran eigenvectors of the spatial weights enter as regressors, one at a time, until the residuals have no spatial autocorrelation left"
+
+[[bullets]]
+text = "ESF, AIC Criterion"
+detail = "Moran eigenvectors enter one at a time while they improve the AIC of the model: a filter chosen for fit rather than for removing autocorrelation"
+
+[[bullets]]
+text = "ESF for Counts"
+detail = "Spatial filtering in a Poisson or negative binomial regression, for counts such as cases or visits per area"
+
+[[bullets]]
+text = "Random-Effects ESF"
+detail = "Every candidate eigenvector kept, its coefficient shrunk towards zero, the shrinkage estimated by REML: no stepwise selection"
+
+[[decisionRows]]
+task = "ESF, Moran Criterion"
+context = "Remove autocorrelation"
+purpose = "Filter the spatial autocorrelation out of a regression, so that its coefficients and standard errors can be read as usual"
+
+[[decisionRows]]
+task = "ESF, AIC Criterion"
+context = "Best fit"
+purpose = "Add the eigenvectors that improve the fit of the model for their number, whether or not autocorrelation remains"
+
+[[decisionRows]]
+task = "ESF for Counts"
+context = "Counts per area"
+purpose = "Filter the spatial autocorrelation out of a count regression, where spatial lag and error models do not apply"
+
+[[decisionRows]]
+task = "Random-Effects ESF"
+context = "Stable inference"
+purpose = "Filter the spatial autocorrelation without the variability of choosing eigenvectors one by one"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbraesf.gpkg, the example first writes a grid of 225 square cells of 1 km around Coimbra with simulated nitrogen dioxide (no2), traffic, green space and asthma visits (a count), unless the folder has a coimbraesf.gpkg already."
+default = "coimbraesf.gpkg"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The numeric column explained by the model; on ESF for Counts, a count (with the example file, asthma, used in place of no2). Areas without a value in it, or in an explanatory variable, are left out."
+default = "no2"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns that explain it, separated by commas. Every model adds an intercept."
+default = "traffic, green"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:3763"
+newRow = true
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. The eigenvectors are those of the doubly-centred, symmetrised weights."
+kind = "select"
+default = "queen"
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest."
+default = "6"
+
+[[inputs]]
+id = "screen"
+label = "Candidate Screen"
+tooltip = "The candidate eigenvectors are those whose Moran coefficient is at least this share of the largest: 0.25 keeps the eigenvectors of marked positive spatial autocorrelation."
+default = "0.25"
+newRow = true
+
+[[inputs]]
+id = "maxEigenvectors"
+label = "Maximum Eigenvectors"
+tooltip = "Selection stops at this number of eigenvectors, if it has not stopped before."
+default = "20"
+
+[[inputs]]
+id = "family"
+label = "Count Family"
+tooltip = "On ESF for Counts: Poisson, whose variance equals its mean, or negative binomial, whose variance can exceed it (overdispersion), with its dispersion estimated by maximum likelihood."
+kind = "select"
+default = "poisson"
+
+[[inputs.options]]
+value = "poisson"
+label = "Poisson"
+
+[[inputs.options]]
+value = "negbin"
+label = "Negative Binomial"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+# Example file: 15 by 15 square cells of 1 km around Coimbra, in EPSG:3763, written unless the folder has one already. Replace "coimbraesf.gpkg" with your own file.
+if basename(path) == "coimbraesf.gpkg" && !isfile(path)
+	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre cell, row by row from the south-west
+	pattern = 2 .* sin.(u ./ 3) .+ 1.5 .* cos.(v ./ 4)  # a smooth spatial pattern that the explanatory variables do not explain
+	traffic = 4 .+ 16 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 18) .+ randn(rng, 225)  # thousands of vehicles a day, most in the centre
+	green = clamp.(30 .+ 2 .* u .- 0.8 .* traffic .+ 6 .* randn(rng, 225), 2, 90)  # percent of green space, more to the east
+	no2 = 10 .+ 0.8 .* traffic .- 0.12 .* green .+ pattern .+ randn(rng, 225)
+	function poisson(rate)  # a Poisson draw, by counting exponential waiting times within one unit
+		k, t = 0, -log(rand(rng)) / rate
+		while t < 1
+			k += 1
+			t -= log(rand(rng)) / rate
+		end
+		return k
+	end
+	asthma = [poisson(exp(1 + 0.05 * traffic[c] + 0.3 * pattern[c])) for c in 1:225]  # asthma visits in a year
+	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), $(asthma[c]), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:225]
+	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, asthma::INTEGER AS asthma, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, asthma, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+end
+yname = "{{dependent}}"
+{{?model=esfcounts}} yname = yname == "no2" && basename(path) == "coimbraesf.gpkg" ? "asthma" : yname  # the example's count: asthma visits
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
+# The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE $(present)")
+DBInterface.execute(con, "ALTER TABLE areas DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM areas ORDER BY i")).v)
+y = column(yname)
+X = reduce(hcat, column.(xnames))  # without the intercept, which every model adds
+n, p = size(X)
+
+# The neighbours of each area, as pairs (i, j), found with SQL
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs["{{neighbours}}"]))
+W = row_standardize(sparse(pairs.i, pairs.j, 1.0, n, n))  # the weights of each area's neighbours sum to 1
+basis = spatial_eigenvectors(W; min_moran_ratio = {{screen}})  # the candidate Moran eigenvectors, computed once
+
+{{?model=esfmoran}} # Forward selection: at each step the eigenvector that most reduces the Moran coefficient of the residuals
+{{?model=esfmoran}} m = fit_esf(X, y, W; criterion = :moran, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+{{?model=esfaic}} # Forward selection: at each step the eigenvector that most reduces the AIC, until none reduces it
+{{?model=esfaic}} m = fit_esf(X, y, W; criterion = :aic, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+{{?model=esfcounts}} # A count regression fitted by IRLS, the eigenvectors selected by the Moran coefficient of its Pearson residuals
+{{?model=esfcounts}} m = fit_esf(X, y, W; family = :{{family}}, criterion = :moran, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+{{?model=reesf}} # Every candidate eigenvector, its coefficient a random effect shrunk towards zero; the variance ratio by profile REML
+{{?model=reesf}} m = fit_re_esf(X, y, W; eigen_basis = basis, varnames = xnames)
+{{?model=esfcounts}} println("{{family}} regression with a log link: exp(coefficient) is the factor by which the expected count changes for one more unit", "{{family}}" == "negbin" ? "; dispersion alpha = $(round(m.alpha, digits = 4))" : "")
+
+se = sqrt.(diag(m.vcov))
+println(rpad("", 14), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
+for k in 1:1 + p  # the intercept and the explanatory variables; the eigenvectors' coefficients follow them
+	println(rpad(m.coefnames[k], 14), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
+end
+{{?model!=reesf}} println("\n", length(m.selected), " of ", size(basis.vectors, 2), " candidate eigenvectors selected: ", join(m.selected, ", "))
+{{?model=reesf}} println("\n", size(m.E, 2), " candidate eigenvectors, all kept and shrunk: variance ratio theta = tau2 / sigma2 = ", round(m.theta, sigdigits = 4), ", effective degrees of freedom ", round(m.edf, digits = 2))
+println("Moran coefficient of the residuals: ", round(m.moran_initial, digits = 4), " without the filter, ", round(m.moran_final, digits = 4), " with it")
+{{?model=reesf}} println("With random effects the residual Moran coefficient is expected to be negative: read it against ", round(m.moran_reference, digits = 4), ", that of a random vector among the eigenvectors the filter leaves out, not against zero")
+{{?model!=reesf}} m.converged || println("The fit did not converge: read the results with care")
+res = m.residuals
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-filter"
+label = "Map of the Spatial Filter"
+desc = "The spatial filter on a base map: the part of the fitted values that the eigenvectors make, the spatial pattern the explanatory variables leave unexplained (on the log scale on ESF for Counts)"
+code = '''
+{{?model!=reesf}} spatial_filter = m.X_aug[:, 2 + p:end] * m.coef[2 + p:end]  # the selected eigenvectors times their coefficients
+{{?model=reesf}} spatial_filter = m.E * m.gamma  # every eigenvector times its shrunk coefficient
+DBInterface.execute(con, "CREATE OR REPLACE TABLE filter AS SELECT * FROM (VALUES $(join(("($i, $(spatial_filter[i]))" for i in 1:n), ", "))) t(i, spatial_filter)")
+fmap = joinpath(mktempdir(), "spatial-filter.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, round(f.spatial_filter, 4) AS spatial_filter FROM areas a JOIN filter f USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(fmap; name = "Spatial filter", column = "spatial_filter", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "map-eigenvectors"
+label = "Maps of the Selected Eigenvectors"
+desc = "The first six selected eigenvectors, in the order they entered, one layer each on a base map: each is a map pattern of the neighbours' structure, from regional to local"
+models = ["esfmoran", "esfaic", "esfcounts"]
+code = '''
+shown = first(m.selected, 6)  # the order of selection
+DBInterface.execute(con, "CREATE OR REPLACE TABLE eigen AS SELECT * FROM (VALUES $(join(("($i, $(join(basis.vectors[i, shown], ", ")))" for i in 1:n), ", "))) t(i, $(join(("e$j" for j in shown), ", ")))")
+emap = joinpath(mktempdir(), "eigenvectors.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, e.* EXCLUDE (i) FROM areas a JOIN eigen e USING (i)) TO '$(emap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap((Pollis.layer(emap; name = "Eigenvector $j, Moran coefficient $(round(basis.moran[j], digits = 3))", column = "e$j", opacity = 0.75) for j in shown)...))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "moran-before-after"
+label = "Moran's I Before and After"
+desc = "Moran's I of the residuals of least squares (or of the Pearson residuals of the count regression) without the filter, and of the tab's model with it, each with a pseudo p-value from 999 random permutations; on Random-Effects ESF, with the value the residuals are expected to have"
+code = '''
+Xi = hcat(ones(n), X)
+{{?model!=esfcounts}} before = y - Xi * (Xi \ y)  # least squares without the filter
+{{?model!=esfcounts}} after = res
+{{?model=esfcounts}} base = fit_esf(X, y, W; family = :{{family}}, max_eigenvectors = 0, eigen_basis = basis, varnames = xnames)  # the count regression without eigenvectors
+{{?model=esfcounts}} pearson(f) = (y .- f.fitted) ./ sqrt.(f.fitted .+ f.alpha .* f.fitted .^ 2)  # each residual divided by its standard deviation under the model; alpha is 0 for Poisson
+{{?model=esfcounts}} before = pearson(base)
+{{?model=esfcounts}} after = pearson(m)
+println(rpad("", 18), rpad("Moran's I", 12), "pseudo p-value")
+for (name, r) in ("Without the filter" => before, "With the filter" => after)
+	mr = moran_global(r, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+	println(rpad(name, 18), rpad(round(mr.I_stat, digits = 4), 12), mr.p_value)
+end
+{{?model=reesf}} println("Read the row With the filter against ", round(m.moran_reference, digits = 4), ", the Moran coefficient expected of the residuals random effects leave, not against zero")
+'''
+
+[[actionGroups.actions]]
+id = "eigenvectors-selected"
+label = "The Eigenvectors Selected"
+desc = "Each selected eigenvector in the order it entered: its Moran coefficient, its coefficient in the model with standard error, and the Moran coefficient of the residuals once it was in (of the Pearson residuals on ESF for Counts)"
+models = ["esfmoran", "esfaic", "esfcounts"]
+code = '''
+# The fit stopped after s eigenvectors follows the same steps, so its residual Moran coefficient is the one after step s
+{{?model=esfmoran}} stopped_at(s) = fit_esf(X, y, W; criterion = :moran, max_eigenvectors = s, eigen_basis = basis, varnames = xnames)
+{{?model=esfaic}} stopped_at(s) = fit_esf(X, y, W; criterion = :aic, max_eigenvectors = s, eigen_basis = basis, varnames = xnames)
+{{?model=esfcounts}} stopped_at(s) = fit_esf(X, y, W; family = :{{family}}, criterion = :moran, max_eigenvectors = s, eigen_basis = basis, varnames = xnames)
+se = sqrt.(diag(m.vcov))
+println(rpad("step", 6), rpad("eigenvector", 13), rpad("its Moran", 12), rpad("coefficient", 14), rpad("std. error", 12), "residual Moran after")
+for (s, j) in enumerate(m.selected)
+	k = 1 + p + s  # its column in the model, after the intercept and the explanatory variables
+	println(rpad(s, 6), rpad(j, 13), rpad(round(basis.moran[j], digits = 4), 12), rpad(round(m.coef[k], digits = 4), 14), rpad(round(se[k], digits = 4), 12), round(stopped_at(s).moran_final, digits = 4))
+end
+println("Before any eigenvector, the residual Moran coefficient was ", round(m.moran_initial, digits = 4))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "esf-vs-spatial-models"
+label = "Against Least Squares, SAR and SEM"
+desc = "The coefficient of each explanatory variable, with its standard error, by least squares, by the tab's spatial filter, and by the spatial lag (SAR) and spatial error (SEM) models on the same weights"
+models = ["esfmoran", "esfaic", "reesf"]
+code = '''
+Xi = hcat(ones(n), X)
+b = Xi \ y
+e = y - Xi * b
+ols_se = sqrt.(diag(dot(e, e) / (n - p - 1) * inv(transpose(Xi) * Xi)))
+sar = fit_spatial(SAR(), W, X, y; varnames = xnames)
+sem = fit_spatial_error(W, X, y; varnames = xnames)
+esf_se, sar_se, sem_se = sqrt.(diag(m.vcov)), sqrt.(diag(sar.vcov)), sqrt.(diag(sem.vcov))
+cell(est, se) = rpad("$(round(est, digits = 4)) ($(round(se, digits = 4)))", 22)
+println(rpad("variable", 14), rpad("least squares", 22), rpad("spatial filter", 22), rpad("SAR", 22), "SEM")
+for k in 2:1 + p
+	println(rpad(xnames[k - 1], 14), cell(b[k], ols_se[k]), cell(m.coef[k], esf_se[k]), cell(sar.coef[k], sar_se[k]), cell(sem.coef[k], sem_se[k]))
+end
+println("Standard errors in parentheses. The SAR coefficients are not marginal effects: see its direct and indirect effects")
+'''
+
+[[actionGroups.actions]]
+id = "moran-vs-aic"
+label = "Moran Against AIC Selection"
+desc = "The two selection criteria on the same data and candidates: the eigenvectors each selects, those they share, the residual Moran coefficient and the coefficients of the explanatory variables"
+models = ["esfmoran", "esfaic", "esfcounts"]
+code = '''
+{{?model!=esfcounts}} fam = :gaussian
+{{?model=esfcounts}} fam = :{{family}}
+by_moran = fit_esf(X, y, W; family = fam, criterion = :moran, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+by_aic = fit_esf(X, y, W; family = fam, criterion = :aic, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+println("Moran criterion: ", length(by_moran.selected), " eigenvectors, ", join(by_moran.selected, ", "))
+println("AIC criterion:   ", length(by_aic.selected), " eigenvectors, ", join(by_aic.selected, ", "))
+println("In both: ", length(intersect(by_moran.selected, by_aic.selected)))
+println(rpad("", 26), rpad("Moran", 14), "AIC")
+println(rpad("residual Moran coefficient", 26), rpad(round(by_moran.moran_final, digits = 4), 14), round(by_aic.moran_final, digits = 4))
+println(rpad("log-likelihood", 26), rpad(round(by_moran.loglik, digits = 3), 14), round(by_aic.loglik, digits = 3))
+for k in 2:1 + p
+	println(rpad(xnames[k - 1], 26), rpad(round(by_moran.coef[k], digits = 4), 14), round(by_aic.coef[k], digits = 4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "stepwise-vs-reesf"
+label = "Stepwise ESF Against RE-ESF"
+desc = "Stepwise ESF by the Moran criterion and random-effects ESF on the same candidates: the coefficients of the explanatory variables with their standard errors, the residual Moran coefficient and the degrees of freedom the filter uses"
+models = ["esfmoran", "esfaic", "reesf"]
+code = '''
+stepwise = fit_esf(X, y, W; criterion = :moran, max_eigenvectors = {{maxEigenvectors}}, eigen_basis = basis, varnames = xnames)
+random_effects = fit_re_esf(X, y, W; eigen_basis = basis, varnames = xnames)
+sw_se, re_se = sqrt.(diag(stepwise.vcov)), sqrt.(diag(random_effects.vcov))
+cell(est, se) = rpad("$(round(est, digits = 4)) ($(round(se, digits = 4)))", 24)
+println(rpad("", 28), rpad("stepwise ESF", 24), "RE-ESF")
+for k in 2:1 + p
+	println(rpad(xnames[k - 1], 28), cell(stepwise.coef[k], sw_se[k]), cell(random_effects.coef[k], re_se[k]))
+end
+println(rpad("residual Moran coefficient", 28), rpad(round(stepwise.moran_final, digits = 4), 24), round(random_effects.moran_final, digits = 4))
+println(rpad("degrees of freedom of filter", 28), rpad(length(stepwise.selected), 24), round(random_effects.edf - 1 - p, digits = 2))
+println("Standard errors in parentheses. The stepwise standard errors do not include the uncertainty of the selection")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "filter-explains"
+label = "How Much the Filter Explains"
+desc = "The R-squared of the explanatory variables alone, by least squares, and of the model with the spatial filter: the difference is the share of the variance that the spatial pattern explains"
+models = ["esfmoran", "esfaic", "reesf"]
+code = '''
+Xi = hcat(ones(n), X)
+tss = sum(abs2, y .- mean(y))
+r2_variables = 1 - sum(abs2, y - Xi * (Xi \ y)) / tss  # least squares, without the filter
+r2_with_filter = 1 - sum(abs2, m.residuals) / tss
+println(rpad("R-squared of the explanatory variables alone", 46), round(r2_variables, digits = 4))
+println(rpad("R-squared with the spatial filter", 46), round(r2_with_filter, digits = 4))
+println(rpad("Share of the variance the filter adds", 46), round(r2_with_filter - r2_variables, digits = 4))
+'''
+
+[[actionGroups.actions]]
+id = "coefficients-move"
+label = "How the Coefficients Move"
+desc = "Each explanatory variable's coefficient and standard error without the filter and with it, and the change: how much of an apparent effect was spatial autocorrelation the variable shared with its neighbours"
+code = '''
+{{?model!=esfcounts}} base = fit_esf(X, y, W; max_eigenvectors = 0, eigen_basis = basis, varnames = xnames)  # the same regression without eigenvectors
+{{?model=esfcounts}} base = fit_esf(X, y, W; family = :{{family}}, max_eigenvectors = 0, eigen_basis = basis, varnames = xnames)
+base_se, se = sqrt.(diag(base.vcov)), sqrt.(diag(m.vcov))
+cell(est, s) = rpad("$(round(est, digits = 4)) ($(round(s, digits = 4)))", 24)
+println(rpad("variable", 14), rpad("without the filter", 24), rpad("with the filter", 24), "change")
+for k in 2:1 + p
+	println(rpad(xnames[k - 1], 14), cell(base.coef[k], base_se[k]), cell(m.coef[k], se[k]), round(m.coef[k] - base.coef[k], digits = 4))
+end
+println("Standard errors in parentheses")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-spmoran"
+label = "Boston House Prices: spmoran"
+desc = "Sections 2.1.1 and 2.1.2 of Murakami's case study examples of the R package spmoran: CMEDV of the 506 Boston census tracts on seven variables, by ESF and by random-effects ESF, with Moran eigenvectors of an exponential kernel of the distances between the tracts, beside the values printed there"
+code = '''
+using Downloads
+
+let
+	rcon = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(rcon, "LOAD spatial")
+	file = joinpath(mktempdir(), "boston_tracts.gpkg")
+	Downloads.download("https://raw.githubusercontent.com/Nowosad/spData/master/inst/shapes/boston_tracts.gpkg", file)  # spData, CC0
+	DBInterface.execute(rcon, "CREATE TABLE tracts AS SELECT row_number() OVER () AS i, * FROM ST_Read('$(file)')")
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM tracts ORDER BY i")).v)
+	yb = cols("CMEDV")
+	names = ["CRIM", "ZN", "INDUS", "CHAS", "NOX", "RM", "AGE"]
+	Xb = reduce(hcat, cols.(names))
+	cb = hcat(cols("LON"), cols("LAT"))
+	nb = length(yb)
+	# spmoran's meigen: weights exp(-d / h), h the longest edge of the minimum spanning tree of the tracts (Prim's algorithm)
+	D = [norm(cb[i, :] - cb[j, :]) for i in 1:nb, j in 1:nb]
+	reached, nearest, h = falses(nb), copy(D[1, :]), 0.0
+	reached[1] = true
+	for _ in 2:nb
+		j = argmin(t -> reached[t] ? Inf : nearest[t], 1:nb)
+		h = max(h, nearest[j])
+		reached[j] = true
+		nearest .= min.(nearest, D[j, :])
+	end
+	Wb = sparse(exp.(-D ./ h) - I)  # zero on the diagonal
+	basis_b = spatial_eigenvectors(Wb; min_moran_ratio = 0.25)  # meigen keeps the eigenvectors with Moran coefficient at least 0.25 of the largest
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 18), rpad("Julia", 14), rpad("spmoran", 14), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 18), rpad(round(julia, digits = 5), 14), rpad(published, 14), round(julia - published, sigdigits = 2))
+		end
+	end
+	labels = ["(Intercept)"; names]
+	# ESF: spmoran selects eigenvectors by adjusted R-squared with a VIF limit of 10; here by AIC, the closest criterion of SpatialEconometrics.jl
+	esf_b = fit_esf(Xb, yb, Wb; criterion = :aic, max_eigenvectors = size(basis_b.vectors, 2), eigen_basis = basis_b, varnames = names)
+	esf_se = sqrt.(diag(esf_b.vcov))
+	report("ESF (section 2.1.1, esf)", [[(labels[k], esf_b.coef[k], v) for (k, v) in enumerate([11.34040959, -0.20942091, 0.02322000, -0.15063613, 0.15172838, -38.02167637, 6.33316024, -0.07820247])];
+		[("SE " * labels[k], esf_se[k], v) for (k, v) in enumerate([3.91692274, 0.03048530, 0.01384823, 0.06823776, 0.93842988, 4.79403898, 0.36887955, 0.01564970])];
+		[("logLik", esf_b.loglik, -1453.376154)]])
+	re_b = fit_re_esf(Xb, yb, Wb; eigen_basis = basis_b, varnames = names)
+	re_se = sqrt.(diag(re_b.vcov))
+	report("RE-ESF (section 2.1.2, resf)", [[(labels[k], re_b.coef[k], v) for (k, v) in enumerate([6.63220299, -0.19815203, 0.01453736, -0.15560251, 0.51046253, -31.26689956, 6.33993147, -0.06351411])];
+		[("SE " * labels[k], re_se[k], v) for (k, v) in enumerate([3.94484191, 0.03126666, 0.01591772, 0.06842940, 0.92329946, 5.02069120, 0.36671337, 0.01526957])];
+		[("residual SE", sqrt(re_b.sigma2), 4.3515211)]])
+end
+'''
+
+[[wikis]]
+name = "Factsheet"
+file = "esf/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the inputs and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "esf/overview.md"
+bundled = true
+description = "Regressions with a spatial filter made of Moran eigenvectors of the spatial weights"
+
+[[wikis]]
+name = "Moran Eigenvectors"
+file = "esf/moran-eigenvectors.md"
+bundled = true
+description = "The eigenvectors of the doubly centred weights, their Moran coefficients and the candidate screen"
+
+[[wikis]]
+name = "Selecting Eigenvectors"
+file = "esf/selecting-eigenvectors.md"
+bundled = true
+description = "Stepwise selection by the Moran coefficient of the residuals or by AIC, and its cost for inference"
+
+[[wikis]]
+name = "Spatial Filtering for Counts and Binary Outcomes"
+file = "esf/counts.md"
+bundled = true
+description = "Poisson, negative binomial and logistic regressions with a spatial filter, and their Pearson residuals"
+
+[[wikis]]
+name = "Decision Guide"
+file = "esf/decision-guide.md"
+bundled = true
+description = "Which tab, a filter or a spatial lag or error model, and stepwise or random-effects ESF"
+
+[[wikis]]
+name = "Replications"
+file = "esf/replications.md"
+bundled = true
+description = "spmoran and the Boston housing case study the panel's results are checked against"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "ESF, Moran Criterion"
+file = "esf/esfmoran.md"
+bundled = true
+
+[[wikis]]
+name = "ESF, AIC Criterion"
+file = "esf/esfaic.md"
+bundled = true
+
+[[wikis]]
+name = "ESF for Counts"
+file = "esf/esfcounts.md"
+bundled = true
+
+[[wikis]]
+name = "Random-Effects ESF"
+file = "esf/reesf.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Gri2003a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "TG2007a"
+
+[[references]]
+key = "MG2015a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "Mur2017b"
+
+[[faq]]
+question = "When should I use a spatial filter instead of a spatial lag or error model?"
+answer = '''
+When the spatial autocorrelation is a nuisance rather than the question. A spatial lag model estimates how an area's outcome depends on its neighbours' outcomes, and a spatial error model the dependence of the errors; a spatial filter makes no claim about how the dependence arises, it removes it, so that the coefficients of the explanatory variables and their standard errors can be read as in an ordinary regression. A filter is also simpler for counts.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Should I select the eigenvectors by the Moran criterion or by AIC?"
+answer = '''
+The Moran criterion adds the eigenvector that most reduces the Moran coefficient of the residuals and stops once it is close to zero, so it removes the residual autocorrelation with few eigenvectors. AIC adds the eigenvector that most improves the fit for the number of parameters, whether or not autocorrelation remains. Use the Moran criterion when the coefficients of the explanatory variables are the purpose, and AIC when the fit of the model matters most.
+'''
+wiki = "Selecting Eigenvectors"
+
+[[faq]]
+question = "What does random-effects ESF do differently from stepwise ESF?"
+answer = '''
+It keeps every candidate eigenvector instead of choosing some, and shrinks their coefficients towards zero, with a single variance ratio, theta, estimated by restricted maximum likelihood. Because nothing is chosen on the outcome, its standard errors do not suffer from the selection that makes those of stepwise ESF somewhat too small; the price is a filter that cannot be read eigenvector by eigenvector.
+'''
+wiki = "Random-Effects ESF"
+
+[[faq]]
+question = "Can eigenvector spatial filtering be used for counts?"
+answer = '''
+Yes. The selected eigenvectors are ordinary explanatory variables, so they can enter a Poisson or negative binomial regression as easily as a linear one, where spatial lag and error models do not carry over directly. The ESF for Counts tab selects them by the Moran coefficient of the Pearson residuals, each residual divided by its standard deviation under the model.
+'''
+wiki = "Spatial Filtering for Counts and Binary Outcomes"
+
+[[faq]]
+question = "What does the Candidate Screen input do?"
+answer = '''
+It limits the candidate eigenvectors to those whose Moran coefficient is at least the given share of the largest, the patterns of marked positive spatial autocorrelation. The default, a quarter, is that of SpatialEconometrics.jl and of spmoran. A lower share adds candidates of weaker autocorrelation, at the cost of more possible selections.
+'''
+wiki = "Moran Eigenvectors"
+hidden = true
+
+[[faq]]
+question = "Why is the residual Moran coefficient of random-effects ESF negative?"
+answer = '''
+Removing the filter takes out the directions of positive autocorrelation, so the residuals lie mostly among the other eigenvectors and their Moran coefficient is expected to be clearly negative. Read it against the reference value the Random-Effects ESF tab prints, the Moran coefficient of a random vector among the eigenvectors left out, not against zero: close to it or above it is the healthy case.
+'''
+wiki = "Random-Effects ESF"
+hidden = true
+
+[[faq]]
+question = "Can I trust the standard errors of stepwise ESF?"
+answer = '''
+With some care. The eigenvectors are chosen on the same outcome the regression then explains, and the standard errors treat them as fixed in advance, so the confidence intervals of the explanatory variables' coefficients are somewhat too narrow when eigenvectors are selected. Random-effects ESF avoids the selection.
+'''
+wiki = "ESF, Moran Criterion"
+hidden = true
+
+[[faq]]
+question = "What is the alpha printed on the ESF for Counts tab?"
+answer = '''
+The dispersion parameter of the negative binomial regression, estimated by maximum likelihood: with it, the variance of a count grows with the square of its expected value. An alpha close to zero means the counts vary little more than a Poisson regression allows.
+'''
+wiki = "ESF for Counts"
+hidden = true
+
+[[faq]]
+question = "Which software are the panel's results checked against?"
+answer = '''
+spmoran, the R package of Murakami, from the output its case study examples print for the Boston housing data: ESF and random-effects ESF of the corrected median house value on seven variables. The Boston House Prices step prints Julia's values beside them.
+'''
+wiki = "Replications"
+hidden = true
