@@ -8,7 +8,7 @@ Installing it adds the **Spatial Econometrics** submenu to the end of the **Exte
 
 **Spatial Lag and Error Models**: least squares with Moran's I of its residuals and the Lagrange multiplier tests, and the spatial lag (SAR), spatial error (SEM), spatial lag of X (SLX) and spatial Durbin (SDM) models, with their direct and indirect effects, on SpatialEconometrics.jl. Its Replicate steps reproduce Tables 2, 14, 17 and 18 of Bivand and Piras (2015) from the article's replication archive, and set the panel's estimates beside R's spatialreg on the Columbus and Boston data of the spData package.
 
-The menu also shows the panels planned for the toolbox, greyed out, in their places:
+The other items of the menu are greyed out:
 
 | Group | Panels |
 |---|---|
