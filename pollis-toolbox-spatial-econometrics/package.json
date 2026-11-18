@@ -1,0 +1,39 @@
+{
+  "name": "pollis-toolbox-spatial-econometrics",
+  "displayName": "Spatial Econometrics Toolbox",
+  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, eigenvector spatial filtering, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, and regionalisation with spatial regimes.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Other"],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "spatial-econometrics",
+        "title": "Spatial Econometrics",
+        "order": 1,
+        "duckdbExtensions": ["spatial"],
+        "panels": [],
+        "planned": [
+          { "title": "Spatial Lag and Error Models", "group": "1_crossSection", "order": 1 },
+          { "title": "Geographically Weighted Regression", "group": "1_crossSection", "order": 2 },
+          { "title": "Eigenvector Spatial Filtering", "group": "1_crossSection", "order": 3 },
+          { "title": "Spatial Discrete Choice", "group": "1_crossSection", "order": 4 },
+          { "title": "Spatial Panel Data", "group": "2_spaceTime", "order": 1 },
+          { "title": "Spatio-Temporal Forecasting", "group": "2_spaceTime", "order": 2 },
+          { "title": "Spatial Causal Inference", "group": "3_regions", "order": 1 },
+          { "title": "Regionalisation and Spatial Regimes", "group": "3_regions", "order": 2 }
+        ]
+      }
+    ]
+  }
+}
