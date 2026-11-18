@@ -14,11 +14,13 @@ Installing it adds the **Spatial Econometrics** submenu to the end of the **Exte
 
 **Spatial Discrete Choice**: binary and ordered choices that depend on the neighbours' choices, on SpatialEconometrics.jl: the spatial lag probit, fitted by linearised GMM or by Gibbs sampling, the spatial ordered probit, and a logistic regression with a spatial filter of Moran eigenvectors. Its Next Steps map the fitted probabilities, draw the trace and density of rho, give the hit rate and confusion tables, check the chain, test the residuals with Moran's I, compute the direct, indirect and total effects on the probability, and compare GMM with Gibbs sampling, the spatial probit with an ordinary probit, and a lag probit with a filter. Its Replicate step sets the panel's estimates beside Table 3 of LeSage, Pace, Lam, Campanella and Liu (2011) on the reopening of New Orleans businesses after Hurricane Katrina, with the data of Wilhelm and de Matos's R package spatialprobit.
 
+**Spatial Panel Data**: areas observed over several periods, on SpatialEconometrics.jl: spatial lag (SAR), spatial error (SEM) and spatial Durbin (SDM) panels with fixed effects of the areas, of the periods or both, removed by Lee and Yu's transformation or by demeaning, and a dynamic spatial panel with the outcome's own and its neighbours' lags, corrected for the bias of the fixed effects. Its Next Steps test the residuals with Moran's I period by period, map the size of the residuals and the area effects, run the panel Lagrange multiplier tests, compute Driscoll–Kraay standard errors, test for a structural break, compute the direct, indirect and total effects, in the short and the long run for the dynamic panel, and compare the fixed-effect specifications, SAR, SEM and SDM, Lee and Yu's transformation with direct QML, and the static with the dynamic panel. Its Replicate step sets the panel's spatial error estimates beside those of Millo and Piras (2012), with R's splm, on Munnell's production function for the US states.
+
 The other items of the menu are greyed out:
 
 | Group | Panels |
 |---|---|
-| Space and time | Spatial Panel Data, Spatio-Temporal Forecasting |
+| Space and time | Spatio-Temporal Forecasting |
 | Regions and policy | Spatial Causal Inference, Regionalisation and Spatial Regimes |
 
 The [Smart Regions Toolbox](../pollis-toolbox-smart-regions/README.md) reads area files, draws them on base maps, and tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), the usual first step before a spatial regression.
