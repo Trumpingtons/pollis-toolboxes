@@ -8,11 +8,13 @@ Installing it adds the **Spatial Econometrics** submenu to the end of the **Exte
 
 **Spatial Lag and Error Models**: least squares with Moran's I of its residuals and the Lagrange multiplier tests, and the spatial lag (SAR), spatial error (SEM), spatial lag of X (SLX) and spatial Durbin (SDM) models, with their direct and indirect effects, on SpatialEconometrics.jl. Its Replicate steps reproduce Tables 2, 14, 17 and 18 of Bivand and Piras (2015) from the article's replication archive, and set the panel's estimates beside R's spatialreg on the Columbus and Boston data of the spData package.
 
+**Geographically Weighted Regression**: regressions whose coefficients vary over the map, with a fixed or an adaptive bandwidth chosen by AICc, and multiscale GWR (MGWR), with one bandwidth per coefficient, on SpatialEconometrics.jl. Its Next Steps map the local coefficients, t-values and R-squared, adjust the local tests for multiple testing, test whether a coefficient varies over the map, and compare GWR with least squares and with MGWR. Its Replicate steps set the panel's results beside GWR4 and beside Oshan, Li, Kang, Wolf and Fotheringham (2019), on the Georgia counties of libpysal.
+
 The other items of the menu are greyed out:
 
 | Group | Panels |
 |---|---|
-| Cross-section | Geographically Weighted Regression, Eigenvector Spatial Filtering, Spatial Discrete Choice |
+| Cross-section | Eigenvector Spatial Filtering, Spatial Discrete Choice |
 | Space and time | Spatial Panel Data, Spatio-Temporal Forecasting |
 | Regions and policy | Spatial Causal Inference, Regionalisation and Spatial Regimes |
 
