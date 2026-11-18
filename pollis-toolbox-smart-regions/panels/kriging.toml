@@ -1,0 +1,687 @@
+# Kriging: the variogram, ordinary and universal kriging, inverse distance weighting and conditional Gaussian
+# simulation of a value measured at points, with GeoStats.jl; the points are read through DuckDB's spatial extension
+
+[meta]
+title = "Kriging"
+viewType = "pollis.kriging"
+defaultModel = "variogram"
+decisionFirstColumn = "Method"
+
+[[packages]]
+name = "GeoStats.jl"
+github = "https://github.com/JuliaEarth/GeoStats.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "kriging/factsheet.md"
+bundled = true
+description = "One-page reference: the five tabs, the inputs, the grid of cells and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "kriging/overview.md"
+bundled = true
+description = "Geostatistical data, the origins of kriging, and interpolation against simulation"
+
+[[wikis]]
+name = "Variograms"
+file = "kriging/variograms.md"
+bundled = true
+description = "The empirical variogram, the variogram models, nugget, sill and range, fitting and anisotropy"
+
+[[wikis]]
+name = "Kriging Systems"
+file = "kriging/kriging-systems.md"
+bundled = true
+description = "Simple, ordinary and universal kriging, the kriging weights and the kriging variance"
+
+[[wikis]]
+name = "Cross-Validation"
+file = "kriging/cross-validation.md"
+bundled = true
+description = "Leave-one-out cross-validation, standardised errors, and comparing variograms and methods"
+
+[[wikis]]
+name = "Decision Guide"
+file = "kriging/decision-guide.md"
+bundled = true
+description = "Which method, which variogram model, and when kriging is not the tool"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Variogram"
+file = "kriging/variogram.md"
+bundled = true
+
+[[wikis]]
+name = "Ordinary Kriging"
+file = "kriging/ordinary-kriging.md"
+bundled = true
+
+[[wikis]]
+name = "Universal Kriging"
+file = "kriging/universal-kriging.md"
+bundled = true
+
+[[wikis]]
+name = "Inverse Distance Weighting"
+file = "kriging/inverse-distance.md"
+bundled = true
+
+[[wikis]]
+name = "Gaussian Simulation"
+file = "kriging/gaussian-simulation.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Hof2026a"
+
+[[references]]
+key = "Hof2018a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "IS1989a"
+
+[[references]]
+key = "Cre1993a"
+
+[[references]]
+key = "Goo1997a"
+
+[[references]]
+key = "CD2012a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Kri1951a"
+
+[[references]]
+key = "Mat1963a"
+
+[[references]]
+key = "She1968a"
+
+[[faq]]
+question = "What do the nugget, the sill and the range of a variogram mean?"
+answer = '''
+The nugget is the semivariance at distances near zero: measurement error, and variation at distances shorter than those between the nearest stations. The sill is the semivariance at which the variogram levels off, the variance of values far apart. The range is the distance at which it levels off: stations farther apart than the range are uncorrelated.
+
+Nugget, Sill and Range prints the three for the model fitted, with the ratio of the nugget to the sill.
+'''
+wiki = "Variograms"
+
+[[faq]]
+question = "What is the difference between ordinary and universal kriging?"
+answer = '''
+Ordinary kriging assumes that the mean of the value is constant but unknown over the area. Universal kriging lets the mean change across the area as a polynomial of the coordinates, a trend, whose coefficients are estimated with the weights.
+
+Universal kriging suits values with a steady rise or fall across the map, such as pollution that grows towards a city centre or a motorway.
+'''
+wiki = "Kriging Systems"
+
+[[faq]]
+question = "What does the kriging standard deviation tell me?"
+answer = '''
+The kriging standard deviation measures the uncertainty of each estimate, given the variogram: it is small near stations and grows with the distance to them, up to about the square root of the sill.
+
+It depends on where the stations are, not on the values measured there, so it shows where more stations would help, not where the values are uncertain because they vary more.
+'''
+wiki = "Ordinary Kriging"
+
+[[faq]]
+question = "When should I use Gaussian simulation instead of kriging?"
+answer = '''
+Kriging gives the best estimate at each cell, and its map is smoother than the values themselves. Gaussian simulation gives many maps, realisations, each with the variability of the data and each honouring the station values.
+
+Use simulation when the question is about the variability or about many cells at once: the probability that a cell exceeds a threshold, or the area above it.
+'''
+wiki = "Gaussian Simulation"
+
+[[faq]]
+question = "Why does the variogram keep rising without levelling off?"
+answer = '''
+A variogram that keeps rising up to the largest lag usually means a trend: the mean of the value changes across the area, so values far apart differ more and more. A variogram model with a sill then fits badly.
+
+Universal kriging models the trend. A shorter Maximum Lag, or a larger study area, may also show whether a sill is reached.
+'''
+wiki = "Variograms"
+hidden = true
+
+[[faq]]
+question = "How does inverse distance weighting differ from kriging?"
+answer = '''
+Inverse distance weighting gives each station a weight proportional to one over its distance to the cell, raised to a power, without a model of spatial correlation. It is simple and needs no variogram, but gives no measure of uncertainty and ignores clusters of stations.
+
+Kriging chooses the weights from the variogram, accounts for stations that cluster together, and gives a standard deviation with each estimate.
+'''
+wiki = "Inverse Distance Weighting"
+hidden = true
+
+[[faq]]
+question = "How do I know whether the variogram model is good?"
+answer = '''
+Leave-one-out cross-validation leaves out each station in turn, estimates its value from the others, and compares the estimate with the value measured. A smaller root mean squared error is better, and the standardised errors should have a mean near 0 and a variance near 1.
+
+Variogram Models Compared does this for four models, and Kriging and Inverse Distance for five methods.
+'''
+wiki = "Cross-Validation"
+hidden = true
+
+[[faq]]
+question = "Why must the coordinates be in metres?"
+answer = '''
+Distances between stations are computed from their coordinates, so a coordinate system in degrees of longitude and latitude would give distances in degrees, which do not have the same length east to west as north to south.
+
+The stations are moved into the Metric Coordinate System, a projected system in metres such as EPSG:3763 for mainland Portugal, before the variogram is computed.
+'''
+wiki = "Factsheet"
+hidden = true
+
+[[faq]]
+question = "Can kriging weights be negative?"
+answer = '''
+Yes. A station hidden behind a nearer station, as seen from the cell, can get a small negative weight: the nearer station screens it.
+
+Negative weights can give estimates outside the range of the data. Kriging Weights of the Nearest Stations prints the weights of the stations around the centre of the map.
+'''
+wiki = "Kriging Systems"
+hidden = true
+
+[[models]]
+id = "variogram"
+label = "Variogram"
+
+[[models]]
+id = "ordinary"
+label = "Ordinary Kriging"
+
+[[models]]
+id = "universal"
+label = "Universal Kriging"
+
+[[models]]
+id = "idw"
+label = "Inverse Distance"
+
+[[models]]
+id = "simulation"
+label = "Gaussian Simulation"
+
+[[bullets]]
+text = "Variogram"
+detail = "How the difference between two stations' values grows with the distance between them, and the model fitted to it: nugget, sill and range"
+
+[[bullets]]
+text = "Ordinary Kriging"
+detail = "The best linear unbiased estimate in every cell of a grid, with an unknown constant mean, and its standard deviation"
+
+[[bullets]]
+text = "Universal Kriging"
+detail = "Kriging with a mean that changes across the map as a polynomial of the coordinates: a trend"
+
+[[bullets]]
+text = "Inverse Distance"
+detail = "Inverse distance weighting: weights that fall with a power of the distance, with no variogram"
+
+[[bullets]]
+text = "Gaussian Simulation"
+detail = "Many maps, each with the variability of the data and each honouring the stations, and the probability of exceeding a threshold"
+
+[[decisionRows]]
+task = "Variogram"
+context = "Spatial correlation"
+purpose = "Measure how far apart stations must be before their values are unrelated, and choose the model the other tabs use"
+
+[[decisionRows]]
+task = "Ordinary Kriging"
+context = "Constant mean"
+purpose = "Map the value over the whole area, with the uncertainty of each estimate"
+
+[[decisionRows]]
+task = "Universal Kriging"
+context = "Trend"
+purpose = "Map a value that rises or falls steadily across the area"
+
+[[decisionRows]]
+task = "Inverse Distance"
+context = "No model"
+purpose = "A quick map with no variogram, and a baseline for kriging"
+
+[[decisionRows]]
+task = "Gaussian Simulation"
+context = "Uncertainty"
+purpose = "Probabilities of exceeding a threshold, and the variability that kriging smooths out"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Estimates as GeoParquet writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of the stations, as points: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf, KML or GPX, in the folder above, or an absolute path. With the default, stations.gpkg, the example first writes 80 air quality stations scattered over a square of 15 km around Coimbra with a simulated annual mean of nitrogen dioxide (no2, in micrograms per cubic metre), unless the folder has a stations.gpkg already."
+default = "stations.gpkg"
+
+[[inputs]]
+id = "column"
+label = "Column"
+tooltip = "The numeric column measured at the stations. Stations without a value in it are left out."
+default = "no2"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's stations are in EPSG:3763, PT-TM06/ETRS89. GeoJSON, KML and GPX are always EPSG:4326."
+default = "EPSG:3763"
+
+[[inputs]]
+id = "workCrs"
+label = "Metric Coordinate System"
+tooltip = "A projected coordinate system in metres, as an EPSG code, into which the stations are moved before distances are measured: EPSG:3763 for mainland Portugal, EPSG:3035 for Europe as a whole, or the UTM zone of the area. The grid of cells is drawn in it."
+default = "EPSG:3763"
+
+[[inputs]]
+id = "cell"
+label = "Cell Size (m)"
+tooltip = "The side of the square cells of the grid over the stations' bounding box, in metres. Halving it makes four times as many cells, and four times the work."
+default = "250"
+
+[[inputs]]
+id = "variogramModel"
+label = "Variogram Model"
+tooltip = "The model fitted to the empirical variogram, which the kriging and simulation tabs use: Spherical reaches its sill at the range; Exponential and Gaussian approach it; Matérn has a smoothness parameter between the two."
+kind = "select"
+default = "SphericalVariogram"
+newRow = true
+
+[[inputs.options]]
+value = "SphericalVariogram"
+label = "Spherical"
+
+[[inputs.options]]
+value = "ExponentialVariogram"
+label = "Exponential"
+
+[[inputs.options]]
+value = "GaussianVariogram"
+label = "Gaussian"
+
+[[inputs.options]]
+value = "MaternVariogram"
+label = "Matérn"
+
+[[inputs]]
+id = "nlags"
+label = "Lags"
+tooltip = "The number of distance classes of the empirical variogram, from 0 to the Maximum Lag."
+default = "15"
+
+[[inputs]]
+id = "maxlag"
+label = "Maximum Lag (m)"
+tooltip = "The largest distance between two stations taken into the empirical variogram, in metres: about half the width of the area is usual, as pairs farther apart are few."
+default = "8000"
+
+[[inputs]]
+id = "estimator"
+label = "Estimator"
+tooltip = "The estimator of the empirical variogram: Matheron, half the mean squared difference between the values of the pairs of stations in each distance class; Cressie and Hawkins, a robust estimator less sensitive to outlying values."
+kind = "select"
+default = "matheron"
+
+[[inputs.options]]
+value = "matheron"
+label = "Matheron"
+
+[[inputs.options]]
+value = "cressie"
+label = "Cressie and Hawkins"
+
+[[inputs]]
+id = "degree"
+label = "Trend Degree"
+tooltip = "The degree of the polynomial of the coordinates that makes the mean: 1, a plane rising in one direction; 2, a surface that can curve."
+default = "1"
+models = ["universal"]
+newRow = true
+
+[[inputs]]
+id = "exponent"
+label = "Power"
+tooltip = "The power of the distance in the weights, 1 / distance^power: the larger it is, the more the nearest stations count."
+default = "2"
+models = ["idw"]
+newRow = true
+
+[[inputs]]
+id = "realisations"
+label = "Realisations"
+tooltip = "The number of simulated maps. Probabilities are shares of the realisations, so 100 realisations give them to the nearest 0.01."
+default = "20"
+models = ["simulation"]
+newRow = true
+
+[[inputs]]
+id = "threshold"
+label = "Threshold"
+tooltip = "The value, in the units of the column, whose exceedance Probability above a Threshold maps."
+default = "35"
+models = ["simulation"]
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, GeoStats, Random, ECharts
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+{{?file=stations.gpkg}} # Example file: 80 air quality stations scattered over a square of 15 km around Coimbra, in EPSG:3763, with a simulated annual mean of nitrogen dioxide in micrograms per cubic metre, written to stations.gpkg unless the folder has one already. Replace "stations.gpkg" with your own file.
+{{?file=stations.gpkg}} if !isfile(path)
+{{?file=stations.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same stations and values every time
+{{?file=stations.gpkg}} 	xy = [(-31000 + round(15000 * rand(rng)), 52000 + round(15000 * rand(rng))) for s in 1:80]  # metres east and north
+{{?file=stations.gpkg}} 	field = rand(rng, GaussianProcess(SphericalVariogram(sill = 16.0, range = 3000.0, nugget = 2.0)), PointSet(xy); showprogress = false).field  # variation correlated over 3 km
+{{?file=stations.gpkg}} 	rows = ["('S$(lpad(s, 2, '0'))', $(round(30 + 0.6 * (x + 23500) / 1000 + f, digits = 1)), ST_Point($x, $y))" for (s, ((x, y), f)) in enumerate(zip(xy, field))]  # 30 at the centre, rising 0.6 a kilometre to the east
+{{?file=stations.gpkg}} 	DBInterface.execute(con, "COPY (SELECT station, no2::DOUBLE AS no2, geom FROM (VALUES $(join(rows, ", "))) t(station, no2, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'stations', SRS 'EPSG:3763')")
+{{?file=stations.gpkg}} end
+# The stations, numbered i = 1, 2, ... in the order of the file, in the metric coordinate system; stations without a value are left out
+DBInterface.execute(con, "CREATE OR REPLACE TABLE stations AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', '{{workCrs}}') AS geom FROM ST_Read('$(path)') WHERE \"{{column}}\" IS NOT NULL")
+DBInterface.execute(con, "ALTER TABLE stations DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+s = Tables.columntable(DBInterface.execute(con, "SELECT ST_X(geom) AS x, ST_Y(geom) AS y, \"{{column}}\"::DOUBLE AS z FROM stations ORDER BY i"))
+n = length(s.z)
+data = georef((; z = s.z), collect(zip(s.x, s.y)))  # GeoStats.jl's geotable: the values z of {{column}} at points, in metres
+
+# The empirical variogram, and the variogram model fitted to it by weighted least squares
+g = variogram(data, :z; nlags = {{nlags}}, maxlag = {{maxlag}}, estimator = :{{estimator}})
+vario = GeoStatsFunctions.fit({{variogramModel}}, g)
+println(vario)
+
+# The grid of square cells over the stations' bounding box: cell k is in column (k - 1) % nx and row (k - 1) ÷ nx, from the south-west
+cell = Float64({{cell}})
+x0, x1 = extrema(s.x)
+y0, y1 = extrema(s.y)
+nx, ny = ceil(Int, (x1 - x0) / cell), ceil(Int, (y1 - y0) / cell)
+grid = CartesianGrid((x0, y0), (x0 + nx * cell, y0 + ny * cell), (cell, cell))
+
+# The cells as a DuckDB table with columns of values, and GeoJSON files of the cells and stations for the map, in longitude and latitude
+function cells_table(columns...)
+	rows = map(1:nelements(grid)) do k
+		i, j = (k - 1) % nx, (k - 1) ÷ nx
+		"($(join((round(last(c)[k], digits = 4) for c in columns), ", ")), ST_MakeEnvelope($(x0 + i * cell), $(y0 + j * cell), $(x0 + (i + 1) * cell), $(y0 + (j + 1) * cell)))"
+	end
+	names = first.(columns)
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE cells AS SELECT $(join(("$(c)::DOUBLE AS $(c)" for c in names), ", ")), geom FROM (VALUES $(join(rows, ", "))) t($(join(names, ", ")), geom)")
+end
+function cells_geojson(columns...)
+	cells_table(columns...)
+	file = joinpath(mktempdir(), "cells.geojson")
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(geom, '{{workCrs}}', 'EPSG:4326') AS geom FROM cells) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	return file
+end
+function stations_layer(; column = nothing)
+	file = joinpath(mktempdir(), "stations.geojson")
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(geom, '{{workCrs}}', 'EPSG:4326') AS geom FROM stations) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	return isnothing(column) ? Pollis.layer(file; name = "Stations", color = "#222222") : Pollis.layer(file; name = "{{column}}", column = column)
+end
+
+# The empirical variogram, as points, and the model, as a line, drawn with ECharts.jl
+function variogram_chart(g, vario)
+	h = [ustrip(l) for l in g.abscissas]
+	curve = [[d, round(vario(Point(0.0, 0.0), Point(d, 0.0)), digits = 3)] for d in range(0, maximum(h), length = 101)]
+	EChart(ec_width = 700, ec_height = 440, title = [ECharts.Title(text = "Variogram of {{column}}: $(nameof(typeof(vario)))")],
+		xAxis = [ECharts.Axis(_type = "value", name = "Distance (m)")], yAxis = [ECharts.Axis(_type = "value", name = "Semivariance")],
+		series = [ECharts.XYSeries(name = "Empirical", _type = "scatter", data = [[round(h[l], digits = 1), round(g.ordinates[1][l], digits = 3)] for l in eachindex(h) if g.counts[l] > 0]),
+			ECharts.XYSeries(name = "Model", _type = "line", data = curve, showSymbol = false)])
+end
+{{?model=variogram}} display(variogram_chart(g, vario))
+{{?model=ordinary}} fitted = GeoStatsModels.fit(Kriging(vario), data)  # ordinary kriging with every station: an unknown constant mean
+{{?model=universal}} fitted = GeoStatsModels.fit(Kriging(vario, {{degree}}, 2), data)  # universal kriging with every station: a mean that is a polynomial of degree {{degree}} in x and y
+{{?model=idw}} fitted = GeoStatsModels.fit(IDW({{exponent}}), data)  # inverse distance weighting with every station: weights 1 / distance^{{exponent}}
+{{?model=ordinary|universal}} predictions = [GeoStatsModels.predictprob(fitted, :z, centroid(grid, k)) for k in 1:nelements(grid)]  # a normal distribution at the centre of every cell
+{{?model=ordinary|universal}} estimate, sd = mean.(predictions), std.(predictions)
+{{?model=idw}} estimate = [GeoStatsModels.predict(fitted, :z, centroid(grid, k)) for k in 1:nelements(grid)]
+{{?model=ordinary|universal|idw}} println("Estimates of {{column}} in ", nelements(grid), " cells of {{cell}} m: from ", round(minimum(estimate), digits = 2), " to ", round(maximum(estimate), digits = 2))
+{{?model=ordinary|universal}} layer = Pollis.layer(cells_geojson("estimate" => estimate, "sd" => sd); name = "Estimate of {{column}}", column = "estimate", opacity = 0.7)
+{{?model=idw}} layer = Pollis.layer(cells_geojson("estimate" => estimate); name = "Estimate of {{column}}", column = "estimate", opacity = 0.7)
+{{?model=ordinary|universal|idw}} display(Pollis.webmap(layer, stations_layer(); title = "{{column}}: Estimates"))  # drawn in the plot pane, on OpenFreeMap's tiles
+{{?model=simulation}} sims = rand(Xoshiro(2026), GaussianProcess(vario, sum(s.z) / n), grid, {{realisations}}; data, showprogress = false)  # conditional: every realisation honours the stations' values
+{{?model=simulation}} realisations = reduce(hcat, [sims[r].z for r in 1:{{realisations}}])  # one row per cell, one column per realisation
+{{?model=simulation}} println({{realisations}}, " realisations of {{column}} in ", nelements(grid), " cells of {{cell}} m: from ", round(minimum(realisations), digits = 2), " to ", round(maximum(realisations), digits = 2))
+{{?model=simulation}} display(Pollis.webmap(Pollis.layer(cells_geojson("realisation" => realisations[:, 1]); name = "Realisation 1", column = "realisation", opacity = 0.7), stations_layer(); title = "{{column}}: Realisation 1"))
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-stations"
+label = "Map of the Stations"
+desc = "The stations on a base map, coloured by the column, from its smallest to its largest value; click a station for its attributes"
+code = '''
+display(Pollis.webmap(stations_layer(column = "{{column}}"); title = "Stations: {{column}}"))
+'''
+
+[[actionGroups.actions]]
+id = "variogram-plot"
+label = "Variogram Plot"
+desc = "The empirical variogram, a point for each distance class, with the variogram model fitted to it"
+code = '''
+variogram_chart(g, vario)
+'''
+
+[[actionGroups.actions]]
+id = "map-sd"
+label = "Map of the Kriging Standard Deviation"
+desc = "The cells coloured by the kriging standard deviation of their estimate: small near the stations, larger away from them"
+models = ["ordinary", "universal"]
+code = '''
+display(Pollis.webmap(Pollis.layer(cells_geojson("sd" => sd, "estimate" => estimate); name = "Standard deviation", column = "sd", opacity = 0.7), stations_layer(); title = "{{column}}: Kriging Standard Deviation"))
+'''
+
+[[actionGroups.actions]]
+id = "map-ensemble"
+label = "Map of the Mean of the Realisations"
+desc = "The cells coloured by the mean of the realisations, with their standard deviation when an area is clicked"
+models = ["simulation"]
+code = '''
+average = vec(sum(realisations; dims = 2)) ./ {{realisations}}
+spread = sqrt.(vec(sum((realisations .- average) .^ 2; dims = 2)) ./ ({{realisations}} - 1))
+display(Pollis.webmap(Pollis.layer(cells_geojson("mean" => average, "sd" => spread); name = "Mean of the realisations", column = "mean", opacity = 0.7), stations_layer(); title = "{{column}}: Mean of {{realisations}} Realisations"))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "directional"
+label = "Directional Variograms"
+desc = "The empirical variogram of the pairs of stations lying west to east, and of those lying south to north: different ones show anisotropy"
+code = '''
+band = {{maxlag}} / 8  # the pairs within this distance of the direction's line, in metres
+lines = [name => variogram(data, :z; dir, dirtol = band, nlags = {{nlags}}, maxlag = {{maxlag}}, estimator = :{{estimator}}) for (name, dir) in ("West to East" => (1.0, 0.0), "South to North" => (0.0, 1.0))]
+EChart(ec_width = 700, ec_height = 440, title = [ECharts.Title(text = "Directional Variograms of {{column}}")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Distance (m)")], yAxis = [ECharts.Axis(_type = "value", name = "Semivariance")],
+	series = [ECharts.XYSeries(name = name, _type = "line", data = [[round(ustrip(d.abscissas[l]), digits = 1), round(d.ordinates[1][l], digits = 3)] for l in eachindex(d.counts) if d.counts[l] > 0]) for (name, d) in lines])
+'''
+
+[[actionGroups.actions]]
+id = "leave-one-out"
+label = "Leave-One-Out Cross-Validation"
+desc = "Each station left out in turn and estimated from the others: the mean error, the root mean squared error, the largest errors, and for kriging the standardised errors"
+models = ["variogram", "ordinary", "universal", "idw"]
+code = '''
+{{?model=variogram|ordinary}} model = Kriging(vario)
+{{?model=universal}} model = Kriging(vario, {{degree}}, 2)
+{{?model=idw}} model = IDW({{exponent}})
+errors, standardised = zeros(n), zeros(n)
+for i in 1:n
+	others = GeoStatsModels.fit(model, data[setdiff(1:n, [i]), :])
+	p = Point(s.x[i], s.y[i])
+	if model isa IDW
+		errors[i] = GeoStatsModels.predict(others, :z, p) - s.z[i]
+	else
+		d = GeoStatsModels.predictprob(others, :z, p)
+		errors[i] = mean(d) - s.z[i]
+		standardised[i] = errors[i] / std(d)
+	end
+end
+println("Leave-one-out over ", n, " stations: mean error ", round(sum(errors) / n, digits = 3), ", root mean squared error ", round(sqrt(sum(errors .^ 2) / n), digits = 3))
+model isa IDW || println("Standardised errors: mean ", round(sum(standardised) / n, digits = 3), " (near 0 is unbiased), mean square ", round(sum(standardised .^ 2) / n, digits = 3), " (near 1 when the kriging standard deviation is right)")
+println("Largest errors: ", join(("station $(i): $(round(errors[i], digits = 2))" for i in sortperm(abs.(errors), rev = true)[1:3]), ", "))
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "estimate-at"
+label = "Estimate at a Location"
+desc = "The estimate at one location, the centre of the stations' bounding box, and for kriging its standard deviation and 95% interval"
+models = ["ordinary", "universal", "idw"]
+code = '''
+p = Point((x0 + x1) / 2, (y0 + y1) / 2)  # x and y in {{workCrs}}, in metres: put your own location here
+{{?model=ordinary|universal}} d = GeoStatsModels.predictprob(fitted, :z, p)
+{{?model=ordinary|universal}} println("Estimate ", round(mean(d), digits = 2), ", standard deviation ", round(std(d), digits = 2), ", 95% interval ", round(mean(d) - 1.96 * std(d), digits = 2), " to ", round(mean(d) + 1.96 * std(d), digits = 2))
+{{?model=idw}} println("Estimate ", round(GeoStatsModels.predict(fitted, :z, p), digits = 2))
+'''
+
+[[actionGroups.actions]]
+id = "exceedance"
+label = "Probability above a Threshold"
+desc = "The cells coloured by the share of the realisations in which they exceed the threshold"
+models = ["simulation"]
+code = '''
+probability = vec(sum(realisations .> {{threshold}}; dims = 2)) ./ {{realisations}}
+println("Cells above {{threshold}} in at least half the realisations: ", count(>=(0.5), probability), " of ", nelements(grid))
+display(Pollis.webmap(Pollis.layer(cells_geojson("probability" => probability); name = "Probability above {{threshold}}", column = "probability", opacity = 0.7), stations_layer(); title = "{{column}}: Probability above {{threshold}}"))
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "variogram-models"
+label = "Variogram Models Compared"
+desc = "The spherical, exponential, Gaussian and Matérn models fitted to the same empirical variogram: their range, sill and nugget, and the leave-one-out error of ordinary kriging with each"
+code = '''
+println(rpad("model", 22), rpad("range (m)", 12), rpad("sill", 10), rpad("nugget", 10), "leave-one-out RMSE")
+for V in (SphericalVariogram, ExponentialVariogram, GaussianVariogram, MaternVariogram)
+	v = GeoStatsFunctions.fit(V, g)
+	rmse = sqrt(cverror(Kriging(v), data, LeaveOneOut())[:z])  # cverror gives the mean squared error
+	println(rpad(nameof(V), 22), rpad(round(Int, ustrip(range(v))), 12), rpad(round(sill(v), digits = 3), 10), rpad(round(nugget(v), digits = 3), 10), round(rmse, digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "methods-compared"
+label = "Kriging and Inverse Distance"
+desc = "The leave-one-out error of ordinary kriging, universal kriging with a trend of degree 1, and inverse distance weighting with powers 1, 2 and 3"
+code = '''
+methods = ["Ordinary kriging" => Kriging(vario), "Universal kriging, degree 1" => Kriging(vario, 1, 2), "Inverse distance, power 1" => IDW(1), "Inverse distance, power 2" => IDW(2), "Inverse distance, power 3" => IDW(3)]
+println(rpad("method", 30), "leave-one-out RMSE")
+for (name, m) in methods
+	println(rpad(name, 30), round(sqrt(cverror(m, data, LeaveOneOut())[:z]), digits = 3))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "nugget-sill-range"
+label = "Nugget, Sill and Range"
+desc = "The three parameters of the variogram model, the ratio of the nugget to the sill, and the variance of the values at the stations"
+code = '''
+average = sum(s.z) / n
+println("Nugget ", round(nugget(vario), digits = 3), ": the semivariance near distance 0, measurement error and variation closer than the nearest stations")
+println("Sill ", round(sill(vario), digits = 3), ": the semivariance of stations far apart; the variance of {{column}} at the stations is ", round(sum((s.z .- average) .^ 2) / (n - 1), digits = 3))
+println("Range ", round(Int, ustrip(range(vario))), " m: stations farther apart than this are uncorrelated")
+println("Nugget to sill ", round(nugget(vario) / sill(vario), digits = 3), ": the share of the variance that is not spatially correlated at the distances between stations")
+'''
+
+[[actionGroups.actions]]
+id = "kriging-weights"
+label = "Kriging Weights of the Nearest Stations"
+desc = "The weights of the eight stations with the largest weights in the estimate at the centre of the stations' bounding box, with their distances, and the sum of all weights"
+models = ["ordinary", "universal"]
+code = '''
+xc, yc = (x0 + x1) / 2, (y0 + y1) / 2
+w = vec(getfield(GeoStatsModels.weights(fitted, Point(xc, yc)), 1))  # the kriging weights, one per station in the order i; the second field holds the Lagrange multipliers
+distance = sqrt.((s.x .- xc) .^ 2 .+ (s.y .- yc) .^ 2)
+println(rpad("station i", 12), rpad("distance (m)", 14), "weight")
+for i in sortperm(abs.(w), rev = true)[1:min(8, n)]
+	println(rpad(i, 12), rpad(round(Int, distance[i]), 14), round(w[i], digits = 4))
+end
+println("Sum of the weights ", round(sum(w), digits = 4), "; negative weights: ", count(<(0), w), " of ", n)
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save the Estimates as GeoParquet"
+desc = "Write the cells, in longitude and latitude, with the estimates, and for kriging their standard deviations, or the mean of the realisations and the probability above the threshold, to kriging.parquet in the folder above"
+models = ["ordinary", "universal", "idw", "simulation"]
+code = '''
+out = joinpath(folder, "kriging.parquet")
+{{?model=ordinary|universal}} cells_table("estimate" => estimate, "sd" => sd)
+{{?model=idw}} cells_table("estimate" => estimate)
+{{?model=simulation}} cells_table("mean" => vec(sum(realisations; dims = 2)) ./ {{realisations}}, "probability" => vec(sum(realisations .> {{threshold}}; dims = 2)) ./ {{realisations}})
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(geom, '{{workCrs}}', 'EPSG:4326') AS geom FROM cells) TO '$(out)' (FORMAT PARQUET)")  # GeoParquet: DuckDB writes the geometry column's metadata
+	println("Wrote ", out)
+end
+'''

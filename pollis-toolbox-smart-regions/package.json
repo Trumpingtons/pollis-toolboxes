@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
-  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, shows them on OpenStreetMap base maps, and tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA).",
-  "version": "0.1.4",
+  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
+  "version": "0.1.5",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -44,17 +44,16 @@
             ]
           },
           {
-            "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "A Place on a Base Map", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map",
-            "tabs": [
-              { "model": "features", "command": "pollis.smartRegions.basemaps.features", "title": "Features on a Base Map" },
-              { "model": "column", "command": "pollis.smartRegions.basemaps.column", "title": "Features Coloured by a Column" }
-            ]
+            "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "Base Map", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map"
           },
           {
             "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "menuTitle": "Global Moran's I", "submenu": "spatialStatistics", "group": "1_autocorrelation", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic",
             "tabs": [
               { "model": "local", "command": "pollis.smartRegions.autocorr.local", "title": "Local Moran (LISA)" }
             ]
+          },
+          {
+            "id": "kriging", "command": "pollis.smartRegions.kriging", "title": "Kriging", "submenu": "spatialStatistics", "group": "2_kriging", "order": 1, "data": "panels/kriging.toml", "defaultModel": "variogram", "decisionFirstColumn": "Method"
           }
         ],
         "planned": [
@@ -78,7 +77,6 @@
           { "title": "Google Photorealistic 3D Tiles", "submenu": "mapVisualisation", "group": "2_google", "order": 2 },
           { "title": "Coordinate Transformations and Projections", "group": "1_sr", "order": 2 },
           { "title": "Spatial Indexing", "group": "1_sr", "order": 3 },
-          { "title": "Kriging", "submenu": "spatialStatistics", "group": "2_kriging", "order": 1 },
           { "title": "Spatial Econometrics", "group": "2_sr", "order": 2 },
           { "title": "Raster Analysis", "group": "2_sr", "order": 3 },
           { "title": "Route and Network Analysis", "group": "2_sr", "order": 4 },
