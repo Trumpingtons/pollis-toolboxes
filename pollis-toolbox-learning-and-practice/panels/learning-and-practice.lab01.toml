@@ -1,0 +1,203 @@
+# Lab Course 01 of Data-Driven Decisions: Computational Lab Series, a page in the Time Arrow style: one step a lab
+[meta]
+title = "Lab Course 01 — Empirical Forecasting: From Univariate Parsimony to Probabilistic Ensembles"
+style = "timeArrow"
+intro = "This 4-lab sequence moves graduate students systematically from classical univariate parsimony, to global cross-learning and multiple seasonalities, to probabilistic covariate modeling, and finally to real-time ensemble calibration under structural breaks."
+
+[matrix]
+columns = ["Lab", "Dataset", "Frequency and Scale", "Primary Paradigm Shift", "Core Scoring Metric"]
+
+[[matrix.rows]]
+cells = ["1", "Tourism (2011)", "Yearly, quarterly and monthly (1,311 series)", "Scale-free cross-validation and statistical parsimony", "MASE and sMAPE"]
+
+[[matrix.rows]]
+cells = ["2", "NN5", "Daily (111 ATMs)", "Local univariate → global cross-learning", "sMAPE and MASE"]
+
+[[matrix.rows]]
+cells = ["3", "GEFCom 2014", "Hourly, with weather covariates", "Point forecasts → quantile distributions", "Pinball loss and CRPS"]
+
+[[matrix.rows]]
+cells = ["4", "COVID-19 Forecast Hub", "Weekly, multi-team archive", "Offline cross-validation → real-time operational ensembles", "WIS and interval coverage"]
+
+[[steps]]
+title = "Lab 1: Univariate Foundations, Scale-Free Metrics and Parsimony"
+dataset = "tourism_2011"
+datasetText = "Tourism Forecasting Competition (Athanasopoulos, Hyndman, Song and Wu, 2011): 1,311 yearly, quarterly and monthly series"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Implement rolling-origin (expanding-window) cross-validation without temporal leakage.", "Understand why scale-dependent errors (RMSE, MAE) fail across heterogeneous panels and why scale-free metrics (MASE, sMAPE) are mandatory.", "Experience the forecast combination puzzle and the empirical reality that simple, well-regularised local models routinely beat unregularised complex models on short macro and tourism series."]
+
+[[steps.sections]]
+heading = "Baseline Models (Naive and Classical)"
+items = ["Seasonal Naive (sNaive) and Drift benchmarks.", "Local ETS (exponential smoothing state-space models) and Auto-ARIMA (the Hyndman-Khandakar algorithm)."]
+
+[[steps.sections]]
+heading = "Target Models (Competition Benchmarks and Combinations)"
+items = ["The Theta method, the classic winner on Tourism and M3.", "An equal-weighted combination of ETS, ARIMA and Theta, compared against a naive local MLP or autoregressive neural net, showing how unpooled neural nets overfit short univariate series."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A cross-frequency comparison table (yearly, quarterly and monthly) showing how the performance gap between sNaive, ETS and the combination changes as the seasonal period m increases."
+
+[[steps]]
+title = "Lab 2: Multiple Seasonalities and Local-vs.-Global Cross-Learning"
+dataset = "nn5"
+datasetText = "NN5 Forecasting Competition: 111 daily ATM cash withdrawal series, about 2 years each, with missing values and holiday effects"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Diagnose and model complex multiple seasonalities, the day of the week (m1 = 7) overlaid on the day of the year (m2 = 365.25), where standard SARIMA breaks down computationally.", "Master the paradigm shift from local models (one model per series) to global models (one shared parameter set trained across all 111 pooled series).", "Evaluate the impact of preprocessing (missing-value imputation, Box-Cox variance stabilisation, seasonal decomposition) on machine learning performance."]
+
+[[steps.sections]]
+heading = "Baseline Models (Local Statistical)"
+items = ["Local ETS, which captures only the weekly cycle.", "TBATS and Fourier-ARIMA: dynamic harmonic regression with Fourier terms for the annual seasonality."]
+
+[[steps.sections]]
+heading = "Target Models (Global Machine Learning and Deep Learning)"
+items = ["Global gradient boosted trees (LightGBM) trained on lagged values, rolling-window statistics, Fourier terms and series ID embeddings.", "A global neural architecture (N-BEATS, DLinear or PatchTST) trained across all 111 ATMs at once, evaluated with and without STL deseasonalisation."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A learning-curve experiment showing how the accuracy of global LightGBM and N-BEATS scales as students pool 1, 10, 50 and all 111 ATMs, pinpointing the sample-size threshold where global cross-learning overtakes local TBATS."
+
+[[steps]]
+title = "Lab 3: Nonlinear Exogenous Covariates and Probabilistic Forecasting"
+dataset = "gefcom2014"
+datasetText = "GEFCom 2014, the Load or the Solar and Wind tracks: hourly resolution, paired with numerical weather predictions"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Move from point forecasts, the conditional mean of y at time t + h given the information at time t, to full predictive distributions, through quantile forecasts at the levels 0.01, 0.02, ..., 0.99.", "Capture nonlinear covariate interactions, such as the U-shaped cooling and heating response of electricity load to temperature, interacting with the hour of the day and the day of the week.", "Score probabilistic sharpness and calibration with the pinball loss (quantile score) and the CRPS (Continuous Ranked Probability Score), rather than symmetric point metrics."]
+
+[[steps.sections]]
+heading = "Baseline Models (Linear and Parametric Gaussian)"
+items = ["ARIMAX, or dynamic regression, with linear temperature terms and Gaussian prediction intervals: the point forecast plus or minus a standard normal quantile times the estimated standard deviation.", "Tao's Vanilla Benchmark: multiple linear regression with polynomial temperature terms and calendar interactions, the official GEFCom baseline."]
+
+[[steps.sections]]
+heading = "Target Models (Nonparametric Quantile and Conformal)"
+items = ["Quantile gradient boosting (LightGBM with the quantile loss) predicting all 99 quantiles directly, post-processed by isotonic regression to remove quantile crossing.", "Conformalized Quantile Regression (CQR) or Generalized Additive Models for Location, Scale and Shape (GAMLSS), to calibrate the prediction intervals out of sample."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A reliability (PIT or calibration) diagram alongside a breakdown of the pinball loss by forecast horizon, from 1 to 24 hours, showing why Gaussian homoscedastic intervals fail during peak demand hours."
+
+[[steps]]
+title = "Lab 4: Operational Ensembles, Structural Breaks and Real-Time Evaluation"
+dataset = "covid19_forecast_hub"
+datasetText = "COVID-19 Forecast Hub (Cramer and 427 coauthors, 2022): a public GitHub archive of timestamped weekly quantile submissions for US state and national incident deaths and hospitalisations"
+
+[[steps.sections]]
+heading = "Core Learning Objectives"
+items = ["Evaluate models under true real-time operational conditions, strictly respecting forecast submission timestamps and data revisions, with no look-ahead bias.", "Compute proper scoring rules for interval forecasts with the Weighted Interval Score (WIS), and decompose it into dispersion, underprediction and overprediction penalties.", "Analyse ensemble aggregation (the linear opinion pool, or mean, against Vincentization, or median) during non-stationary regime shifts such as epidemic peaks and variant waves."]
+
+[[steps.sections]]
+heading = "Baseline Models (Public Hub Benchmarks)"
+items = ["COVIDhub-baseline: flat median extrapolation with expanding empirical error intervals.", "Representative individual mechanistic (SEIR compartmental) and statistical or machine learning entries, taken directly from the Hub repository."]
+
+[[steps.sections]]
+heading = "Target Models (Student Ensembles and Post-Processed Rankers)"
+items = ["Reproduce COVIDhub-ensemble, the equal-weighted quantile median across all eligible teams.", "Build a performance-weighted or trimmed ensemble, for example weighting teams dynamically by their trailing 4-week WIS or by inverse-score weights, and test whether adaptive weighting beats the simple median ensemble out of sample."]
+
+[[steps.sections]]
+heading = "Required Deliverable and Diagnostic"
+text = "A WIS decomposition and coverage audit comparing the nominal 50% and 95% coverage with the empirical coverage, across stable periods and inflection points, testing whether adaptive weighting overfits noise during rapid regime changes."
+
+[[references]]
+separator = true
+label = "Datasets and Competitions"
+
+[[references]]
+key = "AHSW2011a"
+
+[[references]]
+key = "BBAS2012a"
+
+[[references]]
+key = "HPF2014a"
+
+[[references]]
+key = "HPFZT...2016a"
+
+[[references]]
+key = "CHWRC...2022a"
+
+[[references]]
+key = "CRLBB...2022a"
+
+[[references]]
+key = "RBBBB...2023a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "HA2021a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "BC1964a"
+
+[[references]]
+key = "CCMT1990a"
+
+[[references]]
+key = "AN2000a"
+
+[[references]]
+key = "T2000a"
+
+[[references]]
+key = "HKSG2002a"
+
+[[references]]
+key = "RS2005a"
+
+[[references]]
+key = "HK2006a"
+
+[[references]]
+key = "GR2007a"
+
+[[references]]
+key = "GBR2007a"
+
+[[references]]
+key = "HK2008a"
+
+[[references]]
+key = "SW2009a"
+
+[[references]]
+key = "CFG2010a"
+
+[[references]]
+key = "LHS2011a"
+
+[[references]]
+key = "LGW2013a"
+
+[[references]]
+key = "KMFWC...2017a"
+
+[[references]]
+key = "OCCB2019a"
+
+[[references]]
+key = "RPC2019a"
+
+[[references]]
+key = "BRGR2021a"
+
+[[references]]
+key = "MH2021a"
+
+[[references]]
+key = "NNSK2022a"
+
+[[references]]
+key = "ZCZX2023a"
