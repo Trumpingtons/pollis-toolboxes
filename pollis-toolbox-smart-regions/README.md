@@ -18,6 +18,10 @@ Access Files has one menu item per format, and Map Visualisation one per tab of 
 
 Julia. Each panel lists the Julia packages it uses on its Powered by line and offers to install the missing ones. The panels read files through DuckDB's spatial extension, which Pollis downloads from DuckDB's repository when the toolbox is installed, and keeps if the toolbox is uninstalled.
 
+## Icon
+
+The icon's map, of Coimbra and the Mondego, is drawn by MapLibre GL JS from OpenFreeMap's vector tiles in the Liberty style (OpenFreeMap © OpenMapTiles, data from OpenStreetMap, © OpenStreetMap contributors, ODbL), with the Pollis logo added in its upper left corner.
+
 ## License
 
 AGPL-3.0

@@ -2,10 +2,11 @@
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
   "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, shows them on OpenStreetMap base maps, and tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA).",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
+  "icon": "icon.png",
   "repository": {
     "type": "git",
     "url": "https://github.com/saragga/pollis"
