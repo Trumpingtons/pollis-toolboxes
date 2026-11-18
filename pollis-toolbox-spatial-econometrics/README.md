@@ -16,11 +16,12 @@ Installing it adds the **Spatial Econometrics** submenu to the end of the **Exte
 
 **Spatial Panel Data**: areas observed over several periods, on SpatialEconometrics.jl: spatial lag (SAR), spatial error (SEM) and spatial Durbin (SDM) panels with fixed effects of the areas, of the periods or both, removed by Lee and Yu's transformation or by demeaning, and a dynamic spatial panel with the outcome's own and its neighbours' lags, corrected for the bias of the fixed effects. Its Next Steps test the residuals with Moran's I period by period, map the size of the residuals and the area effects, run the panel Lagrange multiplier tests, compute Driscoll–Kraay standard errors, test for a structural break, compute the direct, indirect and total effects, in the short and the long run for the dynamic panel, and compare the fixed-effect specifications, SAR, SEM and SDM, Lee and Yu's transformation with direct QML, and the static with the dynamic panel. Its Replicate step sets the panel's spatial error estimates beside those of Millo and Piras (2012), with R's splm, on Munnell's production function for the US states.
 
+**Spatio-Temporal Forecasting**: forecasts of areas observed over many periods, from their own past and their neighbours', on SpatialEconometrics.jl: the space-time autoregression (STAR) of Pfeifer and Deutsch, with any number of spatial and temporal lags, the spatial VAR of Di Giacinto, which forecasts several variables together in a causal ordering, and a panel autoregression without space as the benchmark. Each is fitted on the periods before those held back, and its forecasts are scored on them by RMSE and MAE, step by step. Its Next Steps map the forecasts and their errors, draw the forecast paths of chosen areas, test the residuals with Moran's I period by period and with Pesaran's CD test, draw the roots of the system against the unit circle, forecast beyond the end of the data, compare the accuracy of the three models with each area's last value horizon by horizon, powers of the weights with order-k neighbours, and a grid of lag orders, trace space-time impulse responses, and test whether the neighbours matter at all.
+
 The other items of the menu are greyed out:
 
 | Group | Panels |
 |---|---|
-| Space and time | Spatio-Temporal Forecasting |
 | Regions and policy | Spatial Causal Inference, Regionalisation and Spatial Regimes |
 
 The [Smart Regions Toolbox](../pollis-toolbox-smart-regions/README.md) reads area files, draws them on base maps, and tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), the usual first step before a spatial regression.
