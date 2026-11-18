@@ -1,0 +1,708 @@
+# Geospatial Vector Files: GeoJSON, GeoPackage, Shapefile, GeoParquet and FlatGeobuf, KML and KMZ, and GPX,
+# read through DuckDB's spatial extension, which the Smart Regions Toolbox installs
+
+[meta]
+title = "Geospatial Vector Files"
+viewType = "pollis.geofiles"
+defaultModel = "geojson"
+decisionFirstColumn = "Format"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["Plots.jl", "GeoInterfaceRecipes.jl", "WellKnownGeometry.jl", "GeoFormatTypes.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "geofiles/factsheet.md"
+bundled = true
+description = "One-page reference: the six formats, the SQL that reads them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "geofiles/overview.md"
+bundled = true
+description = "Vector data, features and layers, and how DuckDB's spatial extension reads them"
+
+[[wikis]]
+name = "File Formats"
+file = "geofiles/file-formats.md"
+bundled = true
+description = "The six formats side by side: structure, coordinate systems, limits and size"
+
+[[wikis]]
+name = "Coordinate Reference Systems"
+file = "geofiles/coordinate-reference-systems.md"
+bundled = true
+description = "Geographic and projected systems, EPSG codes, axis order and measuring areas"
+
+[[wikis]]
+name = "Diagnostics"
+file = "geofiles/diagnostics.md"
+bundled = true
+description = "Layers, coordinate systems and geometry checks, and the usual problems of vector files"
+
+[[wikis]]
+name = "Decision Guide"
+file = "geofiles/decision-guide.md"
+bundled = true
+description = "Which format to read, keep or share, and which tab of the panel"
+
+[[wikis]]
+separator = true
+label = "Formats"
+
+[[wikis]]
+name = "GeoJSON"
+file = "geofiles/geojson.md"
+bundled = true
+
+[[wikis]]
+name = "GeoPackage"
+file = "geofiles/geopackage.md"
+bundled = true
+
+[[wikis]]
+name = "Shapefile"
+file = "geofiles/shapefile.md"
+bundled = true
+
+[[wikis]]
+name = "GeoParquet and FlatGeobuf"
+file = "geofiles/geoparquet-flatgeobuf.md"
+bundled = true
+
+[[wikis]]
+name = "KML and KMZ"
+file = "geofiles/kml-kmz.md"
+bundled = true
+
+[[wikis]]
+name = "GPX"
+file = "geofiles/gpx.md"
+bundled = true
+
+[[notebookSections]]
+label = ""
+
+[[notebookSections.notebooks]]
+name = "Reading and Converting Vector Files"
+file = "geofiles/tutorial-01-reading-and-converting.ipynb"
+bundled = true
+description = "Read a GeoPackage layer with DuckDB, check its geometries and coordinate system, measure it and save it as GeoParquet"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "PROJC2026a"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "RM2019a"
+
+[[references]]
+separator = true
+label = "Standards"
+
+[[references]]
+key = "BDDGH...2016a"
+
+[[references]]
+key = "OGC2026a"
+
+[[references]]
+key = "ESRI1998a"
+
+[[references]]
+key = "OGC2026b"
+
+[[references]]
+key = "ASF2026a"
+
+[[references]]
+key = "FGC2026a"
+
+[[references]]
+key = "Wil2008a"
+
+[[references]]
+key = "TG2004a"
+
+[[faq]]
+question = "Why are the areas of my features tiny numbers below one?"
+answer = '''
+On longitude and latitude, `ST_Area` and `ST_Length` give square degrees and degrees, which have no fixed size on the ground: a degree of longitude shrinks towards the poles.
+
+Extent and Measures first transforms the features to the Projected Coordinate System input, in metres, so areas come out in square kilometres and lengths in kilometres. EPSG:3035 keeps areas exact across Europe; a UTM zone or a national system suits a smaller region. The File Coordinate System input must say what the file is in.
+'''
+wiki = "Coordinate Reference Systems"
+
+[[faq]]
+question = "My Shapefile shows no coordinate system: what should I give?"
+answer = '''
+A Shapefile keeps its coordinate system in a separate .prj file beside the .shp. When Layers and Coordinate System shows no coordinate system recorded, the .prj is missing, and the system is unknown.
+
+Ask whoever published the file which system it is in, and give its EPSG code in the File Coordinate System input, so Extent and Measures and Save as GeoJSON transform it rightly. Saving the features as GeoPackage or GeoParquet keeps the system inside the file from then on.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Should I keep my data as GeoJSON, GeoPackage or GeoParquet?"
+answer = '''
+For analysis of many features, GeoParquet: compressed columns, read only as a query needs them, with the coordinate system in its metadata.
+
+For data that is edited feature by feature, or several layers sent together, GeoPackage, an SQLite database that is updated in place.
+
+For sharing a few thousand features with web maps, GeoJSON, which every web mapping library reads. File Formats Side by Side shows the size and read time of each for your features.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Which layer of a GPX file should I read?"
+answer = '''
+GDAL reads a GPX file as five layers. track_points gives every recorded point with its time and elevation, one row each, for speeds and profiles. tracks gives each recorded track as a line, one line per segment. waypoints gives the single points of interest. routes and route_points give planned routes, as lines or as their points.
+
+The Layer input of the GPX tab picks one.
+'''
+wiki = "GPX"
+
+[[faq]]
+question = "Why does ST_Transform put my points in the wrong place?"
+answer = '''
+The definition of EPSG:4326 puts latitude first, while GeoJSON, KML, GeoParquet and most software put longitude first. PROJ follows each system's own axis order, so a transformation from EPSG:4326 can read the coordinates the wrong way round.
+
+The setting geometry_always_xy of DuckDB's spatial extension, set to true, makes ST_Transform always take x as longitude and y as latitude. The Example Code sets it at the start.
+'''
+wiki = "Coordinate Reference Systems"
+hidden = true
+
+[[faq]]
+question = "How do I read a KMZ file?"
+answer = '''
+A KMZ file is a zipped KML, with the images and icons it refers to. Its main file, at the root of the archive, is by convention doc.kml.
+
+GDAL reads a file inside a zip archive through its virtual file system, with a path such as /vsizip/places.kmz/doc.kml, which the KML and KMZ tab builds when the File input ends in .kmz.
+'''
+wiki = "KML and KMZ"
+hidden = true
+
+[[faq]]
+question = "How do I repair invalid geometries?"
+answer = '''
+A geometry is invalid when it breaks the rules of Simple Features, such as a polygon whose boundary crosses itself. Areas, intersections and unions of invalid geometries can be wrong without any error.
+
+Geometry Check counts them by type. ST_IsValid tests a geometry, and ST_MakeValid repairs it, for instance by splitting a self-crossing polygon into a multipolygon: UPDATE features SET geom = ST_MakeValid(geom) WHERE NOT ST_IsValid(geom).
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "What is in the geo metadata of a GeoParquet file?"
+answer = '''
+The geo metadata is a JSON object with the specification's version, the primary_column holding the main geometry, and an entry for each geometry column: its encoding, the geometry types found, and optionally its crs as PROJJSON, its bbox, the orientation of rings and whether edges are planar or spherical.
+
+A column without crs is in OGC:CRS84, longitude and latitude on WGS 84. File Metadata prints the object.
+'''
+wiki = "GeoParquet and FlatGeobuf"
+hidden = true
+
+[[faq]]
+question = "Which polygon ring order do Shapefile and GeoJSON use?"
+answer = '''
+In a Shapefile, the vertices of an outer ring run clockwise and those of a hole counterclockwise. GeoJSON recommends the opposite, the right-hand rule: exterior rings counterclockwise and holes clockwise, though readers are told not to reject files that do otherwise.
+
+GDAL turns rings into polygons by their order and nesting when it reads a Shapefile, so ST_Read returns Simple Features geometries either way.
+'''
+wiki = "Shapefile"
+hidden = true
+
+[[faq]]
+question = "Why does a FlatGeobuf file read only part of the features quickly?"
+answer = '''
+A FlatGeobuf file can start with a spatial index, a packed Hilbert R-tree of the features' boxes, before the features themselves. A reader uses it to fetch only the features in an area, also from a web server through HTTP range requests, without reading the rest.
+
+FlatGeobuf is meant for large amounts of static data: it does not support random writes, so a changed file is written anew.
+'''
+wiki = "GeoParquet and FlatGeobuf"
+hidden = true
+
+[[models]]
+id = "geojson"
+label = "GeoJSON"
+
+[[models]]
+id = "gpkg"
+label = "GeoPackage"
+
+[[models]]
+id = "shapefile"
+label = "Shapefile"
+
+[[models]]
+id = "geoparquet"
+label = "GeoParquet"
+
+[[models]]
+id = "kml"
+label = "KML and KMZ"
+
+[[models]]
+id = "gpx"
+label = "GPX"
+
+[[bullets]]
+text = "GeoJSON"
+detail = "Features as JSON text, in longitude and latitude on WGS 84: easy to read and share, large when the features are many"
+
+[[bullets]]
+text = "GeoPackage"
+detail = "An SQLite file of one or more layers, each with its coordinate system: the open standard file of GIS"
+
+[[bullets]]
+text = "Shapefile"
+detail = "The oldest common format: a .shp, .shx and .dbf file, and a .prj for the coordinate system, with one geometry type per file"
+
+[[bullets]]
+text = "GeoParquet"
+detail = "Parquet with a geometry column and its coordinate system in the metadata, compact and fast for analysis; FlatGeobuf streams features with a spatial index"
+
+[[bullets]]
+text = "KML and KMZ"
+detail = "Google Earth's XML, for display: placemarks with names and descriptions; a KMZ is a zipped KML"
+
+[[bullets]]
+text = "GPX"
+detail = "GPS waypoints, routes and tracks, every track point with its time and elevation"
+
+[[decisionRows]]
+task = "GeoJSON"
+context = "Sharing on the web"
+purpose = "Exchange a few thousand features with web maps and other tools, readable as text"
+
+[[decisionRows]]
+task = "GeoPackage"
+context = "Several layers"
+purpose = "Keep the layers of a project, each in its own coordinate system, in one open file"
+
+[[decisionRows]]
+task = "Shapefile"
+context = "Older GIS data"
+purpose = "Read what agencies and older GIS software still publish"
+
+[[decisionRows]]
+task = "GeoParquet"
+context = "Large tables"
+purpose = "Analyse millions of features fast, read by column; FlatGeobuf to stream them by area"
+
+[[decisionRows]]
+task = "KML and KMZ"
+context = "Google Earth"
+purpose = "Read placemarks drawn in Google Earth or My Maps"
+
+[[decisionRows]]
+task = "GPX"
+context = "GPS devices"
+purpose = "Read the tracks and waypoints a GPS device or a sports app records"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "geojsonFile"
+label = "File"
+tooltip = "The GeoJSON file (.geojson or .json), in the folder above, or an absolute path. With the default, places.geojson, the example first writes six Portuguese cities to it, unless the folder has a places.geojson already."
+default = "places.geojson"
+models = ["geojson"]
+
+[[inputs]]
+id = "gpkgFile"
+label = "File"
+tooltip = "The GeoPackage file (.gpkg), in the folder above, or an absolute path. With the default, areas.gpkg, the example first writes the areas within 20 km of six Portuguese cities to it, unless the folder has an areas.gpkg already."
+default = "areas.gpkg"
+models = ["gpkg"]
+
+[[inputs]]
+id = "gpkgLayer"
+label = "Layer"
+tooltip = "The layer to read: a GeoPackage holds one or more. Layers and Coordinate System lists them."
+default = "areas"
+models = ["gpkg"]
+
+[[inputs]]
+id = "shapefileFile"
+label = "File"
+tooltip = "The .shp file, in the folder above, or an absolute path: its .shx, .dbf and .prj files must be beside it. With the default, places.shp, the example first writes six Portuguese cities to it, unless the folder has a places.shp already."
+default = "places.shp"
+models = ["shapefile"]
+
+[[inputs]]
+id = "format"
+label = "Format"
+tooltip = "GeoParquet: Parquet with a geometry column, read with read_parquet. FlatGeobuf: features one after another with a spatial index, read with ST_Read."
+kind = "select"
+default = "geoparquet"
+models = ["geoparquet"]
+
+[[inputs.options]]
+value = "geoparquet"
+label = "GeoParquet"
+
+[[inputs.options]]
+value = "flatgeobuf"
+label = "FlatGeobuf"
+
+[[inputs]]
+id = "geoparquetFile"
+label = "File"
+tooltip = "The GeoParquet file (.parquet), in the folder above, or an absolute path. With the default, places.parquet, the example first writes six Portuguese cities to it, unless the folder has a places.parquet already."
+default = "places.parquet"
+models = ["geoparquet"]
+when = "format=geoparquet"
+
+[[inputs]]
+id = "geomColumn"
+label = "Geometry Column"
+tooltip = "The column that holds the geometries: geom in files DuckDB writes, often geometry in files of other tools. The GeoParquet metadata names it (File Metadata)."
+default = "geom"
+models = ["geoparquet"]
+when = "format=geoparquet"
+
+[[inputs]]
+id = "fgbFile"
+label = "File"
+tooltip = "The FlatGeobuf file (.fgb), in the folder above, or an absolute path. With the default, places.fgb, the example first writes six Portuguese cities to it, unless the folder has a places.fgb already."
+default = "places.fgb"
+models = ["geoparquet"]
+when = "format=flatgeobuf"
+
+[[inputs]]
+id = "kmlFile"
+label = "File"
+tooltip = "The KML file (.kml), or a KMZ file (.kmz), a zipped KML whose main file is doc.kml, in the folder above, or an absolute path. With the default, places.kml, the example first writes six Portuguese cities to it, unless the folder has a places.kml already."
+default = "places.kml"
+models = ["kml"]
+
+[[inputs]]
+id = "gpxFile"
+label = "File"
+tooltip = "The GPX file (.gpx), in the folder above, or an absolute path. With the default, walk.gpx, the example first writes a simulated walk in Lisbon to it, unless the folder has a walk.gpx already."
+default = "walk.gpx"
+models = ["gpx"]
+
+[[inputs]]
+id = "gpxLayer"
+label = "Layer"
+tooltip = "What to read from the GPX file: every track point with its time and elevation, the tracks as lines, the waypoints, the routes as lines, or the route points."
+kind = "select"
+default = "track_points"
+models = ["gpx"]
+
+[[inputs.options]]
+value = "track_points"
+label = "Track Points"
+
+[[inputs.options]]
+value = "tracks"
+label = "Tracks"
+
+[[inputs.options]]
+value = "waypoints"
+label = "Waypoints"
+
+[[inputs.options]]
+value = "routes"
+label = "Routes"
+
+[[inputs.options]]
+value = "route_points"
+label = "Route Points"
+
+[[inputs]]
+id = "filter"
+label = "Filter"
+tooltip = "SQL condition on the features, e.g. name = 'Porto', ST_YMin(geom) > 40 (north of 40 degrees on WGS 84) or ST_Intersects(geom, ST_MakeEnvelope(-9.5, 38.5, -8.5, 39.5)). true keeps them all."
+default = "true"
+newRow = true
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: Layers and Coordinate System shows the one the file records. GeoJSON, KML and GPX are always EPSG:4326 (WGS 84, longitude and latitude)."
+default = "EPSG:4326"
+
+[[inputs]]
+id = "projectedCrs"
+label = "Projected Coordinate System"
+tooltip = "The system areas and lengths are measured in, in metres. EPSG:3035 (ETRS89 / LAEA Europe) keeps areas exact across Europe; EPSG:3763 (ETRS89 / Portugal TM06) suits Portugal; a UTM zone (e.g. EPSG:32629) suits a region of a few hundred kilometres."
+default = "EPSG:3035"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables
+{{?model=gpx}}{{?gpxFile=walk.gpx}} using Dates, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+{{?model=geojson}} path = joinpath(folder, "{{geojsonFile}}")  # an absolute path is kept as it is
+{{?model=gpkg}} path = joinpath(folder, "{{gpkgFile}}")  # an absolute path is kept as it is
+{{?model=shapefile}} path = joinpath(folder, "{{shapefileFile}}")  # its .shx, .dbf and .prj files are beside it
+{{?model=geoparquet}}{{?format=geoparquet}} path = joinpath(folder, "{{geoparquetFile}}")  # an absolute path is kept as it is
+{{?model=geoparquet}}{{?format=flatgeobuf}} path = joinpath(folder, "{{fgbFile}}")  # an absolute path is kept as it is
+{{?model=kml}} path = joinpath(folder, "{{kmlFile}}")  # an absolute path is kept as it is
+{{?model=gpx}} path = joinpath(folder, "{{gpxFile}}")  # an absolute path is kept as it is
+{{?model=geojson}}{{?geojsonFile=places.geojson}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.geojson unless the folder has one already. Replace "places.geojson" with your own file.
+{{?model=shapefile}}{{?shapefileFile=places.shp}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.shp unless the folder has one already. Replace "places.shp" with your own file.
+{{?model=geoparquet}}{{?format=geoparquet}}{{?geoparquetFile=places.parquet}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.parquet unless the folder has one already. Replace "places.parquet" with your own file.
+{{?model=geoparquet}}{{?format=flatgeobuf}}{{?fgbFile=places.fgb}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.fgb unless the folder has one already. Replace "places.fgb" with your own file.
+{{?model=kml}}{{?kmlFile=places.kml}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.kml unless the folder has one already. Replace "places.kml" with your own file.
+{{?model=gpkg}}{{?gpkgFile=areas.gpkg}} # Example file: the areas within 20 km of six Portuguese cities, as polygons in longitude and latitude (WGS 84), in the layer areas of areas.gpkg, written unless the folder has an areas.gpkg already. Replace "areas.gpkg" with your own file.
+{{?model!=gpx}} cities = "SELECT name, ST_Point(lon, lat) AS geom FROM (VALUES ('Lisboa', -9.1393, 38.7223), ('Porto', -8.6291, 41.1579), ('Braga', -8.4265, 41.5454), ('Coimbra', -8.4103, 40.2033), ('Aveiro', -8.6538, 40.6405), ('Faro', -7.9304, 37.0194)) t(name, lon, lat)"
+{{?model=geojson}}{{?geojsonFile=places.geojson}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+{{?model=shapefile}}{{?shapefileFile=places.shp}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'ESRI Shapefile', SRS 'EPSG:4326')")
+{{?model=geoparquet}}{{?format=geoparquet}}{{?geoparquetFile=places.parquet}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT parquet)")
+{{?model=geoparquet}}{{?format=flatgeobuf}}{{?fgbFile=places.fgb}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'FlatGeobuf', SRS 'EPSG:4326')")
+{{?model=kml}}{{?kmlFile=places.kml}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'KML')")
+{{?model=gpkg}}{{?gpkgFile=areas.gpkg}} areas = "SELECT name, ST_Transform(ST_Buffer(ST_Transform(geom, 'EPSG:4326', 'EPSG:3035'), 20000), 'EPSG:3035', 'EPSG:4326') AS geom FROM ($cities)"  # 20 km measured in metres on ETRS89 / LAEA Europe
+{{?model=gpkg}}{{?gpkgFile=areas.gpkg}} isfile(path) || DBInterface.execute(con, "COPY ($areas) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'areas', SRS 'EPSG:4326')")
+{{?model=gpx}}{{?gpxFile=walk.gpx}} # Example file: a walk of 40 minutes in Lisbon, simulated from a fixed seed, one track point a minute with its time and elevation, written to walk.gpx unless the folder has one already. Replace "walk.gpx" with your own file.
+{{?model=gpx}}{{?gpxFile=walk.gpx}} if !isfile(path)
+{{?model=gpx}}{{?gpxFile=walk.gpx}} 	rng = Xoshiro(42)  # fixed seed: the same walk on every run
+{{?model=gpx}}{{?gpxFile=walk.gpx}} 	start = DateTime(2026, 5, 1, 9, 0)
+{{?model=gpx}}{{?gpxFile=walk.gpx}} 	points = [(lat = 38.7076 + 0.00016 * i + 0.00004 * randn(rng), lon = -9.1365 + 0.00009 * i + 0.00004 * randn(rng), ele = 5 + 1.8 * i + randn(rng), time = start + Minute(i)) for i in 0:40]
+{{?model=gpx}}{{?gpxFile=walk.gpx}} 	trkpts = ["<trkpt lat=\"$(round(p.lat, digits = 6))\" lon=\"$(round(p.lon, digits = 6))\"><ele>$(round(p.ele, digits = 1))</ele><time>$(p.time)Z</time></trkpt>" for p in points]
+{{?model=gpx}}{{?gpxFile=walk.gpx}} 	write(path, join(["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<gpx version=\"1.1\" creator=\"Pollis\" xmlns=\"http://www.topografix.com/GPX/1/1\">", "<trk><name>Walk in Lisbon</name><trkseg>", trkpts..., "</trkseg></trk></gpx>"], "\n"))
+{{?model=gpx}}{{?gpxFile=walk.gpx}} end
+
+{{?model=kml}} source = endswith(lowercase(path), ".kmz") ? "/vsizip/$(path)/doc.kml" : path  # a KMZ is a zipped KML: GDAL reads the doc.kml inside it
+{{?model!=kml}} source = path
+{{?model=geojson}} reader = "ST_Read('$(source)')"
+{{?model=gpkg}} reader = "ST_Read('$(source)', layer = '{{gpkgLayer}}')"
+{{?model=shapefile}} reader = "ST_Read('$(source)')"
+{{?model=geoparquet}}{{?format=geoparquet}} reader = "(SELECT * EXCLUDE ({{geomColumn}}), {{geomColumn}} AS geom FROM read_parquet('$(source)'))"  # the geometry column, named geom
+{{?model=geoparquet}}{{?format=flatgeobuf}} reader = "ST_Read('$(source)')"
+{{?model=kml}} reader = "ST_Read('$(source)')"
+{{?model=gpx}} reader = "ST_Read('$(source)', layer = '{{gpxLayer}}')"
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT * FROM $reader WHERE {{filter}}")  # the features, with their geometry column geom, for SQL
+tbl = Tables.columntable(DBInterface.execute(con, "SELECT * EXCLUDE (geom), ST_AsText(geom) AS wkt FROM features"))  # attributes, and each geometry as text
+println(length(first(tbl)), " features x ", length(tbl), " columns: ", join(keys(tbl), ", "))
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "preview-features"
+label = "Preview Features"
+desc = "The first 10 features as an aligned text table: five attributes at most, and the geometry as text"
+code = '''
+n = min(10, length(first(tbl)))
+shown = length(tbl) > 6 ? [collect(keys(tbl))[1:5]; :wkt] : collect(keys(tbl))  # five attributes at most, and the geometry
+cell(x) = first(string(coalesce(x, "")), 22)
+println(join(rpad.(cell.(shown), 24)))
+for i in 1:n
+	println(join(rpad.([cell(getproperty(tbl, c)[i]) for c in shown], 24)))
+end
+'''
+
+[[actionGroups.actions]]
+id = "plot-features"
+label = "Plot the Features"
+desc = "Every geometry drawn in its coordinates: points as markers, lines as paths, polygons as filled shapes"
+code = '''
+using Plots, GeoInterfaceRecipes, WellKnownGeometry, GeoFormatTypes
+
+wkb = Tables.columntable(DBInterface.execute(con, "SELECT ST_AsWKB(geom) AS wkb FROM features WHERE geom IS NOT NULL")).wkb
+geoms = [GeoFormatTypes.WellKnownBinary(GeoFormatTypes.Geom(), collect(w)) for w in wkb]  # WKB, which GeoInterface reads
+centre = Tables.columntable(DBInterface.execute(con, "SELECT avg(ST_Y(ST_Centroid(geom))) AS y, max(abs(ST_XMax(geom))) <= 180 AND max(abs(ST_YMax(geom))) <= 90 AS geographic FROM features"))
+geographic = coalesce(centre.geographic[1], false)  # longitude and latitude, or metres
+fig = plot(; legend = false, xlabel = geographic ? "Longitude" : "x", ylabel = geographic ? "Latitude" : "y",
+	aspect_ratio = geographic ? 1 / cosd(centre.y[1]) : 1)  # a degree of longitude is shorter than one of latitude away from the equator
+foreach(g -> plot!(fig, g), geoms)
+fig
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "layers-crs"
+label = "Layers and Coordinate System"
+desc = "What GDAL finds in the file: its driver, each layer with its feature count, geometry type and coordinate system, and its fields"
+models = ["geojson", "gpkg", "shapefile", "kml", "gpx"]
+code = '''
+meta = Tables.columntable(DBInterface.execute(con, "SELECT driver_short_name, layers FROM ST_Read_Meta('$(source)')"))
+println("Driver: ", meta.driver_short_name[1])
+for layer in meta.layers[1]
+	for field in layer.geometry_fields
+		crs = field.crs === missing ? "no coordinate system recorded" : string(coalesce(field.crs.auth_name, "?"), ":", coalesce(field.crs.auth_code, "?"), " (", field.crs.name, ")")
+		println(rpad(layer.name, 18), rpad(string(layer.feature_count, " features"), 16), rpad(field.type, 18), crs)
+	end
+	println("    fields: ", join([string(f.name, " ", f.type) for f in layer.fields], ", "))
+end
+'''
+
+[[actionGroups.actions]]
+id = "file-metadata"
+label = "File Metadata"
+desc = "GeoParquet: the geo metadata, with the geometry column, its encoding and coordinate system. FlatGeobuf: its layer, feature count, geometry type and coordinate system"
+models = ["geoparquet"]
+code = '''
+{{?format=geoparquet}} geo = Tables.columntable(DBInterface.execute(con, "SELECT decode(value) AS geo FROM parquet_kv_metadata('$(source)') WHERE decode(key) = 'geo'"))
+{{?format=geoparquet}} println(isempty(geo.geo) ? "No geo metadata: a Parquet file, but not a GeoParquet one" : first(geo.geo[1], 1500))
+{{?format=flatgeobuf}} meta = Tables.columntable(DBInterface.execute(con, "SELECT driver_short_name, layers FROM ST_Read_Meta('$(source)')"))
+{{?format=flatgeobuf}} for layer in meta.layers[1], field in layer.geometry_fields
+{{?format=flatgeobuf}} 	crs = field.crs === missing ? "no coordinate system recorded" : string(coalesce(field.crs.auth_name, "?"), ":", coalesce(field.crs.auth_code, "?"), " (", field.crs.name, ")")
+{{?format=flatgeobuf}} 	println(rpad(layer.name, 18), rpad(string(layer.feature_count, " features"), 16), rpad(field.type, 18), crs)
+{{?format=flatgeobuf}} end
+'''
+
+[[actionGroups.actions]]
+id = "geometry-check"
+label = "Geometry Check"
+desc = "The geometry types, and how many geometries are missing, empty or invalid (a ring that crosses itself, say)"
+code = '''
+check = Tables.columntable(DBInterface.execute(con, """
+SELECT coalesce(ST_GeometryType(geom)::VARCHAR, 'missing') AS type, count(*) AS n,
+	count(*) FILTER (WHERE ST_IsEmpty(geom)) AS empty,
+	count(*) FILTER (WHERE NOT ST_IsValid(geom)) AS invalid
+FROM features GROUP BY ALL ORDER BY n DESC
+"""))
+println(rpad("geometry type", 22), rpad("features", 10), rpad("empty", 8), "invalid")
+for i in eachindex(check.type)
+	println(rpad(check.type[i], 22), rpad(check.n[i], 10), rpad(check.empty[i], 8), check.invalid[i])
+end
+sum(check.invalid) > 0 && println("ST_MakeValid(geom) repairs invalid geometries: UPDATE features SET geom = ST_MakeValid(geom) WHERE NOT ST_IsValid(geom)")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "formats-side-by-side"
+label = "File Formats Side by Side"
+desc = "The same features written as GeoJSON, GeoPackage, Shapefile, FlatGeobuf, KML and GeoParquet: size on disk and time for DuckDB to read each"
+code = '''
+dir = mktempdir()
+formats = [
+	"GeoJSON" => ("features.geojson", "FORMAT GDAL, DRIVER 'GeoJSON'"),
+	"GeoPackage" => ("features.gpkg", "FORMAT GDAL, DRIVER 'GPKG'"),
+	"Shapefile" => ("features.shp", "FORMAT GDAL, DRIVER 'ESRI Shapefile'"),
+	"FlatGeobuf" => ("features.fgb", "FORMAT GDAL, DRIVER 'FlatGeobuf'"),
+	"KML" => ("features.kml", "FORMAT GDAL, DRIVER 'KML'"),
+	"GeoParquet" => ("features.parquet", "FORMAT parquet"),
+]
+println(rpad("format", 12), rpad("bytes", 12), "read (ms)")
+for (name, (file, options)) in formats
+	out = joinpath(dir, file)
+	try
+		DBInterface.execute(con, "COPY (SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid')) FROM features) TO '$(out)' ($options)")  # GDAL's own feature ids left out: a GeoPackage makes its own
+		bytes = sum(filesize(joinpath(dir, f)) for f in readdir(dir) if f == file || (endswith(file, ".shp") && first(splitext(f)) == "features" && last(splitext(f)) in (".shx", ".dbf", ".prj", ".cpg")))  # a shapefile's .shx, .dbf, .prj and .cpg too
+		from = endswith(file, ".parquet") ? "read_parquet('$(out)')" : "ST_Read('$(out)')"
+		read_all() = DBInterface.execute(con, "SELECT count(*) FROM $from")
+		read_all()  # the first read compiles
+		println(rpad(name, 12), rpad(bytes, 12), round(1000 * @elapsed(read_all()), digits = 2))
+	catch err
+		println(rpad(name, 12), "cannot hold these features: ", first(sprint(showerror, err), 120))
+	end
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "extent-measures"
+label = "Extent and Measures"
+desc = "The bounding box of the features, and their total area, perimeter and length measured in the projected coordinate system"
+code = '''
+m = Tables.columntable(DBInterface.execute(con, """
+WITH projected AS (SELECT ST_Transform(geom, '{{fileCrs}}', '{{projectedCrs}}') AS g FROM features WHERE geom IS NOT NULL)
+SELECT (SELECT min(ST_XMin(geom)) FROM features) AS xmin, (SELECT max(ST_XMax(geom)) FROM features) AS xmax,
+	(SELECT min(ST_YMin(geom)) FROM features) AS ymin, (SELECT max(ST_YMax(geom)) FROM features) AS ymax,
+	sum(ST_Area(g)) / 1e6 AS area_km2, sum(ST_Perimeter(g)) / 1e3 AS perimeter_km, sum(ST_Length(g)) / 1e3 AS length_km
+FROM projected
+"""))
+println("Bounding box ({{fileCrs}}): x from ", m.xmin[1], " to ", m.xmax[1], ", y from ", m.ymin[1], " to ", m.ymax[1])
+println("Measured on {{projectedCrs}}: area ", round(m.area_km2[1], digits = 2), " km2, polygon perimeters ", round(m.perimeter_km[1], digits = 2), " km, line lengths ", round(m.length_km[1], digits = 3), " km")
+'''
+
+[[actionGroups.actions]]
+id = "column-summary"
+label = "Column Summary"
+desc = "DuckDB's SUMMARIZE of the attribute columns: type, minimum, maximum, distinct values and share missing"
+code = '''
+s = Tables.columntable(DBInterface.execute(con, "SUMMARIZE (SELECT * EXCLUDE (geom) FROM features)"))
+println(rpad("column", 20), rpad("type", 16), rpad("min", 22), rpad("max", 22), rpad("distinct", 10), "missing %")
+for i in eachindex(s.column_name)
+	println(rpad(s.column_name[i], 20), rpad(s.column_type[i], 16), rpad(first(coalesce(s.min[i], ""), 20), 22), rpad(first(coalesce(s.max[i], ""), 20), 22), rpad(s.approx_unique[i], 10), s.null_percentage[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the features to a .parquet file next to the file read, with the geo metadata that makes it GeoParquet"
+code = '''
+out = first(splitext(path)) * ".parquet"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT parquet)")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geojson"
+label = "Save as GeoJSON"
+desc = "Write the features to a .geojson file next to the file read, moved into longitude and latitude on WGS 84 as GeoJSON requires"
+models = ["gpkg", "shapefile", "geoparquet", "kml", "gpx"]
+code = '''
+out = first(splitext(path)) * ".geojson"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM features) TO '$(out)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	println("Wrote ", out)
+end
+'''

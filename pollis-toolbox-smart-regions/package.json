@@ -1,0 +1,42 @@
+{
+  "name": "pollis-toolbox-smart-regions",
+  "displayName": "Smart Regions Toolbox",
+  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Other"],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "smart-regions",
+        "title": "Smart Regions",
+        "order": 1,
+        "duckdbExtensions": ["spatial"],
+        "submenus": [
+          { "id": "accessFiles", "title": "Access Files", "group": "0_sr", "order": 1 }
+        ],
+        "panels": [
+          {
+            "id": "geofiles", "command": "pollis.smartRegions.geofiles", "title": "Geospatial Vector Files", "menuTitle": "GeoJSON Files", "submenu": "accessFiles", "group": "1_files", "order": 1, "data": "panels/geofiles.toml", "defaultModel": "geojson", "decisionFirstColumn": "Format",
+            "tabs": [
+              { "model": "gpkg", "command": "pollis.smartRegions.geofiles.gpkg", "title": "GeoPackage Files" },
+              { "model": "shapefile", "command": "pollis.smartRegions.geofiles.shapefile", "title": "Shapefiles" },
+              { "model": "geoparquet", "command": "pollis.smartRegions.geofiles.geoparquet", "title": "GeoParquet and FlatGeobuf Files" },
+              { "model": "kml", "command": "pollis.smartRegions.geofiles.kml", "title": "KML and KMZ Files" },
+              { "model": "gpx", "command": "pollis.smartRegions.geofiles.gpx", "title": "GPX Files" }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
