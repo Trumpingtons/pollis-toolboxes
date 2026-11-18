@@ -1,0 +1,558 @@
+# OpenStreetMap Base Maps: a place, or the features of a file, on an OpenStreetMap base map drawn by MapLibre GL JS
+# in the plot pane, from OpenFreeMap's vector tiles; the features are read through DuckDB's spatial extension
+
+[meta]
+title = "OpenStreetMap Base Maps"
+viewType = "pollis.basemaps"
+defaultModel = "place"
+decisionFirstColumn = "Map"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[wikis]]
+name = "Factsheet"
+file = "basemaps/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, the five styles, Pollis.webmap and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "basemaps/overview.md"
+bundled = true
+description = "OpenStreetMap, base maps, and how Pollis draws them with MapLibre GL JS on OpenFreeMap's tiles"
+
+[[wikis]]
+name = "Base Map Styles"
+file = "basemaps/base-map-styles.md"
+bundled = true
+description = "Positron, Bright, Liberty, Dark and Fiord: what each shows and when to use it"
+
+[[wikis]]
+name = "Vector Tiles and Raster Tiles"
+file = "basemaps/vector-and-raster-tiles.md"
+bundled = true
+description = "Tiles, zoom levels, the vector tile format and the OpenMapTiles schema"
+
+[[wikis]]
+name = "Tile Usage and Attribution"
+file = "basemaps/tile-usage-and-attribution.md"
+bundled = true
+description = "Who serves the tiles, on what terms, and the attribution every map must show"
+
+[[wikis]]
+name = "Web Mercator"
+file = "basemaps/web-mercator.md"
+bundled = true
+description = "The projection of web maps: zoom, scale, distortion of areas, and the poles it leaves out"
+
+[[wikis]]
+name = "Decision Guide"
+file = "basemaps/decision-guide.md"
+bundled = true
+description = "Which tab, which style, and when a web map or a chart suits better"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Place"
+file = "basemaps/place.md"
+bundled = true
+
+[[wikis]]
+name = "Features"
+file = "basemaps/features.md"
+bundled = true
+
+[[wikis]]
+name = "Colour by Column"
+file = "basemaps/colour-by-column.md"
+bundled = true
+
+[[notebookSections]]
+label = ""
+
+[[notebookSections.notebooks]]
+name = "Features on a Base Map"
+file = "basemaps/tutorial-01-features-on-a-base-map.ipynb"
+bundled = true
+description = "Read features with DuckDB, move them into longitude and latitude, and show them on a base map, coloured by a column"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "Ero2026a"
+
+[[references]]
+key = "OMTC2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "HW2008a"
+
+[[references]]
+key = "BFUY2014a"
+
+[[references]]
+key = "RM2019a"
+
+[[references]]
+separator = true
+label = "Standards and Policies"
+
+[[references]]
+key = "M2016a"
+
+[[references]]
+key = "BDDGH...2016a"
+
+[[references]]
+key = "OSMF2026a"
+
+[[faq]]
+question = "Why are my features in the wrong place on the map, or not on it at all?"
+answer = '''
+A web map takes longitude and latitude on WGS 84. When the File Coordinate System input is not the system the file is really in, the features are moved from the wrong system and land elsewhere, or get coordinates that are not longitude and latitude at all.
+
+Coordinates in Range counts the features outside longitude -180 to 180 and latitude -90 to 90. Layers and Coordinate System, in the Geospatial Vector Files panel, shows the system the file records.
+'''
+wiki = "Features"
+
+[[faq]]
+question = "Do I need an API key or an account to show a base map?"
+answer = '''
+No. The base maps come from OpenFreeMap's public instance, which needs no registration, no API key and no cookies, and sets no limit on map views or requests. Commercial use is allowed.
+
+The map must show the attribution OpenFreeMap © OpenMapTiles Data from OpenStreetMap, which MapLibre GL JS adds at the bottom right of every map.
+'''
+wiki = "Tile Usage and Attribution"
+
+[[faq]]
+question = "Which base map style should I choose?"
+answer = '''
+Positron, light grey with few colours, keeps the eye on the features drawn on it, and suits colour scales. Dark does the same on a dark ground. Bright and Liberty show roads, parks, water and buildings in their usual colours, for a map read as a map. Fiord is a dark blue-grey style.
+
+Every Style shows the same map in all five, one after another.
+'''
+wiki = "Base Map Styles"
+
+[[faq]]
+question = "Why do areas far from the equator look so large on a web map?"
+answer = '''
+Web maps use Web Mercator, a projection that keeps the shapes of small areas, but enlarges areas more and more away from the equator.
+
+Areas and distances should be measured in a projected coordinate system chosen for the region, such as EPSG:3035 in Europe, never on the screen of a web map.
+'''
+wiki = "Web Mercator"
+
+[[faq]]
+question = "What is the difference between vector tiles and raster tiles?"
+answer = '''
+A raster tile is a picture, drawn on the server, such as the PNG tiles of tile.openstreetmap.org. A vector tile holds the geometries and attributes of the features in the tile, encoded with Protocol Buffers, and the browser draws them following a style.
+
+One set of vector tiles therefore serves any number of styles: OpenFreeMap's five styles all draw the same OpenMapTiles tiles.
+'''
+wiki = "Vector Tiles and Raster Tiles"
+hidden = true
+
+[[faq]]
+question = "Can I use tile.openstreetmap.org for my maps?"
+answer = '''
+The tile servers of the OpenStreetMap Foundation serve the map on openstreetmap.org, on a best-effort basis, with no guarantee. Their Tile Usage Policy forbids offline use, bulk downloading and prefetching, and says access may be blocked without notice when usage degrades the service.
+
+The policy points to other tile providers, self-hosting, and vector tiles. Pollis uses OpenFreeMap's vector tiles.
+'''
+wiki = "Tile Usage and Attribution"
+hidden = true
+
+[[faq]]
+question = "How far in can the map zoom?"
+answer = '''
+The Zoom input runs from 0, the whole world, to about 18, a few streets. At each level up the map shows half the width it showed.
+
+Map Scale prints the metres a pixel covers at the place's latitude and zoom.
+'''
+wiki = "Place"
+hidden = true
+
+[[faq]]
+question = "How is a numeric column coloured, and how a text column?"
+answer = '''
+A numeric column gets a colour scale from its smallest to its largest value, from dark purple through green to yellow, and the legend shows both ends. A text column gets a colour for each of its ten most common values, and one grey for the rest, which the legend counts.
+
+Features without a value in the column are drawn in grey.
+'''
+wiki = "Colour by Column"
+hidden = true
+
+[[faq]]
+question = "Why is my map slow to draw?"
+answer = '''
+Every vertex of every feature goes to the browser as GeoJSON text. A layer of many detailed polygons, such as municipal boundaries surveyed to the metre, can run into tens of megabytes.
+
+Layer Size prints the size of the layer and its vertices by geometry type. Simplified and Original shows how ST_SimplifyPreserveTopology cuts the vertices, and how the shapes change.
+'''
+wiki = "Features"
+hidden = true
+
+[[models]]
+id = "place"
+label = "Place"
+
+[[models]]
+id = "features"
+label = "Features"
+
+[[models]]
+id = "column"
+label = "Colour by Column"
+
+[[bullets]]
+text = "Place"
+detail = "A base map centred on a place, at a zoom from 0 (the world) to 18 (a few streets), with the place marked"
+
+[[bullets]]
+text = "Features"
+detail = "The points, lines and polygons of a file read with DuckDB, moved into longitude and latitude, on a base map that fits them"
+
+[[bullets]]
+text = "Colour by Column"
+detail = "The same, each feature coloured by a column: a scale for numbers, a colour per value for text, with a legend"
+
+[[decisionRows]]
+task = "Place"
+context = "Where something is"
+purpose = "Look at a neighbourhood, a town or a region before adding data to it"
+
+[[decisionRows]]
+task = "Features"
+context = "Where features are"
+purpose = "See where the features of a file fall, and click each for its attributes"
+
+[[decisionRows]]
+task = "Colour by Column"
+context = "How a value varies"
+purpose = "See how a number or a category varies across the features, over streets and places"
+
+[[inputs]]
+id = "style"
+label = "Style"
+tooltip = "The base map's style, from OpenFreeMap: Positron is light grey, for data on top; Bright and Liberty show roads, water, parks and buildings in colour; Dark and Fiord are dark."
+kind = "select"
+default = "positron"
+
+[[inputs.options]]
+value = "positron"
+label = "Positron"
+
+[[inputs.options]]
+value = "bright"
+label = "Bright"
+
+[[inputs.options]]
+value = "liberty"
+label = "Liberty"
+
+[[inputs.options]]
+value = "dark"
+label = "Dark"
+
+[[inputs.options]]
+value = "fiord"
+label = "Fiord"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Map Layer writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "placeName"
+label = "Place Name"
+tooltip = "The name shown when the marker of the place is clicked."
+default = "Lisboa"
+models = ["place"]
+
+[[inputs]]
+id = "lon"
+label = "Longitude"
+tooltip = "Longitude of the centre of the map, in degrees on WGS 84: negative west of Greenwich."
+default = "-9.1393"
+models = ["place"]
+newRow = true
+
+[[inputs]]
+id = "lat"
+label = "Latitude"
+tooltip = "Latitude of the centre of the map, in degrees on WGS 84: negative south of the equator."
+default = "38.7223"
+models = ["place"]
+
+[[inputs]]
+id = "zoom"
+label = "Zoom"
+tooltip = "From 0, the whole world, to about 18, a few streets: each level up shows half the width. 12 shows a city, 15 a neighbourhood."
+default = "12"
+models = ["place"]
+
+[[inputs]]
+id = "featuresFile"
+label = "File"
+tooltip = "The file of features: GeoJSON, GeoPackage (its first layer), Shapefile, FlatGeobuf, KML or GPX (its waypoints), in the folder above, or an absolute path. With the default, places.geojson, the example first writes six Portuguese cities to it, unless the folder has a places.geojson already."
+default = "places.geojson"
+models = ["features"]
+
+[[inputs]]
+id = "columnFile"
+label = "File"
+tooltip = "The file of features: GeoJSON, GeoPackage (its first layer), Shapefile, FlatGeobuf, KML or GPX (its waypoints), in the folder above, or an absolute path. With the default, areas.geojson, the example first writes the areas within 20 km of six Portuguese cities to it, with their distance from Lisboa, unless the folder has an areas.geojson already."
+default = "areas.geojson"
+models = ["column"]
+
+[[inputs]]
+id = "column"
+label = "Column"
+tooltip = "The column that colours the features: a colour scale for a numeric column, a colour per value for a text column. Click a feature on the map to see its columns."
+default = "km_to_lisboa"
+models = ["column"]
+
+[[inputs]]
+id = "opacity"
+label = "Opacity"
+tooltip = "Opacity of the polygons, from 0 (transparent) to 1 (opaque): below 1, the streets and names of the base map show through."
+default = "0.6"
+models = ["column"]
+
+[[inputs]]
+id = "filter"
+label = "Filter"
+tooltip = "SQL condition on the features, in the file's own coordinates, e.g. name = 'Porto', or ST_Intersects(geom, ST_MakeEnvelope(-9.5, 38.5, -8.5, 39.5)) on longitude and latitude. true keeps them all."
+default = "true"
+models = ["features", "column"]
+newRow = true
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the features are moved from it into longitude and latitude on WGS 84 (EPSG:4326), as web maps need. GeoJSON, KML and GPX are always EPSG:4326."
+default = "EPSG:4326"
+models = ["features", "column"]
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+{{?model=place}} # The place, as a point at the centre in longitude and latitude (WGS 84), with its name. Replace the centre and the name with your own place.
+{{?model=place}} DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT '{{placeName}}' AS name, ST_Point({{lon}}, {{lat}}) AS geom")
+{{?model=place}} center, zoom = ({{lon}}, {{lat}}), {{zoom}}  # the map opens on the place
+{{?model=features}} path = joinpath(folder, "{{featuresFile}}")  # an absolute path is kept as it is
+{{?model=column}} path = joinpath(folder, "{{columnFile}}")  # an absolute path is kept as it is
+{{?model=features}}{{?featuresFile=places.geojson}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.geojson unless the folder has one already. Replace "places.geojson" with your own file.
+{{?model=column}}{{?columnFile=areas.geojson}} # Example file: the areas within 20 km of six Portuguese cities, with their distance from Lisboa in km, as polygons in longitude and latitude (WGS 84), written to areas.geojson unless the folder has one already. Replace "areas.geojson" with your own file.
+{{?model!=place}} cities = "SELECT name, ST_Point(lon, lat) AS geom FROM (VALUES ('Lisboa', -9.1393, 38.7223), ('Porto', -8.6291, 41.1579), ('Braga', -8.4265, 41.5454), ('Coimbra', -8.4103, 40.2033), ('Aveiro', -8.6538, 40.6405), ('Faro', -7.9304, 37.0194)) t(name, lon, lat)"
+{{?model=features}}{{?featuresFile=places.geojson}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+{{?model=column}}{{?columnFile=areas.geojson}} laea(g) = "ST_Transform($g, 'EPSG:4326', 'EPSG:3035')"  # ETRS89 / LAEA Europe, in metres
+{{?model=column}}{{?columnFile=areas.geojson}} areas = "SELECT name, round(ST_Distance($(laea("geom")), $(laea("ST_Point(-9.1393, 38.7223)"))) / 1000, 1) AS km_to_lisboa, ST_Transform(ST_Buffer($(laea("geom")), 20000), 'EPSG:3035', 'EPSG:4326') AS geom FROM ($cities)"
+{{?model=column}}{{?columnFile=areas.geojson}} isfile(path) || DBInterface.execute(con, "COPY ($areas) TO '$(path)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+{{?model!=place}} reader = "ST_Read('$(path)')"
+{{?model!=place}} DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM $reader WHERE {{filter}}")  # in longitude and latitude, as web maps need
+{{?model!=place}} DBInterface.execute(con, "ALTER TABLE features DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+{{?model!=place}} center, zoom = nothing, nothing  # the map fits the features
+layer = joinpath(mktempdir(), "layer.geojson")
+DBInterface.execute(con, "COPY (SELECT * FROM features WHERE geom IS NOT NULL) TO '$(layer)' (FORMAT GDAL, DRIVER 'GeoJSON')")  # the layer the map draws
+{{?model=place}} shown = Pollis.layer(layer; name = "{{placeName}}")
+{{?model=features}} shown = Pollis.layer(layer; name = "Features")
+{{?model=column}} shown = Pollis.layer(layer; name = "{{column}}", column = "{{column}}", opacity = {{opacity}})  # a colour scale for a number, a colour per value for text
+display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = zoom))  # drawn in the plot pane by MapLibre GL JS, on OpenFreeMap's tiles
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "every-style"
+label = "Every Style"
+desc = "The same map in the five styles, one after another in the plot pane: its arrows go from one to the next"
+code = '''
+for style in ["positron", "bright", "liberty", "dark", "fiord"]
+	display(Pollis.webmap(shown; style = style, center = center, zoom = zoom, title = titlecase(style)))
+end
+'''
+
+[[actionGroups.actions]]
+id = "bounding-box"
+label = "Bounding Box"
+desc = "The features with their bounding box, the rectangle of longitudes and latitudes that holds them all"
+models = ["features", "column"]
+code = '''
+box = joinpath(mktempdir(), "box.geojson")
+DBInterface.execute(con, "COPY (SELECT 'Bounding box' AS name, ST_Envelope_Agg(geom) AS geom FROM features) TO '$(box)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(box; name = "Bounding Box", color = "#e15759", opacity = 0.08), shown; style = "{{style}}"))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "coordinates-in-range"
+label = "Coordinates in Range"
+desc = "How many features have no geometry, coordinates outside longitude -180 to 180 or latitude -90 to 90, or lie beyond 85.05 degrees, where web maps end"
+code = '''
+r = Tables.columntable(DBInterface.execute(con, """
+SELECT count(*) AS n,
+	count(*) FILTER (WHERE geom IS NULL OR ST_IsEmpty(geom)) AS missing,
+	count(*) FILTER (WHERE ST_XMin(geom) < -180 OR ST_XMax(geom) > 180 OR ST_YMin(geom) < -90 OR ST_YMax(geom) > 90) AS outside,
+	count(*) FILTER (WHERE ST_YMin(geom) < -85.0511 OR ST_YMax(geom) > 85.0511) AS polar,
+	min(ST_XMin(geom)) AS xmin, max(ST_XMax(geom)) AS xmax, min(ST_YMin(geom)) AS ymin, max(ST_YMax(geom)) AS ymax
+FROM features
+"""))
+println(r.n[1], " features: ", r.missing[1], " without a geometry, ", r.outside[1], " outside longitude -180 to 180 or latitude -90 to 90, ", r.polar[1], " beyond latitude 85.05 north or south, where web maps end")
+ismissing(r.xmin[1]) || println("Longitude from ", r.xmin[1], " to ", r.xmax[1], ", latitude from ", r.ymin[1], " to ", r.ymax[1])
+r.outside[1] > 0 &&println("Coordinates outside those ranges are not longitude and latitude: give the file's own system in the File Coordinate System input")
+'''
+
+[[actionGroups.actions]]
+id = "layer-size"
+label = "Layer Size"
+desc = "The size of the GeoJSON layer the map draws, and its features and vertices by geometry type"
+models = ["features", "column"]
+code = '''
+s = Tables.columntable(DBInterface.execute(con, "SELECT ST_GeometryType(geom)::VARCHAR AS type, count(*) AS n, sum(ST_NPoints(geom))::BIGINT AS vertices FROM features WHERE geom IS NOT NULL GROUP BY ALL ORDER BY n DESC"))
+println("The layer drawn on the map: ", round(filesize(layer) / 1024, digits = 1), " KB of GeoJSON")
+println(rpad("geometry type", 22), rpad("features", 10), "vertices")
+for i in eachindex(s.type)
+	println(rpad(s.type[i], 22), rpad(s.n[i], 10), s.vertices[i])
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "zoom-levels"
+label = "Three Zoom Levels"
+desc = "The place three zoom levels out, at the zoom given, and three levels in: each level shows half the width of the one before"
+models = ["place"]
+code = '''
+for z in (max({{zoom}} - 3, 0), {{zoom}}, {{zoom}} + 3)
+	display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = z, title = "Zoom $(z)"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "all-and-filtered"
+label = "All and Filtered Features"
+desc = "Every feature of the file in grey, and the ones the Filter keeps in colour, on one map"
+models = ["features", "column"]
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE everything AS SELECT * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM $reader")  # every feature of the file
+DBInterface.execute(con, "ALTER TABLE everything DROP COLUMN IF EXISTS ogc_fid")
+everything = joinpath(mktempdir(), "all.geojson")
+DBInterface.execute(con, "COPY (SELECT * FROM everything WHERE geom IS NOT NULL) TO '$(everything)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+n_all = only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM everything")).n)
+n_kept = only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM features")).n)
+println(n_kept, " of ", n_all, " features kept by the filter ", raw"{{filter}}")
+display(Pollis.webmap(Pollis.layer(everything; name = "All Features", color = "#9e9e9e"), shown; style = "{{style}}"))
+'''
+
+[[actionGroups.actions]]
+id = "simplified-and-original"
+label = "Simplified and Original"
+desc = "The lines and polygons simplified with ST_SimplifyPreserveTopology, at a tolerance of half a percent of their extent, beside the originals: vertices, size and shapes"
+models = ["features", "column"]
+code = '''
+ext = Tables.columntable(DBInterface.execute(con, "SELECT max(ST_XMax(geom)) - min(ST_XMin(geom)) AS w, max(ST_YMax(geom)) - min(ST_YMin(geom)) AS h FROM features"))
+tolerance = max(coalesce(ext.w[1], 0.0), coalesce(ext.h[1], 0.0)) / 200  # in degrees: half a percent of the extent
+simple = joinpath(mktempdir(), "simplified.geojson")
+DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_SimplifyPreserveTopology(geom, $(tolerance)) AS geom FROM features WHERE geom IS NOT NULL) TO '$(simple)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+v = Tables.columntable(DBInterface.execute(con, "SELECT sum(ST_NPoints(geom))::BIGINT AS original, sum(ST_NPoints(ST_SimplifyPreserveTopology(geom, $(tolerance))))::BIGINT AS simplified FROM features WHERE geom IS NOT NULL"))
+println("Tolerance ", round(tolerance, sigdigits = 3), " degrees")
+println(rpad("Original", 12), rpad(string(coalesce(v.original[1], 0), " vertices"), 18), round(filesize(layer) / 1024, digits = 1), " KB")
+println(rpad("Simplified", 12), rpad(string(coalesce(v.simplified[1], 0), " vertices"), 18), round(filesize(simple) / 1024, digits = 1), " KB")
+display(Pollis.webmap(Pollis.layer(layer; name = "Original", color = "#9e9e9e", opacity = 0.3), Pollis.layer(simple; name = "Simplified", color = "#e15759", opacity = 0.3); style = "{{style}}"))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "map-scale"
+label = "Map Scale"
+desc = "The ground a pixel covers at the place's latitude and zoom, on Web Mercator, and the width of 1,000 pixels"
+models = ["place"]
+code = '''
+metres_per_pixel = 2 * pi * 6378137 * cosd({{lat}}) / (512 * 2^{{zoom}})  # MapLibre draws the world 512 pixels wide at zoom 0, on a sphere of radius 6,378,137 m
+println("At latitude {{lat}} and zoom {{zoom}}: ", round(metres_per_pixel, sigdigits = 3), " metres a pixel; 1,000 pixels cover ", round(metres_per_pixel, sigdigits = 3), " km")
+'''
+
+[[actionGroups.actions]]
+id = "distance-from-centre"
+label = "Distance from the Centre"
+desc = "The ten features nearest the centre of the bounding box, with the great-circle distance from it to their centroids, in km"
+models = ["features", "column"]
+code = '''
+near = Tables.columntable(DBInterface.execute(con, """
+WITH c AS (SELECT ST_Centroid(ST_Envelope_Agg(geom)) AS centre FROM features)
+SELECT * EXCLUDE (geom, centre), round(ST_Distance_Sphere(ST_Centroid(geom), centre) / 1000, 1) AS km
+FROM features, c WHERE geom IS NOT NULL ORDER BY km LIMIT 10
+"""))
+label = first(keys(near))  # the first column of the file, a name say
+println(rpad(string(label), 24), "km from the centre")
+for i in eachindex(near.km)
+	println(rpad(first(string(coalesce(getproperty(near, label)[i], "")), 22), 24), near.km[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-layer"
+label = "Save the Map Layer"
+desc = "Write the layer the map draws, in longitude and latitude on WGS 84, to map-layer.geojson in the folder above"
+code = '''
+out = joinpath(folder, "map-layer.geojson")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	cp(layer, out)
+	println("Wrote ", out)
+end
+'''

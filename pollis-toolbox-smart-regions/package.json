@@ -1,7 +1,7 @@
 {
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
-  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension.",
+  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, and shows them on OpenStreetMap base maps.",
   "version": "0.1.0",
   "publisher": "pollis",
   "author": "Pollis",
@@ -22,7 +22,8 @@
         "order": 1,
         "duckdbExtensions": ["spatial"],
         "submenus": [
-          { "id": "accessFiles", "title": "Access Files", "group": "0_sr", "order": 1 }
+          { "id": "accessFiles", "title": "Access Files", "group": "0_sr", "order": 1 },
+          { "id": "mapVisualisation", "title": "Map Visualisation", "group": "0_sr", "order": 2 }
         ],
         "panels": [
           {
@@ -33,6 +34,13 @@
               { "model": "geoparquet", "command": "pollis.smartRegions.geofiles.geoparquet", "title": "GeoParquet and FlatGeobuf Files" },
               { "model": "kml", "command": "pollis.smartRegions.geofiles.kml", "title": "KML and KMZ Files" },
               { "model": "gpx", "command": "pollis.smartRegions.geofiles.gpx", "title": "GPX Files" }
+            ]
+          },
+          {
+            "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "A Place on a Base Map", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map",
+            "tabs": [
+              { "model": "features", "command": "pollis.smartRegions.basemaps.features", "title": "Features on a Base Map" },
+              { "model": "column", "command": "pollis.smartRegions.basemaps.column", "title": "Features Coloured by a Column" }
             ]
           }
         ]
