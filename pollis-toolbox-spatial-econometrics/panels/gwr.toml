@@ -1,0 +1,646 @@
+# Geographically Weighted Regression: local regressions with fixed and adaptive bandwidths and multiscale GWR (MGWR),
+# with SpatialEconometrics.jl; the areas are read, and their centroids found, through DuckDB's spatial extension.
+
+[meta]
+title = "Geographically Weighted Regression"
+viewType = "pollis.gwr"
+defaultModel = "gwrfixed"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the Next Steps use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["Distributions.jl", "ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "gwr/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, the inputs and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "gwr/overview.md"
+bundled = true
+description = "Regressions whose coefficients vary over the map: GWR and multiscale GWR"
+
+[[wikis]]
+name = "Kernels and Bandwidths"
+file = "gwr/kernels-bandwidths.md"
+bundled = true
+description = "The bisquare, Gaussian and exponential kernels, fixed and adaptive bandwidths, and projected distances"
+
+[[wikis]]
+name = "Bandwidth Selection"
+file = "gwr/bandwidth-selection.md"
+bundled = true
+description = "Choosing the bandwidth by the corrected AIC with a golden section search"
+
+[[wikis]]
+name = "Local Inference and Multiple Testing"
+file = "gwr/local-inference.md"
+bundled = true
+description = "Local t-values, the multiple testing correction, and testing whether a coefficient varies"
+
+[[wikis]]
+name = "Decision Guide"
+file = "gwr/decision-guide.md"
+bundled = true
+description = "Fixed or adaptive, GWR or multiscale GWR, and GWR or a global spatial model"
+
+[[wikis]]
+name = "Replications"
+file = "gwr/replications.md"
+bundled = true
+description = "GWR4, mgwr and GWmodel, and the Georgia counties the panel's results are checked against"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "GWR, Fixed Bandwidth"
+file = "gwr/gwrfixed.md"
+bundled = true
+
+[[wikis]]
+name = "GWR, Adaptive"
+file = "gwr/gwradaptive.md"
+bundled = true
+
+[[wikis]]
+name = "Multiscale GWR"
+file = "gwr/mgwr.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "GLCBH2015a"
+
+[[references]]
+key = "RA2007a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "BFC1996a"
+
+[[references]]
+key = "HST1998a"
+
+[[references]]
+key = "FYK2017a"
+
+[[references]]
+key = "SF2016a"
+
+[[references]]
+key = "YFLOK...2020a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "OLKWF2019a"
+
+[[faq]]
+question = "Should I use a fixed or an adaptive bandwidth?"
+answer = '''
+A fixed bandwidth is the same distance everywhere, and suits areas of similar size spread evenly over the map, such as the cells of a grid. An adaptive bandwidth is a number of nearest areas, so each local regression has the same number of observations: it suits areas that are small and many in some places and large and few in others, such as counties or census tracts.
+'''
+wiki = "Kernels and Bandwidths"
+
+[[faq]]
+question = "How is the bandwidth chosen?"
+answer = '''
+With Bandwidth set to AICc, the panel chooses the bandwidth with the smallest corrected Akaike information criterion, which penalises the small bandwidths that make the model more complex. GWR, Fixed Bandwidth searches over distances by golden section; GWR, Adaptive and Multiscale GWR leave the search over numbers of nearest areas to SpatialEconometrics.jl. A number in Bandwidth fixes it instead.
+'''
+wiki = "Bandwidth Selection"
+
+[[faq]]
+question = "What does multiscale GWR add to GWR?"
+answer = '''
+GWR uses one bandwidth for every coefficient, so every relationship is assumed to vary at the same scale. Multiscale GWR gives each coefficient its own bandwidth: a small one for a relationship that varies locally, one close to the number of areas for a relationship that is nearly the same everywhere. Standardise the variables to compare the bandwidths between coefficients.
+'''
+wiki = "Multiscale GWR"
+
+[[faq]]
+question = "Are the local t-values of GWR significant at the usual 1.96?"
+answer = '''
+Not as they stand: GWR tests each coefficient at every area, so some local t-values exceed 1.96 by chance alone. da Silva and Fotheringham (2016) adjust the significance level by the effective number of parameters of the model, which gives a larger critical value; a Bonferroni correction for the number of areas is far too strict, because the local estimates are dependent.
+'''
+wiki = "Local Inference and Multiple Testing"
+
+[[faq]]
+question = "Why does the panel project the centroids before the fit?"
+answer = '''
+The kernels take Euclidean distances between coordinates, and Euclidean distances between longitudes and latitudes are distorted, as a degree of longitude covers fewer kilometres away from the equator. The panel moves the centroids into the Distance Coordinate System, a projected coordinate system in metres, so that distances, and a fixed bandwidth, are in metres.
+'''
+wiki = "Kernels and Bandwidths"
+hidden = true
+
+[[faq]]
+question = "Which kernel does the panel use by default, and why?"
+answer = '''
+The bisquare kernel, which gives a weight of zero beyond the bandwidth, so that distant areas play no part in a local regression. The Gaussian and exponential kernels give every area some weight, however far. The adaptive bisquare kernel is also the default of mgwr in Python.
+'''
+wiki = "Kernels and Bandwidths"
+hidden = true
+
+[[faq]]
+question = "What does it mean when back-fitting of multiscale GWR does not converge?"
+answer = '''
+Multiscale GWR is estimated by back-fitting, which updates each coefficient's surface and bandwidth in turn until they stop changing. If it stops at the maximum number of iterations first, the surfaces have not settled, and the Multiscale GWR tab prints a warning: its estimates are then unreliable.
+'''
+wiki = "Multiscale GWR"
+hidden = true
+
+[[faq]]
+question = "How do I know whether a coefficient really varies over the map?"
+answer = '''
+A map of local estimates always shows some variation. Brunsdon, Fotheringham and Charlton (1996) test it by a Monte Carlo procedure: the observations are reassigned to random locations, the model refitted many times, and the variability of the local estimates on the real data compared with its distribution over the permutations.
+'''
+wiki = "Local Inference and Multiple Testing"
+hidden = true
+
+[[faq]]
+question = "Which software are the panel's results checked against?"
+answer = '''
+GWR4, from its outputs for the Georgia counties kept in libpysal, and mgwr in Python, from the values printed in Oshan, Li, Kang, Wolf and Fotheringham (2019) for the same counties. The Replicate steps print Julia's values beside them.
+'''
+wiki = "Replications"
+hidden = true
+
+[[models]]
+id = "gwrfixed"
+label = "GWR, Fixed Bandwidth"
+
+[[models]]
+id = "gwradaptive"
+label = "GWR, Adaptive"
+
+[[models]]
+id = "mgwr"
+label = "Multiscale GWR"
+
+[[bullets]]
+text = "GWR, Fixed Bandwidth"
+detail = "A weighted regression at every area, on the areas within the same distance: coefficients that vary over the map"
+
+[[bullets]]
+text = "GWR, Adaptive"
+detail = "A weighted regression at every area, on the same number of nearest areas: wider where areas are sparse, narrower where they are dense"
+
+[[bullets]]
+text = "Multiscale GWR (MGWR)"
+detail = "A bandwidth for each coefficient: some relationships vary locally, others regionally, others hardly at all"
+
+[[decisionRows]]
+task = "GWR, Fixed Bandwidth"
+context = "Evenly spread areas"
+purpose = "Let each coefficient vary over the map, with the same distance of influence everywhere"
+
+[[decisionRows]]
+task = "GWR, Adaptive"
+context = "Uneven areas"
+purpose = "Let each coefficient vary over the map, with the same number of neighbours in every local regression"
+
+[[decisionRows]]
+task = "Multiscale GWR (MGWR)"
+context = "Processes at different scales"
+purpose = "Find the scale at which each relationship varies, with one adaptive bandwidth per coefficient"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbragwr.gpkg, the example first writes a grid of 400 square cells of 1 km around Coimbra with simulated nitrogen dioxide (no2), traffic and green space, in which the effect of traffic grows from west to east, unless the folder has a coimbragwr.gpkg already."
+default = "coimbragwr.gpkg"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The numeric column explained by the model. Areas without a value in it, or in an explanatory variable, are left out."
+default = "no2"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns that explain it, separated by commas. Every local regression adds an intercept."
+default = "traffic, green"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:3763"
+newRow = true
+
+[[inputs]]
+id = "distanceCrs"
+label = "Distance Coordinate System"
+tooltip = "A projected coordinate system in metres, as an EPSG code: the centroids of the areas are moved into it, and the distances between them, and a fixed bandwidth, are in its metres."
+default = "EPSG:3763"
+
+[[inputs]]
+id = "kernel"
+label = "Kernel"
+tooltip = "How the weight of an area falls with its distance: Bisquare, to zero at the bandwidth; Gaussian and Exponential, never quite to zero."
+kind = "select"
+default = "bisquare"
+
+[[inputs.options]]
+value = "bisquare"
+label = "Bisquare"
+
+[[inputs.options]]
+value = "gaussian"
+label = "Gaussian"
+
+[[inputs.options]]
+value = "exponential"
+label = "Exponential"
+
+[[inputs]]
+id = "bandwidth"
+label = "Bandwidth"
+tooltip = "AICc: the bandwidth with the smallest corrected Akaike information criterion. A number fixes it: on GWR, Fixed Bandwidth, in metres of the distance coordinate system; on GWR, Adaptive, the number of nearest areas in each local regression."
+default = "AICc"
+
+[[inputs]]
+id = "standardise"
+label = "Standardise Variables"
+tooltip = "Yes: the dependent and explanatory variables are centred and divided by their standard deviations before the fit, so that the bandwidths of Multiscale GWR can be compared between coefficients; the coefficients are then in standard deviations."
+kind = "select"
+default = "no"
+
+[[inputs.options]]
+value = "no"
+label = "No"
+
+[[inputs.options]]
+value = "yes"
+label = "Yes"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, LinearAlgebra, Statistics, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+# Example file: 20 by 20 square cells of 1 km around Coimbra, in EPSG:3763, written unless the folder has one already. Replace "coimbragwr.gpkg" with your own file.
+if basename(path) == "coimbragwr.gpkg" && !isfile(path)
+	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
+	traffic = 4 .+ 16 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 30) .+ randn(rng, 400)  # thousands of vehicles a day, most in the centre
+	green = clamp.(30 .+ 1.5 .* u .- 0.8 .* traffic .+ 6 .* randn(rng, 400), 2, 90)  # percent of green space
+	no2 = (10 .+ 0.2 .* v) .+ (0.8 .+ 0.04 .* u) .* traffic .- 0.12 .* green .+ 1.5 .* randn(rng, 400)  # the effect of traffic grows from west to east
+	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:400]
+	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+end
+yname = "{{dependent}}"
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
+# The areas, numbered i = 1, 2, ..., with their centroids in the distance coordinate system and the polygons in longitude and latitude for the maps
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_X(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cx, ST_Y(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE $(present)")
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM areas ORDER BY i")).v)
+y = column(yname)
+X = reduce(hcat, column.(xnames))  # without the intercept, which every local regression adds
+coords = hcat(column("cx"), column("cy"))  # metres in the distance coordinate system
+n, p = size(X)
+{{?standardise=yes}} zscore(v) = (v .- mean(v)) ./ std(v; corrected = false)
+{{?standardise=yes}} y, X = zscore(y), reduce(hcat, zscore.(eachcol(X)))  # in standard deviations: the bandwidths of MGWR become comparable
+kernel = Dict("bisquare" => BisquareKernel(), "gaussian" => GaussianKernel(), "exponential" => ExponentialKernel())["{{kernel}}"]
+
+{{?model=gwrfixed}} # The fixed bandwidth: as given, or by a golden section search over the corrected AIC
+{{?model=gwrfixed}} aicc(h) = try fit_gwr(X, y, coords; bandwidth = FixedBandwidth(h), kernel = kernel, varnames = xnames).AICc catch; Inf end  # Inf where too few areas get weight
+{{?model=gwrfixed}} if "{{bandwidth}}" == "AICc"
+{{?model=gwrfixed}} 	D = [norm(coords[i, :] - coords[j, :]) for i in 1:n, j in 1:n]
+{{?model=gwrfixed}} 	lo, hi = maximum(sort(D[i, :])[min(n, 2 * (p + 1))] for i in 1:n), maximum(D)  # from enough neighbours everywhere to the whole map
+{{?model=gwrfixed}} 	g = (sqrt(5) - 1) / 2
+{{?model=gwrfixed}} 	a, b = hi - g * (hi - lo), lo + g * (hi - lo)
+{{?model=gwrfixed}} 	fa, fb = aicc(a), aicc(b)
+{{?model=gwrfixed}} 	while hi - lo > 1e-3 * maximum(D)
+{{?model=gwrfixed}} 		if fa < fb
+{{?model=gwrfixed}} 			hi, b, fb = b, a, fa
+{{?model=gwrfixed}} 			a = hi - g * (hi - lo); fa = aicc(a)
+{{?model=gwrfixed}} 		else
+{{?model=gwrfixed}} 			lo, a, fa = a, b, fb
+{{?model=gwrfixed}} 			b = lo + g * (hi - lo); fb = aicc(b)
+{{?model=gwrfixed}} 		end
+{{?model=gwrfixed}} 	end
+{{?model=gwrfixed}} 	h = fa < fb ? a : b
+{{?model=gwrfixed}} else
+{{?model=gwrfixed}} 	h = parse(Float64, "{{bandwidth}}")
+{{?model=gwrfixed}} end
+{{?model=gwrfixed}} m = fit_gwr(X, y, coords; bandwidth = FixedBandwidth(h), kernel = kernel, varnames = xnames)
+{{?model=gwrfixed}} println("Fixed bandwidth ", round(h, digits = 1), " m, {{kernel}} kernel")
+{{?model=gwradaptive}} # The adaptive bandwidth, a number of nearest areas: selected by the corrected AIC, or as given
+{{?model=gwradaptive}} bw = "{{bandwidth}}" == "AICc" ? nothing : AdaptiveBandwidth(parse(Int, "{{bandwidth}}"))
+{{?model=gwradaptive}} m = fit_gwr(X, y, coords; bandwidth = bw, kernel = kernel, varnames = xnames)
+{{?model=gwradaptive}} println("Adaptive bandwidth ", round(Int, m.bandwidth), " nearest areas, {{kernel}} kernel")
+{{?model=mgwr}} # One adaptive bandwidth per coefficient, each selected by the corrected AIC in back-fitting
+{{?model=mgwr}} m = fit_mgwr(X, y, coords; kernel = kernel, varnames = xnames)
+{{?model=mgwr}} m.converged || println("Back-fitting did not converge in ", m.iterations, " iterations: read the results with care")
+{{?model=mgwr}} println(rpad("coefficient", 14), rpad("bandwidth", 12), "effective parameters")
+{{?model=mgwr}} for (k, name) in enumerate(m.coefnames)
+{{?model=mgwr}} 	println(rpad(name, 14), rpad(round(Int, m.bandwidths[k]), 12), round(m.enp[k], digits = 2))
+{{?model=mgwr}} end
+{{?model=mgwr}} println("{{kernel}} kernel, ", m.iterations, " back-fitting iterations")
+
+println("AICc ", round(m.AICc, digits = 3), ", R2 ", round(m.R2, digits = 4), ", effective number of parameters tr(S) ", round(m.hat_trace, digits = 2), ", n = ", n)
+global_fit = hcat(ones(n), X) \ y  # least squares, for comparison
+println(rpad("", 14), rpad("global", 11), rpad("min", 11), rpad("lower q.", 11), rpad("median", 11), rpad("upper q.", 11), "max")
+for (k, name) in enumerate(m.coefnames)
+	c = m.coef_local[:, k]
+	println(rpad(name, 14), join((rpad(round(x, digits = 4), 11) for x in [global_fit[k]; minimum(c); quantile(c, [0.25, 0.5, 0.75]); maximum(c)])))
+end
+res = m.residuals
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-coefficients"
+label = "Maps of the Local Coefficients"
+desc = "One layer per coefficient on a base map, each area coloured by its local estimate; switch the layers to compare them"
+code = '''
+gwr_table = "SELECT * FROM (VALUES $(join(("($i, $(join(m.coef_local[i, :], ", ")), $(join(m.coef_local[i, :] ./ m.se_local[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("b$k" for k in 1:p + 1), ", ")), $(join(("t$k" for k in 1:p + 1), ", ")))"
+DBInterface.execute(con, "CREATE OR REPLACE TABLE local AS $(gwr_table)")
+cmap = joinpath(mktempdir(), "coefficients.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, l.* EXCLUDE (i) FROM areas a JOIN local l USING (i)) TO '$(cmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap((Pollis.layer(cmap; name = m.coefnames[k], column = "b$k", opacity = 0.75) for k in 1:p + 1)...))
+'''
+
+[[actionGroups.actions]]
+id = "map-tvalues"
+label = "Map of the Local t-Values"
+desc = "One layer per coefficient on a base map, each area coloured by its local t-value, the estimate divided by its standard error, not adjusted for multiple testing"
+code = '''
+tvals = m.coef_local ./ m.se_local
+DBInterface.execute(con, "CREATE OR REPLACE TABLE local_t AS SELECT * FROM (VALUES $(join(("($i, $(join(tvals[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("t$k" for k in 1:p + 1), ", ")))")
+tmap = joinpath(mktempdir(), "tvalues.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, l.* EXCLUDE (i) FROM areas a JOIN local_t l USING (i)) TO '$(tmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap((Pollis.layer(tmap; name = "t, " * m.coefnames[k], column = "t$k", opacity = 0.75) for k in 1:p + 1)...))
+'''
+
+[[actionGroups.actions]]
+id = "map-local-r2"
+label = "Map of the Local R-squared"
+desc = "Each area coloured by the R-squared of its local regression: where the explanatory variables explain the dependent variable well and where they do not"
+models = ["gwrfixed", "gwradaptive"]
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE local_fit AS SELECT * FROM (VALUES $(join(("($i, $(m.local_R2[i]))" for i in 1:n), ", "))) t(i, local_r2)")
+r2map = joinpath(mktempdir(), "local-r2.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, round(l.local_r2, 4) AS local_r2 FROM areas a JOIN local_fit l USING (i)) TO '$(r2map)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(r2map; name = "Local R-squared", column = "local_r2", opacity = 0.75)))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "residual-moran"
+label = "Moran's I of the Residuals"
+desc = "Is there spatial autocorrelation left in the residuals of the tab's model? Moran's I with queen contiguity, its pseudo p-value from 999 random permutations"
+code = '''
+using SparseArrays
+
+pairs = Tables.columntable(DBInterface.execute(con, "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)"))  # queen contiguity: any shared point of the boundaries
+W = row_standardize(sparse(pairs.i, pairs.j, 1.0, n, n))  # the weights of each area's neighbours sum to 1
+mr = moran_global(res, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+println("Moran's I of the residuals ", round(mr.I_stat, digits = 4), " (expected ", round(mr.E_I, digits = 4), "), pseudo p-value ", mr.p_value, " from 999 permutations")
+println(mr.p_value < 0.05 ? "Spatial autocorrelation is left in the residuals at the 5% level" : "No spatial autocorrelation left in the residuals at the 5% level")
+'''
+
+[[actionGroups.actions]]
+id = "adjusted-tvalues"
+label = "Local t-Values Adjusted for Multiple Testing"
+desc = "For each coefficient, how many areas have a local t-value beyond 1.96 and how many beyond the critical value adjusted by the effective number of parameters, as da Silva and Fotheringham (2016) and, for multiscale GWR, Yu and coauthors (2020) propose"
+code = '''
+using Distributions
+
+tvals = m.coef_local ./ m.se_local
+K = p + 1  # the number of coefficients, the intercept included
+println(rpad("coefficient", 14), rpad("adjusted alpha", 16), rpad("critical t", 12), rpad("beyond 1.96", 13), "beyond the critical t")
+for (k, name) in enumerate(m.coefnames)
+{{?model!=mgwr}} 	alpha = 0.05 / (m.hat_trace / K)  # da Silva and Fotheringham (2016): the 5% level divided by the effective number of parameters per coefficient
+{{?model=mgwr}} 	alpha = 0.05 / m.enp[k]  # Yu and coauthors (2020): the 5% level divided by the coefficient's own effective number of parameters
+	tcrit = quantile(TDist(n - m.hat_trace), 1 - alpha / 2)
+	println(rpad(name, 14), rpad(round(alpha, sigdigits = 3), 16), rpad(round(tcrit, digits = 3), 12), rpad(count(abs.(tvals[:, k]) .> 1.96), 13), count(abs.(tvals[:, k]) .> tcrit), " of ", n)
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "bandwidth-search"
+label = "Bandwidth Search by AICc"
+desc = "The AICc of the tab's model at 30 bandwidths, from narrow to the whole map, with the bandwidth of the tab: is the smallest AICc sharply identified, or is the curve flat?"
+models = ["gwrfixed", "gwradaptive"]
+code = '''
+using ECharts
+
+D = [norm(coords[i, :] - coords[j, :]) for i in 1:n, j in 1:n]
+{{?model=gwrfixed}} lo = maximum(sort(D[i, :])[min(n, 2 * (p + 1))] for i in 1:n)  # enough neighbours everywhere
+{{?model=gwrfixed}} grid = collect(range(lo, maximum(D), length = 30))  # distances in metres
+{{?model=gwrfixed}} fit_at(b) = fit_gwr(X, y, coords; bandwidth = FixedBandwidth(b), kernel = kernel, varnames = xnames)
+{{?model=gwradaptive}} grid = unique(round.(Int, range(2 * (p + 1), n, length = 30)))  # numbers of nearest areas
+{{?model=gwradaptive}} fit_at(b) = fit_gwr(X, y, coords; bandwidth = AdaptiveBandwidth(b), kernel = kernel, varnames = xnames)
+curve = [try fit_at(b).AICc catch; NaN end for b in grid]  # NaN where a local regression cannot be estimated
+println(rpad("bandwidth", 14), "AICc")
+for (b, a) in zip(grid, curve)
+	println(rpad(round(b, digits = 1), 14), round(a, digits = 3))
+end
+println("Bandwidth of the tab ", round(m.bandwidth, digits = 1), ", AICc ", round(m.AICc, digits = 3))
+EChart(ec_width = 700, ec_height = 420, title = [ECharts.Title(text = "AICc against the bandwidth")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Bandwidth", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "AICc", scale = true)],
+	series = [ECharts.XYSeries(name = "AICc", _type = "line", data = [[b, a] for (b, a) in zip(grid, curve) if !isnan(a)]),
+		ECharts.XYSeries(name = "Bandwidth of the tab", _type = "scatter", data = [[m.bandwidth, m.AICc]])])
+'''
+
+[[actionGroups.actions]]
+id = "gwr-vs-ols"
+label = "Against Global Least Squares"
+desc = "The tab's model beside least squares on the same variables: residual sum of squares, effective number of parameters, AICc and R-squared"
+code = '''
+Xi = hcat(ones(n), X)
+e = y - Xi * (Xi \ y)  # the least-squares residuals
+# AICc = 2n log(sigma) + n log(2 pi) + n (n + tr(S)) / (n - 2 - tr(S)), sigma = sqrt(RSS / n), as in GWR4 and mgwr; tr(S) is the number of coefficients for least squares
+aicc_of(rss, trs) = 2 * n * log(sqrt(rss / n)) + n * log(2 * pi) + n * (n + trs) / (n - 2 - trs)
+tss = sum(abs2, y .- mean(y))
+rows = [("Least squares", dot(e, e), p + 1.0), ("{{model}}" == "mgwr" ? "Multiscale GWR" : "GWR", dot(res, res), m.hat_trace)]
+println(rpad("model", 16), rpad("RSS", 14), rpad("parameters", 13), rpad("AICc", 12), "R-squared")
+for (name, rss, trs) in rows
+	println(rpad(name, 16), rpad(round(rss, digits = 3), 14), rpad(round(trs, digits = 2), 13), rpad(round(aicc_of(rss, trs), digits = 3), 12), round(1 - rss / tss, digits = 4))
+end
+println("The smaller AICc fits better for the effective number of parameters it uses")
+'''
+
+[[actionGroups.actions]]
+id = "gwr-vs-mgwr"
+label = "GWR Against Multiscale GWR"
+desc = "GWR with an adaptive bandwidth and multiscale GWR on the same data and kernel: the bandwidth of each, coefficient by coefficient, the AICc and the R-squared"
+code = '''
+gwr_fit = fit_gwr(X, y, coords; kernel = kernel, varnames = xnames)  # one adaptive bandwidth, by AICc
+mgwr_fit = fit_mgwr(X, y, coords; kernel = kernel, varnames = xnames)  # one adaptive bandwidth per coefficient, by AICc
+mgwr_fit.converged || println("Back-fitting did not converge in ", mgwr_fit.iterations, " iterations: read the multiscale results with care")
+println(rpad("coefficient", 14), rpad("GWR bandwidth", 16), "MGWR bandwidth")
+for (k, name) in enumerate(gwr_fit.coefnames)
+	println(rpad(name, 14), rpad(round(Int, gwr_fit.bandwidth), 16), round(Int, mgwr_fit.bandwidths[k]))
+end
+println(rpad("AICc", 14), rpad(round(gwr_fit.AICc, digits = 3), 16), round(mgwr_fit.AICc, digits = 3))
+println(rpad("R-squared", 14), rpad(round(gwr_fit.R2, digits = 4), 16), round(mgwr_fit.R2, digits = 4))
+println("Bandwidths in nearest areas, out of ", n, ": one close to ", n, " is a coefficient nearly the same everywhere")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "monte-carlo-variation"
+label = "Does a Coefficient Vary over the Map?"
+desc = "A Monte Carlo test, as in Brunsdon, Fotheringham and Charlton (1996): the areas' data are reassigned to random locations 99 times and the model refitted with the same bandwidth; a coefficient varies over the map when the spread of its local estimates is larger than in most of the permutations"
+models = ["gwrfixed", "gwradaptive"]
+code = '''
+{{?model=gwrfixed}} same_bandwidth = FixedBandwidth(m.bandwidth)
+{{?model=gwradaptive}} same_bandwidth = AdaptiveBandwidth(round(Int, m.bandwidth))
+spread(fm) = vec(std(fm.coef_local, dims = 1))  # the standard deviation of each coefficient's local estimates
+observed = spread(m)
+rng = Xoshiro(2026)  # a fixed seed: the same permutations every time
+permuted = [spread(fit_gwr(X, y, coords[randperm(rng, n), :]; bandwidth = same_bandwidth, kernel = kernel, varnames = xnames)) for _ in 1:99]
+println(rpad("coefficient", 14), rpad("spread", 12), "p-value")
+for (k, name) in enumerate(m.coefnames)
+	pvalue = (1 + count(s -> s[k] >= observed[k], permuted)) / 100
+	println(rpad(name, 14), rpad(round(observed[k], sigdigits = 4), 12), pvalue, pvalue < 0.05 ? "  varies over the map at the 5% level" : "")
+end
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-gwr4"
+label = "Georgia Counties: GWR4"
+desc = "The percentage with a bachelor's degree in Georgia's 159 counties on the percentages rural, in poverty and African American, with fixed bisquare and Gaussian kernels at GWR4's own bandwidths, beside GWR4's results kept in libpysal"
+code = '''
+using Downloads
+
+let
+	rcon = DBInterface.connect(DuckDB.DB)
+	file = joinpath(mktempdir(), "GData_utm.csv")
+	Downloads.download("https://raw.githubusercontent.com/pysal/libpysal/main/libpysal/examples/georgia/GData_utm.csv", file)  # libpysal, BSD-3
+	DBInterface.execute(rcon, "CREATE TABLE georgia AS SELECT row_number() OVER () AS i, * FROM read_csv('$(file)')")
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM georgia ORDER BY i")).v)
+	yg = cols("PctBach")
+	Xg = hcat(cols("PctRural"), cols("PctPov"), cols("PctBlack"))
+	cg = hcat(cols("X"), cols("Y"))  # the county centroids, in UTM metres
+	names = ["Intercept", "PctRural", "PctPov", "PctBlack"]
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 22), rpad("Julia", 14), rpad("GWR4", 14), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 22), rpad(round(julia, digits = 6), 14), rpad(published, 14), round(julia - published, sigdigits = 2))
+		end
+	end
+	# GWR4's summary files: georgia_BS_F_summary.txt and georgia_GS_F_summary.txt
+	targets = [("Fixed bisquare, h = 209267.688808 m", BisquareKernel(), 209267.688808, 2012.563924, 16.722876, 894.982602, 0.607540,
+			[23.100425, -0.115556, -0.284599, 0.058275], [17.723650, -0.197305, -0.772356, -0.075941], [30.349333, -0.054520, -0.072209, 0.308952]),
+		("Fixed Gaussian, h = 87308.298470 m", GaussianKernel(), 87308.298470, 2030.010213, 16.304601, 895.290158, 0.604138,
+			[23.315956, -0.116469, -0.290012, 0.053228], [18.016084, -0.185429, -0.661246, -0.064110], [29.440723, -0.058428, -0.100954, 0.222182])]
+	for (title, kern, h, rss, trs, aicc, r2, means, mins, maxs) in targets
+		g = fit_gwr(Xg, yg, cg; bandwidth = FixedBandwidth(h), kernel = kern, varnames = names[2:end])
+		report(title, [[("RSS", sum(abs2, g.residuals), rss), ("tr(S)", g.hat_trace, trs), ("AICc", g.AICc, aicc), ("R-squared", g.R2, r2)];
+			[("mean " * names[k], mean(g.coef_local[:, k]), means[k]) for k in 1:4];
+			[("min " * names[k], minimum(g.coef_local[:, k]), mins[k]) for k in 1:4];
+			[("max " * names[k], maximum(g.coef_local[:, k]), maxs[k]) for k in 1:4]])
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "replicate-article"
+label = "Oshan and Coauthors (2019)"
+desc = "Section 3 and 4.5.1 of Oshan, Li, Kang, Wolf and Fotheringham (2019): GWR of the percentage with a bachelor's degree in Georgia's 159 counties on the percentages foreign-born, African American and rural, with an adaptive bisquare kernel, and multiscale GWR on the standardised variables, beside the values the article prints from mgwr"
+code = '''
+using Downloads
+
+let
+	rcon = DBInterface.connect(DuckDB.DB)
+	file = joinpath(mktempdir(), "GData_utm.csv")
+	Downloads.download("https://raw.githubusercontent.com/pysal/libpysal/main/libpysal/examples/georgia/GData_utm.csv", file)  # libpysal, BSD-3
+	DBInterface.execute(rcon, "CREATE TABLE georgia AS SELECT row_number() OVER () AS i, * FROM read_csv('$(file)')")
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM georgia ORDER BY i")).v)
+	yg = cols("PctBach")
+	Xg = hcat(cols("PctFB"), cols("PctBlack"), cols("PctRural"))
+	cg = hcat(cols("X"), cols("Y"))  # the county centroids, in UTM metres
+	ng = length(yg)
+	names = ["PctFB", "PctBlack", "PctRural"]
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 22), rpad("Julia", 16), rpad("article", 16), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 22), rpad(round(julia, digits = 6), 16), rpad(published, 16), round(julia - published, sigdigits = 2))
+		end
+	end
+	# GWR, adaptive bisquare: the bandwidth by AICc, then the fit at the article's 117 nearest counties
+	selected = fit_gwr(Xg, yg, cg; kernel = BisquareKernel(), varnames = names)
+	g = fit_gwr(Xg, yg, cg; bandwidth = AdaptiveBandwidth(117), kernel = BisquareKernel(), varnames = names)
+	rss = sum(abs2, g.residuals)
+	aic = 2 * ng * log(sqrt(rss / ng)) + ng * log(2 * pi) + ng + 2 * (g.hat_trace + 1)  # minus twice the log-likelihood, plus twice tr(S) and the variance
+	report("GWR (sections 3.2 to 3.4)", [("bandwidth by AICc", selected.bandwidth, 117.0), ("RSS", rss, 1650.85969828), ("AIC", aic, 848.915407053),
+		("AICc", g.AICc, 851.350292784), ("R-squared", g.R2, 0.678074266959)])
+	# Multiscale GWR on the standardised variables, as numpy's std: divided by n
+	zscore(v) = (v .- mean(v)) ./ std(v; corrected = false)
+	mg = fit_mgwr(reduce(hcat, zscore.(eachcol(Xg))), zscore(yg), cg; kernel = BisquareKernel(), varnames = names)
+	mg.converged || println("Back-fitting did not converge in ", mg.iterations, " iterations")
+	report("Multiscale GWR bandwidths (section 4.5.1)", [(what, mg.bandwidths[k], v) for (k, (what, v)) in enumerate(["Intercept" => 92.0, "PctFB" => 101.0, "PctBlack" => 136.0, "PctRural" => 158.0])])
+end
+'''
