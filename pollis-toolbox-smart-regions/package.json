@@ -52,7 +52,7 @@
           { "title": "CityGML and CityJSON Files", "submenu": "accessFiles", "group": "3_networks", "order": 1 },
           { "title": "GTFS Feeds", "submenu": "accessFiles", "group": "3_networks", "order": 2 },
           { "title": "OpenStreetMap PBF Files", "submenu": "accessFiles", "group": "3_networks", "order": 3 },
-          { "title": "OpenStreetMap", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1 },
+          { "title": "OpenStreetMap Data", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1 },
           { "title": "Overture Maps", "submenu": "accessDataLibraries", "group": "1_vector", "order": 2 },
           { "title": "Eurostat GISCO (NUTS Regions)", "submenu": "accessDataLibraries", "group": "1_vector", "order": 3 },
           { "title": "Copernicus Data Space", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 1 },
