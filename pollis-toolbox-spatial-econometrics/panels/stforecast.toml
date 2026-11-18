@@ -1,0 +1,940 @@
+# Spatio-Temporal Forecasting: forecasts of areas observed over many periods, from their own past and their neighbours',
+# the space-time autoregression (STAR), the spatial VAR and a panel autoregression without space, with SpatialEconometrics.jl;
+# the areas are read, the panel joined to them, and their neighbours found, through DuckDB and its spatial extension.
+
+[meta]
+title = "Spatio-Temporal Forecasting"
+viewType = "pollis.stforecast"
+defaultModel = "star"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[requires]
+packages = ["ECharts.jl"]
+
+[[models]]
+id = "star"
+label = "STAR"
+
+[[models]]
+id = "spvar"
+label = "Spatial VAR"
+
+[[models]]
+id = "panelar"
+label = "Panel AR"
+
+[[bullets]]
+text = "STAR"
+detail = "The space-time autoregression of Pfeifer and Deutsch: each area's value is forecast from its own past values and its neighbours', at chosen spatial and temporal lag orders, by least squares"
+
+[[bullets]]
+text = "Spatial VAR"
+detail = "Di Giacinto's spatial vector autoregression: several variables forecast together, each from the past of all of them in the area and its neighbours, with a causal ordering of the variables within a period"
+
+[[bullets]]
+text = "Panel AR"
+detail = "A panel autoregression without space: each area's value forecast from its own past only, the benchmark that shows what the neighbours add to the forecasts"
+
+[[decisionRows]]
+task = "STAR"
+context = "One variable"
+purpose = "Forecast one variable over the areas from its own past and its neighbours' past, with as many spatial and temporal lags as the data supports"
+
+[[decisionRows]]
+task = "Spatial VAR"
+context = "Several variables"
+purpose = "Forecast several interdependent variables together, and trace how a shock to one spreads to the others and to the neighbours"
+
+[[decisionRows]]
+task = "Panel AR"
+context = "Benchmark"
+purpose = "Measure what the neighbours add, by forecasting each area from its own past alone"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "areasFile"
+label = "Areas File"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbraair.gpkg, the example first writes a grid of 100 square cells of 1 km around Coimbra, and the panel file beside it, unless the folder has both already."
+default = "coimbraair.gpkg"
+
+[[inputs]]
+id = "panelFile"
+label = "Panel File"
+tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period."
+default = "coimbraair.csv"
+
+[[inputs]]
+id = "areaColumn"
+label = "Area Column"
+tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
+default = "cell"
+newRow = true
+
+[[inputs]]
+id = "periodColumn"
+label = "Period Column"
+tooltip = "The column of the panel file that names each period, a year, a month or a date: the periods are put in its order, and must be equally spaced."
+default = "month"
+
+[[inputs]]
+id = "dependent"
+label = "Variable to Forecast"
+tooltip = "On STAR and Panel AR, the column of the panel file to forecast. With the example files, no2: the monthly mean concentration of nitrogen dioxide in the cell, in micrograms per cubic metre. On Spatial VAR, the variable that the maps and paths of the Next Steps show, if it is one of the Variables, otherwise the last of them."
+default = "no2"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "On STAR and Panel AR, numeric columns of the panel file that enter in the same period as the value forecast, separated by commas, or empty. Forecasting with them needs their values in the periods forecast, so the horizon cannot then pass the periods held back."
+default = ""
+
+[[inputs]]
+id = "variables"
+label = "Variables"
+tooltip = "On Spatial VAR, the columns of the panel file forecast together, separated by commas, in causal order: within a period each variable can respond to those before it, not to those after it, which is the identifying assumption of the model. With the example files, traffic first, then no2."
+default = "traffic, no2"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:3763"
+newRow = true
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. The weights of each area's neighbours sum to 1, and are the same in every period."
+kind = "select"
+default = "queen"
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest."
+default = "6"
+
+[[inputs]]
+id = "spatialLags"
+label = "Spatial Lags"
+tooltip = "On STAR and Spatial VAR, the spatial order S: the neighbours up to the S-th ring enter the model. 1, the immediate neighbours; 2, also their neighbours. Spatial VAR always takes the S-th ring as the areas exactly S steps away."
+default = "1"
+newRow = true
+
+[[inputs]]
+id = "temporalLags"
+label = "Temporal Lags"
+tooltip = "The temporal order L: the values of the last L periods enter the model, and the first L periods only supply lags."
+default = "1"
+
+[[inputs]]
+id = "spatialWeights"
+label = "Spatial Weights"
+tooltip = "On STAR with two or more spatial lags, what the S-th ring is: Powers of W, the weights multiplied by themselves S times, the default of SpatialEconometrics.jl; Order-k Neighbours, the areas exactly k steps away, each ring's weights summing to 1, Pfeifer and Deutsch's own definition. The two are the same with one spatial lag."
+kind = "select"
+default = "powers"
+
+[[inputs.options]]
+value = "powers"
+label = "Powers of W"
+
+[[inputs.options]]
+value = "orders"
+label = "Order-k Neighbours"
+
+[[inputs]]
+id = "areaMeans"
+label = "Area Means"
+tooltip = "On STAR and Panel AR: Remove, each area's mean over the periods fitted is subtracted before the fit and added back to the forecasts, so that areas with different levels share the dynamics; Keep, the values are fitted as they are, with one intercept for all areas. Spatial VAR always removes them."
+kind = "select"
+default = "remove"
+
+[[inputs.options]]
+value = "remove"
+label = "Remove"
+
+[[inputs.options]]
+value = "keep"
+label = "Keep"
+
+[[inputs]]
+id = "heldBack"
+label = "Periods Held Back"
+tooltip = "The last periods of the panel, left out of the fit and forecast, so that the forecasts can be scored against what happened; 0 fits every period and forecasts beyond the data."
+default = "12"
+newRow = true
+
+[[inputs]]
+id = "horizon"
+label = "Horizon"
+tooltip = "The number of periods forecast after the last period fitted, each from the forecasts of the periods before it."
+default = "12"
+
+[[inputs]]
+id = "mapStep"
+label = "Step to Map"
+tooltip = "For the Map of the Forecasts: the step ahead whose forecasts are mapped, from 1, the period after the last one fitted, to the Horizon."
+default = "1"
+
+[[inputs]]
+id = "pathAreas"
+label = "Areas to Show"
+tooltip = "For the Forecast Paths: the areas whose paths are drawn, as values of the Area Column separated by commas; empty, three areas, those with the highest, the middle and the lowest mean over the periods fitted."
+default = ""
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
+panel_path = joinpath(folder, "{{panelFile}}")
+# Example files: 10 by 10 square cells of 1 km around Coimbra, in EPSG:3763, observed monthly over 10 years, written unless the folder has both already. Replace them with your own files.
+if basename(areas_path) == "coimbraair.gpkg" && basename(panel_path) == "coimbraair.csv" && !(isfile(areas_path) && isfile(panel_path))
+	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+	u, v = repeat(-5:4, outer = 10), repeat(-5:4, inner = 10)  # km east and north of the centre, row by row from the south-west
+	grid = [(c, d) for c in 1:100 for d in 1:100 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
+	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 100, 100))
+	traffic_spread, no2_spread = lu(I - 0.3 .* Matrix(Wgrid)), lu(I - 0.2 .* Matrix(Wgrid))  # spillovers within the month
+	traffic_level = 20 .+ 25 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 10)  # thousand vehicles a day, busiest at the centre
+	no2_level = 15 .+ 0.6 .* traffic_level  # micrograms per cubic metre
+	dt, dn = zeros(100), zeros(100)  # the departures of traffic and NO2 from each cell's level
+	open(panel_path, "w") do io
+		println(io, "cell,month,traffic,no2")
+		for t in -49:120  # 50 months to settle, not written, then January 2015 to December 2024
+			# Traffic moves first: last month's own and neighbours' departures, and this month's neighbours'
+			dt .= traffic_spread \ (0.5 .* dt .+ 0.15 .* (Wgrid * dt) .+ 2 .* randn(rng, 100))
+			# NO2 follows: last month's own and neighbours' departures, this month's traffic, and this month's neighbours'
+			dn .= no2_spread \ (0.45 .* dn .+ 0.2 .* (Wgrid * dn) .+ 0.4 .* dt .+ 1.5 .* randn(rng, 100))
+			t >= 1 || continue
+			month = string(2015 + (t - 1) ÷ 12, "-", lpad((t - 1) % 12 + 1, 2, '0'))
+			for c in 1:100
+				println(io, c, ",", month, ",", round(traffic_level[c] + dt[c], digits = 2), ",", round(no2_level[c] + dn[c], digits = 2))
+			end
+		end
+	end
+	cells = ["($(c), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:100]
+	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+end
+{{?model!=spvar}} yname = "{{dependent}}"
+{{?model!=spvar}} xnames = filter(!isempty, String.(strip.(split("{{explanatory}}", ","))))  # the explanatory variables, separated by commas, or none
+{{?model!=spvar}} needed = [yname; xnames]
+{{?model=spvar}} vnames = String.(strip.(split("{{variables}}", ",")))  # the variables, in causal order
+{{?model=spvar}} needed = vnames
+present = join(("p.\"$c\" IS NOT NULL" for c in needed), " AND ")
+# The polygons, in longitude and latitude, and the panel's rows that have a polygon and every value
+DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"{{areaColumn}}\" AS area, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
+DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE obs AS
+	WITH p AS (SELECT p.* FROM '$(panel_path)' p JOIN polygons g ON p."{{areaColumn}}" = g.area WHERE $(present)),
+	complete AS (SELECT "{{areaColumn}}" AS area FROM p GROUP BY 1 HAVING count(DISTINCT "{{periodColumn}}") = (SELECT count(DISTINCT "{{periodColumn}}") FROM p))
+	SELECT dense_rank() OVER (ORDER BY p."{{areaColumn}}") AS i, dense_rank() OVER (ORDER BY p."{{periodColumn}}") AS t, p.*
+	FROM p JOIN complete c ON p."{{areaColumn}}" = c.area""")  # areas numbered i = 1, 2, ... and periods t = 1, 2, ..., only areas with every period
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT o.i, o.area, g.geom FROM (SELECT DISTINCT i, \"{{areaColumn}}\" AS area FROM obs) o JOIN polygons g ON o.area = g.area")
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM obs ORDER BY t, i")).v)  # period by period, the areas varying fastest, the order SpatialEconometrics.jl requires
+counts = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT max(i) FROM obs) AS n, (SELECT max(t) FROM obs) AS periods, (SELECT count(*) FROM polygons) AS polygons"))
+N, T_per = Int(only(counts.n)), Int(only(counts.periods))
+labels = String.(Tables.columntable(DBInterface.execute(con, "SELECT DISTINCT t, \"{{periodColumn}}\"::VARCHAR AS label FROM obs ORDER BY t")).label)  # the name of each period
+println(N, " areas over ", T_per, " periods", only(counts.polygons) > N ? "; $(only(counts.polygons) - N) areas of the areas file left out, with missing values or periods" : "")
+
+# The neighbours of each area, as pairs (i, j), found with SQL; the same in every period
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs["{{neighbours}}"]))
+W = row_standardize(sparse(pairs.i, pairs.j, 1.0, N, N))  # the N x N weights of the areas, not of the stacked panel
+
+# The periods fitted and the periods forecast
+L, H, h = {{temporalLags}}, {{heldBack}}, {{horizon}}
+T_fit = T_per - H  # the periods fitted; the H after them are held back to score the forecasts
+T_fit > L + 1 || error("Too few periods left to fit: hold back fewer periods, or use fewer temporal lags")
+{{?model!=spvar}} y = column(yname)
+{{?model!=spvar}} X = isempty(xnames) ? zeros(N * T_per, 0) : reduce(hcat, column.(xnames))  # the explanatory variables, if any, with as many rows as y
+{{?model!=spvar}} isempty(xnames) || h <= H || error("With explanatory variables the horizon cannot pass the periods held back, the only ones whose values are known")
+{{?model!=spvar}} fitted = 1:(N * T_fit)  # the rows of the periods fitted
+{{?model!=spvar}} # Each area's mean over the periods fitted, removed with Area Means set to Remove and added back to the forecasts
+{{?model!=spvar}} area_mean(v) = "{{areaMeans}}" == "remove" ? vec(mean(reshape(v[fitted], N, T_fit), dims = 2)) : zeros(N)
+{{?model!=spvar}} ybar = area_mean(y)
+{{?model!=spvar}} yc = y .- repeat(ybar, T_per)
+{{?model!=spvar}} Xc = isempty(xnames) ? X : reduce(hcat, [X[:, j] .- repeat(area_mean(X[:, j]), T_per) for j in axes(X, 2)])
+{{?model=star}} # Least squares of each period on the last L periods of the area and of its neighbours up to the S-th ring, the explanatory variables and an intercept
+{{?model=star}} m = fit_star(yc[fitted], Xc[fitted, :], W, N, T_fit; spatial_lags = {{spatialLags}}, temporal_lags = L, spatial_weights = Symbol("{{spatialWeights}}"), varnames = xnames)
+{{?model=panelar}} # Least squares of each period on the last L periods of the area itself, the explanatory variables and an intercept: STAR with no spatial lag, so that the neighbours play no part
+{{?model=panelar}} m = fit_star(yc[fitted], Xc[fitted, :], W, N, T_fit; spatial_lags = 0, temporal_lags = L, varnames = xnames)
+{{?model=spvar}} K = length(vnames)
+{{?model=spvar}} K >= 2 || error("Spatial VAR needs two or more variables, separated by commas")
+{{?model=spvar}} Y = reduce(hcat, column.(vnames))  # one column per variable, in causal order, with N * T_per rows stacked as for STAR
+{{?model=spvar}} fitted = 1:(N * T_fit)  # the rows of the periods fitted
+{{?model=spvar}} # Maximum likelihood, one equation per variable: each variable on its neighbours' values in the same period, the variables before it in the area and its neighbours in the same period, and all the variables' last L periods in the area and its neighbours; each area's mean removed
+{{?model=spvar}} m = fit_spvar(Y[fitted, :], W, N, T_fit; ordering = 1:K, p = L, s = {{spatialLags}}, varnames = vnames)
+
+{{?model!=spvar}} se = sqrt.(max.(0.0, diag(m.vcov)))
+{{?model!=spvar}} println(rpad("", 18), rpad("Estimate", 12), rpad("Std. Error", 12), "t")
+{{?model!=spvar}} for k in eachindex(m.coef)  # y(t-l), the area's own value l periods before; on STAR, W^k y(t-l), its neighbours' up to the k-th ring; then the explanatory variables and the intercept
+{{?model!=spvar}}	println(rpad(m.coefnames[k], 18), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
+{{?model!=spvar}} end
+{{?model!=spvar}} println("\nFitted on periods ", labels[L + 1], " to ", labels[T_fit], ", ", m.N * m.T_eff, " observations; the first ", L, " period(s) give the lags only")
+{{?model!=spvar}} println("Area means: ", "{{areaMeans}}" == "remove" ? "removed before the fit and added back to the forecasts" : "kept, one intercept for all areas")
+{{?model!=spvar}} println("Error variance: ", round(m.sigma2, digits = 5), "; log-likelihood: ", round(m.loglik, digits = 2))
+{{?model=panelar}} println("No spatial lags: each area is forecast from its own past alone, the benchmark for STAR and Spatial VAR in the Next Steps")
+{{?model=spvar}} for k in 1:K  # one equation per variable, in causal order
+{{?model=spvar}}	coefs, se = [m.rho[k]; m.theta[k]], sqrt.(max.(0.0, diag(m.vcov_eq[k])))
+{{?model=spvar}}	println("Equation of ", m.varnames[k])
+{{?model=spvar}}	println(rpad("", 22), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
+{{?model=spvar}}	for j in eachindex(coefs)  # W^l·v, the neighbours' values in the l-th ring in the same period, rho first; then v(t-h), the values h periods before
+{{?model=spvar}}		println(rpad(last(split(m.coefnames_eq[k][j], ": ", limit = 2)), 22), rpad(round(coefs[j], digits = 4), 12), rpad(round(se[j], digits = 4), 12), round(coefs[j] / se[j], digits = 2))
+{{?model=spvar}}	end
+{{?model=spvar}}	println("Mean error variance over the areas: ", round(mean(m.lambda[:, k]), digits = 5), "\n")
+{{?model=spvar}} end
+{{?model=spvar}} println("Causal ordering: ", join(m.varnames, ", then "), "; fitted on periods ", labels[L + 1], " to ", labels[T_fit], ", the first ", L, " period(s) giving the lags only")
+{{?model=spvar}} println("Log-likelihood: ", round(m.loglik, digits = 2), m.converged ? "" : "; the search for the spatial coefficients did not converge")
+{{?model=spvar}} println("Standard errors: from the numerical Hessian of each equation's likelihood, whose theory lets the periods grow with the areas fixed")
+println("Spectral radius of the system: ", round(m.spectral_radius, digits = 4), m.stationary ? ", below 1: the forecasts settle back towards the means" : ", not below 1: the forecasts diverge with the horizon")
+
+# Forecasts of the periods after the last one fitted, each from the forecasts of the periods before it
+{{?model!=spvar}} history = yc[(N * (T_fit - L) + 1):(N * T_fit)]  # the last L periods fitted, oldest first
+{{?model!=spvar}} X_future = isempty(xnames) ? zeros(N * h, 0) : Xc[(N * T_fit + 1):(N * (T_fit + h)), :]
+{{?model!=spvar}} forecasts = spatial_forecast(m, X_future; h = h, y_history = history) .+ ybar  # N areas by h periods, the area means added back
+{{?model!=spvar}} actual = reshape(y, N, T_per)
+{{?model!=spvar}} println("\n", rpad("Step", 6), rpad("Period", 12), rpad("Mean forecast", 16), rpad("RMSE", 10), "MAE")
+{{?model!=spvar}} for s in 1:h
+{{?model!=spvar}}	period = T_fit + s
+{{?model!=spvar}}	scored = period <= T_per  # a period held back, whose values are known
+{{?model!=spvar}}	err = scored ? forecasts[:, s] .- actual[:, period] : Float64[]
+{{?model!=spvar}}	println(rpad(s, 6), rpad(scored ? labels[period] : "+$(period - T_per)", 12), rpad(round(mean(forecasts[:, s]), digits = 3), 16),
+{{?model!=spvar}}		rpad(scored ? round(sqrt(mean(err .^ 2)), digits = 3) : "", 10), scored ? round(mean(abs.(err)), digits = 3) : "")
+{{?model!=spvar}} end
+{{?model=spvar}} history = Y[(N * (T_fit - L) + 1):(N * T_fit), :]  # the last L periods fitted, oldest first, as they are
+{{?model=spvar}} forecasts = spvar_forecast(m, h; y_history = history)  # N * h rows stacked as Y, one column per variable, the area means added back
+{{?model=spvar}} println("\n", rpad("Step", 6), rpad("Period", 12), join((rpad("RMSE " * v, 16) for v in vnames)), join((rpad("MAE " * v, 16) for v in vnames)))
+{{?model=spvar}} for s in 1:h
+{{?model=spvar}}	period = T_fit + s
+{{?model=spvar}}	scored = period <= T_per  # a period held back, whose values are known
+{{?model=spvar}}	err = scored ? forecasts[((s - 1) * N + 1):(s * N), :] .- Y[((period - 1) * N + 1):(period * N), :] : zeros(0, K)
+{{?model=spvar}}	println(rpad(s, 6), rpad(scored ? labels[period] : "+$(period - T_per)", 12),
+{{?model=spvar}}		join((rpad(scored ? round(sqrt(mean(err[:, k] .^ 2)), digits = 3) : "", 16) for k in 1:K)), join((rpad(scored ? round(mean(abs.(err[:, k])), digits = 3) : "", 16) for k in 1:K)))
+{{?model=spvar}} end
+println("RMSE and MAE over the areas, against the values held back; the Next Steps compare them with the benchmarks")
+{{?model!=spvar}} res = m.residuals  # periods L + 1 to T_fit, stacked as y
+{{?model=spvar}} res = m.residuals  # periods L + 1 to T_fit, stacked as Y, one column per variable
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-forecasts"
+label = "Map of the Forecasts"
+desc = "The forecast of every area at the Step to Map, on a base map, and, when that period was held back, a second map of the forecast errors with the areas forecast worst: where the forecasts are high or low, and whether the errors cluster in space"
+code = '''
+s_map = {{mapStep}}
+1 <= s_map <= h || error("Step to Map must be between 1 and the Horizon")
+period = T_fit + s_map  # the period mapped
+scored = period <= T_per  # a period held back, whose values are known
+{{?model!=spvar}} shown = yname
+{{?model!=spvar}} fc = forecasts[:, s_map]
+{{?model!=spvar}} observed = scored ? actual[:, period] : fill(NaN, N)
+{{?model=spvar}} kshow = something(findfirst(==("{{dependent}}"), vnames), K)  # the Variable to Forecast, if it is one of the Variables, otherwise the last
+{{?model=spvar}} shown = vnames[kshow]
+{{?model=spvar}} fc = forecasts[((s_map - 1) * N + 1):(s_map * N), kshow]
+{{?model=spvar}} observed = scored ? Y[((period - 1) * N + 1):(period * N), kshow] : fill(NaN, N)
+err = fc .- observed  # forecast minus observed: positive where the forecast was too high
+cell(x) = isnan(x) ? "NULL" : string(x)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(fc[i]), $(cell(observed[i]))::DOUBLE, $(cell(err[i]))::DOUBLE)" for i in 1:N), ", "))) t(i, forecast, observed, error)")
+when = scored ? labels[period] : "+$(period - T_per)"
+fmap = joinpath(mktempdir(), "forecasts.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.forecast, 3) AS forecast, round(v.observed, 3) AS observed, round(v.error, 3) AS error FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(fmap; name = "Forecast of $(shown), $(when)", column = "forecast", opacity = 0.75)))  # clicking an area shows its forecast, and the observed value and error when known
+scored && display(Pollis.webmap(Pollis.layer(fmap; name = "Forecast error, $(when)", column = "error", opacity = 0.75)))
+println("Forecasts of ", shown, " for ", when, ", ", s_map, " step(s) after ", labels[T_fit], ", the last period fitted")
+println("Across the areas: from ", round(minimum(fc), digits = 3), " to ", round(maximum(fc), digits = 3), ", mean ", round(mean(fc), digits = 3))
+if scored
+	area_names = Tables.columntable(DBInterface.execute(con, "SELECT area::VARCHAR AS area FROM areas ORDER BY i")).area
+	println("Against the values observed: RMSE ", round(sqrt(mean(err .^ 2)), digits = 3), ", mean error ", round(mean(err), digits = 3), " (positive, forecasts too high on average)")
+	println("Areas forecast worst:")
+	for i in sortperm(abs.(err), rev = true)[1:min(5, N)]
+		println("  ", rpad(area_names[i], 16), "forecast ", rpad(round(fc[i], digits = 3), 10), "observed ", rpad(round(observed[i], digits = 3), 10), "error ", round(err[i], digits = 3))
+	end
+else
+	println("The period is after the end of the data, so there is nothing to score the forecasts against")
+end
+'''
+
+[[actionGroups.actions]]
+id = "forecast-paths"
+label = "Forecast Paths"
+desc = "For a few areas, the values observed over the last periods fitted and the held-back periods, with the forecasts from the last period fitted on: how far ahead the forecasts follow the values, and how they return towards each area's mean"
+code = '''
+using ECharts
+
+{{?model!=spvar}} shown = yname
+{{?model!=spvar}} Yshown = reshape(y, N, T_per)  # one row per area, one column per period
+{{?model!=spvar}} Fshown = forecasts  # one row per area, one column per step
+{{?model=spvar}} kshow = something(findfirst(==("{{dependent}}"), vnames), K)  # the Variable to Forecast, if it is one of the Variables, otherwise the last
+{{?model=spvar}} shown = vnames[kshow]
+{{?model=spvar}} Yshown = reshape(Y[:, kshow], N, T_per)  # one row per area, one column per period
+{{?model=spvar}} Fshown = reshape(forecasts[:, kshow], N, h)  # one row per area, one column per step
+area_names = String.(Tables.columntable(DBInterface.execute(con, "SELECT area::VARCHAR AS area FROM areas ORDER BY i")).area)
+asked = filter(!isempty, String.(strip.(split("{{pathAreas}}", ","))))  # the Areas to Show, or none
+if isempty(asked)
+	order = sortperm(vec(mean(Yshown[:, 1:T_fit], dims = 2)))  # the areas by their mean over the periods fitted
+	picked = unique([order[end], order[(N + 1) ÷ 2], order[1]])  # the highest, the middle and the lowest
+else
+	picked = [something(findfirst(==(a), area_names), 0) for a in asked]
+	all(>(0), picked) || error("Not among the areas: ", join(asked[picked .== 0], ", "))
+end
+span = max(1, T_fit - 3 * h + 1):(T_fit + h)  # three horizons' worth of periods fitted, then the periods forecast
+xlabels = [t <= T_per ? labels[t] : "+$(t - T_per)" for t in span]
+println(rpad("Area", 16), rpad("Mean fitted", 14), rpad("Last fitted", 14), rpad("Forecast, step 1", 18), rpad("Forecast, step $(h)", 18), "RMSE")
+for i in picked
+	observed = [t <= T_per ? Yshown[i, t] : nothing for t in span]  # nothing leaves a gap after the end of the data
+	path = [t == T_fit ? Yshown[i, t] : t > T_fit ? Fshown[i, t - T_fit] : nothing for t in span]  # from the last period fitted, so that the line joins the values observed
+	display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "$(shown) in $(area_names[i])")],
+		xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = xlabels)], yAxis = [ECharts.Axis(_type = "value", name = shown, scale = true)],
+		series = [ECharts.XYSeries(name = "Observed", _type = "line", data = observed), ECharts.XYSeries(name = "Forecast", _type = "line", data = path)]))
+	held = (T_fit + 1):min(T_fit + h, T_per)  # the periods forecast whose values are known
+	rmse = isempty(held) ? "" : string(round(sqrt(mean((Fshown[i, held .- T_fit] .- Yshown[i, held]) .^ 2)), digits = 3))
+	println(rpad(area_names[i], 16), rpad(round(mean(Yshown[i, 1:T_fit]), digits = 3), 14), rpad(round(Yshown[i, T_fit], digits = 3), 14),
+		rpad(round(Fshown[i, 1], digits = 3), 18), rpad(round(Fshown[i, h], digits = 3), 18), rmse)
+end
+println("RMSE of each area over the periods forecast that were held back")
+println(m.stationary ? "The system is stationary: further ahead, the forecasts move towards the mean the model implies, each area's own mean when the area means are removed, as the past matters less and less" : "The system is not stationary: the forecasts do not settle, and move further from the values the further ahead they go")
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "moran-residuals"
+label = "Moran's I of the Residuals"
+desc = "Moran's I of the residuals in each period fitted, on a line beside its expected value without spatial autocorrelation, with the share of periods where it is significant and a test for all of them together: whether the model leaves spatial dependence that its forecasts do not use"
+code = '''
+using ECharts
+
+{{?model!=spvar}} resid_sets = [(yname, res)]  # the residuals, stacked period by period
+{{?model=spvar}} resid_sets = [(m.varnames[k], res[:, k]) for k in 1:K]  # one equation's residuals per variable, in causal order
+T_res = size(res, 1) ÷ N  # the periods with residuals: L + 1 to the last period fitted
+results = [(name, panel_moran(r, W, N, T_res)) for (name, r) in resid_sets]  # Moran's I of each period's residuals, with its asymptotic test
+display(EChart(ec_width = 760, ec_height = 360, title = [ECharts.Title(text = "Moran's I of the residuals, period by period")],
+	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels[(T_fit - T_res + 1):T_fit])], yAxis = [ECharts.Axis(_type = "value", name = "Moran's I", scale = true)],
+	series = [[ECharts.XYSeries(name = "Moran's I, $(name)", _type = "line", data = [r.I_stat for r in mp.period_results]) for (name, mp) in results];
+		ECharts.XYSeries(name = "Expected without autocorrelation", _type = "line", data = [r.E_I for r in last(results[1]).period_results])]))
+println(rpad("Residuals of", 16), rpad("Mean I", 10), rpad("Periods p < 0.05", 20), rpad("Combined z", 14), "p-value")
+for (name, mp) in results
+	significant = count(r -> r.p_value < 0.05, mp.period_results)
+	println(rpad(name, 16), rpad(round(mp.pooled.I_stat, digits = 4), 10), rpad("$(significant) of $(T_res)", 20), rpad(round(mp.pooled.z_stat, digits = 2), 14), round(mp.pooled.p_value, digits = 4))
+end
+println("Expected value of Moran's I without spatial autocorrelation: ", round(results[1][2].period_results[1].E_I, digits = 4), "; about 5% of the periods are significant at 5% by chance alone")
+println("The combined test treats the periods as independent, which the residuals of one fit are not, as they share its coefficients: the documentation of panel_moran finds it mildly liberal")
+{{?model=star}} println("Every term of STAR is dated before the period it explains, so dependence between neighbours within a period stays in the residuals")
+{{?model=panelar}} println("Panel AR leaves the neighbours out, so dependence on their past values or on their values in the same period stays in the residuals")
+{{?model=spvar}} println("Spatial VAR has each variable's neighbours in the same period and the variables before it, so what is left is dependence these terms do not capture")
+'''
+
+[[actionGroups.actions]]
+id = "stationarity"
+label = "Stationarity"
+desc = "The roots of the fitted system, drawn against the unit circle, with the spectral radius, the largest of their sizes, and how long a shock takes to halve: whether the forecasts settle back towards the means or diverge, and how slowly"
+code = '''
+using ECharts
+
+# The matrices that carry the values of the last L periods into this period's forecast
+{{?model!=spvar}} A = [sum(m.phi[k + 1, l] .* Matrix(m.Wk[k + 1]) for k in 0:m.spatial_lags) for l in 1:m.temporal_lags]  # for lag l, the area's own value and, on STAR, its neighbours' rings, each with its coefficient
+{{?model=spvar}} A = [m.C0 \ C for C in m.C]  # for each lag, with the same-period terms solved out: the variables in causal order, one block of N areas after another
+n, P = size(A[1], 1), length(A)
+companion = zeros(n * P, n * P)  # the system written with one lag, the earlier periods carried along
+companion[1:n, :] = reduce(hcat, A)
+for l in 2:P
+	companion[((l - 1) * n + 1):(l * n), ((l - 2) * n + 1):((l - 1) * n)] = Matrix(1.0I, n, n)
+end
+roots = eigvals(companion)
+sizes = sort(abs.(roots), rev = true)
+radius = sizes[1]  # the spectral radius, as the model reports it
+edge = radius < 1 ? 1 : ceil(Int, radius)
+display(EChart(ec_width = 520, ec_height = 520, title = [ECharts.Title(text = "Roots of the system and the unit circle")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Real", min = -edge, max = edge)], yAxis = [ECharts.Axis(_type = "value", name = "Imaginary", min = -edge, max = edge)],
+	series = [ECharts.XYSeries(name = "Unit circle", _type = "line", showSymbol = false, data = [[cos(a), sin(a)] for a in range(0, 2 * pi, length = 181)]),
+		ECharts.XYSeries(name = "Roots", _type = "scatter", data = [[real(z), imag(z)] for z in roots])]))
+println(length(roots), " roots: ", n, " per lag", P > 1 ? ", for $(P) lags" : "")
+println("Spectral radius: ", round(radius, digits = 4), " (", round(m.spectral_radius, digits = 4), " as the model reports it)")
+println("Largest sizes: ", join(round.(sizes[1:min(5, end)], digits = 4), ", "), "; ", count(>(0.95), sizes), " root(s) above 0.95")
+if radius < 1
+	println("Stationary: every root is inside the unit circle, so the forecasts settle back towards the means")
+	println("In the long run a shock shrinks by a factor of about ", round(radius, digits = 4), " a period, and halves in about ", round(log(0.5) / log(radius), digits = 1), " periods")
+else
+	println("Not stationary: a root on or outside the unit circle, so the forecasts do not settle, and the further ahead, the further they move away")
+	println("A value that trends or wanders may need differencing before the fit, or a model of its trend")
+end
+'''
+
+[[actionGroups.actions]]
+id = "pesaran-cd"
+label = "Pesaran's CD Test"
+desc = "Pesaran's CD test of the residuals' correlation across all pairs of areas, with the exponent of cross-sectional dependence: whether a common factor moves every area together, which neither the neighbours nor the lags capture"
+code = '''
+{{?model!=spvar}} resid_sets = [(yname, res)]  # the residuals, stacked period by period
+{{?model=spvar}} resid_sets = [(m.varnames[k], res[:, k]) for k in 1:K]  # one equation's residuals per variable, in causal order
+T_res = size(res, 1) ÷ N  # the periods with residuals: L + 1 to the last period fitted
+reading = Dict(
+	:unidentified => "weak: the dependence is too weak for its exponent to be told from noise, which the neighbours and the lags can carry",
+	:semi_weak => "semi-weak: a common factor reaches many of the areas but not all, beyond what the neighbours and the lags carry",
+	:strong => "strong: a common factor moves nearly every area together, which no weight matrix absorbs")
+for (name, r) in resid_sets
+	v = dependence_verdict(r, N, T_res)  # Pesaran's CD test and the exponent alpha of cross-sectional dependence, with their thresholds
+	println("Residuals of ", name, ", ", N, " areas over ", T_res, " periods")
+	println("  CD statistic ", round(v.cd.stat, digits = 3), ", p-value ", round(v.cd.p_value, digits = 4), v.cd.p_value < 0.05 ? ": the dependence is stronger than the test's null of weak dependence" : ": consistent with weak dependence, which is not the same as independence")
+	println("  Mean correlation between pairs of areas ", round(v.cd.rho_bar, digits = 4), "; mean absolute correlation ", round(v.cd.abs_rho_bar, digits = 4), ", against ", round(v.cd.abs_rho_bar_null, digits = 4), " for independent areas")
+	println("  Exponent alpha: ", v.alpha === nothing ? "not identified, at or below 1/2" : "$(round(v.alpha.alpha, digits = 3)), 95% interval $(round(v.alpha.ci[1], digits = 3)) to $(round(v.alpha.ci[2], digits = 3))$(v.alpha.inference_valid ? "" : ", indicative only between 1/2 and 4/7")")
+	println("  Dependence: ", reading[v.kind])
+	v.cd.abs_rho_bar > 2 * v.cd.abs_rho_bar_null && abs(v.cd.rho_bar) < 0.05 && println("  The correlations are large but of both signs and cancel in the CD statistic: read the mean absolute correlation, not the statistic")
+end
+println("\nAlpha runs up to 1, a factor common to all areas; at or below 1/2 the dependence is weak, and SpatialEconometrics.jl calls it strong above 0.9")
+println("A strong common factor in the residuals, such as a shock to every area in the same period, is not forecast by the neighbours or the lags of these models")
+'''
+
+[[actionGroups]]
+id = "predict"
+label = "Predict"
+
+[[actionGroups.actions]]
+id = "forecast-beyond"
+label = "Forecast Beyond the Data"
+desc = "The model fitted again on every period, the held-back ones included, and the Horizon forecast after the last period of the data, with the forecasts of every area saved beside the panel file"
+code = '''
+# The fit and forecasts of the held-back periods stay as m and forecasts, for the steps that score them; these are m_all and ahead
+{{?model!=spvar}} isempty(xnames) || error("Forecasting beyond the data needs the explanatory variables' values in the periods forecast, which the panel file does not have: leave Explanatory Variables empty")
+{{?model!=spvar}} ybar_all = "{{areaMeans}}" == "remove" ? vec(mean(reshape(y, N, T_per), dims = 2)) : zeros(N)  # each area's mean over every period, with Area Means set to Remove
+{{?model!=spvar}} yc_all = y .- repeat(ybar_all, T_per)
+{{?model=star}} m_all = fit_star(yc_all, zeros(N * T_per, 0), W, N, T_per; spatial_lags = {{spatialLags}}, temporal_lags = L, spatial_weights = Symbol("{{spatialWeights}}"))
+{{?model=panelar}} m_all = fit_star(yc_all, zeros(N * T_per, 0), W, N, T_per; spatial_lags = 0, temporal_lags = L)
+{{?model!=spvar}} ahead = spatial_forecast(m_all, zeros(N * h, 0); h = h, y_history = yc_all[(N * (T_per - L) + 1):end]) .+ ybar_all  # N areas by h periods, the area means added back
+{{?model!=spvar}} saved, saved_names = ahead, [yname]
+{{?model!=spvar}} shown = yname
+{{?model=spvar}} m_all = fit_spvar(Y, W, N, T_per; ordering = 1:K, p = L, s = {{spatialLags}}, varnames = vnames)
+{{?model=spvar}} ahead_all = spvar_forecast(m_all, h; y_history = Y[(N * (T_per - L) + 1):end, :])  # N * h rows, one column per variable
+{{?model=spvar}} kshow = something(findfirst(==("{{dependent}}"), vnames), K)  # the Variable to Forecast, if it is one of the Variables, otherwise the last
+{{?model=spvar}} shown = vnames[kshow]
+{{?model=spvar}} ahead = reshape(ahead_all[:, kshow], N, h)  # N areas by h periods
+{{?model=spvar}} saved, saved_names = ahead_all, vnames
+println("Fitted again on periods ", labels[L + 1], " to ", labels[T_per], "; spectral radius ", round(m_all.spectral_radius, digits = 4), " (", round(m.spectral_radius, digits = 4), " without the ", H, " periods held back)")
+m_all.stationary || println("The system fitted on every period is not stationary: these forecasts diverge with the horizon")
+println("\nForecasts of ", shown, " after ", labels[T_per], ", the last period of the data")
+println(rpad("Step", 8), rpad("Mean", 12), rpad("Lowest", 12), "Highest")
+for s in 1:h
+	println(rpad("+$(s)", 8), rpad(round(mean(ahead[:, s]), digits = 3), 12), rpad(round(minimum(ahead[:, s]), digits = 3), 12), round(maximum(ahead[:, s]), digits = 3))
+end
+# Every area's forecasts, one row per area and step, beside the panel file
+area_names = String.(Tables.columntable(DBInterface.execute(con, "SELECT area::VARCHAR AS area FROM areas ORDER BY i")).area)
+out_path = joinpath(dirname(panel_path), splitext(basename(panel_path))[1] * "-forecasts.csv")
+open(out_path, "w") do io
+	println(io, join(["{{areaColumn}}"; "step"; saved_names], ","))
+	for s in 1:h, i in 1:N
+{{?model!=spvar}}		row = [saved[i, s]]  # N areas by h steps
+{{?model=spvar}}		row = saved[(s - 1) * N + i, :]  # N * h rows, one column per variable
+		println(io, join([area_names[i]; string(s); string.(round.(row, digits = 4))], ","))
+	end
+end
+println("\nSaved ", N * h, " rows, every area at every step, in ", out_path)
+println("Steps count periods after ", labels[T_per], ": +1 is the next period of the Period Column")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "accuracy-by-horizon"
+label = "Forecast Accuracy by Horizon"
+desc = "STAR, Spatial VAR, Panel AR and each area's last value, fitted on the same periods and scored on the periods held back, step by step: the RMSE of each against the horizon on a chart, and a table of RMSE and MAE, so that what the neighbours and the other variables add can be read at each horizon"
+code = '''
+using ECharts
+
+H >= 1 || error("Hold back one or more periods, under Periods Held Back, so that the forecasts can be scored")
+hs = min(h, H)  # the steps whose values are known
+{{?model!=spvar}} target = yname
+{{?model=spvar}} target = vnames[something(findfirst(==("{{dependent}}"), vnames), K)]  # the Variable to Forecast, if it is one of the Variables, otherwise the last
+y_t = column(target)
+observed_t = reshape(y_t, N, T_per)[:, (T_fit + 1):(T_fit + hs)]  # the values held back, N areas by hs steps
+# STAR and Panel AR: the settings of the tab, with its explanatory variables on STAR and Panel AR, none on Spatial VAR
+bar = "{{areaMeans}}" == "remove" ? vec(mean(reshape(y_t[1:(N * T_fit)], N, T_fit), dims = 2)) : zeros(N)
+yt_c = y_t .- repeat(bar, T_per)
+history_t = yt_c[(N * (T_fit - L) + 1):(N * T_fit)]
+{{?model!=spvar}} X_fit, X_ahead = Xc[1:(N * T_fit), :], Xc[(N * T_fit + 1):(N * (T_fit + hs)), :]
+{{?model=spvar}} X_fit, X_ahead = zeros(N * T_fit, 0), zeros(N * hs, 0)
+m_star = fit_star(yt_c[1:(N * T_fit)], X_fit, W, N, T_fit; spatial_lags = max(1, {{spatialLags}}), temporal_lags = L, spatial_weights = Symbol("{{spatialWeights}}"))
+m_ar = fit_star(yt_c[1:(N * T_fit)], X_fit, W, N, T_fit; spatial_lags = 0, temporal_lags = L)
+methods = [("STAR", spatial_forecast(m_star, X_ahead; h = hs, y_history = history_t) .+ bar),
+	("Panel AR", spatial_forecast(m_ar, X_ahead; h = hs, y_history = history_t) .+ bar),
+	("Last value", repeat(reshape(y_t, N, T_per)[:, T_fit], 1, hs))]
+# Spatial VAR: the Variables, when the variable scored is one of them and none has missing values
+vlist = String.(strip.(split("{{variables}}", ",")))
+kt = findfirst(==(target), vlist)
+gaps = only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM obs WHERE $(join(("\"$v\" IS NULL" for v in vlist), " OR "))")).n)
+if kt !== nothing && length(vlist) >= 2 && gaps == 0
+	Yv = reduce(hcat, column.(vlist))
+	m_var = fit_spvar(Yv[1:(N * T_fit), :], W, N, T_fit; ordering = 1:length(vlist), p = L, s = max(1, {{spatialLags}}), varnames = vlist)
+	insert!(methods, 2, ("Spatial VAR", reshape(spvar_forecast(m_var, hs; y_history = Yv[(N * (T_fit - L) + 1):(N * T_fit), :])[:, kt], N, hs)))
+else
+	println("Spatial VAR left out: ", target, " is not one of two or more Variables without missing values")
+end
+rmse(f) = vec(sqrt.(mean((f .- observed_t) .^ 2, dims = 1)))  # one value per step, over the areas
+display(EChart(ec_width = 720, ec_height = 360, title = [ECharts.Title(text = "RMSE of the forecasts of $(target), step by step")],
+	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels[(T_fit + 1):(T_fit + hs)])], yAxis = [ECharts.Axis(_type = "value", name = "RMSE", scale = true)],
+	series = [ECharts.XYSeries(name = name, _type = "line", data = rmse(f)) for (name, f) in methods]))
+println(rpad("Step", 6), rpad("Period", 12), join((rpad(name, 14) for (name, _) in methods)))
+for s in 1:hs
+	println(rpad(s, 6), rpad(labels[T_fit + s], 12), join((rpad(round(rmse(f)[s], digits = 3), 14) for (_, f) in methods)))
+end
+naive = sqrt(mean((last(methods)[2] .- observed_t) .^ 2))
+println("\n", rpad("Over all steps", 18), rpad("RMSE", 10), rpad("MAE", 10), "RMSE / last value")
+for (name, f) in methods
+	overall = sqrt(mean((f .- observed_t) .^ 2))
+	println(rpad(name, 18), rpad(round(overall, digits = 3), 10), rpad(round(mean(abs.(f .- observed_t)), digits = 3), 10), round(overall / naive, digits = 3))
+end
+println("\nFitted on periods to ", labels[T_fit], " and scored on the ", hs, " period(s) after it; below 1 in the last column, more accurate than each area's last value")
+println("STAR with ", max(1, {{spatialLags}}), " spatial lag(s) and Spatial VAR with ", max(1, {{spatialLags}}), " ring(s) of neighbours, all with ", L, " temporal lag(s)", isempty(X_ahead) ? "" : "; STAR and Panel AR with the explanatory variables, whose values in the periods forecast are known only because they were held back")
+println("One origin and one set of periods held back: differences between the models are those of these periods, not a test")
+'''
+
+[[actionGroups.actions]]
+id = "powers-orders"
+label = "Powers Against Orders of W"
+desc = "STAR with two or more spatial lags fitted twice, with the rings of neighbours as powers of the weights and as order-k neighbours: their coefficients side by side, their log-likelihood, AIC and BIC, their spectral radius and the accuracy of their forecasts of the periods held back"
+models = ["star"]
+code = '''
+S2 = max(2, {{spatialLags}})  # with one spatial lag the two definitions are the same
+weights_kinds = [("Powers of W", :powers), ("Order-k", :orders)]
+# W^k, the weights multiplied k times, counts the paths of k steps between two areas, so it reaches the area itself and nearer rings; order k keeps only the areas exactly k steps away
+fits = [(name, fit_star(yc[fitted], Xc[fitted, :], W, N, T_fit; spatial_lags = S2, temporal_lags = L, spatial_weights = kind, varnames = xnames)) for (name, kind) in weights_kinds]
+println("STAR with ", S2, " spatial lags and ", L, " temporal lag(s), fitted on periods ", labels[L + 1], " to ", labels[T_fit], "\n")
+println(rpad("", 18), join((rpad(name, 24) for (name, _) in fits)))
+for j in eachindex(fits[1][2].coef)  # the same terms in the same order; the names say W^k for powers and W with k in brackets for orders
+	println(rpad(fits[1][2].coefnames[j], 18), join((rpad("$(round(f.coef[j], digits = 4)) ($(round(sqrt(max(0.0, f.vcov[j, j])), digits = 4)))", 24) for (_, f) in fits)))
+end
+println("Estimates with their standard errors in brackets\n")
+hs = min(h, H)  # the steps whose values are known
+history_s = yc[(N * (T_fit - L) + 1):(N * T_fit)]
+X_ahead = isempty(xnames) ? zeros(N * hs, 0) : Xc[(N * T_fit + 1):(N * (T_fit + hs)), :]
+println(rpad("", 18), rpad("Log-likelihood", 16), rpad("AIC", 12), rpad("BIC", 12), rpad("Spectral radius", 18), hs > 0 ? "RMSE, held back" : "")
+for (name, f) in fits
+	n_obs, k = f.N * f.T_eff, length(f.coef)  # the same observations in both fits, so their criteria compare
+	score = ""
+	if hs > 0
+		ahead_s = spatial_forecast(f, X_ahead; h = hs, y_history = history_s) .+ ybar
+		score = string(round(sqrt(mean((ahead_s .- actual[:, (T_fit + 1):(T_fit + hs)]) .^ 2)), digits = 4))
+	end
+	println(rpad(name, 18), rpad(round(f.loglik, digits = 2), 16), rpad(round(-2 * f.loglik + 2 * k, digits = 2), 12), rpad(round(-2 * f.loglik + k * log(n_obs), digits = 2), 12), rpad(round(f.spectral_radius, digits = 4), 18), score)
+end
+println("\nThe two fits have the same number of coefficients, so AIC and BIC rank them as the log-likelihood does: the higher log-likelihood, the lower criteria")
+println("Pfeifer and Deutsch define the rings as order-k neighbours; SpatialEconometrics.jl takes powers of W by default")
+'''
+
+[[actionGroups.actions]]
+id = "lag-orders"
+label = "Lag Orders"
+desc = "STAR fitted for every spatial order from 0, Panel AR, to 3 and every temporal order from 1 to 3, on the same periods: AIC, BIC and the RMSE of the forecasts of the periods held back for each pair of orders, with the pair each prefers"
+models = ["star", "panelar"]
+code = '''
+S_grid, L_grid = 0:3, 1:3  # spatial orders, 0 being Panel AR, and temporal orders
+L_top = maximum(L_grid)
+T_fit > L_top + 1 || error("Too few periods fitted for ", L_top, " temporal lags: hold back fewer periods")
+hs = min(h, H)  # the steps whose values are known
+X_ahead = isempty(xnames) ? zeros(N * hs, 0) : Xc[(N * T_fit + 1):(N * (T_fit + hs)), :]
+aic, bic, score = fill(NaN, length(S_grid), length(L_grid)), fill(NaN, length(S_grid), length(L_grid)), fill(NaN, length(S_grid), length(L_grid))
+for (a, S) in enumerate(S_grid), (b, Lg) in enumerate(L_grid)
+	skip = L_top - Lg  # periods left out at the start, so that every fit explains periods L_top + 1 to the last fitted
+	rows = (skip * N + 1):(N * T_fit)
+	f = try
+		fit_star(yc[rows], Xc[rows, :], W, N, T_fit - skip; spatial_lags = S, temporal_lags = Lg, spatial_weights = Symbol("{{spatialWeights}}"), varnames = xnames)
+	catch e
+		e isa ArgumentError || rethrow()
+		nothing  # a design the package refuses: a power of W that repeats lower ones, or an order beyond the neighbours' graph
+	end
+	f === nothing && continue
+	n_obs, k = f.N * f.T_eff, length(f.coef)
+	aic[a, b], bic[a, b] = -2 * f.loglik + 2 * k, -2 * f.loglik + k * log(n_obs)
+	if hs > 0
+		ahead_s = spatial_forecast(f, X_ahead; h = hs, y_history = yc[(N * (T_fit - Lg) + 1):(N * T_fit)]) .+ ybar
+		score[a, b] = sqrt(mean((ahead_s .- actual[:, (T_fit + 1):(T_fit + hs)]) .^ 2))
+	end
+end
+function show_grid(title, values, digits)
+	println(title)
+	println(rpad("", 22), join((rpad("L = $(Lg)", 14) for Lg in L_grid)))
+	for (a, S) in enumerate(S_grid)
+		println(rpad(S == 0 ? "S = 0, Panel AR" : "S = $(S)", 22), join((rpad(isnan(v) ? "-" : string(round(v, digits = digits)), 14) for v in values[a, :])))
+	end
+	if any(!isnan, values)
+		best = argmin(map(v -> isnan(v) ? Inf : v, values))
+		println("Lowest: S = ", S_grid[best[1]], ", L = ", L_grid[best[2]], "\n")
+	end
+end
+println("STAR on periods ", labels[L_top + 1], " to ", labels[T_fit], " for every pair of orders, with ", "{{spatialWeights}}" == "powers" ? "powers of W" : "order-k neighbours", "\n")
+show_grid("AIC", aic, 1)
+show_grid("BIC", bic, 1)
+hs > 0 && show_grid("RMSE of the forecasts of the $(hs) period(s) held back", score, 4)
+println("BIC penalises each coefficient more than AIC once there are more than about 7 observations, so it tends to choose the smaller orders")
+println("A dash marks a pair the package refused: a power of W that repeats lower ones, or an order beyond the farthest neighbours")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "impulse-responses"
+label = "Space-Time Impulse Responses"
+desc = "How a one-period shock to one area spreads over the following periods: on STAR and Panel AR the response of the area itself and the spillover to the others, on Spatial VAR the response of each variable to a shock to each, at the area and at each ring of its neighbours, with the effects added up over the Horizon"
+code = '''
+using ECharts
+
+steps = 0:h  # periods after the shock, 0 being the period of the shock
+{{?model!=spvar}} irf = space_time_irf(m; horizon = h, store_matrices = false)  # the response of every area to a unit shock to each, averaged over the areas
+{{?model!=spvar}} cum = space_time_irf(m; horizon = h, cumulative = true, store_matrices = false)  # the same, added up over the periods
+{{?model!=spvar}} display(EChart(ec_width = 720, ec_height = 360, title = [ECharts.Title(text = "Response to a unit shock to $(yname) in one area")],
+{{?model!=spvar}}	xAxis = [ECharts.Axis(_type = "category", name = "Periods after", data = string.(steps))], yAxis = [ECharts.Axis(_type = "value", name = "Response", scale = true)],
+{{?model!=spvar}}	series = [ECharts.XYSeries(name = "Own area", _type = "line", data = irf.own), ECharts.XYSeries(name = "Other areas", _type = "line", data = irf.spillover), ECharts.XYSeries(name = "Total", _type = "line", data = irf.total)]))
+{{?model!=spvar}} println(rpad("After", 8), rpad("Own area", 12), rpad("Other areas", 14), rpad("Total", 12), "Total so far")
+{{?model!=spvar}} for j in eachindex(steps)
+{{?model!=spvar}}	println(rpad(steps[j], 8), rpad(round(irf.own[j], digits = 4), 12), rpad(round(irf.spillover[j], digits = 4), 14), rpad(round(irf.total[j], digits = 4), 12), round(cum.total[j], digits = 4))
+{{?model!=spvar}} end
+{{?model!=spvar}} println("\nAveraged over the areas shocked: Own area, the response of the area shocked; Other areas, the sum of the responses of all the others; Total, the two together")
+{{?model!=spvar}} println(m.stationary ? "Added up, the Total tends to the long-run effect of the shock, $(round(cum.total[end], digits = 4)) after $(h) periods" : "The system is not stationary: the responses do not die out, and their sum does not settle")
+{{?model=spvar}} stir = space_time_stir(m; horizon = h)  # Di Giacinto's outward responses, averaged over the areas shocked
+{{?model=spvar}} stir_cum = space_time_stir(m; horizon = h, cumulative = true)
+{{?model=spvar}} ring(l) = l == 0 ? "Own area" : "Ring $(l)"
+{{?model=spvar}} for k in 1:K, r in 1:K  # the response of variable k to a shock to variable r
+{{?model=spvar}}	display(EChart(ec_width = 640, ec_height = 300, title = [ECharts.Title(text = "Response of $(m.varnames[k]) to a shock to $(m.varnames[r])")],
+{{?model=spvar}}		xAxis = [ECharts.Axis(_type = "category", name = "Periods after", data = string.(steps))], yAxis = [ECharts.Axis(_type = "value", name = "Response", scale = true)],
+{{?model=spvar}}		series = [ECharts.XYSeries(name = ring(l), _type = "line", data = stir.outward[:, l + 1, k, r]) for l in stir.orders]))
+{{?model=spvar}} end
+{{?model=spvar}} println("Responses added up over ", h, " periods, at the area shocked and at each ring of its neighbours")
+{{?model=spvar}} println(rpad("Response of", 14), rpad("Shock to", 14), join((rpad(ring(l), 12) for l in stir.orders)))
+{{?model=spvar}} for k in 1:K, r in 1:K
+{{?model=spvar}}	println(rpad(m.varnames[k], 14), rpad(m.varnames[r], 14), join((rpad(round(stir_cum.outward[end, l + 1, k, r], digits = 4), 12) for l in stir.orders)))
+{{?model=spvar}} end
+{{?model=spvar}} println("\nThe shock is to one variable's equation in one area; within its period it reaches the variables after it in the causal order, ", join(m.varnames, ", then "), ", but not those before it")
+{{?model=spvar}} println("A ring's response is the average response of the areas that number of steps away from the area shocked, weighted by that ring's weights, which sum to 1")
+'''
+
+[[actionGroups.actions]]
+id = "spatial-interaction"
+label = "Spatial Interaction Test"
+desc = "A test of whether the neighbours matter at all: on STAR and Panel AR, a Wald test that every coefficient of the neighbours' past values in STAR is zero, which leaves Panel AR; on Spatial VAR, Di Giacinto's likelihood ratio test against the panel VAR without spatial terms"
+code = '''
+{{?model!=spvar}} S_test = max(1, {{spatialLags}})  # on Panel AR, STAR with the Spatial Lags, at least 1, fitted to test against it
+{{?model!=spvar}} m_sp = fit_star(yc[fitted], Xc[fitted, :], W, N, T_fit; spatial_lags = S_test, temporal_lags = L, spatial_weights = Symbol("{{spatialWeights}}"), varnames = xnames)
+{{?model!=spvar}} spatial = [(l - 1) * (S_test + 1) + k + 1 for l in 1:L for k in 1:S_test]  # the positions of W^k y(t-l), k >= 1, in the coefficients: lag by lag, ring 0 to S in each
+{{?model!=spvar}} R = zeros(length(spatial), length(m_sp.coef))
+{{?model!=spvar}} for (row, j) in enumerate(spatial)
+{{?model!=spvar}}	R[row, j] = 1.0
+{{?model!=spvar}} end
+{{?model!=spvar}} test = wald_test(m_sp, R, zeros(length(spatial)))  # every coefficient of the neighbours' past values zero
+{{?model!=spvar}} println("STAR with ", S_test, " spatial lag(s) and ", L, " temporal lag(s): the coefficients of the neighbours' past values")
+{{?model!=spvar}} for j in spatial
+{{?model!=spvar}}	println("  ", rpad(m_sp.coefnames[j], 18), rpad(round(m_sp.coef[j], digits = 4), 12), "standard error ", round(sqrt(max(0.0, m_sp.vcov[j, j])), digits = 4))
+{{?model!=spvar}} end
+{{?model!=spvar}} println("\nWald test that all ", test.df, " are zero, which leaves Panel AR: statistic ", round(test.stat, digits = 3), ", p-value ", round(test.p_value, digits = 4))
+{{?model!=spvar}} println(test.p_value < 0.05 ? "Rejected at 5%: the neighbours' past values help explain each area's value, beyond its own past" : "Not rejected at 5%: the neighbours' past values add nothing clear to the area's own past")
+{{?model!=spvar}} println("With the standard errors of least squares, against a chi-squared distribution with ", test.df, " degrees of freedom")
+{{?model=spvar}} m.s >= 1 || error("Spatial VAR with no spatial lag has no spatial interaction to test: set Spatial Lags to 1 or more")
+{{?model=spvar}} test = lr_spatial_interaction(m, Y[fitted, :], W)  # the same data, refitted with no spatial terms: the panel VAR, each area on its own past and the same period's variables before it
+{{?model=spvar}} println("Spatial VAR with ", test.s, " ring(s) of neighbours against the panel VAR without them")
+{{?model=spvar}} println("  Log-likelihood: ", round(test.loglik_full, digits = 2), " with the neighbours, ", round(test.loglik_restricted, digits = 2), " without")
+{{?model=spvar}} println("  Likelihood ratio statistic ", round(test.stat, digits = 3), " on ", test.df, " degrees of freedom, p-value ", round(test.p_value, digits = 4))
+{{?model=spvar}} println(test.p_value < 0.05 ? "Rejected at 5%: the neighbours, in the same period or in the past, matter for some of the variables" : "Not rejected at 5%: the panel VAR, without the neighbours, is not clearly worse")
+{{?model=spvar}} println("The chi-squared distribution of the statistic holds as the periods grow with the areas fixed")
+println("A test of the fit on the periods fitted; Forecast Accuracy by Horizon shows what the neighbours add to the forecasts of the periods held back")
+'''
+
+[[wikis]]
+name = "Factsheet"
+file = "stforecast/factsheet.md"
+bundled = true
+description = "One-page reference: what each tab prints, the forecasts and scores, the inputs and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "stforecast/overview.md"
+bundled = true
+description = "Forecasting areas over many periods: the space-time autoregression, the spatial VAR and the panel autoregression without space"
+
+[[wikis]]
+name = "Forecasting in Space and Time"
+file = "stforecast/forecasting.md"
+bundled = true
+description = "Dynamic forecasts, explanatory variables, stationarity, how a shock spreads, and scoring on the periods held back"
+
+[[wikis]]
+name = "Decision Guide"
+file = "stforecast/decision-guide.md"
+bundled = true
+description = "Which tab, STAR or a spatial VAR, the causal ordering, powers or order-k neighbours, the lag orders and the area means"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "STAR"
+file = "stforecast/star.md"
+bundled = true
+
+[[wikis]]
+name = "Spatial VAR"
+file = "stforecast/spvar.md"
+bundled = true
+
+[[wikis]]
+name = "Panel AR"
+file = "stforecast/panelar.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "PD1980a"
+
+[[references]]
+key = "Gia2010a"
+
+[[references]]
+key = "Pes2015a"
+
+[[references]]
+key = "HK2006a"
+
+[[faq]]
+question = "Which tab of the Spatio-Temporal Forecasting panel should I start with?"
+answer = '''
+STAR for one variable whose value in each area follows its own past and its neighbours' past: it allows any number of spatial and temporal lags and is estimated by least squares. Spatial VAR for several variables that move together, each possibly responding to the others within a period, with the neighbours' values in the same period and a causal ordering of the variables. Panel AR is the benchmark: each area's own past only, fitted and scored on the same periods, to see what the neighbours add.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "What does the causal ordering of the Spatial VAR do?"
+answer = '''
+The Variables are listed in causal order: within a period, each variable can respond to those before it, not to those after it. The documentation of fit_spvar states that the identification of the model's contemporaneous matrix rests entirely on this ordering, that the data does not settle it, and that reversing it changes the impulse responses, which is why the ordering has no default. The matrix is block triangular across the variables, so within each variable the areas still interact both ways.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How are the forecasts of the panel scored?"
+answer = '''
+Against the values of the Periods Held Back, left out of the fit: each tab prints the root mean squared error and the mean absolute error over the areas at each step ahead. The Forecast Accuracy by Horizon step scores STAR, Spatial VAR and Panel AR on the same variable, areas and periods, and divides each RMSE by that of each area's last value carried forward. Hyndman and Koehler (2006) find many earlier accuracy measures inadequate and propose the mean absolute scaled error for comparing accuracy across multiple series.
+'''
+wiki = "Forecasting in Space and Time"
+
+[[faq]]
+question = "Why do the forecasts grow without settling?"
+answer = '''
+Because the fitted system is not stationary. SpatialEconometrics.jl reports the spectral radius of the companion matrix, which must be below one, the form of Pfeifer and Deutsch's condition that every root lies inside the unit circle. When it is not, spatial_forecast and spvar_forecast warn and return diverging forecasts rather than failing, the documentation calling the divergence the honest answer for those parameters. The Stationarity step draws the roots against the unit circle.
+'''
+wiki = "Forecasting in Space and Time"
+
+[[faq]]
+question = "Should I remove the area means on STAR and Panel AR?"
+answer = '''
+fit_star has one intercept for all the areas. With Area Means set to Remove, the STAR and Panel AR tabs subtract each area's mean over the periods fitted before the fit and add it back to the forecasts, so that areas at different levels share the dynamics; with Keep, the values are fitted as they are. fit_spvar always removes the means, which its documentation states is the same as estimating an intercept for each area and carries a bias of order one over the number of periods.
+'''
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "Should the rings of STAR be powers of W or order-k neighbours?"
+answer = '''
+Pfeifer and Deutsch (1980) define the k-th ring as the neighbours of order k, the areas exactly k steps away. fit_star takes powers of the weights by default and the order-k neighbours on request. The two coincide with one spatial lag and differ from the second: the k-th power counts the paths of k steps between two areas, places weight on the area itself and keeps first-order neighbours wherever the map has triangles. The Powers Against Orders of W step fits STAR both ways.
+'''
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "Why is STAR estimated by least squares?"
+answer = '''
+Every regressor of STAR is dated before the period it explains, so none is correlated with that period's error and least squares is consistent without the Jacobian a contemporaneous spatial lag requires. The documentation of fit_star gives this as the reason any lag orders are affordable. The price is that STAR has no spatial feedback within a period.
+'''
+wiki = "STAR"
+hidden = true
+
+[[faq]]
+question = "Can I forecast with explanatory variables?"
+answer = '''
+On STAR and Panel AR, explanatory variables enter in the same period as the value they explain, so spatial_forecast needs their values in every period forecast. Within the periods held back those values are known, and the Horizon cannot then pass the periods held back; after the end of the data they are not known, and Forecast Beyond the Data forecasts only without explanatory variables. fit_spvar takes no explanatory variables: its variables explain one another.
+'''
+wiki = "Forecasting in Space and Time"
+hidden = true
+
+[[faq]]
+question = "Why does the Spatial VAR need many periods?"
+answer = '''
+The documentation of fit_spvar states that its inference holds as the number of periods grows with the number of areas fixed, the asymptotics of structural VAR models, whereas the package's other panel estimators are consistent as the number of areas grows; it calls bringing a wide, short panel to fit_spvar a mistake. Removing each area's means also carries a bias of order one over the number of periods.
+'''
+wiki = "Spatial VAR"
+hidden = true
+
+[[faq]]
+question = "What does a rejection of Pesaran's CD test on the residuals of Panel AR mean?"
+answer = '''
+That the residuals are correlated across the areas more strongly than the test's null of weak dependence, which Pesaran (2015) argues is more appropriate than independence in panels of many units. The documentation of pesaran_cd notes that a rejection does not by itself say the dependence comes from a common factor; the exponent of cross-sectional dependence, reported beside the test, tells them apart, the strong case being a factor that touches nearly every area and that no weight matrix absorbs.
+'''
+wiki = "Panel AR"
+hidden = true
