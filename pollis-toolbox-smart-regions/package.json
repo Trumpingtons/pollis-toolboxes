@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
   "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -34,23 +34,13 @@
         ],
         "panels": [
           {
-            "id": "geofiles", "command": "pollis.smartRegions.geofiles", "title": "Geospatial Vector Files", "menuTitle": "GeoJSON Files", "submenu": "accessFiles", "group": "1_files", "order": 1, "data": "panels/geofiles.toml", "defaultModel": "geojson", "decisionFirstColumn": "Format",
-            "tabs": [
-              { "model": "gpkg", "command": "pollis.smartRegions.geofiles.gpkg", "title": "GeoPackage Files" },
-              { "model": "shapefile", "command": "pollis.smartRegions.geofiles.shapefile", "title": "Shapefiles" },
-              { "model": "geoparquet", "command": "pollis.smartRegions.geofiles.geoparquet", "title": "GeoParquet and FlatGeobuf Files" },
-              { "model": "kml", "command": "pollis.smartRegions.geofiles.kml", "title": "KML and KMZ Files" },
-              { "model": "gpx", "command": "pollis.smartRegions.geofiles.gpx", "title": "GPX Files" }
-            ]
+            "id": "geofiles", "command": "pollis.smartRegions.geofiles", "title": "Geospatial Vector Files", "submenu": "accessFiles", "group": "1_files", "order": 1, "data": "panels/geofiles.toml", "defaultModel": "geojson", "decisionFirstColumn": "Format"
           },
           {
             "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "Base Map", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map"
           },
           {
-            "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "menuTitle": "Global Moran's I", "submenu": "spatialStatistics", "group": "1_autocorrelation", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic",
-            "tabs": [
-              { "model": "local", "command": "pollis.smartRegions.autocorr.local", "title": "Local Moran (LISA)" }
-            ]
+            "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "submenu": "spatialStatistics", "group": "1_autocorrelation", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic"
           },
           {
             "id": "kriging", "command": "pollis.smartRegions.kriging", "title": "Kriging", "submenu": "spatialStatistics", "group": "2_kriging", "order": 1, "data": "panels/kriging.toml", "defaultModel": "variogram", "decisionFirstColumn": "Method"
