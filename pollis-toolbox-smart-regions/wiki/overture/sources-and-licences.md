@@ -2,7 +2,7 @@
 
 ## The Sources Column
 
-Every Overture feature has a column sources, a list of the datasets it comes from: for each, the dataset, its licence, the record's identifier in it, when it was updated, and the property it gave ([Overture Maps Foundation (2026)](#ref-OMF2026a)). A source whose property is empty gave the feature itself; a source with a property such as /properties/confidence gave only that property. The Overture Maps panel takes the source of the feature itself as its main dataset and licence, and keeps the full list in the table `features`.
+Every Overture feature has a column sources, a list of the datasets it comes from: for each, the dataset, its licence, the record's identifier in it, when it was updated, and the property it gave ([Overture Maps Foundation (2026)](#ref-OMF2026a)). A source whose property is empty gave the feature itself; a source with a property such as /properties/confidence gave only that property. The Overture Maps Data panel takes the source of the feature itself as its main dataset and licence, and keeps the full list in the table `features`.
 
 ## Licences by Theme
 
@@ -10,7 +10,7 @@ The licence of Overture data depends on the theme ([Overture Maps Foundation (20
 
 ## Attribution
 
-Overture suggests citing its data as Overture Maps Foundation, overturemaps.org, with the date the data were accessed, and asks users to meet the attribution requirements of the upstream sources ([Overture Maps Foundation (2026)](#ref-OMF2026a)). For data that are wholly or partly from OpenStreetMap, Overture itself writes © OpenStreetMap contributors, Overture Maps Foundation. Sources and Licences in the Overture Maps panel lists the datasets and licences of the features read, so the attributions they need can be found.
+Overture suggests citing its data as Overture Maps Foundation, overturemaps.org, with the date the data were accessed, and asks users to meet the attribution requirements of the upstream sources ([Overture Maps Foundation (2026)](#ref-OMF2026a)). For data that are wholly or partly from OpenStreetMap, Overture itself writes © OpenStreetMap contributors, Overture Maps Foundation. Sources and Licences in the Overture Maps Data panel lists the datasets and licences of the features read, so the attributions they need can be found.
 
 ## Sources of Places
 

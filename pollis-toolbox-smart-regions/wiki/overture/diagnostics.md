@@ -2,7 +2,7 @@
 
 ## Releases That Expire
 
-Overture keeps a release in its public buckets on Amazon S3 and Microsoft Azure for at most 60 days, two monthly releases, to comply with data protection regulations such as the right to be forgotten of the GDPR ([Overture Maps Foundation (2026)](#ref-OMF2026a)). A release named in the Release input of the Overture Maps panel that has expired has no catalogue and no files. Release and Files lists the releases Overture's catalogue still has; the Release input set to latest always reads the newest. To keep the features of a release, save them with Save as GeoParquet.
+Overture keeps a release in its public buckets on Amazon S3 and Microsoft Azure for at most 60 days, two monthly releases, to comply with data protection regulations such as the right to be forgotten of the GDPR ([Overture Maps Foundation (2026)](#ref-OMF2026a)). A release named in the Release input of the Overture Maps Data panel that has expired has no catalogue and no files. Release and Files lists the releases Overture's catalogue still has; the Release input set to latest always reads the newest. To keep the features of a release, save them with Save as GeoParquet.
 
 ## Schema Versions
 
@@ -10,7 +10,7 @@ Overture tags each release with its date, yyyy-mm-dd.x, and with the version of 
 
 ## Columns Without Values
 
-Column Completeness in the Overture Maps panel gives, for each column of the features read, the share of features that have a value. Many columns are optional, and Gabrielli, Sulis, Thabit and Minghini found low and spatially uneven completeness of height, floors and other building attributes in OpenStreetMap and Overture Maps across the European Union ([Gabrielli, Sulis, Thabit and Minghini (2026)](#ref-GSTM2026a)). A measure computed from a column that few features have, such as the median height of buildings, describes those features, not the area.
+Column Completeness in the Overture Maps Data panel gives, for each column of the features read, the share of features that have a value. Many columns are optional, and Gabrielli, Sulis, Thabit and Minghini found low and spatially uneven completeness of height, floors and other building attributes in OpenStreetMap and Overture Maps across the European Union ([Gabrielli, Sulis, Thabit and Minghini (2026)](#ref-GSTM2026a)). A measure computed from a column that few features have, such as the median height of buildings, describes those features, not the area.
 
 ## Places That May Not Exist
 
@@ -18,11 +18,11 @@ Overture gives each place a confidence between 0 and 1, the likelihood that the 
 
 ## Features Cut by the Area
 
-The Overture Maps panel keeps every feature whose geometry meets the area, whole, so buildings, segments and divisions that cross its edge extend beyond it. Counts and totals of the Next Steps include those features whole; Building Measures and Division Areas also give the part inside the area, and Network Measures counts only the connectors inside it. Divisions read slowly, since the polygons of a country or region overlap any area within them and are large.
+The Overture Maps Data panel keeps every feature whose geometry meets the area, whole, so buildings, segments and divisions that cross its edge extend beyond it. Counts and totals of the Next Steps include those features whole; Building Measures and Division Areas also give the part inside the area, and Network Measures counts only the connectors inside it. Divisions read slowly, since the polygons of a country or region overlap any area within them and are large.
 
 ## Biases in Building Data
 
-Gevaert, Buunk and Van den Homberg audited four global building datasets, Google Open Buildings, Microsoft's building footprints, Overture Maps and OpenStreetMap, for biases in Tanzania and the Philippines ([Gevaert, Buunk and Van den Homberg (2024)](#ref-GBH2024a)). The accuracy of all four was lower than expected in those countries, and they found biases with respect to wealth, population density, urban and rural areas and building size. Sources and Licences and Sources Side by Side in the Overture Maps panel show which datasets the buildings of an area come from, a first step in judging whether such biases may apply.
+Gevaert, Buunk and Van den Homberg audited four global building datasets, Google Open Buildings, Microsoft's building footprints, Overture Maps and OpenStreetMap, for biases in Tanzania and the Philippines ([Gevaert, Buunk and Van den Homberg (2024)](#ref-GBH2024a)). The accuracy of all four was lower than expected in those countries, and they found biases with respect to wealth, population density, urban and rural areas and building size. Sources and Licences and Sources Side by Side in the Overture Maps Data panel show which datasets the buildings of an area come from, a first step in judging whether such biases may apply.
 
 ## References
 

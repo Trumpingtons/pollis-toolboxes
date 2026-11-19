@@ -1,8 +1,8 @@
-# Overture Maps: places, buildings, transportation, divisions and addresses of an area, read with DuckDB from
+# Overture Maps Data: places, buildings, transportation, divisions and addresses of an area, read with DuckDB from
 # Overture's GeoParquet files in the cloud, only the parts of the files the area needs
 
 [meta]
-title = "Overture Maps"
+title = "Overture Maps Data"
 viewType = "pollis.overture"
 defaultModel = "places"
 decisionFirstColumn = "Theme"

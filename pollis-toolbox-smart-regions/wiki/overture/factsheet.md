@@ -1,8 +1,8 @@
-# Overture Maps — Factsheet
+# Overture Maps Data — Factsheet
 
-**Overture Maps** is open map data released every month by the Overture Maps Foundation, in six themes: addresses, base, buildings, divisions, places and transportation ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Each release is a set of GeoParquet files on Amazon S3 and Microsoft Azure, which tools such as DuckDB can query in place. The Overture Maps panel of the Smart Regions Toolbox reads five of the themes for an area with DuckDB.jl and DuckDB's spatial and httpfs extensions ([Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
+**Overture Maps** is open map data released every month by the Overture Maps Foundation, in six themes: addresses, base, buildings, divisions, places and transportation ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Each release is a set of GeoParquet files on Amazon S3 and Microsoft Azure, which tools such as DuckDB can query in place. The Overture Maps Data panel of the Smart Regions Toolbox reads five of the themes for an area with DuckDB.jl and DuckDB's spatial and httpfs extensions ([Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
 
-| Item | Overture Maps panel |
+| Item | Overture Maps Data panel |
 |---|---|
 | **Purpose** | Read the places, buildings, transportation, divisions or addresses of an area, check them, measure them and save them |
 | **Input** | An area as west, south, east, north in degrees; a release, or latest |
@@ -11,15 +11,15 @@
 | **Output** | The table `features`: one row per feature, with its main columns, its main source and licence, all its sources, and its geometry as `geom` |
 | **Key choices** | The area; the release; the category and minimum confidence of places; the network of segments; the subtype of divisions |
 
-## How Does the Overture Maps Panel Find the Files of an Area?
+## How Does the Overture Maps Data Panel Find the Files of an Area?
 
-Overture publishes a STAC catalogue of its releases at stac.overturemaps.org, whose catalog.json names the latest release ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Each release has a file collections.parquet that lists its GeoParquet files with the bounding box of the features each holds. The Overture Maps panel reads that list with DuckDB and keeps the files of the feature type of the tab whose bounding boxes overlap the area, so a city reads one or two files of a release of several hundred.
+Overture publishes a STAC catalogue of its releases at stac.overturemaps.org, whose catalog.json names the latest release ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Each release has a file collections.parquet that lists its GeoParquet files with the bounding box of the features each holds. The Overture Maps Data panel reads that list with DuckDB and keeps the files of the feature type of the tab whose bounding boxes overlap the area, so a city reads one or two files of a release of several hundred.
 
-## How Does the Overture Maps Panel Read Only the Area?
+## How Does the Overture Maps Data Panel Read Only the Area?
 
-Every Overture feature has a column bbox with its bounding box, and GeoParquet calls such a column a bbox covering: readers can check it against the statistics of row groups and pages and skip those that do not overlap a query ([Open Geospatial Consortium (2026)](#ref-OGC2026b)). The Overture Maps panel filters on bbox, so DuckDB reads over HTTPS only the parts of the files whose features may meet the area, then keeps the features whose geometry intersects the area ([Raasveldt and Mühleisen (2019)](#ref-RM2019a)).
+Every Overture feature has a column bbox with its bounding box, and GeoParquet calls such a column a bbox covering: readers can check it against the statistics of row groups and pages and skip those that do not overlap a query ([Open Geospatial Consortium (2026)](#ref-OGC2026b)). The Overture Maps Data panel filters on bbox, so DuckDB reads over HTTPS only the parts of the files whose features may meet the area, then keeps the features whose geometry intersects the area ([Raasveldt and Mühleisen (2019)](#ref-RM2019a)).
 
-## What the Next Steps of the Overture Maps Panel Do
+## What the Next Steps of the Overture Maps Data Panel Do
 
 | Group | Action | What it shows |
 |---|---|---|

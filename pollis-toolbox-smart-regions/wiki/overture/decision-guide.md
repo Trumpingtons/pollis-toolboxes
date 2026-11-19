@@ -1,6 +1,6 @@
 # Decision Guide
 
-## Which Tab of the Overture Maps Panel to Use
+## Which Tab of the Overture Maps Data Panel to Use
 
 | Need | Tab | Overture feature type |
 |---|---|---|
@@ -10,11 +10,11 @@
 | The boundaries of counties, localities or neighbourhoods | Divisions | division_area |
 | Address points with street, number and postcode | Addresses | address |
 
-Overture defines a place as a concrete, physically identifiable, stationary destination in a publicly observable space, so administrative areas belong to divisions, standalone address points to addresses, and bus stops and platforms to the base theme rather than places ([Overture Maps Foundation (2026)](#ref-OMF2026a)). The base theme, with land, water, land use, land cover, infrastructure and bathymetry, has no tab in the Overture Maps panel.
+Overture defines a place as a concrete, physically identifiable, stationary destination in a publicly observable space, so administrative areas belong to divisions, standalone address points to addresses, and bus stops and platforms to the base theme rather than places ([Overture Maps Foundation (2026)](#ref-OMF2026a)). The base theme, with land, water, land use, land cover, infrastructure and bathymetry, has no tab in the Overture Maps Data panel.
 
 ## How Large an Area to Read
 
-The Area input of the Overture Maps panel is a box of west, south, east and north in degrees. DuckDB reads only the parts of Overture's files whose features overlap the box, so the time and data read grow with the number of features in it ([Open Geospatial Consortium (2026)](#ref-OGC2026b)). A few square kilometres of a city read in seconds; a whole city or region reads more, and Show on a Map draws at most 50,000 features. For a whole country, a copy of the release on one's own computer or a data platform that mirrors Overture serves better ([Overture Maps Foundation (2026)](#ref-OMF2026a)).
+The Area input of the Overture Maps Data panel is a box of west, south, east and north in degrees. DuckDB reads only the parts of Overture's files whose features overlap the box, so the time and data read grow with the number of features in it ([Open Geospatial Consortium (2026)](#ref-OGC2026b)). A few square kilometres of a city read in seconds; a whole city or region reads more, and Show on a Map draws at most 50,000 features. For a whole country, a copy of the release on one's own computer or a data platform that mirrors Overture serves better ([Overture Maps Foundation (2026)](#ref-OMF2026a)).
 
 ## Which Release to Read
 

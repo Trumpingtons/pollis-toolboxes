@@ -14,11 +14,11 @@ Overture's schema gives each feature type fixed columns, such as subtype and cla
 
 ## Data Not From OpenStreetMap
 
-Machine-learned building footprints fill gaps where OpenStreetMap has few buildings, but their accuracy varies by place ([Gevaert, Buunk and Van den Homberg (2024)](#ref-GBH2024a)). Gevaert, Buunk and Van den Homberg compared Google Open Buildings, Microsoft's footprints, Overture Maps and OpenStreetMap in Tanzania and the Philippines and found all four less accurate than expected there, with biases related to wealth, population density and building size. The main source of each feature in the Overture Maps panel tells which footprints come from OpenStreetMap and which from machine learning.
+Machine-learned building footprints fill gaps where OpenStreetMap has few buildings, but their accuracy varies by place ([Gevaert, Buunk and Van den Homberg (2024)](#ref-GBH2024a)). Gevaert, Buunk and Van den Homberg compared Google Open Buildings, Microsoft's footprints, Overture Maps and OpenStreetMap in Tanzania and the Philippines and found all four less accurate than expected there, with biases related to wealth, population density and building size. The main source of each feature in the Overture Maps Data panel tells which footprints come from OpenStreetMap and which from machine learning.
 
 ## Comparing Overture With an OpenStreetMap Extract
 
-The Transport Network Files panel of the Smart Regions Toolbox reads an OpenStreetMap extract as an .osm.pbf file, and the Overture Maps panel reads Overture's segments and buildings for an area; both save GeoPackage files with geometry in WGS 84. Saved for the same area, the two can be compared in the Geospatial Vector Files panel or any GIS, and in SQL with DuckDB's spatial extension ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)). Lengths by class, counts of buildings and the share of features from each source show where the two differ.
+The Transport Network Files panel of the Smart Regions Toolbox reads an OpenStreetMap extract as an .osm.pbf file, and the Overture Maps Data panel reads Overture's segments and buildings for an area; both save GeoPackage files with geometry in WGS 84. Saved for the same area, the two can be compared in the Geospatial Vector Files panel or any GIS, and in SQL with DuckDB's spatial extension ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)). Lengths by class, counts of buildings and the share of features from each source show where the two differ.
 
 ## References
 

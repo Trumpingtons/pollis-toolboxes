@@ -12,13 +12,13 @@ GeoParquet specifies how to store geospatial vector data, points, lines and poly
 
 Overture publishes each release as GeoParquet files on Amazon S3, at s3://overturemaps-us-west-2/release/, and on Microsoft Azure, partitioned by theme and type ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Every feature has a column bbox, which Overture's examples filter on to read an area. Overture also publishes a STAC catalogue at stac.overturemaps.org: its catalog.json lists the releases and names the latest, and each release has a collections.parquet that lists the release's files with the bounding box of their features and their sizes.
 
-## How the Overture Maps Panel Reads an Area
+## How the Overture Maps Data Panel Reads an Area
 
-The Overture Maps panel of the Smart Regions Toolbox reads the latest release's name from catalog.json, then the files of the feature type whose bounding boxes overlap the area from collections.parquet, both with DuckDB over HTTPS ([Raasveldt and Mühleisen (2019)](#ref-RM2019a); [Overture Maps Foundation (2026)](#ref-OMF2026a)). It reads those files with `read_parquet`, filtered on the bbox column, so DuckDB downloads only the row groups whose features may lie in the area. Of those, it keeps the features whose geometry intersects the area, a test of DuckDB's spatial extension ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
+The Overture Maps Data panel of the Smart Regions Toolbox reads the latest release's name from catalog.json, then the files of the feature type whose bounding boxes overlap the area from collections.parquet, both with DuckDB over HTTPS ([Raasveldt and Mühleisen (2019)](#ref-RM2019a); [Overture Maps Foundation (2026)](#ref-OMF2026a)). It reads those files with `read_parquet`, filtered on the bbox column, so DuckDB downloads only the row groups whose features may lie in the area. Of those, it keeps the features whose geometry intersects the area, a test of DuckDB's spatial extension ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
 
 ## DuckDB's httpfs Extension
 
-DuckDB reads files on HTTPS and on S3 through its httpfs extension, which the Smart Regions Toolbox installs with the spatial extension ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)). Overture's buckets are public, so no credentials are needed. The Overture Maps panel reads the HTTPS addresses that collections.parquet gives for each file on Amazon S3.
+DuckDB reads files on HTTPS and on S3 through its httpfs extension, which the Smart Regions Toolbox installs with the spatial extension ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)). Overture's buckets are public, so no credentials are needed. The Overture Maps Data panel reads the HTTPS addresses that collections.parquet gives for each file on Amazon S3.
 
 ## References
 

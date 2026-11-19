@@ -1,4 +1,4 @@
-# Overture Maps — Overview
+# Overture Maps Data — Overview
 
 ## What Overture Maps Is
 
@@ -10,15 +10,15 @@ Every feature of Overture's reference map that carries a GERS ID, the identifier
 
 ## Points of Interest from Overture
 
-Points of interest that are global, open and of good quality are scarce, despite being inputs to research in many fields ([Ballantyne and Berragan (2024)](#ref-BB2024a)). Ballantyne and Berragan built a queryable version of Overture's places for the United Kingdom and evaluated its quality against the ISO standards for geographic data, comparing it with Geolytix's supermarket data. They noted that working with the full files needs computational resources beyond those of the average researcher; reading only an area, as the Places tab of the Overture Maps panel does, is one answer to that.
+Points of interest that are global, open and of good quality are scarce, despite being inputs to research in many fields ([Ballantyne and Berragan (2024)](#ref-BB2024a)). Ballantyne and Berragan built a queryable version of Overture's places for the United Kingdom and evaluated its quality against the ISO standards for geographic data, comparing it with Geolytix's supermarket data. They noted that working with the full files needs computational resources beyond those of the average researcher; reading only an area, as the Places tab of the Overture Maps Data panel does, is one answer to that.
 
 ## Buildings from Several Sources
 
-Open building datasets for Europe include OpenStreetMap, EUBUCCO, Microsoft's Global ML Building Footprints, Overture Maps, GHS-OBAT and the Digital Building Stock Model ([Gabrielli, Sulis, Thabit and Minghini (2026)](#ref-GSTM2026a)). Comparing their attributes over the 27 member states of the European Union, Gabrielli, Sulis, Thabit and Minghini found that community-driven and conflated datasets, OpenStreetMap and Overture Maps, have richer and more detailed schemas than those derived from remote sensing, but low and spatially uneven completeness of height, typology, age, floors and material. The Buildings tab of the Overture Maps panel shows that completeness for an area with Column Completeness.
+Open building datasets for Europe include OpenStreetMap, EUBUCCO, Microsoft's Global ML Building Footprints, Overture Maps, GHS-OBAT and the Digital Building Stock Model ([Gabrielli, Sulis, Thabit and Minghini (2026)](#ref-GSTM2026a)). Comparing their attributes over the 27 member states of the European Union, Gabrielli, Sulis, Thabit and Minghini found that community-driven and conflated datasets, OpenStreetMap and Overture Maps, have richer and more detailed schemas than those derived from remote sensing, but low and spatially uneven completeness of height, typology, age, floors and material. The Buildings tab of the Overture Maps Data panel shows that completeness for an area with Column Completeness.
 
-## How the Overture Maps Panel Uses the Releases
+## How the Overture Maps Data Panel Uses the Releases
 
-The Overture Maps panel of the Smart Regions Toolbox reads one feature type of a release for an area: places, buildings, road, rail or water segments, division areas or addresses ([Overture Maps Foundation (2026)](#ref-OMF2026a)). It finds the release's files that cover the area in its catalogue and reads only the parts of those files that the area needs, with DuckDB over HTTPS ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)). The features land in one DuckDB table, from which the Next Steps draw maps and charts, check the data and save it as GeoPackage or GeoParquet.
+The Overture Maps Data panel of the Smart Regions Toolbox reads one feature type of a release for an area: places, buildings, road, rail or water segments, division areas or addresses ([Overture Maps Foundation (2026)](#ref-OMF2026a)). It finds the release's files that cover the area in its catalogue and reads only the parts of those files that the area needs, with DuckDB over HTTPS ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)). The features land in one DuckDB table, from which the Next Steps draw maps and charts, check the data and save it as GeoPackage or GeoParquet.
 
 ## References
 
