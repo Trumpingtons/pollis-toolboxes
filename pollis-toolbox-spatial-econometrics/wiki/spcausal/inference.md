@@ -20,21 +20,11 @@ The documentation of `placebo_test` names three limits ([Randsley (2026)](#ref-R
 
 Areas left out for neighbouring an area under the policy are never in a set, as the spillover reaches them.
 
-## The Effective Number of Shocks
-
-In a shift-share design the observations that carry the inference are the shocks. Borusyak, Hull and Jaravel (2022) show that the regression coefficient can be obtained from an equivalent regression across shocks, which motivates conditions for consistency at the level of the shocks ([Borusyak, Hull and Jaravel (2022)](#ref-BHJ2022a)). `exposure_concentration` gives the Herfindahl index of the mean shares and its reciprocal, the effective number of shocks. Its documentation states that the asymptotics are in the number of shocks, so that an estimate resting on a few effective shocks is not supported by the theory however many areas there are ([Randsley (2026)](#ref-Ran2026a)).
-
-## Balance at the Level of the Shocks
-
-The documentation of `balance_test` states that the identifying assumption of Borusyak, Hull and Jaravel is the quasi-random assignment of the shocks, so the test belongs at the level of the shocks: each characteristic's exposure-weighted mean at each shock is regressed on the shock, weighted by the mean exposure ([Randsley (2026)](#ref-Ran2026a); [Borusyak, Hull and Jaravel (2022)](#ref-BHJ2022a)). Its simulations find the test correctly sized only with many effective shocks, and rejecting a true null far more often than its nominal level with few, the joint test more so. The documentation reads a passed test in a concentrated design as close to uninformative.
-
 ## References
 
 <a id="ref-ADH2010a"></a>Abadie, A., Diamond, A. and Hainmueller, J. (2010). Synthetic control methods for comparative case studies: estimating the effect of California's tobacco control program. *Journal of the American Statistical Association*, 105(490), 493–505. [doi:10.1198/jasa.2009.ap08746](https://doi.org/10.1198/jasa.2009.ap08746)
 
-<a id="ref-BHJ2022a"></a>Borusyak, K., Hull, P. and Jaravel, X. (2022). Quasi-experimental shift-share research designs. *Review of Economic Studies*, 89(1), 181–213. [doi:10.1093/restud/rdab030](https://doi.org/10.1093/restud/rdab030)
-
 <a id="ref-Ran2026a"></a>Randsley, N. (2026). SpatialEconometrics.jl: spatial econometrics in Julia. [github.com/randsley/SpatialEconometrics.jl](https://github.com/randsley/SpatialEconometrics.jl)
 
 ## See Also
-- [Synthetic Control](synth.md) · [Shift-Share](shiftshare.md) · [Decision Guide](decision-guide.md)
+- [Synthetic Control](synth.md) · [Spillovers and Exposure](spillovers.md) · [Decision Guide](decision-guide.md)

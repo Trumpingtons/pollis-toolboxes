@@ -36,7 +36,7 @@ The file is read through DuckDB's spatial extension ([DuckDB Labs and contributo
 
 ## The Example Data of the Regionalisation and Spatial Regimes Panel
 
-With the default file name, the example writes a grid of 225 square cells of 1 km around Bologna, in EPSG:32632, before reading it. Each cell has a rent, an income, an age of its buildings and a zone: 1 for the 37 central cells and 2 for the others. The rent follows one set of coefficients in each zone, with a spatial lag. The values are simulated with a fixed seed, so that every tab and Next Step runs without other data, and are replaced by pointing File at another file.
+With the default file name, the example writes the census tracts of Boston in 1970 from PollisDatasets.jl, the Boston housing data with the corrected median value of owner-occupied homes, into the folder before reading it, in metres on NAD83 / UTM zone 19N. It adds a column, part, that sets the regimes: city for the tracts of the City of Boston and suburbs for the others. The tabs explain the median house value by crimes per head, rooms per dwelling and the share of the population of lower status, and SKATER builds its regions from the house value, the rooms and that share. Pointing File at another file replaces the example.
 
 ## References
 

@@ -10,8 +10,13 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -73,20 +78,20 @@ folder = "data/examples"
 [[inputs]]
 id = "areasFile"
 label = "Areas File"
-tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, oxfordair.gpkg, the example first writes a grid of 100 square cells of 1 km around Oxford, and the panel file beside it, unless the folder has both already."
-default = "oxfordair.gpkg"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, us_states.gpkg, the example first copies the outlines of the 48 contiguous US states from PollisDatasets.jl into the folder, unless the folder has it already."
+default = "us_states.gpkg"
 
 [[inputs]]
 id = "panelFile"
 label = "Panel File"
-tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period."
-default = "oxfordair.csv"
+tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. With the default, us_states_monthly.csv, the example first writes the monthly unemployment rates and payroll employment of the 48 states from PollisDatasets.jl, with the growth of payroll employment, unless the folder has it already."
+default = "us_states_monthly.csv"
 
 [[inputs]]
 id = "areaColumn"
 label = "Area Column"
 tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
-default = "cell"
+default = "stusps"
 newRow = true
 
 [[inputs]]
@@ -98,8 +103,8 @@ default = "month"
 [[inputs]]
 id = "dependent"
 label = "Variable to Forecast"
-tooltip = "On STAR and Panel AR, the column of the panel file to forecast. With the example files, no2: the monthly mean concentration of nitrogen dioxide in the cell, in micrograms per cubic metre. On Spatial VAR, the variable that the maps and paths of the Next Steps show, if it is one of the Variables, otherwise the last of them."
-default = "no2"
+tooltip = "On STAR and Panel AR, the column of the panel file to forecast. With the example files, unemployment: the state's unemployment rate, seasonally adjusted, in per cent. On Spatial VAR, the variable that the maps and paths of the Next Steps show, if it is one of the Variables, otherwise the last of them."
+default = "unemployment"
 
 [[inputs]]
 id = "explanatory"
@@ -110,14 +115,14 @@ default = ""
 [[inputs]]
 id = "variables"
 label = "Variables"
-tooltip = "On Spatial VAR, the columns of the panel file forecast together, separated by commas, in causal order: within a period each variable can respond to those before it, not to those after it, which is the identifying assumption of the model. With the example files, traffic first, then no2."
-default = "traffic, no2"
+tooltip = "On Spatial VAR, the columns of the panel file forecast together, separated by commas, in causal order: within a period each variable can respond to those before it, not to those after it, which is the identifying assumption of the model. With the example files, payroll_growth first, the monthly growth of payroll employment in per cent, then unemployment."
+default = "payroll_growth, unemployment"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:27700"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's states are in EPSG:4269, NAD83 longitude and latitude. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4269"
 newRow = true
 
 [[inputs]]
@@ -216,7 +221,7 @@ default = ""
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+using DuckDB, Tables, SpatialEconometrics, PollisDatasets, SparseArrays, LinearAlgebra, Statistics, Random
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
@@ -224,33 +229,9 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
 panel_path = joinpath(folder, "{{panelFile}}")
-# Example files: 10 by 10 square cells of 1 km around Oxford, in EPSG:27700, observed monthly over 10 years, written unless the folder has both already. Replace them with your own files.
-if basename(areas_path) == "oxfordair.gpkg" && basename(panel_path) == "oxfordair.csv" && !(isfile(areas_path) && isfile(panel_path))
-	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-	u, v = repeat(-5:4, outer = 10), repeat(-5:4, inner = 10)  # km east and north of the centre, row by row from the south-west
-	grid = [(c, d) for c in 1:100 for d in 1:100 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
-	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 100, 100))
-	traffic_spread, no2_spread = lu(I - 0.3 .* Matrix(Wgrid)), lu(I - 0.2 .* Matrix(Wgrid))  # spillovers within the month
-	traffic_level = 20 .+ 25 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 10)  # thousand vehicles a day, busiest at the centre
-	no2_level = 15 .+ 0.6 .* traffic_level  # micrograms per cubic metre
-	dt, dn = zeros(100), zeros(100)  # the departures of traffic and NO2 from each cell's level
-	open(panel_path, "w") do io
-		println(io, "cell,month,traffic,no2")
-		for t in -49:120  # 50 months to settle, not written, then January 2015 to December 2024
-			# Traffic moves first: last month's own and neighbours' departures, and this month's neighbours'
-			dt .= traffic_spread \ (0.5 .* dt .+ 0.15 .* (Wgrid * dt) .+ 2 .* randn(rng, 100))
-			# NO2 follows: last month's own and neighbours' departures, this month's traffic, and this month's neighbours'
-			dn .= no2_spread \ (0.45 .* dn .+ 0.2 .* (Wgrid * dn) .+ 0.4 .* dt .+ 1.5 .* randn(rng, 100))
-			t >= 1 || continue
-			month = string(2015 + (t - 1) ÷ 12, "-", lpad((t - 1) % 12 + 1, 2, '0'))
-			for c in 1:100
-				println(io, c, ",", month, ",", round(traffic_level[c] + dt[c], digits = 2), ",", round(no2_level[c] + dn[c], digits = 2))
-			end
-		end
-	end
-	cells = ["($(c), ST_MakeEnvelope($(451000 + 1000 * u[c]), $(206000 + 1000 * v[c]), $(452000 + 1000 * u[c]), $(207000 + 1000 * v[c])))" for c in 1:100]
-	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
-end
+# Example files: the 48 contiguous US states, monthly from January 1990 to December 2024, from PollisDatasets.jl: their outlines, and their unemployment rates and payroll employment, with its monthly growth in per cent. Replace them with your own files.
+{{?areasFile=us_states.gpkg}} isfile(areas_path) || cp(samplefile("us_states.gpkg"), areas_path)
+{{?panelFile=us_states_monthly.csv}} isfile(panel_path) || DBInterface.execute(con, "COPY (SELECT *, 100 * ln(payroll / lag(payroll) OVER (PARTITION BY stusps ORDER BY month)) AS payroll_growth FROM '$(datafile("us_states_monthly"))') TO '$(panel_path)'")
 {{?model!=spvar}} yname = "{{dependent}}"
 {{?model!=spvar}} xnames = filter(!isempty, String.(strip.(split("{{explanatory}}", ","))))  # the explanatory variables, separated by commas, or none
 {{?model!=spvar}} needed = [yname; xnames]
@@ -377,7 +358,7 @@ scored = period <= T_per  # a period held back, whose values are known
 {{?model=spvar}} observed = scored ? Y[((period - 1) * N + 1):(period * N), kshow] : fill(NaN, N)
 err = fc .- observed  # forecast minus observed: positive where the forecast was too high
 cell(x) = isnan(x) ? "NULL" : string(x)
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(fc[i]), $(cell(observed[i]))::DOUBLE, $(cell(err[i]))::DOUBLE)" for i in 1:N), ", "))) t(i, forecast, observed, error)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, forecast::DOUBLE AS forecast, observed, error FROM (VALUES $(join(("($i, $(fc[i]), $(cell(observed[i]))::DOUBLE, $(cell(err[i]))::DOUBLE)" for i in 1:N), ", "))) t(i, forecast, observed, error)")
 when = scored ? labels[period] : "+$(period - T_per)"
 fmap = joinpath(mktempdir(), "forecasts.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.forecast, 3) AS forecast, round(v.observed, 3) AS observed, round(v.error, 3) AS error FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")

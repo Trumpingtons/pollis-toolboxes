@@ -10,8 +10,13 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -311,26 +316,26 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, oxford.gpkg, the example first writes a grid of 225 square cells of 1 km around Oxford with a simulated annual mean of nitrogen dioxide (no2, in micrograms per cubic metre), traffic (thousands of vehicles a day) and green space (percent of the cell), unless the folder has a oxford.gpkg already."
-default = "oxford.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, boston_tracts.gpkg, the example first copies the 506 census tracts of Boston in 1970 from PollisDatasets into the folder, unless it has the file already: the corrected median value of owner-occupied homes (CMEDV, in thousands of dollars) with the variables of Harrison and Rubinfeld (1978), such as crimes per head (CRIM), nitric oxides (NOX, parts per 10 million), rooms per dwelling (RM) and the percent of the population of lower status (LSTAT)."
+default = "boston_tracts.gpkg"
 
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
 tooltip = "The numeric column explained by the model. Areas without a value in it, or in an explanatory variable, are left out."
-default = "no2"
+default = "CMEDV"
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
 tooltip = "The numeric columns that explain it, separated by commas. Every model adds an intercept. Change One Area changes the first of them."
-default = "traffic, green"
+default = "CRIM, NOX, RM, LSTAT"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and for the distances between centroids. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:27700"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and for the distances between centroids. The example's tracts are in EPSG:4267, longitude and latitude on NAD27. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4267"
 newRow = true
 
 [[inputs]]
@@ -362,22 +367,15 @@ default = "6"
 model = "*"
 code = '''
 using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Random
+{{?file=boston_tracts.gpkg}} using PollisDatasets
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-{{?file=oxford.gpkg}} # Example file: a grid of 15 by 15 square cells of 1 km around Oxford, in EPSG:27700, with simulated nitrogen dioxide (no2), traffic and green space, written to oxford.gpkg unless the folder has one already. Replace "oxford.gpkg" with your own file.
-{{?file=oxford.gpkg}} if !isfile(path)
-{{?file=oxford.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-{{?file=oxford.gpkg}} 	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre cell, row by row from the south-west
-{{?file=oxford.gpkg}} 	traffic = 4 .+ 16 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 18) .+ randn(rng, 225)  # thousands of vehicles a day, most in the centre
-{{?file=oxford.gpkg}} 	green = clamp.(30 .+ 2 .* u .- 0.8 .* traffic .+ 6 .* randn(rng, 225), 2, 90)  # percent of green space, more to the east
-{{?file=oxford.gpkg}} 	no2 = (I - 0.5 * make_queen_weights(15)) \ (10 .+ 0.8 .* traffic .- 0.12 .* green .+ 2 .* randn(rng, 225))  # a spatial lag process with rho = 0.5
-{{?file=oxford.gpkg}} 	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), ST_MakeEnvelope($(451000 + 1000 * u[c]), $(206000 + 1000 * v[c]), $(452000 + 1000 * u[c]), $(207000 + 1000 * v[c])))" for c in 1:225]
-{{?file=oxford.gpkg}} 	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
-{{?file=oxford.gpkg}} end
+{{?file=boston_tracts.gpkg}} # Example file: the 506 census tracts of Boston in 1970, with the median house values of Harrison and Rubinfeld (1978), corrected by Gilley and Pace (1996), copied from PollisDatasets unless the folder has it already. Replace "boston_tracts.gpkg" with your own file.
+{{?file=boston_tracts.gpkg}} isfile(path) || cp(samplefile("boston_tracts.gpkg"), path)
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
@@ -753,15 +751,14 @@ end
 [[actionGroups.actions]]
 id = "replicate-boston"
 label = "Boston House Prices: R spatialreg"
-desc = "The median house values of the 506 census tracts of Boston (Harrison and Rubinfeld, 1978, corrected by Gilley and Pace, 1996), from spData: the tests and the spatial lag, error and Durbin models beside R's values, with queen contiguity"
+desc = "The median house values of the 506 census tracts of Boston (Harrison and Rubinfeld, 1978, corrected by Gilley and Pace, 1996), from PollisDatasets: the model of Harrison and Rubinfeld, the tests and the spatial lag, error and Durbin models beside R's values, with queen contiguity"
 code = '''
-using Downloads
+using PollisDatasets
 
 let
 	rcon = DBInterface.connect(DuckDB.DB)
 	DBInterface.execute(rcon, "LOAD spatial")
-	file = joinpath(mktempdir(), "boston_tracts.gpkg")
-	Downloads.download("https://raw.githubusercontent.com/Nowosad/spData/master/inst/shapes/boston_tracts.gpkg", file)  # spData, CC0
+	file = samplefile("boston_tracts.gpkg")  # the file of spData's boston_tracts, CC0
 	DBInterface.execute(rcon, "CREATE TABLE tracts AS SELECT row_number() OVER () AS i, * FROM ST_Read('$(file)')")
 	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM tracts ORDER BY i")).v)
 	# The model of Harrison and Rubinfeld (1978): log(CMEDV) on 13 variables, some squared or in logs

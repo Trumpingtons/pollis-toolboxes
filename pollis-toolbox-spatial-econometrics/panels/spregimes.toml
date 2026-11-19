@@ -10,8 +10,13 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -244,26 +249,26 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bolognaregimes.gpkg, the example first writes a grid of 225 square cells of 1 km around Bologna with a simulated rent (euros per square metre a month), income (thousand euros a year per taxpayer), age of the buildings (years) and zone (1, the 37 central cells, 2, the rest), unless the folder has a bolognaregimes.gpkg already."
-default = "bolognaregimes.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bostonregimes.gpkg, the example first writes the 506 census tracts of Boston in 1970 from PollisDatasets into the folder, unless it has the file already: the corrected median value of owner-occupied homes (CMEDV, in thousands of dollars) with the variables of Harrison and Rubinfeld (1978), such as crimes per head (CRIM), rooms per dwelling (RM) and the percent of the population of lower status (LSTAT), and part, city for the 132 tracts of the City of Boston and suburbs for the other 374."
+default = "bostonregimes.gpkg"
 
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
 tooltip = "The numeric column explained by the regime models. Areas without a value in it, in an explanatory variable or in the columns that set the regimes are left out."
-default = "rent"
+default = "CMEDV"
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
 tooltip = "The numeric columns that explain it, separated by commas. Every regime gets its own intercept and its own slope on each of them."
-default = "income, age"
+default = "CRIM, RM, LSTAT"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. Regimes Against GWR measures distances between centroids in it, so a projected system in metres suits it. The example's cells are in EPSG:32632, WGS 84 / UTM zone 32N. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:32632"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. Regimes Against GWR measures distances between centroids in it, so a projected system in metres suits it. The example's tracts are in EPSG:26919, NAD83 / UTM zone 19N. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:26919"
 newRow = true
 
 [[inputs]]
@@ -311,13 +316,13 @@ label = "SKATER"
 id = "regimeColumn"
 label = "Regime Column"
 tooltip = "The column whose values name the regimes, numbers or text: one regime per distinct value, numbered in their sorted order. Also Given Regimes Against SKATER compares it with SKATER's regions."
-default = "zone"
+default = "part"
 
 [[inputs]]
 id = "skaterVariables"
 label = "SKATER Variables"
 tooltip = "The numeric columns SKATER makes each region alike in, separated by commas, each standardised first. When they include the dependent variable, the Chow test of regimes built from them is too optimistic: see the Bootstrap Chow Test."
-default = "rent, income, age"
+default = "CMEDV, RM, LSTAT"
 newRow = true
 
 [[inputs]]
@@ -337,25 +342,15 @@ model = "*"
 code = '''
 using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
 {{?model=regols}} using Distributions
+{{?file=bostonregimes.gpkg}} using PollisDatasets
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-{{?file=bolognaregimes.gpkg}} # Example file: a grid of 15 by 15 square cells of 1 km around Bologna, in EPSG:32632, with a simulated rent, income, age of the buildings and zone, written to bolognaregimes.gpkg unless the folder has one already. Replace "bolognaregimes.gpkg" with your own file.
-{{?file=bolognaregimes.gpkg}} if !isfile(path)
-{{?file=bolognaregimes.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-{{?file=bolognaregimes.gpkg}} 	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre cell, row by row from the south-west
-{{?file=bolognaregimes.gpkg}} 	zone = ifelse.(u .^ 2 .+ v .^ 2 .<= 12, 1, 2)  # 1: the 37 cells within about 3.5 km of the centre, 2: the others
-{{?file=bolognaregimes.gpkg}} 	income = 22 .+ 6 .* (zone .== 1) .+ 3 .* randn(rng, 225)  # thousand euros a year per taxpayer
-{{?file=bolognaregimes.gpkg}} 	age = clamp.(80 .- 6 .* sqrt.(u .^ 2 .+ v .^ 2) .+ 12 .* randn(rng, 225), 5, 120)  # mean age of the buildings, years, oldest in the centre
-{{?file=bolognaregimes.gpkg}} 	# Two regimes: in the centre the rent rises faster with income and rises with the age of the buildings; outside it rises slower with income and falls with age
-{{?file=bolognaregimes.gpkg}} 	base = ifelse.(zone .== 1, 1 .+ 0.25 .* income .+ 0.03 .* age, 2 .+ 0.12 .* income .- 0.01 .* age)
-{{?file=bolognaregimes.gpkg}} 	rent = (I - 0.4 * make_queen_weights(15)) \ (base .+ 0.6 .* randn(rng, 225))  # euros per square metre a month: a spatial lag process with rho = 0.4
-{{?file=bolognaregimes.gpkg}} 	cells = ["($(round(rent[c], digits = 2)), $(round(income[c], digits = 2)), $(round(age[c], digits = 1)), $(zone[c]), ST_MakeEnvelope($(685500 + 1000 * u[c]), $(4928900 + 1000 * v[c]), $(686500 + 1000 * u[c]), $(4929900 + 1000 * v[c])))" for c in 1:225]
-{{?file=bolognaregimes.gpkg}} 	DBInterface.execute(con, "COPY (SELECT rent::DOUBLE AS rent, income::DOUBLE AS income, age::DOUBLE AS age, zone::INTEGER AS zone, geom FROM (VALUES $(join(cells, ", "))) t(rent, income, age, zone, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:32632')")
-{{?file=bolognaregimes.gpkg}} end
+{{?file=bostonregimes.gpkg}} # Example file: the 506 census tracts of Boston in 1970 from PollisDatasets, with the median house values of Harrison and Rubinfeld (1978), corrected by Gilley and Pace (1996), and part, city for the 132 tracts of the City of Boston and suburbs for the other 374, in metres on NAD83 / UTM zone 19N, written unless the folder has the file already. Replace "bostonregimes.gpkg" with your own file.
+{{?file=bostonregimes.gpkg}} isfile(path) || DBInterface.execute(con, "COPY (SELECT * EXCLUDE (fid, geom), CASE WHEN TOWN LIKE 'Boston %' THEN 'city' ELSE 'suburbs' END AS part, ST_Transform(geom, 'EPSG:4267', 'EPSG:26919') AS geom FROM ST_Read('$(samplefile("boston_tracts.gpkg"))')) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'tracts', SRS 'EPSG:26919')")
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 {{?model=skater}} source = "skater"  # the SKATER Regions tab always builds its regions
@@ -615,7 +610,7 @@ models = ["regols", "reglag"]
 code = '''
 coords = hcat(column("cx"), column("cy"))  # the centroids, in the file's coordinate system: metres in a projected one
 g = fit_gwr(X, y, coords; kernel = BisquareKernel(), varnames = xnames)  # one adaptive bandwidth, chosen by AICc
-aicc(rss, trs) = n * log(rss / n) + n * (n + trs) / (n - 2 - trs)  # the AICc of SpatialEconometrics.jl's GWR, with trs coefficients
+aicc(rss, trs) = n * log(rss / n) + n * log(2 * pi) + n * (n + trs) / (n - 2 - trs)  # the AICc of SpatialEconometrics.jl's GWR, as in GWR4 and mgwr, with trs coefficients
 fo = fit_spatial_regime(W, X, y, ExogenousRegimes(labels); spatial_lag = false, varnames = xnames)
 fp = fit_spatial_regime(W, X, y, ExogenousRegimes(ones(Int, n)); spatial_lag = false, varnames = xnames)
 println(rpad("model", 30), rpad("coefficients", 14), "AICc")
@@ -747,7 +742,7 @@ desc = "Write the areas, in longitude and latitude, with their regime and, on th
 code = '''
 out = joinpath(folder, "spatial-regimes.parquet")
 resid = @isdefined(res) ? res : fill(NaN, n)  # the SKATER Regions tab fits no regression
-DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT * FROM (VALUES $(join(("($i, $(labels[i]), $(isnan(resid[i]) ? "NULL" : resid[i]))" for i in 1:n), ", "))) t(i, regime, residual)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT i, regime, residual::DOUBLE AS residual FROM (VALUES $(join(("($i, $(labels[i]), $(isnan(resid[i]) ? "NULL" : resid[i]))" for i in 1:n), ", "))) t(i, regime, residual)")
 if isfile(out)
 	println(out, " is there already: rename or move it first")
 else

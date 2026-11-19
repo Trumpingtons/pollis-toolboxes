@@ -37,7 +37,7 @@ Each tab fits least squares with the chosen Fixed Effects and prints, for every 
 
 ## Example Data of the Spatial Correlation Robust Inference Panel
 
-With the default files, the example first writes a grid of square cells of 1 km around Bruges, in Belgian Lambert 72, and a panel of the cells over twelve years, unless the folder has both already. The simulated log price per square metre depends on the share of green space and on road noise. Both regressors and the errors are alike in neighbouring cells; the errors also have a level of their own for each cell and a shock common to each year; and the cells are grouped into districts of three by three cells, for clustering. The usual standard errors therefore understate the uncertainty, which is what the three tabs correct.
+With the default files, the example first copies the outlines of the 48 contiguous US states from PollisDatasets.jl, and writes Munnell's panel of the states from 1970 to 1986 beside them, unless the folder has both already. The log of each state's gross product is explained by the logs of its public capital, private capital and employment and by its unemployment rate: the production function of the studies of the productivity of public capital. Neighbouring states share regional cycles, so their errors are alike, and the nine census divisions of the column region group the states for clustering. The distances between the states' centroids are measured in NAD83 / Conus Albers (EPSG:5070), in which the default cutoff of 1,000 km reaches beyond each state's neighbours to the states of its region.
 
 ## References
 

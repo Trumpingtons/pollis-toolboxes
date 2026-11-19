@@ -10,7 +10,7 @@ Hurvich, Simonoff and Tsai (1998) proposed an improved Akaike information criter
 
 ## Golden Section Search for the Bandwidth
 
-The AICc of GWR is computed by fitting the model at a bandwidth, so the search for its minimum evaluates the model at a sequence of bandwidths. A golden section search narrows an interval around the minimum by a constant ratio at each step, and is the default of mgwr; an interval search evaluates a grid of bandwidths instead ([Oshan, Li, Kang, Wolf and Fotheringham (2019)](#ref-OLKWF2019a)). The GWR, Fixed Bandwidth tab runs a golden section search over distances, from one at which every area has enough neighbours to the width of the map. GWR, Adaptive and Multiscale GWR leave the search over numbers of neighbours to SpatialEconometrics.jl ([Randsley (2026)](#ref-Ran2026a)).
+The AICc of GWR is computed by fitting the model at a bandwidth, so the search for its minimum evaluates the model at a sequence of bandwidths. A golden section search narrows an interval around the minimum by a constant ratio at each step, and is the default of mgwr; an interval search evaluates a grid of bandwidths instead ([Oshan, Li, Kang, Wolf and Fotheringham (2019)](#ref-OLKWF2019a)). The GWR, Fixed Bandwidth tab runs a golden section search over distances, from one at which every area has enough neighbours to the width of the map. GWR, Adaptive and Multiscale GWR search over numbers of neighbours with the golden section search of SpatialEconometrics.jl, which, like mgwr, rounds each trial bandwidth to a whole number and starts from 40 plus twice the number of coefficients ([Randsley (2026)](#ref-Ran2026a)).
 
 ## When the AICc Curve Is Flat
 

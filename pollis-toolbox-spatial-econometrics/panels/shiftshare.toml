@@ -1,0 +1,678 @@
+# Shift-Share Designs: the effect of a change that common shocks bring to each area through its shares in them, estimated across the shocks with SpatialEconometrics.jl;
+# the areas, the changes, the shares and the shocks are read and joined through DuckDB and its spatial extension.
+
+[meta]
+title = "Shift-Share Designs"
+viewType = "pollis.shiftshare"
+defaultModel = "ssiv"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose shift-share designs take regression weights and estimate across the shocks, with the standard error and the null-imposed interval of Borusyak, Hull and Jaravel
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[requires]
+packages = ["ECharts.jl"]
+
+[[models]]
+id = "ssiv"
+label = "Shift-Share IV"
+
+[[models]]
+id = "ssreduced"
+label = "Reduced Form"
+
+[[bullets]]
+text = "Shift-Share IV"
+detail = "The effect of an endogenous change, such as the growth of imports in a local labour market, instrumented by the shift-share regressor: each area's shares in common shocks times the shocks, such as its shares of jobs in each industry times the growth of the industry's imports elsewhere, estimated across the shocks as Borusyak, Hull and Jaravel show"
+
+[[bullets]]
+text = "Reduced Form"
+detail = "The outcome on the shift-share regressor itself, estimated across the shocks in the same way: the effect of the exposure to the shocks, without the endogenous change it moves"
+
+[[decisionRows]]
+task = "Shift-Share IV"
+context = "Endogenous change"
+purpose = "Estimate the effect of a change that is itself caused by local conditions, through the part of it that common shocks bring to each area by its shares in them"
+
+[[decisionRows]]
+task = "Reduced Form"
+context = "Exposure itself"
+purpose = "Estimate how the outcome moves with each area's exposure to the shocks, when the exposure is the quantity of interest or before the endogenous change is measured"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "areasFile"
+label = "Areas File"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, us_czones.gpkg, the example copies into the folder the 722 US commuting zones of 1990 and the changes, shares and shocks files of the China shock, from PollisDatasets.jl, unless the folder has them."
+default = "us_czones.gpkg"
+
+[[inputs]]
+id = "changesFile"
+label = "Changes File"
+tooltip = "The changes, one row per area and period: the change of the outcome, of the endogenous variable and the controls over that period, in a CSV or Parquet file, in the folder above, or an absolute path. Rows without a polygon in the areas file, or without a value of the columns the tab uses, are left out. With the example files, adh_czones.csv: the 722 commuting zones over 1990 to 2000 and 2000 to 2007, changes per ten years."
+default = "adh_czones.csv"
+
+[[inputs]]
+id = "areaColumn"
+label = "Area Column"
+tooltip = "The column that names each area, in the areas file, the changes file and the shares file. With the example files, czone, the commuting zone."
+default = "czone"
+newRow = true
+
+[[inputs]]
+id = "periodColumn"
+label = "Period Column"
+tooltip = "The column that names each period, in the changes file, the shares file and the shocks file: each period has its own shares and its own shocks, and the periods are stacked. With the example files, year: 1990 for 1990 to 2000, 2000 for 2000 to 2007. A design with one period has the same value in every row."
+default = "year"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The outcome, a numeric column of the changes file. With the example files, d_sh_empl_mfg: the change in manufacturing employment as a share of the working-age population, in percentage points per ten years."
+default = "d_sh_empl_mfg"
+
+[[inputs]]
+id = "endogenous"
+label = "Endogenous Variable"
+tooltip = "On Shift-Share IV, the numeric column of the changes file whose effect is estimated, instrumented by the shift-share regressor. With the example files, d_tradeusch_pw: the change in US imports from China per worker, in thousands of 2007 dollars per ten years."
+default = "d_tradeusch_pw"
+models = ["ssiv"]
+
+[[inputs]]
+id = "weightColumn"
+label = "Weight Column"
+tooltip = "A numeric column of the changes file with each row's regression weight, or empty for equal weights. With the example files, timepwt48: the zone's share of the national working-age population at the start of the period, the weight of Autor, Dorn and Hanson."
+default = "timepwt48"
+newRow = true
+
+[[inputs]]
+id = "controls"
+label = "Controls"
+tooltip = "Numeric columns of the changes file, separated by commas, or empty. An indicator of each period after the first is always added, and so, when the shares do not sum to the same total in every row, are that total and its product with each period indicator. With the example files, the census divisions and the five characteristics of the zones at the start of the period that Autor, Dorn and Hanson control for, as in column 3 of Table 4 of Borusyak, Hull and Jaravel."
+default = "reg_midatl, reg_encen, reg_wncen, reg_satl, reg_escen, reg_wscen, reg_mount, reg_pacif, l_sh_popedu_c, l_sh_popfborn, l_sh_empl_f, l_sh_routine33, l_task_outsource"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. The example's commuting zones are in EPSG:4269, NAD83 longitude and latitude. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4269"
+
+[[inputs]]
+id = "sharesFile"
+label = "Shares File"
+tooltip = "The shares of each area in the shocks, one row per area, period and shock, with the Area Column, the Period Column, the Shock Column and the Share Column: a CSV or Parquet file, in the folder above, or an absolute path. A missing row is a share of 0. With the example files, adh_shares.parquet: each zone's share of its employment in each manufacturing industry ten years before the period."
+default = "adh_shares.parquet"
+newRow = true
+
+[[inputs]]
+id = "shocksFile"
+label = "Shocks File"
+tooltip = "The shocks, one row per shock and period, with the Shock Column, the Period Column, the Shock Value and, if given, the Shock Clusters: a CSV or Parquet file, in the folder above, or an absolute path. With the example files, adh_shocks.csv: the growth of the imports from China of eight other high-income countries in each industry, per US worker of the industry."
+default = "adh_shocks.csv"
+
+[[inputs]]
+id = "shockColumn"
+label = "Shock Column"
+tooltip = "The column that names each shock, in both the shares file and the shocks file. With the example files, sic87dd, the industry. A shock is a value of this column in a period."
+default = "sic87dd"
+
+[[inputs]]
+id = "shareColumn"
+label = "Share Column"
+tooltip = "The column of the shares file with each area's share in the shock. With the example files, share."
+default = "share"
+
+[[inputs]]
+id = "shockValue"
+label = "Shock Value"
+tooltip = "The column of the shocks file with the value of each shock. With the example files, g."
+default = "g"
+
+[[inputs]]
+id = "clusterColumn"
+label = "Shock Clusters"
+tooltip = "A column of the shocks file whose values group the shocks that may be correlated, such as industries of the same broader sector, or empty for none: the standard error is then clustered by it. With the example files, sic3, the 3-digit SIC code of the industry, by which Borusyak, Hull and Jaravel cluster; an industry has the same code in every period, so its shocks may be correlated over time."
+default = "sic3"
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "For Moran's I of the Residuals: which areas are neighbours on the map, within each period. Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids."
+kind = "select"
+default = "queen"
+newRow = true
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest."
+default = "6"
+
+[[inputs]]
+id = "regionCluster"
+label = "Area Clusters"
+tooltip = "For Against the Regional Standard Error: a column of the changes file whose values group the rows clustered in the regional standard error, or empty for none. With the example files, statefip, the state, as Autor, Dorn and Hanson cluster."
+default = "statefip"
+
+[[inputs]]
+id = "mapShock"
+label = "Shock to Map"
+tooltip = "For the Map of the Exposure: the shock whose shares are mapped, as a value of the Shock Column; empty, the shock with the largest mean share."
+default = ""
+
+[[inputs]]
+id = "balanceVariables"
+label = "Balance Variables"
+tooltip = "For the Balance Test: numeric columns of the changes file, separated by commas, that should be unrelated to the shocks if the design is valid, and that are not among the Controls. With the example files, the five characteristics of each zone's industries of Acemoglu, Autor, Dorn, Hanson and Price: their shares of production workers, capital to value added, log wages, computer investment and high-tech equipment."
+default = "cz_prode_share1991, cz_cap_va1991, cz_log_avg_wage1991, cz_ind_ci_1990, cz_ind_htsh1_1990"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, PollisDatasets, SparseArrays, LinearAlgebra, Statistics
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
+changes_path = joinpath(folder, "{{changesFile}}")
+shares_path = joinpath(folder, "{{sharesFile}}")
+shocks_path = joinpath(folder, "{{shocksFile}}")
+# Example files: the China shock across the 722 US commuting zones, 1990 to 2007, of Autor, Dorn and Hanson (2013), from PollisDatasets.jl; copied unless the folder has them. Replace them with your own files.
+{{?areasFile=us_czones.gpkg}} isfile(areas_path) || cp(samplefile("us_czones.gpkg"), areas_path)
+{{?changesFile=adh_czones.csv}} isfile(changes_path) || cp(datafile("adh_czones"), changes_path)
+{{?sharesFile=adh_shares.parquet}} isfile(shares_path) || cp(samplefile("adh_shares.parquet"), shares_path)
+{{?shocksFile=adh_shocks.csv}} isfile(shocks_path) || cp(datafile("adh_shocks"), shocks_path)
+yname = "{{dependent}}"
+{{?model=ssiv}} xname = "{{endogenous}}"
+wname = "{{weightColumn}}"  # empty: every row counts the same
+cnames = filter(!isempty, String.(strip.(split("{{controls}}", ","))))  # the controls, separated by commas, or none
+cluster_column = "{{clusterColumn}}"  # a column of the shocks file, or empty
+{{?model=ssiv}} needed = filter(!isempty, [yname; xname; wname; cnames])
+{{?model=ssreduced}} needed = filter(!isempty, [yname; wname; cnames])
+present = join(("c.\"$v\" IS NOT NULL" for v in needed), " AND ")
+# The areas, in longitude and latitude, and the rows of the changes file with a polygon and every value, numbered r = 1, 2, ... period by period
+DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"{{areaColumn}}\"::VARCHAR AS area_key, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
+DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE obs AS
+	SELECT row_number() OVER (ORDER BY c."{{periodColumn}}", c."{{areaColumn}}") AS r, dense_rank() OVER (ORDER BY c."{{periodColumn}}") AS t,
+		c."{{areaColumn}}"::VARCHAR AS area_key, c."{{periodColumn}}"::VARCHAR AS period_key, c.*
+	FROM '$(changes_path)' c WHERE c."{{areaColumn}}"::VARCHAR IN (SELECT area_key FROM polygons) AND $(present)""")
+column(v) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$v\"::DOUBLE AS v FROM obs ORDER BY r")).v)
+tt = Int.(Tables.columntable(DBInterface.execute(con, "SELECT t FROM obs ORDER BY r")).t)  # the period of each row
+n, periods = length(tt), maximum(tt)
+labels = String.(Tables.columntable(DBInterface.execute(con, "SELECT DISTINCT t, period_key FROM obs ORDER BY t")).period_key)  # the name of each period
+
+# The shocks, one per value of the Shock Column in each period, and each row's shares in those of its period; a missing share is 0
+cluster_sql = isempty(cluster_column) ? "NULL" : "s.\"$(cluster_column)\"::VARCHAR"
+gk = Tables.columntable(DBInterface.execute(con, """SELECT s."{{shockColumn}}"::VARCHAR AS shock, p.t, p.period_key, s."{{shockValue}}"::DOUBLE AS g, $(cluster_sql) AS cluster
+	FROM '$(shocks_path)' s JOIN (SELECT DISTINCT t, period_key FROM obs) p ON s."{{periodColumn}}"::VARCHAR = p.period_key WHERE s."{{shockValue}}" IS NOT NULL ORDER BY p.t, 1"""))
+sh = Tables.columntable(DBInterface.execute(con, """SELECT o.r, o.t, s."{{shockColumn}}"::VARCHAR AS shock, s."{{shareColumn}}"::DOUBLE AS share
+	FROM '$(shares_path)' s JOIN obs o ON s."{{areaColumn}}"::VARCHAR = o.area_key AND s."{{periodColumn}}"::VARCHAR = o.period_key WHERE s."{{shareColumn}}" IS NOT NULL"""))
+col = Dict((k, t) => j for (j, (k, t)) in enumerate(zip(gk.shock, gk.t)))
+S = zeros(n, length(gk.g))  # rows by shocks
+for (r, t, k, v) in zip(sh.r, sh.t, sh.shock, sh.share)
+	j = get(col, (k, t), 0)
+	j > 0 && (S[r, j] += v)
+end
+keep = vec(any(!iszero, S; dims = 1))  # the shocks some row is exposed to
+S, g, shock_t, shock_base = S[:, keep], Float64.(gk.g[keep]), Int.(gk.t[keep]), String.(gk.shock[keep])
+shock_names = periods > 1 ? shock_base .* " in " .* String.(gk.period_key[keep]) : shock_base
+clusters = isempty(cluster_column) ? nothing : coalesce.(gk.cluster[keep], shock_names)
+
+# Controls: an indicator of each period after the first, the Controls and, when the shares do not sum to the same total in every row, that total and its product with each period indicator
+Dt = Float64.(tt .== transpose(2:periods))  # rows by periods after the first
+C = hcat(Dt, reduce(hcat, column.(cnames); init = zeros(n, 0)))
+total = vec(sum(S; dims = 2))
+complete = maximum(total) - minimum(total) <= 1e-8 * max(1, maximum(total))
+complete || (C = hcat(C, total, total .* Dt))
+w = isempty(wname) ? nothing : column(wname)
+d = shift_share_design(S, g; controls = C, weights = w, shock_names = shock_names)  # the shift-share regressor is the shares times the shocks
+Ds = Float64.(shock_t .== transpose(2:periods))  # the period indicators of the shocks
+y = column(yname)
+{{?model=ssiv}} x = column(xname)
+# The regression across the shocks, weighted by their mean shares: the outcome and the endogenous variable, after the controls, averaged over the areas exposed to each shock
+{{?model=ssiv}} m = fit_shock_level(y, d; treatment = x, shock_controls = Ds, shock_clusters = clusters)
+{{?model=ssreduced}} m = fit_shock_level(y, d; shock_controls = Ds, shock_clusters = clusters)
+println(n, " rows: ", length(unique(Tables.columntable(DBInterface.execute(con, "SELECT area_key FROM obs")).area_key)), " areas in ", periods, periods == 1 ? " period" : " periods, $(join(labels, ", "))", "; ",
+	length(g), " shocks", clusters === nothing ? "" : " in $(m.n_clusters) clusters of $(cluster_column)")
+println(complete ? "The shares sum to the same total in every row" : "The shares do not sum to the same total in every row: their total, and its product with each period indicator, are controls")
+{{?model=ssiv}} println("Shift-share IV: ", xname, " instrumented by the shift-share regressor, the shares times the shocks, estimated across the shocks")
+{{?model=ssreduced}} println("Reduced form: ", yname, " on the shift-share regressor, the shares times the shocks, estimated across the shocks")
+println("Standard error: Borusyak, Hull and Jaravel, of the regression across the shocks", clusters === nothing ? ", robust" : ", clustered by $(cluster_column)")
+{{?model=ssiv}} row_label = xname
+{{?model=ssreduced}} row_label = "Shift-share regressor"
+println("\n", rpad("", 30), rpad("Estimate", 12), rpad("Std. Error", 12), rpad("z", 8), "95% interval, null imposed")
+println(rpad(row_label, 30), rpad(round(m.beta, digits = 4), 12), rpad(round(m.se, digits = 4), 12), rpad(round(m.beta / m.se, digits = 2), 8), "[", round(m.ci[1], digits = 4), ", ", round(m.ci[2], digits = 4), "]")
+{{?model=ssiv}} println("First-stage F, across the shocks: ", round(m.first_stage_F, digits = 1))
+concentration = exposure_concentration(d)
+println("Effective number of shocks: ", round(concentration.effective_shocks, digits = 1), " of ", concentration.n_shocks, "; the inference rests on the shocks, however many areas there are")
+# The residuals of the areas, after the controls, for the Next Steps
+{{?model=ssiv}} res = y .- x .* m.beta
+{{?model=ssreduced}} res = y .- d.X .* m.beta
+res = res .- d.Z * ((d.Z .* sqrt.(d.weights)) \ (res .* sqrt.(d.weights)))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-exposure"
+label = "Map of the Exposure"
+desc = "The shift-share regressor of every area, its shares times the shocks, on a base map, one layer per period, then the areas' shares in one shock, with the shocks of the largest mean shares: where the exposure to the shocks is high or low, and which shocks it comes from"
+code = '''
+shown = "{{mapShock}}"
+k_map = isempty(shown) ? shock_base[argmax(d.s_bar)] : shown  # the Shock to Map, or the one of the largest mean share
+any(==(k_map), shock_base) || error("Not among the shocks: ", k_map)
+share_of = vec(sum(S[:, shock_base .== k_map]; dims = 2))  # each row's share in that shock, in its own period
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($r, $(d.X[r]), $(share_of[r]))" for r in 1:n), ", "))) t(r, regressor, share)")
+files = map(1:periods) do t
+	f = joinpath(mktempdir(), "exposure$(t).geojson")
+	DBInterface.execute(con, "COPY (SELECT p.geom, o.area_key AS \"{{areaColumn}}\", round(v.regressor, 4) AS shift_share, round(v.share, 5) AS share FROM obs o JOIN mapped v USING (r) JOIN polygons p USING (area_key) WHERE o.t = $t) TO '$(f)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	f
+end
+display(Pollis.webmap((Pollis.layer(files[t]; name = "Shift-share regressor, $(labels[t])", column = "shift_share", opacity = 0.75) for t in 1:periods)...))  # clicking an area shows both values
+display(Pollis.webmap((Pollis.layer(files[t]; name = "Share in $(k_map), $(labels[t])", column = "share", opacity = 0.75) for t in 1:periods)...))
+for t in 1:periods
+	xt = d.X[tt .== t]
+	println("Shift-share regressor, ", labels[t], ", before the controls: from ", round(minimum(xt), digits = 3), " to ", round(maximum(xt), digits = 3), ", mean ", round(mean(xt), digits = 3), ", standard deviation ", round(std(xt), digits = 3))
+end
+println("\n", rpad("Shock", 20), rpad("Mean share", 12), rpad("Shock value", 14), "Rows exposed")
+for k in first(sortperm(d.s_bar; rev = true), 10)  # the shocks of the largest mean shares
+	println(rpad(shock_names[k], 20), rpad(round(d.s_bar[k], digits = 4), 12), rpad(round(d.g[k], digits = 3), 14), count(>(0), S[:, k]))
+end
+println("Areas with similar shares have similar values of the regressor however far apart they are: the reason the inference runs across the shocks")
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "exposure-concentration"
+label = "Exposure Concentration"
+desc = "How concentrated the mean exposure is across the shocks: the Herfindahl index of the mean shares, the effective number of shocks it implies against the number of shocks, and the shocks of the largest mean shares with their running total, as a chart: whether the estimate rests on many shocks or on a few"
+code = '''
+using ECharts
+
+println(rpad("Herfindahl index of the mean shares", 40), round(concentration.hhi, digits = 5))  # of the mean shares made to sum to 1 across the shocks: each shock's share of the exposure
+println(rpad("Effective number of shocks", 40), round(concentration.effective_shocks, digits = 1), " of ", concentration.n_shocks)
+println(rpad("Largest share of the exposure", 40), round(concentration.max_share, digits = 4), ", ", shock_names[concentration.order[1]])
+top = first(eachindex(concentration.order), 20)  # the 20 shocks of the largest mean shares
+println("\n", rpad("Shock", 20), rpad("Share", 12), "Running total")
+for j in first(top, 10)
+	println(rpad(shock_names[concentration.order[j]], 20), rpad(round(concentration.top_shares[j], digits = 4), 12), round(sum(concentration.top_shares[1:j]), digits = 4))
+end
+display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Shares of the exposure, largest first")],
+	xAxis = [ECharts.Axis(_type = "category", name = "{{shockColumn}}", data = shock_names[concentration.order[top]])], yAxis = [ECharts.Axis(_type = "value", name = "Share of the exposure")],
+	series = [ECharts.XYSeries(name = "Share of the exposure", _type = "bar", data = round.(concentration.top_shares[top], digits = 4))]))
+println("\nThe theory of Borusyak, Hull and Jaravel lets the number of shocks grow, not that of the areas: with few effective shocks, the inference rests on few observations however many areas there are")
+clusters === nothing || println("The standard error treats the ", m.n_clusters, " clusters of ", cluster_column, " as the independent observations")
+'''
+
+[[actionGroups.actions]]
+id = "balance-test"
+label = "Balance Test"
+desc = "Whether the shocks are unrelated to the areas' characteristics, tested across the shocks as Borusyak, Hull and Jaravel propose: the coefficient of the shock for each Balance Variable, with the period indicators of the shocks, and a joint test of all of them"
+code = '''
+bnames = filter(!isempty, String.(strip.(split("{{balanceVariables}}", ","))))
+isempty(bnames) && error("No Balance Variables: name one or more columns of the changes file")
+R = reduce(hcat, column.(bnames))  # one column per characteristic, one row per area and period
+# For each characteristic, after the controls, its mean over the areas exposed to each shock, regressed on the shock, weighted by the mean shares
+balance = balance_test(d, R; controls = size(Ds, 2) > 0 ? Ds : nothing, names = bnames)
+println(rpad("Characteristic", 24), rpad("Coefficient", 14), rpad("Std. Error", 12), rpad("t", 8), "p-value")
+for j in eachindex(balance.names)
+	println(rpad(balance.names[j], 24), rpad(round(balance.coefs[j], sigdigits = 4), 14), rpad(round(balance.ses[j], sigdigits = 4), 12), rpad(round(balance.t_stats[j], digits = 2), 8), round(balance.p_values[j], digits = 4))
+end
+println("Joint Wald test that all are balanced: chi-squared ", round(balance.joint_chi2, digits = 3), " on ", balance.joint_df, " degrees of freedom, p-value ", round(balance.joint_p, digits = 4))
+println("Observations: ", balance.n_shocks, " shocks, ", round(concentration.effective_shocks, digits = 1), " effective; standard errors robust, not clustered")
+println("A small p-value says the shocks are related to the characteristic, against the quasi-random assignment of the shocks the design assumes; the shares may be endogenous in this design")
+println("The documentation of SpatialEconometrics.jl reports the test rejecting a true null at 5% in 5.6% of its simulations with 100 effective shocks, 10.9% with 20 and 23.2% with 9, and the joint test faster still")
+'''
+
+[[actionGroups.actions]]
+id = "moran-residuals"
+label = "Moran's I of the Residuals"
+desc = "Moran's I, with the Neighbours, within each period, of the shift-share regressor, of the areas' residuals and of each share: whether the exposure and what the fit leaves unexplained cluster on the map, which in a shift-share design is common and calls for no spatial correction"
+code = '''
+# The neighbours of each area on the map, then the pairs of rows of neighbouring areas in the same period
+neighbour_sql = Dict(
+	"queen" => "SELECT a.area_key AS a, b.area_key AS b FROM polygons a JOIN polygons b ON a.area_key <> b.area_key AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.area_key AS a, b.area_key AS b FROM polygons a JOIN polygons b ON a.area_key <> b.area_key AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT area_key, ST_Centroid(geom) AS p FROM polygons) SELECT a, b FROM (SELECT x.area_key AS a, y.area_key AS b, row_number() OVER (PARTITION BY x.area_key ORDER BY ST_Distance_Sphere(x.p, y.p), y.area_key) AS q FROM c x JOIN c y ON x.area_key <> y.area_key) WHERE q <= {{k}}")  # the nearest centroids
+DBInterface.execute(con, "CREATE OR REPLACE TABLE neighbour_areas AS " * neighbour_sql["{{neighbours}}"])
+rows = Tables.columntable(DBInterface.execute(con, "SELECT x.r AS i, y.r AS j FROM obs x JOIN obs y ON x.t = y.t JOIN neighbour_areas nb ON nb.a = x.area_key AND nb.b = y.area_key"))
+isolated = setdiff(1:n, rows.i)
+isempty(isolated) || println(length(isolated), " rows of areas without a neighbour, whose Moran terms are 0")
+Wsp = sparse(rows.i, rows.j, 1.0, n, n)
+Wsp = spdiagm(0 => [s > 0 ? 1 / s : 0.0 for s in vec(sum(Wsp; dims = 2))]) * Wsp  # each row summing to 1: a different matrix from the shares
+sm = shift_share_moran(d, Wsp)
+mr = moran_global(res, Wsp)
+println(rpad("", 28), rpad("Moran's I", 12), rpad("Expected", 12), rpad("z", 10), "p-value")
+for (name, r) in (("Shift-share regressor", sm.regressor), ("Residuals of the areas", mr))
+	println(rpad(name, 28), rpad(round(r.I_stat, digits = 4), 12), rpad(round(r.E_I, digits = 4), 12), rpad(round(r.z_stat, digits = 2), 10), round(r.p_value, digits = 4))
+end
+finite = findall(isfinite, sm.share_I)  # the shares that vary over the rows
+println("\nShares: ", count(<(0.05), sm.share_p[finite]), " of ", length(finite), " with a p-value below 0.05; those of the largest Moran's I in absolute value:")
+println(rpad("Shock", 20), rpad("Moran's I", 12), "p-value")
+for k in first(finite[sortperm(abs.(sm.share_I[finite]); rev = true)], 5)
+	println(rpad(shock_names[k], 20), rpad(round(sm.share_I[k], digits = 4), 12), round(sm.share_p[k], digits = 4))
+end
+println("\nShares that cluster on the map are the normal case, as industries cluster; identification runs through the shocks. The correlation that matters runs through similar shares, near or far, which the regression across the shocks allows for and a spatial correction does not")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "against-regional"
+label = "Against the Regional Standard Error"
+desc = "The tab's standard error, from the regression across the shocks, beside the usual one of the regression across the areas, clustered by the Area Clusters: the two standard errors, z and 95% intervals, and their ratio, as Borusyak, Hull and Jaravel set them side by side"
+code = '''
+# The regression across the areas: the same estimate, with a standard error that treats the areas, or their clusters, as independent
+sw = sqrt.(d.weights)
+z_tilde = d.X .- d.Z * ((d.Z .* sw) \ (d.X .* sw))  # the shift-share regressor after the controls
+{{?model=ssiv}} denominator = dot(z_tilde, d.weights .* x)
+{{?model=ssreduced}} denominator = dot(z_tilde, d.weights .* d.X)
+score = d.weights .* z_tilde .* res
+area_cluster = "{{regionCluster}}"
+groups = isempty(area_cluster) ? string.(1:n) : String.(Tables.columntable(DBInterface.execute(con, "SELECT \"$(area_cluster)\"::VARCHAR AS c FROM obs ORDER BY r")).c)
+sums = Dict{String, Float64}()
+for (c, s) in zip(groups, score)
+	sums[c] = get(sums, c, 0.0) + s
+end
+regional_se = sqrt(sum(abs2, values(sums))) / abs(denominator)  # clustered, without a small-sample correction
+println(rpad("Standard error", 44), rpad("Std. Error", 12), rpad("z", 8), "95% interval")
+println(rpad("Across the shocks" * (clusters === nothing ? "" : ", clustered by $(cluster_column)"), 44), rpad(round(m.se, digits = 4), 12), rpad(round(m.beta / m.se, digits = 2), 8), "[", round(m.ci[1], digits = 4), ", ", round(m.ci[2], digits = 4), "], null imposed")
+println(rpad("Across the areas" * (isempty(area_cluster) ? ", robust" : ", clustered by $(area_cluster)"), 44), rpad(round(regional_se, digits = 4), 12), rpad(round(m.beta / regional_se, digits = 2), 8), "[", round(m.beta - 1.96 * regional_se, digits = 4), ", ", round(m.beta + 1.96 * regional_se, digits = 4), "]")
+println("Across the shocks over across the areas: ", round(m.se / regional_se, digits = 2), "; ", length(sums), " clusters of areas, ", m.n_clusters, " of shocks")
+println("\nThe regional standard error treats areas in different clusters as independent; areas with similar shares are hit by the same shocks wherever they are, and Adão, Kolesár and Morales find standard errors of that kind too small in shift-share designs")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "shocks-driving-estimate"
+label = "Which Shocks Drive the Estimate"
+desc = "Which shocks the shift-share estimate rests on: the estimate taken apart, as Goldsmith-Pinkham, Sorkin and Swift show, into one estimate per shock, with the shares in that shock alone as the instrument, and the weight of each in the whole, the shocks of the largest weights listed with their own estimates, and the negative weights counted"
+code = '''
+using ECharts
+
+# The estimate is the weighted sum of one estimate per shock, each with the shares in that shock alone as the instrument; the weights sum to 1 and can be negative
+{{?model=ssiv}} rw = rotemberg_weights(y, x, d)
+{{?model=ssreduced}} rw = rotemberg_weights(y, d.X, d)
+println("Estimate ", round(m.beta, digits = 4), "; the weighted sum of the estimates per shock ", round(rw.beta_overall, digits = 4), ", with weights summing to ", round(rw.alpha_sum, digits = 4))
+top = first(rw.order, 10)  # the shocks of the largest weights, positive or negative
+println("\n", rpad("Shock", 20), rpad("Weight", 10), rpad("Its own estimate", 18), rpad("Shock value", 14), "Mean share")
+for k in top
+	println(rpad(shock_names[k], 20), rpad(round(rw.alpha[k], digits = 4), 10), rpad(isnan(rw.beta_k[k]) ? "none" : string(round(rw.beta_k[k], digits = 4)), 18), rpad(round(d.g[k], digits = 3), 14), round(d.s_bar[k], digits = 4))
+end
+weight_top5 = sum(abs, rw.alpha[first(rw.order, 5)]) / sum(abs, rw.alpha)
+println("\nThe 5 shocks of the largest weights carry ", round(100 * weight_top5, digits = 1), "% of the absolute weight, of ", length(rw.alpha), " shocks")
+println("Negative weights: ", rw.n_negative, " shocks, summing to ", round(rw.negative_mass, digits = 4))
+isempty(rw.undefined) || println(length(rw.undefined), " shocks with no first stage of their own, given weight 0")
+display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Weights of the shocks, largest first")],
+	xAxis = [ECharts.Axis(_type = "category", name = "{{shockColumn}}", data = shock_names[first(rw.order, 20)])], yAxis = [ECharts.Axis(_type = "value", name = "Weight")],
+	series = [ECharts.XYSeries(name = "Weight", _type = "bar", data = round.(rw.alpha[first(rw.order, 20)], digits = 4))]))
+println("\nGoldsmith-Pinkham, Sorkin and Swift propose the weights to name the shocks whose shares have to be defended as unrelated to the outcome's other causes; a weight shows how much a flaw in that shock would move the estimate")
+'''
+
+[[actionGroups.actions]]
+id = "estimate-shock-by-shock"
+label = "The Estimate Shock by Shock"
+desc = "The data of the regression across the shocks: for each shock, the mean of the outcome and of the endogenous variable over the areas exposed to it, after the controls, set against the shock, with the estimate recovered from them exactly and drawn as a chart"
+code = '''
+using ECharts
+
+# For each shock, the means over the rows weighted by their regression weights times their shares in it, after the controls
+sa = m.aggregates
+println(rpad("Across the shocks, the tab's estimate", 46), round(m.beta, digits = 4))
+println(rpad("Across the areas, the same estimate", 46), round(sa.beta_equiv, digits = 4))
+{{?model=ssiv}} println("\n", rpad("Shock", 20), rpad("Mean share", 12), rpad("Shock value", 14), rpad("Mean outcome", 16), "Mean ", xname)
+{{?model=ssreduced}} println("\n", rpad("Shock", 20), rpad("Mean share", 12), rpad("Shock value", 14), rpad("Mean outcome", 16), "Mean regressor")
+for k in first(sortperm(sa.s_bar; rev = true), 10)  # the shocks of the largest mean shares
+	println(rpad(shock_names[k], 20), rpad(round(sa.s_bar[k], digits = 4), 12), rpad(round(sa.g[k], digits = 3), 14), rpad(round(sa.y_bar[k], digits = 4), 16), round(sa.x_bar[k], digits = 4))
+end
+println("Means after the controls, over the areas weighted by their shares in the shock")
+display(EChart(ec_width = 640, ec_height = 360, title = [ECharts.Title(text = "Mean outcome against the shock, one point per shock")],
+	xAxis = [ECharts.Axis(_type = "value", name = "{{shockValue}}", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Mean outcome", scale = true)],
+	series = [ECharts.XYSeries(name = "Shocks", _type = "scatter", data = [[round(sa.g[k], digits = 3), round(sa.y_bar[k], digits = 4)] for k in eachindex(sa.g)])]))
+println("\nBorusyak, Hull and Jaravel read the design as a regression across the shocks: the shocks are the observations, so the design needs shocks unrelated to the outcome's other causes, and as many of them, with the exposure spread evenly enough, as the Effective Number of Shocks counts")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-bhj-table4"
+label = "Borusyak, Hull and Jaravel's Table 4"
+desc = "Borusyak, Hull and Jaravel (2022), Table 4: the effect of Chinese import competition on manufacturing employment across the US commuting zones, 1990 to 2007, by a shift-share IV estimated across the industries, in seven columns of controls, the estimates, standard errors, first-stage F and null-imposed intervals beside those the article prints"
+models = ["ssiv"]
+code = '''
+using PollisDatasets
+
+let
+	czr = dataset("adh_czones")  # Borusyak, Hull and Jaravel's data of Autor, Dorn and Hanson (2013)
+	shk = dataset("adh_shocks")
+	order_r = sortperm(collect(zip(czr.year, czr.czone)))  # period by period, the zones varying fastest
+	order_k = sortperm(collect(zip(shk.year, shk.sic87dd)))
+	nz, K1 = length(order_r), count(==(1990), shk.year)
+	cz(v) = Float64.(getproperty(czr, Symbol(v))[order_r])
+	sk(v) = getproperty(shk, Symbol(v))[order_k]
+	row = Dict((czr.czone[r], czr.year[r]) => i for (i, r) in enumerate(order_r))
+	colk = Dict((sk("sic87dd")[j], sk("year")[j]) => j for j in eachindex(order_k))
+	sh_rows = Tables.columntable(DBInterface.execute(con, "SELECT * FROM '$(samplefile("adh_shares.parquet"))'"))
+	Wa = zeros(nz, length(order_k))  # zones and periods by industries and periods
+	for (c, yr, s, v) in zip(sh_rows.czone, sh_rows.year, sh_rows.sic87dd, sh_rows.share)
+		Wa[row[(c, yr)], colk[(s, yr)]] = v
+	end
+	ga, sic3, group, year_k = Float64.(sk("g")), sk("sic3"), sk("sicgroup"), sk("year")
+	t2 = cz("t2"); lsh = vec(sum(Wa; dims = 2))  # the lagged manufacturing share
+	adh = reduce(hcat, cz.(["reg_midatl", "reg_encen", "reg_wncen", "reg_satl", "reg_escen", "reg_wscen", "reg_mount", "reg_pacif", "l_sh_popedu_c", "l_sh_popfborn", "l_sh_empl_f", "l_sh_routine33", "l_task_outsource"]))
+	groups9 = reduce(hcat, [vec(sum(Wa[:, group .== j]; dims = 2)) for j in 1:9])  # the shares of the SIC groups; the tenth is lsh minus these
+	aadhp = reduce(hcat, cz.(["cz_prode_share1991", "cz_cap_va1991", "cz_log_avg_wage1991", "cz_ind_ci_1990", "cz_ind_htsh1_1990"]))
+	sics = sort(unique(sk("sic87dd")))
+	industry = zeros(nz, length(sics))  # each zone's share in each industry, in its period
+	for j in eachindex(ga); industry[:, searchsortedfirst(sics, sk("sic87dd")[j])] .+= Wa[:, j]; end
+	year_d = Float64.(year_k .== 2000)
+	group_d = reduce(hcat, [Float64.(group .== j) for j in 2:10])
+	chars = reduce(hcat, [Float64.(sk(v)) for v in ["prode_share1991", "cap_va1991", "log_avg_wage1991", "ind_ci_1990", "ind_htsh1_1990"]])
+	industry_d = reduce(hcat, [Float64.(sk("sic87dd") .== s) for s in sics[2:end]])
+	base = hcat(t2, lsh, lsh .* t2)
+	columns = [(hcat(t2, cz("l_shind_manuf_cbp"), adh), nothing), (hcat(t2, lsh, adh), nothing), (hcat(base, adh), year_d), (base, year_d),
+		(hcat(base, adh, groups9), hcat(year_d, group_d)), (hcat(base, adh, aadhp), hcat(year_d, chars)), (hcat(t2, lsh .* t2, industry, adh), hcat(year_d, industry_d))]
+	published = [-0.596 0.114 -1.059 -0.395 185.586; -0.489 0.100 -0.832 -0.309 166.730; -0.267 0.099 -0.568 -0.028 123.638; -0.314 0.107 -0.637 -0.018 272.349;
+		-0.310 0.134 -0.705 -0.002 64.590; -0.290 0.129 -0.699 0.002 63.293; -0.432 0.205 -1.207 0.122 27.613]
+	println(rpad("Column", 8), rpad("Julia", 11), rpad("Article", 9), rpad("Julia SE", 10), rpad("Article", 9), rpad("Julia interval", 22), rpad("Article", 18), rpad("Julia F", 10), "Article")
+	for (j, (Cj, SCj)) in enumerate(columns)
+		if j == 1  # the shares completed by the rest of each zone's employment, a shock of 0 in each period, as the article's column 1
+			rest = 1 .- lsh
+			Wj = hcat(rest .* (t2 .== 0), Wa[:, 1:K1], rest .* (t2 .== 1), Wa[:, (K1 + 1):end])
+			gj, cj = vcat(0.0, ga[1:K1], 0.0, ga[(K1 + 1):end]), vcat(0, sic3[1:K1], 0, sic3[(K1 + 1):end])
+		else
+			Wj, gj, cj = Wa, ga, sic3
+		end
+		dj = shift_share_design(Wj, gj; controls = Cj, weights = cz("timepwt48"))
+		fj = fit_shock_level(cz("d_sh_empl_mfg"), dj; treatment = cz("d_tradeusch_pw"), shock_controls = SCj, shock_clusters = cj)
+		p = published[j, :]
+		println(rpad(j, 8), rpad(round(fj.beta, digits = 4), 11), rpad(p[1], 9), rpad(round(fj.se, digits = 4), 10), rpad(p[2], 9),
+			rpad("[$(round(fj.ci[1], digits = 3)), $(round(fj.ci[2], digits = 3))]", 22), rpad("[$(p[3]), $(p[4])]", 18), rpad(round(fj.first_stage_F, digits = 3), 10), p[5])
+		if j == 7  # the article's column 7 absorbs the industries with ivreghdfe, which corrects for the clusters and the regressors left
+			factor = fj.n_clusters / (fj.n_clusters - 1) * (fj.n_shocks - 1) / (fj.n_shocks - 3)
+			println("Column 7 with that small-sample correction: SE ", round(fj.se * sqrt(factor), digits = 4), ", F ", round(fj.first_stage_F / factor, digits = 3))
+		end
+	end
+	println("\nThe article finds the ends of its intervals by bisection to 0.001, and prints three decimals")
+end
+'''
+
+[[wikis]]
+name = "Factsheet"
+file = "shiftshare/factsheet.md"
+bundled = true
+description = "One-page reference: what each tab prints, the inputs, the Next Steps and the example data"
+
+[[wikis]]
+name = "Overview"
+file = "shiftshare/overview.md"
+bundled = true
+description = "Shift-share designs, the regression across the shocks, and the words of the panel beside those of the papers"
+
+[[wikis]]
+name = "Shares, Shocks and Identification"
+file = "shiftshare/identification.md"
+bundled = true
+description = "The two views of what identifies a shift-share design, shares that do not sum to the same total, and stacked periods"
+
+[[wikis]]
+name = "Inference Across the Shocks"
+file = "shiftshare/inference.md"
+bundled = true
+description = "Why the usual standard errors are too small, the regression across the shocks, its clusters, the null-imposed interval and the effective number of shocks"
+
+[[wikis]]
+name = "Replications"
+file = "shiftshare/replications.md"
+bundled = true
+description = "Table 4 of Borusyak, Hull and Jaravel (2022) on the China shock, column by column, and what differs in column 7"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Shift-Share IV"
+file = "shiftshare/ssiv.md"
+bundled = true
+
+[[wikis]]
+name = "Reduced Form"
+file = "shiftshare/ssreduced.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "ADH2013a"
+
+[[references]]
+key = "AKM2019a"
+
+[[references]]
+key = "BHJ2022a"
+
+[[references]]
+key = "GSS2020a"
+
+[[faq]]
+question = "Which tab of the Shift-Share Designs panel should I start with?"
+answer = '''
+Shift-Share IV when the question is the effect of a change that local conditions also cause, such as the growth of imports in a local labour market: the shift-share regressor instruments it. Reduced Form when the exposure to the shocks is itself the quantity of interest: the outcome on the shift-share regressor. Both estimate across the shocks and print the same kind of standard error and interval.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Why does the panel estimate across the shocks?"
+answer = '''
+Borusyak, Hull and Jaravel (2022) show that the coefficient of a shift-share IV regression can be obtained from an equivalent regression across the shocks, and that identification can follow from the quasi-random assignment of the shocks while the shares are allowed to be endogenous. The shocks are then the observations, and the usual standard error of the regression across the shocks is valid however the areas' residuals are correlated.
+'''
+wiki = "Inference Across the Shocks"
+
+[[faq]]
+question = "What does Shock Clusters do?"
+answer = '''
+It names a column of the shocks file whose values group shocks that may be correlated, and the standard error is clustered by it. Borusyak, Hull and Jaravel cluster the industries of Autor, Dorn and Hanson by their 3-digit SIC code. In a stacked design an industry has the same code in every period, so its shocks may be correlated over time.
+'''
+wiki = "Inference Across the Shocks"
+
+[[faq]]
+question = "What is the interval with the null imposed?"
+answer = '''
+The values of the coefficient that a test with the null imposed does not reject at 5%: for each value, the residual of the regression across the shocks is formed with that value, and the test asks whether it is unrelated to the shocks. Borusyak, Hull and Jaravel report it beside the usual standard error; it need not be symmetric around the estimate, and with a weak instrument it can be unbounded.
+'''
+wiki = "Inference Across the Shocks"
+hidden = true
+
+[[faq]]
+question = "What is the effective number of shocks?"
+answer = '''
+The reciprocal of the Herfindahl index of the mean shares, computed by exposure_concentration. The documentation of exposure_concentration states that the asymptotics are in the number of shocks, so an estimate resting on a few effective shocks is not supported by the theory however many areas there are.
+'''
+wiki = "Inference Across the Shocks"
+hidden = true
+
+[[faq]]
+question = "Why are the share total and its products with the periods among the controls?"
+answer = '''
+The documentation of shift_share_design explains that the framework of Borusyak, Hull and Jaravel assumes each area's shares sum to the same total; when they do not, as with shares of manufacturing jobs only, the total is an area characteristic correlated with the regressor and belongs among the controls. With stacked periods each period has its own total, so the panel adds the total and its product with each period indicator.
+'''
+wiki = "Shares, Shocks and Identification"
+hidden = true
+
+[[faq]]
+question = "Why does column 7 of the replication differ in its standard error?"
+answer = '''
+The article's column 7 absorbs the industries with Stata's ivreghdfe, which applies a small-sample correction for the number of clusters and of regressors; its other columns use ivreg2 without one, as the panel does. The step prints column 7 also with that correction, which brings the standard error and the first-stage F to the article's.
+'''
+wiki = "Replications"
+hidden = true

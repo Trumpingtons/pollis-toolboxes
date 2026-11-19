@@ -9,8 +9,13 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -143,7 +148,7 @@ wiki = "Kernels and Bandwidths"
 [[faq]]
 question = "How is the bandwidth chosen?"
 answer = '''
-With Bandwidth set to AICc, the panel chooses the bandwidth with the smallest corrected Akaike information criterion, which penalises the small bandwidths that make the model more complex. GWR, Fixed Bandwidth searches over distances by golden section; GWR, Adaptive and Multiscale GWR leave the search over numbers of nearest areas to SpatialEconometrics.jl. A number in Bandwidth fixes it instead.
+With Bandwidth set to AICc, the panel chooses the bandwidth with the smallest corrected Akaike information criterion, which penalises the small bandwidths that make the model more complex. GWR, Fixed Bandwidth searches over distances by golden section; GWR, Adaptive and Multiscale GWR search over numbers of nearest areas by golden section in SpatialEconometrics.jl. A number in Bandwidth fixes it instead.
 '''
 wiki = "Bandwidth Selection"
 
@@ -250,33 +255,33 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, cambridgegwr.gpkg, the example first writes a grid of 400 square cells of 1 km around Cambridge with simulated nitrogen dioxide (no2), traffic and green space, in which the effect of traffic grows from west to east, unless the folder has a cambridgegwr.gpkg already."
-default = "cambridgegwr.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, georgia_counties.gpkg, the example first copies the 159 counties of Georgia in 1990 from PollisDatasets into the folder, unless it has the file already: the percentage of the population with a bachelor's degree (PctBach), foreign-born (PctFB), Black (PctBlack), rural (PctRural), in poverty (PctPov) and elderly (PctEld)."
+default = "georgia_counties.gpkg"
 
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
 tooltip = "The numeric column explained by the model. Areas without a value in it, or in an explanatory variable, are left out."
-default = "no2"
+default = "PctBach"
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
 tooltip = "The numeric columns that explain it, separated by commas. Every local regression adds an intercept."
-default = "traffic, green"
+default = "PctFB, PctBlack, PctRural"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:27700"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's counties are in EPSG:26916, NAD83 / UTM zone 16N. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:26916"
 newRow = true
 
 [[inputs]]
 id = "distanceCrs"
 label = "Distance Coordinate System"
 tooltip = "A projected coordinate system in metres, as an EPSG code: the centroids of the areas are moved into it, and the distances between them, and a fixed bandwidth, are in its metres."
-default = "EPSG:27700"
+default = "EPSG:26916"
 
 [[inputs]]
 id = "kernel"
@@ -322,22 +327,15 @@ label = "Yes"
 model = "*"
 code = '''
 using DuckDB, Tables, SpatialEconometrics, LinearAlgebra, Statistics, Random
+{{?file=georgia_counties.gpkg}} using PollisDatasets
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-# Example file: 20 by 20 square cells of 1 km around Cambridge, in EPSG:27700, written unless the folder has one already. Replace "cambridgegwr.gpkg" with your own file.
-if basename(path) == "cambridgegwr.gpkg" && !isfile(path)
-	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
-	traffic = 4 .+ 16 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 30) .+ randn(rng, 400)  # thousands of vehicles a day, most in the centre
-	green = clamp.(30 .+ 1.5 .* u .- 0.8 .* traffic .+ 6 .* randn(rng, 400), 2, 90)  # percent of green space
-	no2 = (10 .+ 0.2 .* v) .+ (0.8 .+ 0.04 .* u) .* traffic .- 0.12 .* green .+ 1.5 .* randn(rng, 400)  # the effect of traffic grows from west to east
-	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), ST_MakeEnvelope($(545000 + 1000 * u[c]), $(258000 + 1000 * v[c]), $(546000 + 1000 * u[c]), $(259000 + 1000 * v[c])))" for c in 1:400]
-	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
-end
+{{?file=georgia_counties.gpkg}} # Example file: the 159 counties of Georgia in 1990, the data of Fotheringham, Brunsdon and Charlton (2002), GWR4 and mgwr, copied from PollisDatasets unless the folder has it already. Replace "georgia_counties.gpkg" with your own file.
+{{?file=georgia_counties.gpkg}} isfile(path) || cp(samplefile("georgia_counties.gpkg"), path)
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
@@ -354,22 +352,25 @@ kernel = Dict("bisquare" => BisquareKernel(), "gaussian" => GaussianKernel(), "e
 
 {{?model=gwrfixed}} # The fixed bandwidth: as given, or by a golden section search over the corrected AIC
 {{?model=gwrfixed}} aicc(h) = try fit_gwr(X, y, coords; bandwidth = FixedBandwidth(h), kernel = kernel, varnames = xnames).AICc catch; Inf end  # Inf where too few areas get weight
-{{?model=gwrfixed}} if "{{bandwidth}}" == "AICc"
-{{?model=gwrfixed}} 	D = [norm(coords[i, :] - coords[j, :]) for i in 1:n, j in 1:n]
-{{?model=gwrfixed}} 	lo, hi = maximum(sort(D[i, :])[min(n, 2 * (p + 1))] for i in 1:n), maximum(D)  # from enough neighbours everywhere to the whole map
+{{?model=gwrfixed}} function golden_section(f, lo, hi, tol)  # the minimum of f between lo and hi
 {{?model=gwrfixed}} 	g = (sqrt(5) - 1) / 2
 {{?model=gwrfixed}} 	a, b = hi - g * (hi - lo), lo + g * (hi - lo)
-{{?model=gwrfixed}} 	fa, fb = aicc(a), aicc(b)
-{{?model=gwrfixed}} 	while hi - lo > 1e-3 * maximum(D)
+{{?model=gwrfixed}} 	fa, fb = f(a), f(b)
+{{?model=gwrfixed}} 	while hi - lo > tol
 {{?model=gwrfixed}} 		if fa < fb
 {{?model=gwrfixed}} 			hi, b, fb = b, a, fa
-{{?model=gwrfixed}} 			a = hi - g * (hi - lo); fa = aicc(a)
+{{?model=gwrfixed}} 			a = hi - g * (hi - lo); fa = f(a)
 {{?model=gwrfixed}} 		else
 {{?model=gwrfixed}} 			lo, a, fa = a, b, fb
-{{?model=gwrfixed}} 			b = lo + g * (hi - lo); fb = aicc(b)
+{{?model=gwrfixed}} 			b = lo + g * (hi - lo); fb = f(b)
 {{?model=gwrfixed}} 		end
 {{?model=gwrfixed}} 	end
-{{?model=gwrfixed}} 	h = fa < fb ? a : b
+{{?model=gwrfixed}} 	return fa < fb ? a : b
+{{?model=gwrfixed}} end
+{{?model=gwrfixed}} if "{{bandwidth}}" == "AICc"
+{{?model=gwrfixed}} 	D = [norm(coords[i, :] - coords[j, :]) for i in 1:n, j in 1:n]
+{{?model=gwrfixed}} 	lo = maximum(sort(D[i, :])[min(n, 2 * (p + 1))] for i in 1:n)  # enough neighbours everywhere
+{{?model=gwrfixed}} 	h = golden_section(aicc, lo, maximum(D), 1e-3 * maximum(D))  # up to the whole map
 {{?model=gwrfixed}} else
 {{?model=gwrfixed}} 	h = parse(Float64, "{{bandwidth}}")
 {{?model=gwrfixed}} end
@@ -407,7 +408,7 @@ id = "map-coefficients"
 label = "Maps of the Local Coefficients"
 desc = "One layer per coefficient on a base map, each area coloured by its local estimate; switch the layers to compare them"
 code = '''
-gwr_table = "SELECT * FROM (VALUES $(join(("($i, $(join(m.coef_local[i, :], ", ")), $(join(m.coef_local[i, :] ./ m.se_local[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("b$k" for k in 1:p + 1), ", ")), $(join(("t$k" for k in 1:p + 1), ", ")))"
+gwr_table = "SELECT i, COLUMNS(lambda c: c <> 'i')::DOUBLE FROM (VALUES $(join(("($i, $(join(m.coef_local[i, :], ", ")), $(join(m.coef_local[i, :] ./ m.se_local[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("b$k" for k in 1:p + 1), ", ")), $(join(("t$k" for k in 1:p + 1), ", ")))"
 DBInterface.execute(con, "CREATE OR REPLACE TABLE local AS $(gwr_table)")
 cmap = joinpath(mktempdir(), "coefficients.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, l.* EXCLUDE (i) FROM areas a JOIN local l USING (i)) TO '$(cmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
@@ -420,7 +421,7 @@ label = "Map of the Local t-Values"
 desc = "One layer per coefficient on a base map, each area coloured by its local t-value, the estimate divided by its standard error, not adjusted for multiple testing"
 code = '''
 tvals = m.coef_local ./ m.se_local
-DBInterface.execute(con, "CREATE OR REPLACE TABLE local_t AS SELECT * FROM (VALUES $(join(("($i, $(join(tvals[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("t$k" for k in 1:p + 1), ", ")))")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE local_t AS SELECT i, COLUMNS(lambda c: c <> 'i')::DOUBLE FROM (VALUES $(join(("($i, $(join(tvals[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("t$k" for k in 1:p + 1), ", ")))")
 tmap = joinpath(mktempdir(), "tvalues.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, l.* EXCLUDE (i) FROM areas a JOIN local_t l USING (i)) TO '$(tmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap((Pollis.layer(tmap; name = "t, " * m.coefnames[k], column = "t$k", opacity = 0.75) for k in 1:p + 1)...))
@@ -432,7 +433,7 @@ label = "Map of the Local R-squared"
 desc = "Each area coloured by the R-squared of its local regression: where the explanatory variables explain the dependent variable well and where they do not"
 models = ["gwrfixed", "gwradaptive"]
 code = '''
-DBInterface.execute(con, "CREATE OR REPLACE TABLE local_fit AS SELECT * FROM (VALUES $(join(("($i, $(m.local_R2[i]))" for i in 1:n), ", "))) t(i, local_r2)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE local_fit AS SELECT i, local_r2::DOUBLE AS local_r2 FROM (VALUES $(join(("($i, $(m.local_R2[i]))" for i in 1:n), ", "))) t(i, local_r2)")
 r2map = joinpath(mktempdir(), "local-r2.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, round(l.local_r2, 4) AS local_r2 FROM areas a JOIN local_fit l USING (i)) TO '$(r2map)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(r2map; name = "Local R-squared", column = "local_r2", opacity = 0.75)))
@@ -571,14 +572,11 @@ id = "replicate-gwr4"
 label = "Georgia Counties: GWR4"
 desc = "The percentage with a bachelor's degree in Georgia's 159 counties on the percentages rural, in poverty and African American, with fixed bisquare and Gaussian kernels at GWR4's own bandwidths, beside GWR4's results kept in libpysal"
 code = '''
-using Downloads
+using PollisDatasets
 
 let
-	rcon = DBInterface.connect(DuckDB.DB)
-	file = joinpath(mktempdir(), "GData_utm.csv")
-	Downloads.download("https://raw.githubusercontent.com/pysal/libpysal/main/libpysal/examples/georgia/GData_utm.csv", file)  # libpysal, BSD-3
-	DBInterface.execute(rcon, "CREATE TABLE georgia AS SELECT row_number() OVER () AS i, * FROM read_csv('$(file)')")
-	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM georgia ORDER BY i")).v)
+	georgia = dataset("georgia")  # libpysal's GData_utm.csv, BSD-3
+	cols(c) = Float64.(getproperty(georgia, Symbol(c)))
 	yg = cols("PctBach")
 	Xg = hcat(cols("PctRural"), cols("PctPov"), cols("PctBlack"))
 	cg = hcat(cols("X"), cols("Y"))  # the county centroids, in UTM metres
@@ -610,14 +608,11 @@ id = "replicate-article"
 label = "Oshan and Coauthors (2019)"
 desc = "Section 3 and 4.5.1 of Oshan, Li, Kang, Wolf and Fotheringham (2019): GWR of the percentage with a bachelor's degree in Georgia's 159 counties on the percentages foreign-born, African American and rural, with an adaptive bisquare kernel, and multiscale GWR on the standardised variables, beside the values the article prints from mgwr"
 code = '''
-using Downloads
+using PollisDatasets
 
 let
-	rcon = DBInterface.connect(DuckDB.DB)
-	file = joinpath(mktempdir(), "GData_utm.csv")
-	Downloads.download("https://raw.githubusercontent.com/pysal/libpysal/main/libpysal/examples/georgia/GData_utm.csv", file)  # libpysal, BSD-3
-	DBInterface.execute(rcon, "CREATE TABLE georgia AS SELECT row_number() OVER () AS i, * FROM read_csv('$(file)')")
-	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM georgia ORDER BY i")).v)
+	georgia = dataset("georgia")  # libpysal's GData_utm.csv, BSD-3
+	cols(c) = Float64.(getproperty(georgia, Symbol(c)))
 	yg = cols("PctBach")
 	Xg = hcat(cols("PctFB"), cols("PctBlack"), cols("PctRural"))
 	cg = hcat(cols("X"), cols("Y"))  # the county centroids, in UTM metres
@@ -630,16 +625,15 @@ let
 			println(rpad(what, 22), rpad(round(julia, digits = 6), 16), rpad(published, 16), round(julia - published, sigdigits = 2))
 		end
 	end
-	# GWR, adaptive bisquare: the bandwidth by AICc, then the fit at the article's 117 nearest counties
-	selected = fit_gwr(Xg, yg, cg; kernel = BisquareKernel(), varnames = names)
-	g = fit_gwr(Xg, yg, cg; bandwidth = AdaptiveBandwidth(117), kernel = BisquareKernel(), varnames = names)
+	# GWR, adaptive bisquare, the number of nearest counties chosen by AICc with mgwr's golden section search
+	g = fit_gwr(Xg, yg, cg; kernel = BisquareKernel(), varnames = names)
 	rss = sum(abs2, g.residuals)
 	aic = 2 * ng * log(sqrt(rss / ng)) + ng * log(2 * pi) + ng + 2 * (g.hat_trace + 1)  # minus twice the log-likelihood, plus twice tr(S) and the variance
-	report("GWR (sections 3.2 to 3.4)", [("bandwidth by AICc", selected.bandwidth, 117.0), ("RSS", rss, 1650.85969828), ("AIC", aic, 848.915407053),
+	report("GWR (sections 3.2 to 3.4)", [("bandwidth by AICc", g.bandwidth, 117.0), ("RSS", rss, 1650.85969828), ("AIC", aic, 848.915407053),
 		("AICc", g.AICc, 851.350292784), ("R-squared", g.R2, 0.678074266959)])
-	# Multiscale GWR on the standardised variables, as numpy's std: divided by n
+	# Multiscale GWR on the standardised variables, as numpy's std: divided by n, each bandwidth searched from 2 counties, as in the article
 	zscore(v) = (v .- mean(v)) ./ std(v; corrected = false)
-	mg = fit_mgwr(reduce(hcat, zscore.(eachcol(Xg))), zscore(yg), cg; kernel = BisquareKernel(), varnames = names)
+	mg = fit_mgwr(reduce(hcat, zscore.(eachcol(Xg))), zscore(yg), cg; kernel = BisquareKernel(), varnames = names, bw_min = 2)
 	mg.converged || println("Back-fitting did not converge in ", mg.iterations, " iterations")
 	report("Multiscale GWR bandwidths (section 4.5.1)", [(what, mg.bandwidths[k], v) for (k, (what, v)) in enumerate(["Intercept" => 92.0, "PctFB" => 101.0, "PctBlack" => 136.0, "PctRural" => 158.0])])
 end

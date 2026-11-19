@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-spatial-econometrics",
   "displayName": "Spatial Econometrics Toolbox",
-  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, eigenvector spatial filtering, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
-  "version": "0.1.9",
+  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, shift-share designs, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
+  "version": "0.1.10",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -50,21 +50,11 @@
             "decisionFirstColumn": "Model"
           },
           {
-            "id": "esf",
-            "command": "pollis.spatialEconometrics.esf",
-            "title": "Eigenvector Spatial Filtering",
-            "group": "1_crossSection",
-            "order": 3,
-            "data": "panels/esf.toml",
-            "defaultModel": "esfmoran",
-            "decisionFirstColumn": "Model"
-          },
-          {
             "id": "spchoice",
             "command": "pollis.spatialEconometrics.spchoice",
             "title": "Spatial Discrete Choice",
             "group": "1_crossSection",
-            "order": 4,
+            "order": 3,
             "data": "panels/spchoice.toml",
             "defaultModel": "probitgmm",
             "decisionFirstColumn": "Model"
@@ -100,11 +90,21 @@
             "decisionFirstColumn": "Model"
           },
           {
+            "id": "shiftshare",
+            "command": "pollis.spatialEconometrics.shiftshare",
+            "title": "Shift-Share Designs",
+            "group": "3_regions",
+            "order": 2,
+            "data": "panels/shiftshare.toml",
+            "defaultModel": "ssiv",
+            "decisionFirstColumn": "Model"
+          },
+          {
             "id": "spregimes",
             "command": "pollis.spatialEconometrics.spregimes",
             "title": "Regionalisation and Spatial Regimes",
             "group": "3_regions",
-            "order": 2,
+            "order": 3,
             "data": "panels/spregimes.toml",
             "defaultModel": "skater",
             "decisionFirstColumn": "Model"

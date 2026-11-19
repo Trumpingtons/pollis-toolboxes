@@ -10,8 +10,13 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -22,7 +27,7 @@ name = "Tables.jl"
 github = "https://github.com/JuliaData/Tables.jl"
 
 [requires]
-packages = ["ECharts.jl", "RData.jl"]
+packages = ["ECharts.jl"]
 
 [[models]]
 id = "sarfe"
@@ -86,20 +91,20 @@ folder = "data/examples"
 [[inputs]]
 id = "areasFile"
 label = "Areas File"
-tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, cambridgepanel.gpkg, the example first writes a grid of 400 square cells of 1 km around Cambridge, and the panel file beside it, unless the folder has both already."
-default = "cambridgepanel.gpkg"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, us_states.gpkg, the example first copies the outlines of the 48 contiguous US states from PollisDatasets.jl into the folder, unless the folder has it already."
+default = "us_states.gpkg"
 
 [[inputs]]
 id = "panelFile"
 label = "Panel File"
-tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period."
-default = "cambridgepanel.csv"
+tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. With the default, munnell.csv, the example first writes Munnell's data on the 48 states from PollisDatasets.jl, with the logs of output, public and private capital and employment, unless the folder has it already."
+default = "munnell.csv"
 
 [[inputs]]
 id = "areaColumn"
 label = "Area Column"
 tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
-default = "cell"
+default = "state"
 newRow = true
 
 [[inputs]]
@@ -111,20 +116,20 @@ default = "year"
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
-tooltip = "The column of the panel file to explain. With the example files, price: the log of the price per square metre of the dwellings sold in the cell that year."
-default = "price"
+tooltip = "The column of the panel file to explain. With the example files, log_gsp: the log of the gross state product, in million 1982 dollars."
+default = "log_gsp"
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
 tooltip = "The numeric columns of the panel file that explain it, separated by commas. With fixed effects of the areas a column that does not change over time cannot be estimated, nor with fixed effects of the periods one that is the same in every area."
-default = "income, construction"
+default = "log_pcap, log_pc, log_emp, unemp"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:27700"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's states are in EPSG:4269, NAD83 longitude and latitude. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4269"
 newRow = true
 
 [[inputs]]
@@ -210,12 +215,12 @@ label = "SDM"
 id = "breakAfter"
 label = "Break After"
 tooltip = "For the Structural Break step: the last period before the break, a value of the Period Column, so that the second sub-period starts with the next; empty, the middle period. It cannot be the first or the last period."
-default = "2019"
+default = "1978"
 
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+using DuckDB, Tables, SpatialEconometrics, PollisDatasets, SparseArrays, LinearAlgebra, Statistics, Random
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
@@ -223,29 +228,9 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
 panel_path = joinpath(folder, "{{panelFile}}")
-# Example files: 20 by 20 square cells of 1 km around Cambridge, in EPSG:27700, observed over 10 years, written unless the folder has both already. Replace them with your own files.
-if basename(areas_path) == "cambridgepanel.gpkg" && basename(panel_path) == "cambridgepanel.csv" && !(isfile(areas_path) && isfile(panel_path))
-	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
-	grid = [(c, d) for c in 1:400 for d in 1:400 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
-	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 400, 400))
-	spread = lu(I - 0.4 .* Matrix(Wgrid))  # a spatial lag of the price, rho = 0.4
-	level = 4.2 .+ 0.012 .* v .+ 0.06 .* randn(rng, 400)  # each cell's own level, constant over the years, higher to the north
-	open(panel_path, "w") do io
-		println(io, "cell,year,price,income,construction")
-		for t in 1:10
-			income = 18 .+ 0.4 .* u .+ 0.3 .* t .+ 3 .* randn(rng, 400)  # household income, thousand euros a year, higher to the east and rising
-			construction = 5 .+ 2 .* randn(rng, 400)  # new dwellings per thousand residents
-			# The log price per square metre: the cell's level, a common trend, its own income and construction, its neighbours' income, and the neighbours' prices through rho
-			price = spread \ (level .+ 0.02 .* t .+ 0.012 .* income .- 0.006 .* construction .+ 0.006 .* (Wgrid * income) .+ 0.03 .* randn(rng, 400))
-			for c in 1:400
-				println(io, c, ",", 2014 + t, ",", round(price[c], digits = 4), ",", round(income[c], digits = 2), ",", round(construction[c], digits = 2))
-			end
-		end
-	end
-	cells = ["($(c), ST_MakeEnvelope($(545000 + 1000 * u[c]), $(258000 + 1000 * v[c]), $(546000 + 1000 * u[c]), $(259000 + 1000 * v[c])))" for c in 1:400]
-	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
-end
+# Example files: the 48 contiguous US states, 1970 to 1986, from PollisDatasets.jl: their outlines, and Munnell's production data with the logs of the production function. Replace them with your own files.
+{{?areasFile=us_states.gpkg}} isfile(areas_path) || cp(samplefile("us_states.gpkg"), areas_path)
+{{?panelFile=munnell.csv}} isfile(panel_path) || DBInterface.execute(con, "COPY (SELECT state, year, region, ln(gsp) AS log_gsp, ln(pcap) AS log_pcap, ln(pc) AS log_pc, ln(emp) AS log_emp, unemp FROM '$(datafile("produc"))') TO '$(panel_path)'")
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 present = join(("p.\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
@@ -345,7 +330,7 @@ desc = "The root mean square of each area's residuals over the periods, on a bas
 code = '''
 T_res = length(res) ÷ N  # the periods of the residuals: all of them, or 2 to T on Dynamic Panel
 rms = vec(sqrt.(mean(reshape(res, N, T_res) .^ 2, dims = 2)))  # one column per period; the root mean square of each area's row
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(rms[i]))" for i in 1:N), ", "))) t(i, value)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, value::DOUBLE AS value FROM (VALUES $(join(("($i, $(rms[i]))" for i in 1:N), ", "))) t(i, value)")
 fmap = joinpath(mktempdir(), "residual-size.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.value, 4) AS residual_size FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fmap; name = "Residual size", column = "residual_size", opacity = 0.75)))  # clicking an area shows its name and residual size
@@ -376,7 +361,7 @@ else
 {{?model=dynamic}} 	left = Y[:, 2:end] .- m.gamma .* Y[:, 1:end - 1] .- m.eta .* WY[:, 1:end - 1] .- m.rho .* WY[:, 2:end] .- sum(m.coef[2 + k] .* Xk[k][:, 2:end] for k in 1:p) .- durbin
 	effect = vec(mean(left, dims = 2))  # each area's average over the periods
 	effect .-= mean(effect)  # relative to the average area: the periods' effects, common to all areas, drop out
-	DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(effect[i]))" for i in 1:N), ", "))) t(i, value)")
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, value::DOUBLE AS value FROM (VALUES $(join(("($i, $(effect[i]))" for i in 1:N), ", "))) t(i, value)")
 	fmap = joinpath(mktempdir(), "area-effects.geojson")
 	DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.value, 4) AS area_effect FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 	display(Pollis.webmap(Pollis.layer(fmap; name = "Area effect", column = "area_effect", opacity = 0.75)))  # clicking an area shows its name and effect
@@ -600,23 +585,21 @@ label = "Munnell's Production Function"
 desc = "Millo and Piras (2012), pages 14 and 15: the gross product of the 48 continental US states, 1970 to 1986, on public capital, private capital, employment and unemployment, by a spatial error model with fixed effects of the states and with fixed effects of the years, the estimates and standard errors beside those splm printed"
 models = ["semfe"]
 code = '''
-using Downloads, RData
+using PollisDatasets
 
 let
-	pfile = joinpath(mktempdir(), "Produc.rda")
-	Downloads.download("https://raw.githubusercontent.com/cran/plm/d9b431acb4efefa0144c4e7eb55e963a5b83f629/data/Produc.rda", pfile)  # Munnell's data, in the R package plm, GPL-2 or later
-	wfile = joinpath(mktempdir(), "usaww.rda")
-	Downloads.download("https://raw.githubusercontent.com/cran/splm/154febf2968967fcaec455cd6c8426b79c5e81cf/data/usaww.rda", wfile)  # the weights of the states, in the R package splm, GPL-2
-	produc = Tables.columntable(RData.load(pfile)["Produc"])  # read as columns, one vector per variable
-	states = unique(string.(produc.state))  # alphabetical, as in the data: the order of the rows and columns of usaww
-	years = sort(unique(Int.(produc.year)))
+	produc = dataset("produc")  # Munnell's data, from the R package plm
+	states = sort(unique(produc.state))  # alphabetical: the order of the outlines and of the weights usaww of splm
+	years = sort(unique(produc.year))
 	Nu, Tu = length(states), length(years)
-	row = Dict((string(produc.state[r]), Int(produc.year[r])) => r for r in eachindex(produc.year))
+	row = Dict((produc.state[r], produc.year[r]) => r for r in eachindex(produc.year))
 	order = [row[(s, year)] for year in years for s in states]  # year by year, the states varying fastest
 	yu = log.(Float64.(produc.gsp[order]))  # log gross state product
 	Xu = hcat(log.(Float64.(produc.pcap[order])), log.(Float64.(produc.pc[order])), log.(Float64.(produc.emp[order])), Float64.(produc.unemp[order]))
 	names_u = ["log(pcap)", "log(pc)", "log(emp)", "unemp"]
-	Wu = sparse(Matrix{Float64}(RData.load(wfile)["usaww"]))  # 48 x 48, queen contiguity, Arizona and Colorado neighbours, each row summing to 1
+	# usaww: queen contiguity of the states' outlines, Arizona and Colorado neighbours, each row summing to 1
+	queen = Tables.columntable(DBInterface.execute(con, "WITH s AS (SELECT row_number() OVER (ORDER BY state) AS i, geom FROM ST_Read('$(samplefile("us_states.gpkg"))')) SELECT a.i, b.i AS j FROM s a JOIN s b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)"))
+	Wu = row_standardize(sparse(queen.i, queen.j, 1.0, Nu, Nu))
 	println(Nu, " states over ", Tu, " years, ", years[1], " to ", years[end])
 	# splm's spml(log(gsp) ~ log(pcap) + log(pc) + log(emp) + unemp, model = "within", method = "eigen"), with its defaults lag = FALSE and spatial.error = "b": a spatial error model, whose parameter splm names rho
 	for (title, fe_u, published, published_se) in (
@@ -624,7 +607,8 @@ let
 				[0.5574013, 0.0051438, 0.2053026, 0.7822540, -0.0022317], [0.0330749, 0.0250109, 0.0231427, 0.0278057, 0.0010709]),
 			("Fixed effects of the years, pages 14 and 15", TimeFE(),
 				[0.4962301, 0.1432725, 0.3636539, 0.5619649, -0.0078930], [0.0357912, 0.0165720, 0.0109631, 0.0143684, 0.0018665]))
-		fit = fit_spatial_error(fe_u, Wu, Xu, yu, Nu, Tu; varnames = names_u, method = ExactLU())  # the exact log-determinant, as splm's method = "eigen"
+		# splm's direct approach: the data demeaned, then filtered, over all N T observations; the exact log-determinant, as its method = "eigen"
+		fit = fit_spatial_error(fe_u, Wu, Xu, yu, Nu, Tu; varnames = names_u, method = ExactLU(), approach = DirectQML(bias_correct = false))
 		se_u = sqrt.(max.(0.0, diag(fit.vcov)))
 		shown = [length(fit.coef); 1:length(fit.coef) - 1]  # lambda first, as the article prints it
 		println("\n", title)
@@ -634,7 +618,7 @@ let
 			println(rpad(label, 12), rpad(round(fit.coef[k], digits = 7), 12), rpad(published[row_k], 12), rpad(round(se_u[k], digits = 7), 12), published_se[row_k])
 		end
 	end
-	println("\nThe article's rho is the spatial error parameter, lambda here. The Replications wiki says where the two programs can differ")
+	println("\nThe article's rho is the spatial error parameter, lambda here")
 end
 '''
 

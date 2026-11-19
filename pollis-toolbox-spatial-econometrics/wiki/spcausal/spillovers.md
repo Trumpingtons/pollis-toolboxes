@@ -16,17 +16,11 @@ The documentation of `ExposureMap` states that the mapping is an assumption, not
 
 A synthetic control has no exposure column. Its protection against a spillover is the pool of comparison areas: with Exclude Neighbours, `fit_synthetic_control` leaves out every area not under the policy that neighbours an area under it ([Randsley (2026)](#ref-Ran2026a)). `spillover_gaps` turns the areas left out into an estimate: each is given a synthetic control of its own from the same comparison areas, and its gap after the policy is read as the spillover it receives. Its documentation calls this the synthetic control counterpart of the spillover onto the comparison areas of `fit_spatial_did`, and asks for the same check of the fit before the policy. The Spillover Onto the Neighbours step runs it.
 
-## Exposure in a Shift-Share Design
-
-In a shift-share design, an area's exposure is its shares in the shocks, and the regressor is the shares times the shocks. The documentation of `ShiftShareDesign` notes that two areas with similar shares have correlated values of the regressor, and so correlated residuals, whether or not they are near each other ([Randsley (2026)](#ref-Ran2026a)). Adão, Kolesár and Morales (2019) find this correlation independent of geographic location ([Adão, Kolesár and Morales (2019)](#ref-AKM2019a)). The neighbours on the map matter less here than the similarity of the shares: the Moran's I of the Shares and Residuals step measures the first, and AKM Against HC1 the second.
-
 ## References
-
-<a id="ref-AKM2019a"></a>Adão, R., Kolesár, M. and Morales, E. (2019). Shift-share designs: theory and inference. *Quarterly Journal of Economics*, 134(4), 1949–2010. [doi:10.1093/qje/qjz025](https://doi.org/10.1093/qje/qjz025)
 
 <a id="ref-DF2015a"></a>Delgado, M. S. and Florax, R. J. G. M. (2015). Difference-in-differences techniques for spatial data: local autocorrelation and spatial interaction. *Economics Letters*, 137, 123–126. [doi:10.1016/j.econlet.2015.10.035](https://doi.org/10.1016/j.econlet.2015.10.035)
 
 <a id="ref-Ran2026a"></a>Randsley, N. (2026). SpatialEconometrics.jl: spatial econometrics in Julia. [github.com/randsley/SpatialEconometrics.jl](https://github.com/randsley/SpatialEconometrics.jl)
 
 ## See Also
-- [Spatial DiD](spdid.md) · [Synthetic Control](synth.md) · [Shift-Share](shiftshare.md)
+- [Spatial DiD](spdid.md) · [Synthetic Control](synth.md) · [Inference Without Standard Errors](inference.md)

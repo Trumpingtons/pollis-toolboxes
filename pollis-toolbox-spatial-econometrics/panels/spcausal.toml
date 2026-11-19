@@ -9,7 +9,8 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
 
 [[packages]]
@@ -31,10 +32,6 @@ label = "Spatial DiD"
 id = "synth"
 label = "Synthetic Control"
 
-[[models]]
-id = "shiftshare"
-label = "Shift-Share"
-
 [[bullets]]
 text = "Spatial DiD"
 detail = "Difference-in-differences with spillovers: the effect of a policy on the areas under it, and on their neighbours through the share of their neighbours under the policy, as in Delgado and Florax, in two periods or in every period with fixed effects of the areas and the periods"
@@ -42,10 +39,6 @@ detail = "Difference-in-differences with spillovers: the effect of a policy on t
 [[bullets]]
 text = "Synthetic Control"
 detail = "The synthetic control of Abadie, Diamond and Hainmueller: each area under the policy compared with a weighted mean of areas not under the policy that matches it before the policy, with the neighbours of the areas under the policy left out of the comparison areas, and the weights optionally penalised by distance, as in Abadie and L'Hour"
-
-[[bullets]]
-text = "Shift-Share"
-detail = "A shift-share (Bartik) design: each area's exposure to common shocks, such as the national growth of industries, weighted by its shares in them, as the regressor or as the instrument of an endogenous change, with the standard errors of Adão, Kolesár and Morales, valid when areas with similar shares are correlated however far apart"
 
 [[decisionRows]]
 task = "Spatial DiD"
@@ -57,11 +50,6 @@ task = "Synthetic Control"
 context = "Few areas covered"
 purpose = "Build the counterfactual of each area under the policy from areas outside it that its spillover does not reach, when there are too few areas under the policy for a regression"
 
-[[decisionRows]]
-task = "Shift-Share"
-context = "Exposure to shocks"
-purpose = "Estimate the effect of a change that common shocks bring to each area through its shares in them, such as the jobs it gains from the growth of its industries"
-
 [[inputs]]
 id = "folder"
 label = "Folder"
@@ -72,7 +60,7 @@ folder = "data/examples"
 [[inputs]]
 id = "areasFile"
 label = "Areas File"
-tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bolognapolicy.gpkg, the example first writes a grid of 225 square cells of 1 km around the centre of Bologna, and the panel, shares and shocks files beside it, unless the folder has all four already."
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bolognapolicy.gpkg, the example first writes a grid of 225 square cells of 1 km around the centre of Bologna, and the panel file beside it, unless the folder has both already."
 default = "bolognapolicy.gpkg"
 
 [[inputs]]
@@ -97,7 +85,7 @@ default = "quarter"
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
-tooltip = "The outcome, a numeric column of the panel file. With the example files, no2: the quarterly mean concentration of nitrogen dioxide in the cell, in micrograms per cubic metre. On Shift-Share, its change is the outcome."
+tooltip = "The outcome, a numeric column of the panel file. With the example files, no2: the quarterly mean concentration of nitrogen dioxide in the cell, in micrograms per cubic metre."
 default = "no2"
 
 [[inputs]]
@@ -109,7 +97,7 @@ default = "zone"
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
-tooltip = "Numeric columns of the panel file that vary over the periods, separated by commas, or empty: a column that never changes within an area is absorbed by the area's fixed effect. With the example files, wind, the mean wind speed in metres per second. A variable the policy itself changes does not belong here. On Synthetic Control, they enter only with Predictors set to Also Explanatory Variables; on Shift-Share, as controls, at their means over the first periods averaged."
+tooltip = "Numeric columns of the panel file that vary over the periods, separated by commas, or empty: a column that never changes within an area is absorbed by the area's fixed effect. With the example files, wind, the mean wind speed in metres per second. A variable the policy itself changes does not belong here. On Synthetic Control, they enter only with Predictors set to Also Explanatory Variables."
 default = "wind"
 
 [[inputs]]
@@ -258,77 +246,6 @@ label = "On the Map"
 value = "covariate"
 label = "In the Predictors"
 
-[[inputs]]
-id = "sharesFile"
-label = "Shares File"
-tooltip = "On Shift-Share, the shares of each area in the shocks, one row per area and shock, with the Area Column, the Shock Column and the Share Column: a CSV or Parquet file, in the folder above, or an absolute path. With the example files, bolognashares.csv: each cell's shares of its jobs in 60 industries in 2019. A missing row is a share of 0."
-default = "bolognashares.csv"
-newRow = true
-
-[[inputs]]
-id = "shocksFile"
-label = "Shocks File"
-tooltip = "On Shift-Share, the shocks, one row per shock, with the Shock Column and the Shock Value: a CSV or Parquet file, in the folder above, or an absolute path. With the example files, bolognashocks.csv: the national growth of the jobs of each industry from 2019 to 2024, in percent."
-default = "bolognashocks.csv"
-
-[[inputs]]
-id = "shockColumn"
-label = "Shock Column"
-tooltip = "On Shift-Share, the column that names each shock, in both the shares file and the shocks file. With the example files, industry."
-default = "industry"
-
-[[inputs]]
-id = "shareColumn"
-label = "Share Column"
-tooltip = "On Shift-Share, the column of the shares file with each area's share in the shock. Shares that do not sum to the same total in every area, such as shares of manufacturing jobs only, put that total among the controls."
-default = "share"
-
-[[inputs]]
-id = "shockValue"
-label = "Shock Value"
-tooltip = "On Shift-Share, the column of the shocks file with the value of each shock."
-default = "growth"
-
-[[inputs]]
-id = "endogenous"
-label = "Endogenous Variable"
-tooltip = "On Shift-Share, a numeric column of the panel file whose change the shift-share regressor instruments, the shift-share IV; empty, the reduced form, the outcome on the shift-share regressor itself. With the example files, jobs, the thousand jobs in the cell."
-default = "jobs"
-newRow = true
-
-[[inputs]]
-id = "periodsAveraged"
-label = "Periods Averaged"
-tooltip = "On Shift-Share, the outcome and the endogenous variable are long differences: the mean of the last n periods minus the mean of the first n, n this number; the Explanatory Variables enter as controls, at their means over the first n periods."
-default = "4"
-
-[[inputs]]
-id = "shiftShareErrors"
-label = "Shift-Share Errors"
-tooltip = "On Shift-Share: Adão, Kolesár and Morales, the standard error of their 2019 article, valid when areas with similar shares have correlated residuals however far apart, the default of SpatialEconometrics.jl; HC1, robust to heteroskedasticity only, which the package offers for comparison only, as too small in a shift-share design."
-kind = "select"
-default = "akm"
-
-[[inputs.options]]
-value = "akm"
-label = "Adão, Kolesár and Morales"
-
-[[inputs.options]]
-value = "hc1"
-label = "HC1, for Comparison"
-
-[[inputs]]
-id = "mapShock"
-label = "Shock to Map"
-tooltip = "On Shift-Share, for the Map of the Exposure Shares: the shock whose shares are mapped, as a value of the Shock Column; empty, the shock with the largest mean share over the areas."
-default = ""
-
-[[inputs]]
-id = "balanceVariables"
-label = "Balance Variables"
-tooltip = "On Shift-Share, for the Balance Test: numeric columns of the panel file, separated by commas, whose values before the shocks should be unrelated to the shocks if the design is valid; each enters at its mean over the first periods averaged. With the example files, jobs, no2 and wind."
-default = "jobs, no2, wind"
-
 [[codeBranches]]
 model = "*"
 code = '''
@@ -340,11 +257,9 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
 panel_path = joinpath(folder, "{{panelFile}}")
-shares_path = joinpath(folder, "{{sharesFile}}")
-shocks_path = joinpath(folder, "{{shocksFile}}")
-# Example files: 15 by 15 square cells of 1 km around the centre of Bologna, in EPSG:32632, observed quarterly over 6 years, with a low-emission zone in the 9 central cells from 2022, their shares of jobs in 60 industries in 2019, and the national growth of each industry; written unless the folder has all four already. Replace them with your own files.
-example = basename.([areas_path, panel_path, shares_path, shocks_path]) == ["bolognapolicy.gpkg", "bolognapolicy.csv", "bolognashares.csv", "bolognashocks.csv"]
-if example && !all(isfile, [areas_path, panel_path, shares_path, shocks_path])
+# Example files: 15 by 15 square cells of 1 km around the centre of Bologna, in EPSG:32632, observed quarterly over 6 years, with a low-emission zone in the 9 central cells from 2022, and the jobs in each cell; written unless the folder has both already. Replace them with your own files.
+example = basename.([areas_path, panel_path]) == ["bolognapolicy.gpkg", "bolognapolicy.csv"]
+if example && !all(isfile, [areas_path, panel_path])
 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
 	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre, row by row from the south-west
 	grid = [(c, d) for c in 1:225 for d in 1:225 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
@@ -355,7 +270,7 @@ if example && !all(isfile, [areas_path, panel_path, shares_path, shocks_path])
 	shares = rand(rng, 225, 60) .^ 3
 	shares ./= sum(shares; dims = 2)  # each cell's shares of its jobs in the 60 industries, summing to 1
 	growth = 5 .+ 10 .* randn(rng, 60)  # national growth of the jobs of each industry from 2019 to 2024, percent
-	hidden = randn(rng, 225)  # a local factor that raises both the jobs and NO2, so that the change of the jobs is endogenous
+	hidden = randn(rng, 225)  # a local factor that raises both the jobs and NO2
 	jobs0 = 5 .+ 25 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 20)  # thousand jobs in the cell in 2019
 	job_growth = shares * growth .+ 3 .* randn(rng, 225) .+ 3 .* hidden  # percent from 2019 to 2024
 	open(panel_path, "w") do io
@@ -372,28 +287,13 @@ if example && !all(isfile, [areas_path, panel_path, shares_path, shocks_path])
 			end
 		end
 	end
-	industries = ["I" * lpad(k, 2, '0') for k in 1:60]
-	open(shares_path, "w") do io
-		println(io, "cell,industry,share")
-		for c in 1:225, k in 1:60
-			println(io, c, ",", industries[k], ",", round(shares[c, k], digits = 6))
-		end
-	end
-	open(shocks_path, "w") do io
-		println(io, "industry,growth")
-		for k in 1:60
-			println(io, industries[k], ",", round(growth[k], digits = 3))
-		end
-	end
 	cells = ["($(c), ST_MakeEnvelope($(685500 + 1000 * u[c]), $(4928900 + 1000 * v[c]), $(686500 + 1000 * u[c]), $(4929900 + 1000 * v[c])))" for c in 1:225]
 	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:32632')")
 end
 yname = "{{dependent}}"
 xnames = filter(!isempty, String.(strip.(split("{{explanatory}}", ","))))  # the explanatory variables, separated by commas, or none
-{{?model!=shiftshare}} dname = "{{treatment}}"
-{{?model!=shiftshare}} needed = [yname; dname; xnames]
-{{?model=shiftshare}} endog = "{{endogenous}}"  # the endogenous variable, or none for the reduced form
-{{?model=shiftshare}} needed = [yname; xnames; filter(!isempty, [endog])]
+dname = "{{treatment}}"
+needed = [yname; dname; xnames]
 present = join(("p.\"$c\" IS NOT NULL" for c in needed), " AND ")
 # The polygons, in longitude and latitude, with their centroids in the distance coordinate system, and the panel's rows that have a polygon and every value
 DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"{{areaColumn}}\" AS area, ST_X(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cx, ST_Y(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
@@ -423,10 +323,10 @@ W = sparse(pairs.i, pairs.j, 1.0, N, N)  # 1 for each neighbour; SpatialEconomet
 # The outcome and the policy, areas by periods
 y = reshape(column(yname), N, T_per)
 X = isempty(xnames) ? nothing : permutedims(cat((reshape(column(c), N, T_per) for c in xnames)...; dims = 3), (1, 3, 2))  # areas by variables by periods
-{{?model!=shiftshare}} D = reshape(column(dname), N, T_per)  # 1 in the periods an area is under the policy
-{{?model!=shiftshare}} treated = vec(any(!iszero, D; dims = 2))  # the areas under the policy in some period
-{{?model!=shiftshare}} starts = unique(findfirst(!iszero, D[i, :]) for i in findall(treated))  # the first period under the policy, of each area under it
-{{?model!=shiftshare}} println(count(treated), " areas under the policy, ", length(starts) == 1 ? "all from $(labels[only(starts)])" : "starting in $(length(starts)) different periods")
+D = reshape(column(dname), N, T_per)  # 1 in the periods an area is under the policy
+treated = vec(any(!iszero, D; dims = 2))  # the areas under the policy in some period
+starts = unique(findfirst(!iszero, D[i, :]) for i in findall(treated))  # the first period under the policy, of each area under it
+println(count(treated), " areas under the policy, ", length(starts) == 1 ? "all from $(labels[only(starts)])" : "starting in $(length(starts)) different periods")
 {{?model=spdid}}{{?periods=every}} # Every period: fixed effects of the areas and of the periods, removed by the two-way within transformation
 {{?model=spdid}}{{?periods=every}} yfit, treat, Xfit = y, D, X
 {{?model=spdid}}{{?periods=means}} # Mean Before and After: each area's mean in the periods before the policy starts and in those from then on
@@ -492,41 +392,6 @@ X = isempty(xnames) ? nothing : permutedims(cat((reshape(column(c), N, T_per) fo
 {{?model=synth}}	mean_weight[q] > 1e-6 && println(rpad(area_names[m.donors[q]], 18), round(mean_weight[q], digits = 4))
 {{?model=synth}} end
 {{?model=synth}} gaps = m.gaps  # areas under the policy by periods: the fit before the policy, the effect after it
-{{?model=shiftshare}} # The shares of each area in the shocks, joined to the areas by the Area Column, and the shocks
-{{?model=shiftshare}} sh = Tables.columntable(DBInterface.execute(con, """SELECT a.i, s."{{shockColumn}}"::VARCHAR AS shock, s."{{shareColumn}}"::DOUBLE AS share FROM '$(shares_path)' s JOIN areas a ON s."{{areaColumn}}"::VARCHAR = a.area::VARCHAR WHERE s."{{shareColumn}}" IS NOT NULL"""))
-{{?model=shiftshare}} gk = Tables.columntable(DBInterface.execute(con, """SELECT "{{shockColumn}}"::VARCHAR AS shock, "{{shockValue}}"::DOUBLE AS g FROM '$(shocks_path)' WHERE "{{shockValue}}" IS NOT NULL ORDER BY 1"""))
-{{?model=shiftshare}} shock_names = String.(gk.shock)
-{{?model=shiftshare}} col = Dict(k => j for (j, k) in enumerate(shock_names))
-{{?model=shiftshare}} S = zeros(N, length(shock_names))  # areas by shocks, 0 where the shares file has no row
-{{?model=shiftshare}} for (i, k, share) in zip(sh.i, sh.shock, sh.share)
-{{?model=shiftshare}}	haskey(col, k) && (S[i, col[k]] += share)
-{{?model=shiftshare}} end
-{{?model=shiftshare}} keep = vec(any(!iszero, S; dims = 1))  # the shocks some area is exposed to
-{{?model=shiftshare}} S, g, shock_names = S[:, keep], Float64.(gk.g)[keep], shock_names[keep]
-{{?model=shiftshare}} # The outcome, and the endogenous variable, as long differences: the mean of the last periods averaged minus that of the first
-{{?model=shiftshare}} n_avg = {{periodsAveraged}}
-{{?model=shiftshare}} 2 * n_avg <= T_per || error("The periods averaged at each end overlap: average fewer periods")
-{{?model=shiftshare}} change(M) = vec(mean(M[:, (end - n_avg + 1):end]; dims = 2) .- mean(M[:, 1:n_avg]; dims = 2))
-{{?model=shiftshare}} dy = change(y)
-{{?model=shiftshare}} dx = isempty(endog) ? nothing : change(reshape(column(endog), N, T_per))
-{{?model=shiftshare}} # Controls: the explanatory variables in the first periods averaged and, when the shares do not sum to the same total in every area, that total, which Borusyak, Hull and Jaravel show is otherwise a confounder
-{{?model=shiftshare}} C = X === nothing ? zeros(N, 0) : reduce(hcat, [vec(mean(X[:, k, 1:n_avg]; dims = 2)) for k in axes(X, 2)])
-{{?model=shiftshare}} total = vec(sum(S; dims = 2))
-{{?model=shiftshare}} complete = maximum(total) - minimum(total) <= 1e-8 * max(1, maximum(total))
-{{?model=shiftshare}} complete || (C = hcat(C, total))
-{{?model=shiftshare}} d = shift_share_design(S, g; controls = isempty(C) ? nothing : C, shock_names = shock_names)  # the shift-share regressor is the shares times the shocks
-{{?model=shiftshare}} m = fit_shift_share(dy, d; treatment = dx, vcov = Symbol("{{shiftShareErrors}}"))
-{{?model=shiftshare}} println(N, " areas, ", length(g), " shocks", complete ? "; the shares sum to the same total in every area" : "; the shares do not sum to the same total in every area, so their total is a control")
-{{?model=shiftshare}} println("Outcome: the change of ", yname, " from the mean of ", labels[1], " to ", labels[n_avg], " to that of ", labels[end - n_avg + 1], " to ", labels[end])
-{{?model=shiftshare}} println(m.is_iv ? "Shift-share IV: the change of $(endog) instrumented by the shift-share regressor" : "Reduced form: the outcome on the shift-share regressor")
-{{?model=shiftshare}} println(m.vcov_type == :akm ? "Standard error: Adão, Kolesár and Morales, valid when areas with similar shares have correlated residuals" : "Standard error: HC1, for comparison only, too small when areas with similar shares have correlated residuals")
-{{?model=shiftshare}} println("\n", rpad("", 30), rpad("Estimate", 12), rpad("Std. Error", 12), rpad("z", 8), "95% interval")
-{{?model=shiftshare}} println(rpad(m.is_iv ? "Change of $(endog)" : "Shift-share regressor", 30), rpad(round(m.beta, digits = 4), 12), rpad(round(m.se, digits = 4), 12), rpad(round(m.beta / m.se, digits = 2), 8),
-{{?model=shiftshare}}	"[", round(m.beta - 1.96 * m.se, digits = 4), ", ", round(m.beta + 1.96 * m.se, digits = 4), "]")
-{{?model=shiftshare}} m.is_iv && println("First stage: ", round(m.first_stage, digits = 4), ", the coefficient of the shift-share regressor in the change of ", endog)
-{{?model=shiftshare}} concentration = exposure_concentration(d)
-{{?model=shiftshare}} println("Effective number of shocks: ", round(concentration.effective_shocks, digits = 1), " of ", concentration.n_shocks, "; with few, the interval is optimistic")
-{{?model=shiftshare}} res = m.residuals  # one per area
 '''
 
 [[actionGroups]]
@@ -551,7 +416,7 @@ roles = Vector{String}(undef, N)
 {{?model=synth}} for i in 1:N
 {{?model=synth}}	roles[i] = treated[i] ? "Under the policy" : donor[i] ? (share1[i] > 0 ? "Comparison area, neighbour of an area under the policy" : "Comparison area") : "Left out, neighbour of an area under the policy"
 {{?model=synth}} end
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, '$(roles[i])', $(share1[i]), $(share2[i]))" for i in 1:N), ", "))) t(i, role, share1, share2)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, role, share1::DOUBLE AS share1, share2::DOUBLE AS share2 FROM (VALUES $(join(("($i, '$(roles[i])', $(share1[i]), $(share2[i]))" for i in 1:N), ", "))) t(i, role, share1, share2)")
 fmap = joinpath(mktempdir(), "policy.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", v.role, round(v.share1, 3) AS neighbours_under_policy, round(v.share2, 3) AS second_ring_under_policy FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fmap; name = "Areas under the policy and their neighbours", column = "role", opacity = 0.75)))  # clicking an area shows its role and shares
@@ -615,7 +480,7 @@ desc = "Each comparison area coloured by its weight in the synthetic controls, a
 models = ["synth"]
 code = '''
 mean_weight = vec(mean(m.weights; dims = 1))  # each comparison area's weight, averaged over the areas under the policy
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($(m.donors[q]), $(mean_weight[q]))" for q in eachindex(m.donors)), ", "))) t(i, weight)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, weight::DOUBLE AS weight FROM (VALUES $(join(("($(m.donors[q]), $(mean_weight[q]))" for q in eachindex(m.donors)), ", "))) t(i, weight)")
 dir = mktempdir()
 fdonors, ftreated, fleft = joinpath(dir, "comparison.geojson"), joinpath(dir, "under-policy.geojson"), joinpath(dir, "left-out.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.weight, 4) AS weight FROM areas a JOIN mapped v USING (i)) TO '$(fdonors)' (FORMAT GDAL, DRIVER 'GeoJSON')")
@@ -636,28 +501,6 @@ for (k, i) in enumerate(m.treated)
 end
 println(count(>(0.01), mean_weight), " of ", length(m.donors), " comparison areas have a mean weight over 1%")
 println(m.penalty > 0 ? "Penalty $(m.penalty) on the $(m.penalty_metric == :spatial ? "distance on the map" : "distance in the predictors"): larger values move the weights towards the nearest comparison areas" : "No penalty: when several sets of weights match equally well, these are one of them")
-'''
-
-[[actionGroups.actions]]
-id = "map-exposure-shares"
-label = "Map of the Exposure Shares"
-desc = "The shift-share regressor of every area, its shares times the shocks, on a base map, then the areas' shares in one shock, with the shocks of the largest mean shares: where the exposure to the shocks is high or low, and which shocks it comes from"
-models = ["shiftshare"]
-code = '''
-shown_shock = "{{mapShock}}"
-k_map = isempty(shown_shock) ? argmax(d.s_bar) : something(findfirst(==(shown_shock), shock_names), 0)  # the Shock to Map, or the one of the largest mean share
-k_map > 0 || error("Not among the shocks: ", shown_shock)
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, $(d.X[i]), $(S[i, k_map]))" for i in 1:N), ", "))) t(i, regressor, share)")
-fmap = joinpath(mktempdir(), "exposure.geojson")
-DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.regressor, 4) AS shift_share, round(v.share, 4) AS share FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
-display(Pollis.webmap(Pollis.layer(fmap; name = "Shift-share regressor", column = "shift_share", opacity = 0.75)))  # clicking an area shows both values
-display(Pollis.webmap(Pollis.layer(fmap; name = "Share in $(shock_names[k_map])", column = "share", opacity = 0.75)))
-println("Shift-share regressor, the shares times the shocks, before the controls: from ", round(minimum(d.X), digits = 3), " to ", round(maximum(d.X), digits = 3), ", mean ", round(mean(d.X), digits = 3), ", standard deviation ", round(std(d.X), digits = 3))
-println("\n", rpad("Shock", 16), rpad("Mean share", 12), rpad("Shock value", 14), "Areas exposed")
-for k in first(sortperm(d.s_bar; rev = true), 10)  # the shocks of the largest mean shares
-	println(rpad(shock_names[k], 16), rpad(round(d.s_bar[k], digits = 4), 12), rpad(round(d.g[k], digits = 3), 14), count(>(0), S[:, k]))
-end
-println("Areas with similar shares have similar values of the regressor however far apart they are: the reason for the standard errors of Adão, Kolesár and Morales")
 '''
 
 [[actionGroups]]
@@ -718,74 +561,6 @@ for (k, i) in enumerate(m.treated)
 end
 println("Predictors divided by their standard deviations before the match: ", m.standardized ? "yes" : "no")
 println("A synthetic control that fits poorly before the policy says little about the effect after it")
-'''
-
-[[actionGroups.actions]]
-id = "exposure-concentration"
-label = "Exposure Concentration"
-desc = "How concentrated the mean exposure is across the shocks: the Herfindahl index of the mean shares, the effective number of shocks it implies against the number of shocks, and the shocks of the largest mean shares with their running total, as a chart: whether the estimate rests on many shocks or on a few"
-models = ["shiftshare"]
-code = '''
-using ECharts
-
-concentration = exposure_concentration(d)  # the mean shares over the areas, made to sum to 1 across the shocks
-println(rpad("Herfindahl index of the mean shares", 40), round(concentration.hhi, digits = 5))
-println(rpad("Effective number of shocks", 40), round(concentration.effective_shocks, digits = 1), " of ", concentration.n_shocks)
-println(rpad("Largest mean share", 40), round(concentration.max_share, digits = 4), ", ", shock_names[concentration.order[1]])
-top = first(eachindex(concentration.order), 20)  # the 20 shocks of the largest mean shares
-println("\n", rpad("Shock", 16), rpad("Mean share", 12), "Running total")
-for j in first(top, 10)
-	println(rpad(shock_names[concentration.order[j]], 16), rpad(round(concentration.top_shares[j], digits = 4), 12), round(sum(concentration.top_shares[1:j]), digits = 4))
-end
-display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Mean shares of the shocks, largest first")],
-	xAxis = [ECharts.Axis(_type = "category", name = "{{shockColumn}}", data = shock_names[concentration.order[top]])], yAxis = [ECharts.Axis(_type = "value", name = "Mean share")],
-	series = [ECharts.XYSeries(name = "Mean share", _type = "bar", data = round.(concentration.top_shares[top], digits = 4))]))
-println("\nThe theory of Borusyak, Hull and Jaravel lets the number of shocks grow, not that of the areas: with few effective shocks, the inference rests on few observations however many areas there are")
-concentration.effective_shocks < 50 && println("Fewer than 50 effective shocks: the documentation of SpatialEconometrics.jl reports the interval of Adão, Kolesár and Morales covering 86.4% at 20 effective shocks, against 93.6% at 100, in its own simulations")
-'''
-
-[[actionGroups.actions]]
-id = "balance-test"
-label = "Balance Test"
-desc = "Whether the shocks are unrelated to the areas' characteristics before them, tested at the level of the shocks as Borusyak, Hull and Jaravel propose: the coefficient of the shock for each Balance Variable, and a joint test of all of them"
-models = ["shiftshare"]
-code = '''
-bnames = filter(!isempty, String.(strip.(split("{{balanceVariables}}", ","))))
-isempty(bnames) && error("No Balance Variables: name one or more columns of the panel file")
-# Each characteristic at its mean over the first periods averaged, before the change the outcome measures
-R = reduce(hcat, [vec(mean(reshape(column(b), N, T_per)[:, 1:n_avg]; dims = 2)) for b in bnames])
-# For each characteristic, its exposure-weighted mean at each shock, regressed on the shock, weighted by the mean exposure
-balance = balance_test(d, R; names = bnames)
-println("Balance of the characteristics, from the mean of ", labels[1], " to ", labels[n_avg], ", against the shocks")
-println(rpad("Characteristic", 20), rpad("Coefficient", 14), rpad("Std. Error", 12), rpad("t", 8), "p-value")
-for j in eachindex(balance.names)
-	println(rpad(balance.names[j], 20), rpad(round(balance.coefs[j], sigdigits = 4), 14), rpad(round(balance.ses[j], sigdigits = 4), 12), rpad(round(balance.t_stats[j], digits = 2), 8), round(balance.p_values[j], digits = 4))
-end
-println("Joint Wald test that all are balanced: chi-squared ", round(balance.joint_chi2, digits = 3), " on ", balance.joint_df, " degrees of freedom, p-value ", round(balance.joint_p, digits = 4))
-println("Observations: ", balance.n_shocks, " shocks, ", round(exposure_concentration(d).effective_shocks, digits = 1), " effective")
-println("A small p-value says the shocks are related to the characteristic, against the quasi-random assignment of the shocks the design assumes; the shares may be endogenous in this design")
-println("The documentation of SpatialEconometrics.jl reports the test rejecting a true null at 5% in 5.6% of its simulations with 100 effective shocks, 10.9% with 20 and 23.2% with 9, and the joint test faster still")
-'''
-
-[[actionGroups.actions]]
-id = "moran-shares-residuals"
-label = "Moran's I of the Shares and Residuals"
-desc = "Moran's I, with the neighbours of the tab, of the shift-share regressor, of the residuals and of each share: whether the exposure and what the fit leaves unexplained cluster on the map, which in a shift-share design is common and calls for no spatial correction of the standard errors"
-models = ["shiftshare"]
-code = '''
-Wsp = row_standardize(W)  # the neighbours on the map, each row summing to 1: a different matrix from the shares
-sm = shift_share_moran(d, Wsp; fit = m)
-println(rpad("", 28), rpad("Moran's I", 12), rpad("Expected", 12), rpad("z", 10), "p-value")
-for (name, r) in (("Shift-share regressor", sm.regressor), ("Residuals", sm.residual))
-	println(rpad(name, 28), rpad(round(r.I_stat, digits = 4), 12), rpad(round(r.E_I, digits = 4), 12), rpad(round(r.z_stat, digits = 2), 10), round(r.p_value, digits = 4))
-end
-finite = findall(isfinite, sm.share_I)  # the shares that vary over the areas
-println("\nShares: ", count(<(0.05), sm.share_p[finite]), " of ", length(finite), " with a p-value below 0.05; those of the largest Moran's I in absolute value:")
-println(rpad("Shock", 16), rpad("Moran's I", 12), "p-value")
-for k in first(finite[sortperm(abs.(sm.share_I[finite]); rev = true)], 5)
-	println(rpad(shock_names[k], 16), rpad(round(sm.share_I[k], digits = 4), 12), round(sm.share_p[k], digits = 4))
-end
-println("\nShares that cluster on the map are the normal case, as industries cluster; identification runs through the shocks. The residuals that matter are correlated through similar shares, near or far, which the standard error of Adão, Kolesár and Morales allows for and a spatial correction does not")
 '''
 
 [[actionGroups]]
@@ -944,39 +719,6 @@ println("Before the policy, the closer the path to 0, the closer the counterfact
 println("Spatial DiD rests on parallel trends, with the spillover modelled by the share of neighbours under the policy; the synthetic control rests on a weighted mean of comparison areas that follows each area under the policy before the policy. Close estimates under the two assumptions support each other; far apart, the paths before the policy help tell which assumption fails")
 '''
 
-[[actionGroups.actions]]
-id = "akm-against-hc1"
-label = "AKM Against HC1"
-desc = "The shift-share estimate with the standard error of Adão, Kolesár and Morales (AKM) and with HC1, side by side: the standard errors, z and 95% intervals, their ratio, and whether the residuals of areas with similar shares move together, the correlation HC1 leaves out and AKM allows for"
-models = ["shiftshare"]
-code = '''
-# The same estimate under each standard error: only the standard error changes
-fits = [(name, fit_shift_share(dy, d; treatment = dx, vcov = v)) for (name, v) in (("AKM", :akm), ("HC1", :hc1))]
-println(m.is_iv ? "Shift-share IV, the change of $(endog)" : "Reduced form, the shift-share regressor", ": estimate ", round(m.beta, digits = 4))
-println("\n", rpad("Standard error", 16), rpad("Std. Error", 12), rpad("z", 8), "95% interval")
-for (name, f) in fits
-	println(rpad(name, 16), rpad(round(f.se, digits = 4), 12), rpad(round(f.beta / f.se, digits = 2), 8), "[", round(f.beta - 1.96 * f.se, digits = 4), ", ", round(f.beta + 1.96 * f.se, digits = 4), "]")
-end
-akm, hc1 = last(fits[1]), last(fits[2])
-println("AKM standard error over HC1: ", round(akm.se / hc1.se, digits = 2))
-
-# Pairs of areas by how similar their shares are: the cosine of their share vectors
-unit = S ./ max.(sqrt.(sum(abs2, S; dims = 2)), eps())
-similarity = unit * transpose(unit)
-pairs_ij = [(i, j) for i in 1:N for j in (i + 1):N]
-sim = [similarity[i, j] for (i, j) in pairs_ij]
-product = [akm.residuals[i] * akm.residuals[j] for (i, j) in pairs_ij] ./ mean(abs2, akm.residuals)  # the product of the residuals, over their variance
-order = sortperm(sim)
-tenth = max(1, length(order) ÷ 10)
-println("\n", rpad("Pairs of areas", 34), rpad("Mean similarity", 18), "Mean product of the residuals, over their variance")
-for (name, idx) in (("The least similar tenth", order[1:tenth]), ("The most similar tenth", order[(end - tenth + 1):end]), ("All", order))
-	println(rpad(name, 34), rpad(round(mean(sim[idx]), digits = 3), 18), round(mean(product[idx]), digits = 4))
-end
-println("Correlation of the similarity and the product, over all ", length(pairs_ij), " pairs: ", round(cor(sim, product), digits = 4))
-println("\nHC1 treats the residuals of every two areas as independent. AKM allows those of areas with similar shares to be correlated, however far apart the areas are, as when the shocks the design leaves out hit the same industries: a larger product among the most similar pairs is that correlation")
-println("AKM rests on many effective shocks: ", round(exposure_concentration(d).effective_shocks, digits = 1), " here, of ", length(g))
-'''
-
 [[actionGroups]]
 id = "interpret"
 label = "Interpret"
@@ -1012,7 +754,7 @@ em = exposure(Float64.(treated), W; order = {{exposureOrder}})
 spillover = em.E * spill
 effect = spillover .+ direct .* treated
 roles = [treated[i] ? "Under the policy" : em.E[i, 1] > 0 ? "Comparison, next to an area under the policy" : "Comparison, no neighbour under the policy" for i in 1:N]
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($i, '$(roles[i])', $(em.E[i, 1]), $(spillover[i]), $(effect[i]))" for i in 1:N), ", "))) t(i, role, share1, spillover, effect)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, role, share1::DOUBLE AS share1, spillover::DOUBLE AS spillover, effect::DOUBLE AS effect FROM (VALUES $(join(("($i, '$(roles[i])', $(em.E[i, 1]), $(spillover[i]), $(effect[i]))" for i in 1:N), ", "))) t(i, role, share1, spillover, effect)")
 fmap = joinpath(mktempdir(), "effects.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", v.role, round(v.share1, 3) AS neighbours_under_policy, round(v.spillover, 4) AS spillover, round(v.effect, 4) AS effect FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fmap; name = "Effect on each area", column = "effect", opacity = 0.75)))  # clicking an area shows its share, spillover and effect
@@ -1089,7 +831,7 @@ for q in sortperm(gap_after; by = abs, rev = true)
 end
 length(sg.units) > 2 && println("Correlation of the mean gap after the policy with the share of neighbours under the policy: ", round(cor(share1[sg.units], gap_after), digits = 3))
 
-DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT * FROM (VALUES $(join(("($(sg.units[q]), $(gap_after[q]))" for q in eachindex(sg.units)), ", "))) t(i, gap)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, gap::DOUBLE AS gap FROM (VALUES $(join(("($(sg.units[q]), $(gap_after[q]))" for q in eachindex(sg.units)), ", "))) t(i, gap)")
 dir = mktempdir()
 fneighbours, fpolicy = joinpath(dir, "neighbours.geojson"), joinpath(dir, "under-policy.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.gap, 4) AS spillover FROM areas a JOIN mapped v USING (i)) TO '$(fneighbours)' (FORMAT GDAL, DRIVER 'GeoJSON')")
@@ -1098,62 +840,6 @@ display(Pollis.webmap(Pollis.layer(fneighbours; name = "Spillover, mean gap afte
 
 println("\nA gap is read as spillover only where the neighbour's synthetic control followed it closely before the policy; the Permutation Test shows what gaps arise by chance")
 println("Spatial DiD estimates the same quantity, as its spillover onto the comparison areas, from the share of neighbours under the policy rather than from a synthetic control of each neighbour")
-'''
-
-[[actionGroups.actions]]
-id = "shocks-driving-estimate"
-label = "Which Shocks Drive the Estimate"
-desc = "Which shocks the shift-share estimate rests on: the estimate taken apart, as Goldsmith-Pinkham, Sorkin and Swift show, into one estimate per shock, with the shares in that shock alone as the instrument, and the weight of each in the whole, the shocks of the largest weights listed with their own estimates, and the negative weights counted"
-models = ["shiftshare"]
-code = '''
-using ECharts
-
-# The estimate is the weighted sum of one estimate per shock, each with the shares in that shock alone as the instrument; the weights sum to 1 and can be negative
-rw = rotemberg_weights(dy, dx === nothing ? d.X : dx, d)
-println("Estimate ", round(m.beta, digits = 4), "; the weighted sum of the estimates per shock ", round(rw.beta_overall, digits = 4), ", with weights summing to ", round(rw.alpha_sum, digits = 4))
-top = first(rw.order, 10)  # the shocks of the largest weights, positive or negative
-println("\n", rpad("Shock", 16), rpad("Weight", 10), rpad("Its own estimate", 18), rpad("Shock value", 14), "Mean share")
-for k in top
-	println(rpad(shock_names[k], 16), rpad(round(rw.alpha[k], digits = 4), 10), rpad(isnan(rw.beta_k[k]) ? "none" : string(round(rw.beta_k[k], digits = 4)), 18), rpad(round(d.g[k], digits = 3), 14), round(d.s_bar[k], digits = 4))
-end
-weight_top5 = sum(abs, rw.alpha[first(rw.order, 5)]) / sum(abs, rw.alpha)
-println("\nThe 5 shocks of the largest weights carry ", round(100 * weight_top5, digits = 1), "% of the absolute weight, of ", length(rw.alpha), " shocks")
-println("Negative weights: ", rw.n_negative, " shocks, summing to ", round(rw.negative_mass, digits = 4))
-isempty(rw.undefined) || println(length(rw.undefined), " shocks with no first stage of their own, given weight 0")
-display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Weights of the shocks, largest first")],
-	xAxis = [ECharts.Axis(_type = "category", name = "{{shockColumn}}", data = shock_names[first(rw.order, 20)])], yAxis = [ECharts.Axis(_type = "value", name = "Weight")],
-	series = [ECharts.XYSeries(name = "Weight", _type = "bar", data = round.(rw.alpha[first(rw.order, 20)], digits = 4))]))
-defined = filter(k -> !isnan(rw.beta_k[k]), top)
-length(defined) > 1 && println("Own estimates of these shocks, from ", round(minimum(rw.beta_k[defined]), digits = 4), " to ", round(maximum(rw.beta_k[defined]), digits = 4), ": far apart, the effect differs from shock to shock, and the weights decide which part of it the estimate reports")
-println("\nGoldsmith-Pinkham, Sorkin and Swift propose the weights to name the shocks whose shares have to be defended as unrelated to the outcome's other causes; a weight shows how much a flaw in that shock would move the estimate")
-println("Negative weights make the estimate a mix that need not lie between the estimates per shock")
-'''
-
-[[actionGroups.actions]]
-id = "estimate-shock-by-shock"
-label = "The Estimate Shock by Shock"
-desc = "The same estimate with the shocks as the observations, as Borusyak, Hull and Jaravel show: for each shock, the mean change of the outcome and of the endogenous variable over the areas exposed to it, weighted by their shares, set against the shock, with the estimate recovered from them exactly and drawn as a chart"
-models = ["shiftshare"]
-code = '''
-using ECharts
-
-# For each shock, the means over the areas weighted by their shares in it, after the controls: of the outcome's change, and of the endogenous variable's change or, in the reduced form, of the shift-share regressor
-sa = shock_aggregate(d, dy; treatment = dx)
-w = sa.s_bar .* sa.g  # each shock counts by its mean share
-reduced = dot(w, sa.y_bar) / dot(w, sa.g)  # the outcome against the shocks, across shocks
-first_stage = dot(w, sa.x_bar) / dot(w, sa.g)  # the endogenous variable against the shocks
-println(rpad("Across the areas, the tab's estimate", 46), round(m.beta, digits = 4))
-println(rpad("Across the shocks, the same estimate", 46), round(sa.beta_equiv, digits = 4))
-sa.is_iv && println(rpad("Outcome against the shocks", 46), round(reduced, digits = 4), "\n", rpad("Change of $(endog) against the shocks", 46), round(first_stage, digits = 4), "\n", rpad("Their ratio", 46), round(reduced / first_stage, digits = 4))
-println("\n", rpad("Shock", 16), rpad("Mean share", 12), rpad("Shock value", 14), rpad("Outcome change", 16), sa.is_iv ? "Change of $(endog)" : "Shift-share regressor")
-for k in first(sortperm(sa.s_bar; rev = true), 10)  # the shocks of the largest mean shares
-	println(rpad(shock_names[k], 16), rpad(round(sa.s_bar[k], digits = 4), 12), rpad(round(sa.g[k], digits = 3), 14), rpad(round(sa.y_bar[k], digits = 4), 16), round(sa.x_bar[k], digits = 4))
-end
-println("Changes after the controls, as means over the areas weighted by their shares in the shock")
-display(EChart(ec_width = 640, ec_height = 360, title = [ECharts.Title(text = "Outcome change against the shock, one point per shock")],
-	xAxis = [ECharts.Axis(_type = "value", name = "{{shockValue}}", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Outcome change", scale = true)],
-	series = [ECharts.XYSeries(name = "Shocks", _type = "scatter", data = [[round(sa.g[k], digits = 3), round(sa.y_bar[k], digits = 4)] for k in eachindex(sa.g)])]))
-println("\nBorusyak, Hull and Jaravel use this equivalence to read the design as a regression across the shocks: the shocks are the observations, so the design needs shocks unrelated to the outcome's other causes at the level of the shocks, and as many of them, with the exposure spread evenly enough, as the Effective Number of Shocks counts")
 '''
 
 [[wikis]]
@@ -1166,7 +852,7 @@ description = "One-page reference: what each tab prints, the inputs, the Next St
 name = "Overview"
 file = "spcausal/overview.md"
 bundled = true
-description = "The effects of a policy on the areas under it and around them: Spatial DiD, Synthetic Control and Shift-Share, and the words of the panel beside those of the papers"
+description = "The effects of a policy on the areas under it and around them: Spatial DiD and Synthetic Control, and the words of the panel beside those of the papers"
 
 [[wikis]]
 name = "Decision Guide"
@@ -1178,13 +864,13 @@ description = "Which tab, the neighbours, the standard errors of each tab, the c
 name = "Spillovers and Exposure"
 file = "spcausal/spillovers.md"
 bundled = true
-description = "The share of neighbours under the policy, why a spillover depends on the neighbours chosen, and spillovers in synthetic controls and shift-share designs"
+description = "The share of neighbours under the policy, why a spillover depends on the neighbours chosen, and spillovers in synthetic controls"
 
 [[wikis]]
 name = "Inference Without Standard Errors"
 file = "spcausal/inference.md"
 bundled = true
-description = "The permutation test of a synthetic control and its limits, the effective number of shocks and the balance test of a shift-share design"
+description = "The permutation test of a synthetic control, why it ranks a ratio, and its limits"
 
 [[wikis]]
 separator = true
@@ -1198,11 +884,6 @@ bundled = true
 [[wikis]]
 name = "Synthetic Control"
 file = "spcausal/synth.md"
-bundled = true
-
-[[wikis]]
-name = "Shift-Share"
-file = "spcausal/shiftshare.md"
 bundled = true
 
 [[references]]
@@ -1243,19 +924,10 @@ key = "AL2021a"
 [[references]]
 key = "Aba2021a"
 
-[[references]]
-key = "AKM2019a"
-
-[[references]]
-key = "BHJ2022a"
-
-[[references]]
-key = "GSS2020a"
-
 [[faq]]
 question = "Which tab of the Spatial Causal Inference panel should I start with?"
 answer = '''
-Spatial DiD when many areas are under the policy and observed before and after it, with comparison areas around them: it is a regression with standard errors, and the spillover onto the neighbours has a coefficient of its own. Synthetic Control when one or a few areas are under the policy and there is a long run of periods before it: each gets a weighted mean of areas outside the policy that follows it before the policy. Shift-Share when areas are exposed to common shocks through their shares in them, such as the national growth of industries.
+Spatial DiD when many areas are under the policy and observed before and after it, with comparison areas around them: it is a regression with standard errors, and the spillover onto the neighbours has a coefficient of its own. Synthetic Control when one or a few areas are under the policy and there is a long run of periods before it: each gets a weighted mean of areas outside the policy that follows it before the policy.
 '''
 wiki = "Decision Guide"
 
@@ -1310,20 +982,4 @@ answer = '''
 Abadie and L'Hour (2021) observe that the weights that best reproduce an area under the policy may not be unique, especially with many areas, and penalise the discrepancies between the area under the policy and each comparison area it draws on. Penalty Distance sets the discrepancy: the distance on the map, in km between centroids, or the distance between the standardised predictors. A penalty of 0 is the best match alone; larger values move the weights towards the single nearest comparison area. The Penalty step fits six values.
 '''
 wiki = "Synthetic Control"
-hidden = true
-
-[[faq]]
-question = "Why does the Shift-Share tab use the standard errors of Adão, Kolesár and Morales?"
-answer = '''
-Adão, Kolesár and Morales (2019) find that tests built on commonly used standard errors reject a true null in up to 55% of their placebo samples at a nominal 5%, because residuals are correlated across areas with similar shares, independent of where the areas are. Their standard errors are valid under any such correlation. HC1 is offered for comparison only, and the AKM Against HC1 step sets the two side by side.
-'''
-wiki = "Shift-Share"
-hidden = true
-
-[[faq]]
-question = "What is the effective number of shocks?"
-answer = '''
-The reciprocal of the Herfindahl index of the mean shares, computed by exposure_concentration. In a shift-share design the observations that carry the inference are the shocks: Borusyak, Hull and Jaravel (2022) show the coefficient can be obtained from an equivalent regression across shocks. The documentation of exposure_concentration states that the asymptotics are in the number of shocks, so an estimate resting on a few effective shocks is not supported by the theory however many areas there are.
-'''
-wiki = "Inference Without Standard Errors"
 hidden = true

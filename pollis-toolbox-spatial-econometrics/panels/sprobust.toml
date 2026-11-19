@@ -11,8 +11,13 @@ decisionFirstColumn = "Estimator"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -245,20 +250,20 @@ folder = "data/examples"
 [[inputs]]
 id = "areasFile"
 label = "Areas File"
-tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bruggepanel.gpkg, the example first writes a grid of 225 square cells of 1 km around Bruges, and the panel file beside it, unless the folder has both already."
-default = "bruggepanel.gpkg"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, us_states.gpkg, the example first copies the outlines of the 48 contiguous US states from PollisDatasets.jl into the folder, unless the folder has it already."
+default = "us_states.gpkg"
 
 [[inputs]]
 id = "panelFile"
 label = "Panel File"
-tooltip = "The data, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. Leave it empty for a cross-section whose columns are in the areas file itself."
-default = "bruggepanel.csv"
+tooltip = "The data, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. Leave it empty for a cross-section whose columns are in the areas file itself. With the default, munnell.csv, the example first writes Munnell's data on the 48 states from PollisDatasets.jl, with the logs of output, public and private capital and employment, unless the folder has it already."
+default = "munnell.csv"
 
 [[inputs]]
 id = "areaColumn"
 label = "Area Column"
 tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
-default = "cell"
+default = "state"
 newRow = true
 
 [[inputs]]
@@ -270,14 +275,14 @@ default = "year"
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
-tooltip = "The numeric column to explain. With the example files, price: the log of the price per square metre of the dwellings sold in the cell that year."
-default = "price"
+tooltip = "The numeric column to explain. With the example files, log_gsp: the log of the gross state product, in million 1982 dollars."
+default = "log_gsp"
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
-tooltip = "The numeric columns that explain it, separated by commas. With the example files, green: the share of green space in the cell, in per cent; noise: the mean road noise, in decibels."
-default = "green, noise"
+tooltip = "The numeric columns that explain it, separated by commas. With the example files, the logs of public capital, private capital and employment, and the unemployment rate, in per cent."
+default = "log_pcap, log_pc, log_emp, unemp"
 
 [[inputs]]
 id = "effects"
@@ -305,21 +310,21 @@ label = "Areas and Periods"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. The example's cells are in EPSG:31370, Belgian Lambert 72. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:31370"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. The example's states are in EPSG:4269, NAD83 longitude and latitude. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4269"
 newRow = true
 
 [[inputs]]
 id = "distanceCrs"
 label = "Distance Coordinate System"
-tooltip = "A projected coordinate system in metres, as an EPSG code, in which the distances between the areas' centroids are measured, in kilometres: a UTM zone or the national grid of the region. With a file in longitude and latitude, choose one here."
-default = "EPSG:31370"
+tooltip = "A projected coordinate system in metres, as an EPSG code, in which the distances between the areas' centroids are measured, in kilometres: a UTM zone or the national grid of the region. With a file in longitude and latitude, choose one here. The example uses EPSG:5070, NAD83 / Conus Albers, for the 48 states."
+default = "EPSG:5070"
 
 [[inputs]]
 id = "cutoff"
 label = "Cutoff (km)"
 tooltip = "Conley Spatial HAC: the distance between centroids, in kilometres, beyond which two areas are treated as uncorrelated. Residual Correlation by Distance and Standard Errors Against the Cutoff help to choose it."
-default = "3"
+default = "1000"
 newRow = true
 
 [[inputs]]
@@ -350,13 +355,13 @@ default = "2"
 [[inputs]]
 id = "clusterColumn"
 label = "Cluster Column"
-tooltip = "Cluster-Robust: the column whose values name the groups, numbers or text, in the panel file, or in the areas file for a cross-section. With the example files, district: 25 districts of 3 by 3 cells."
-default = "district"
+tooltip = "Cluster-Robust: the column whose values name the groups, numbers or text, in the panel file, or in the areas file for a cross-section. With the example files, region: the 9 census divisions, numbered 1 to 9."
+default = "region"
 
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random, Distributions
+using DuckDB, Tables, SpatialEconometrics, PollisDatasets, SparseArrays, LinearAlgebra, Statistics, Random, Distributions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
@@ -365,30 +370,9 @@ folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose.
 areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
 crosssection = isempty(strip("{{panelFile}}"))  # no panel file: a cross-section, whose columns are in the areas file
 panel_path = crosssection ? "" : joinpath(folder, "{{panelFile}}")
-# Example files: 15 by 15 square cells of 1 km around Bruges, in EPSG:31370, observed over 12 years, written unless the folder has both already. Replace them with your own files.
-if basename(areas_path) == "bruggepanel.gpkg" && basename(panel_path) == "bruggepanel.csv" && !(isfile(areas_path) && isfile(panel_path))
-	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre, row by row from the south-west
-	grid = [(c, d) for c in 1:225 for d in 1:225 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
-	smooth = lu(I - 0.85 .* Matrix(row_standardize(sparse(first.(grid), last.(grid), 1.0, 225, 225))))
-	field = () -> (z = smooth \ randn(rng, 225); (z .- mean(z)) ./ std(z))  # a map whose neighbouring cells are alike, mean 0 and standard deviation 1
-	district = 5 .* div.(v .+ 7, 3) .+ div.(u .+ 7, 3) .+ 1  # 25 districts of 3 by 3 cells
-	green_level, noise_level, cell_level = 30 .+ 10 .* field(), 55 .+ 4 .* field(), 0.08 .* field()  # alike in neighbouring cells, and constant over the years
-	open(panel_path, "w") do io
-		println(io, "cell,year,district,price,green,noise")
-		for t in 1:12
-			green = green_level .+ 0.4 .* t .+ 2 .* randn(rng, 225)  # share of green space, per cent, slowly rising
-			noise = noise_level .+ 1.5 .* randn(rng, 225)  # road noise, decibels
-			# The log price per square metre: green space and noise, each cell's own level, a shock common to the year, and a shock shared by neighbouring cells
-			price = 7.8 .+ 0.006 .* green .- 0.01 .* noise .+ cell_level .+ 0.03 * randn(rng) .+ 0.04 .* field() .+ 0.02 .* randn(rng, 225)
-			for c in 1:225
-				println(io, c, ",", 2013 + t, ",", district[c], ",", round(price[c], digits = 4), ",", round(green[c], digits = 2), ",", round(noise[c], digits = 2))
-			end
-		end
-	end
-	cells = ["($(c), $(district[c]), ST_MakeEnvelope($(69000 + 1000 * u[c]), $(211000 + 1000 * v[c]), $(70000 + 1000 * u[c]), $(212000 + 1000 * v[c])))" for c in 1:225]
-	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, district::INTEGER AS district, geom FROM (VALUES $(join(cells, ", "))) t(cell, district, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:31370')")
-end
+# Example files: the 48 contiguous US states, 1970 to 1986, from PollisDatasets.jl: their outlines, and Munnell's production data with the logs of the production function. Replace them with your own files.
+{{?areasFile=us_states.gpkg}} isfile(areas_path) || cp(samplefile("us_states.gpkg"), areas_path)
+{{?panelFile=munnell.csv}} isfile(panel_path) || DBInterface.execute(con, "COPY (SELECT state, year, region, ln(gsp) AS log_gsp, ln(pcap) AS log_pcap, ln(pc) AS log_pc, ln(emp) AS log_emp, unemp FROM '$(datafile("produc"))') TO '$(panel_path)'")
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 period = crosssection ? "pollis_period" : "{{periodColumn}}"

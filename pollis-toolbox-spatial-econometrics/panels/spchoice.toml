@@ -10,8 +10,13 @@ decisionFirstColumn = "Model"
 
 [[packages]]
 name = "SpatialEconometrics.jl"
-github = "https://github.com/randsley/SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -22,7 +27,7 @@ name = "Tables.jl"
 github = "https://github.com/JuliaData/Tables.jl"
 
 [requires]
-packages = ["ECharts.jl", "MCMCDiagnosticTools.jl", "GLM.jl", "RData.jl"]
+packages = ["ECharts.jl", "MCMCDiagnosticTools.jl", "GLM.jl"]
 
 [[models]]
 id = "probitgmm"
@@ -86,34 +91,34 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, siliconvalleychoice.gpkg, the example first writes a grid of 400 square cells of 1 km in Silicon Valley with simulated household income, detached houses and rooftop solar adoption, which spreads between neighbouring cells, unless the folder has a siliconvalleychoice.gpkg already."
-default = "siliconvalleychoice.gpkg"
+tooltip = "The file of areas, as polygons, or of locations, as points: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, katrina.gpkg, the example first writes the 673 New Orleans businesses of LeSage, Pace, Lam, Campanella and Liu (2011) from PollisDatasets.jl, as points, with whether each had reopened 3, 6 and 12 months after Hurricane Katrina, unless the folder has a katrina.gpkg already."
+default = "katrina.gpkg"
 
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
-tooltip = "The column of the choice, coded 0 and 1; on Ordered Probit, ordered categories coded 1, 2, ... (with the example file, adoption used in place of solar). Areas without a value in it, or in an explanatory variable, are left out."
-default = "solar"
+tooltip = "The column of the choice, coded 0 and 1; on Ordered Probit, ordered categories coded 1, 2, ... (with the example file, reopening used in place of y2). Areas without a value in it, or in an explanatory variable, are left out."
+default = "y2"
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
 tooltip = "The numeric columns that explain it, separated by commas. The binary models add an intercept; Ordered Probit has none, its cut points hold the level, so no column may be constant."
-default = "income, detached"
+default = "flood_depth, log_medinc, small_size, large_size, low_status_customers, high_status_customers, owntype_sole_proprietor, owntype_national_chain"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:32610, WGS 84 / UTM zone 10N. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:32610"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's businesses are in EPSG:4326. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4326"
 newRow = true
 
 [[inputs]]
 id = "neighbours"
 label = "Neighbours"
-tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. The weights of each area's neighbours sum to 1."
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids, the only choice for points. The weights of each area's neighbours sum to 1."
 kind = "select"
-default = "queen"
+default = "knn"
 
 [[inputs.options]]
 value = "queen"
@@ -130,8 +135,8 @@ label = "k Nearest"
 [[inputs]]
 id = "k"
 label = "k"
-tooltip = "The number of neighbours of every area with k Nearest."
-default = "6"
+tooltip = "The number of neighbours of every area with k Nearest. With the example file, 15, as LeSage, Pace, Lam, Campanella and Liu (2011) at 6 and 12 months."
+default = "15"
 
 [[inputs]]
 id = "instrumentLags"
@@ -181,29 +186,17 @@ default = "20"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+using DuckDB, Tables, SpatialEconometrics, PollisDatasets, SparseArrays, LinearAlgebra, Statistics, Random
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-# Example file: 20 by 20 square cells of 1 km in Silicon Valley, in EPSG:32610, written unless the folder has one already. Replace "siliconvalleychoice.gpkg" with your own file.
-if basename(path) == "siliconvalleychoice.gpkg" && !isfile(path)
-	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
-	income = 18 .+ 0.4 .* u .+ 3 .* randn(rng, 400)  # household income, thousand euros a year, higher to the east
-	detached = clamp.(40 .+ 1.5 .* v .+ 10 .* randn(rng, 400), 0, 100)  # percent of detached houses, more to the north
-	grid = [(c, d) for c in 1:400 for d in 1:400 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
-	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 400, 400))
-	latent = (I - 0.5 .* Matrix(Wgrid)) \ (-5.6 .+ 0.2 .* income .+ 0.05 .* detached .+ randn(rng, 400))  # a spatial lag of the propensity, rho = 0.5
-	solar = Int.(latent .> 0)  # 1 if at least one home in ten has rooftop solar panels
-	adoption = 1 .+ Int.(latent .> -0.6) .+ Int.(latent .> 0.6)  # adoption as 1 low, 2 medium, 3 high
-	cells = ["($(solar[c]), $(adoption[c]), $(round(income[c], digits = 2)), $(round(detached[c], digits = 1)), ST_MakeEnvelope($(581000 + 1000 * u[c]), $(4138000 + 1000 * v[c]), $(582000 + 1000 * u[c]), $(4139000 + 1000 * v[c])))" for c in 1:400]
-	DBInterface.execute(con, "COPY (SELECT solar::INTEGER AS solar, adoption::INTEGER AS adoption, income::DOUBLE AS income, detached::DOUBLE AS detached, geom FROM (VALUES $(join(cells, ", "))) t(solar, adoption, income, detached, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:32610')")
-end
+# Example file: 673 New Orleans businesses after Hurricane Katrina, from PollisDatasets.jl, as points in longitude and latitude, with reopening, 4 within 3 months, 3 within 6, 2 within 12, 1 not within 12. Replace "katrina.gpkg" with your own file.
+{{?file=katrina.gpkg}} isfile(path) || DBInterface.execute(con, "COPY (SELECT *, 1 + y1 + y2 + y3 AS reopening, ST_Point(long, lat) AS geom FROM '$(datafile("katrina"))') TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'businesses', SRS 'EPSG:4326')")
 yname = "{{dependent}}"
-{{?model=ordered}} yname = yname == "solar" && basename(path) == "siliconvalleychoice.gpkg" ? "adoption" : yname  # the example's ordered outcome: adoption, 1 low, 2 medium, 3 high
+{{?model=ordered}} yname = yname == "y2" && basename(path) == "katrina.gpkg" ? "reopening" : yname  # the example's ordered outcome: reopening, 1 not within 12 months to 4 within 3
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
 # The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
@@ -235,14 +228,15 @@ W = row_standardize(sparse(pairs.i, pairs.j, 1.0, n, n))  # the weights of each 
 {{?model=logitesf}} prob = m.fitted
 
 se = sqrt.(diag(m.vcov))
-{{?model=probitgmm|logitesf}} println(rpad("", 14), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
+nw = maximum(length, m.coefnames) + 2  # the width of the column of names
+{{?model=probitgmm|logitesf}} println(rpad("", nw), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
 {{?model=probitbayes|ordered}} draws = hcat(m.beta_draws, m.rho_draws)  # one row per draw kept: the coefficients, then rho
-{{?model=probitbayes|ordered}} println(rpad("", 14), rpad("Post. Mean", 12), rpad("Post. SD", 12), rpad("2.5%", 10), "97.5%")
+{{?model=probitbayes|ordered}} println(rpad("", nw), rpad("Post. Mean", 12), rpad("Post. SD", 12), rpad("2.5%", 10), "97.5%")
 {{?model!=logitesf}} shown = eachindex(m.coef)  # the intercept (not on Ordered Probit), the explanatory variables and rho, the spatial lag of the latent propensity
 {{?model=logitesf}} shown = 1:1 + p  # the intercept and the explanatory variables; the eigenvectors' coefficients follow them
 for k in shown
-{{?model=probitgmm|logitesf}} 	println(rpad(m.coefnames[k], 14), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
-{{?model=probitbayes|ordered}} 	println(rpad(m.coefnames[k], 14), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), rpad(round(quantile(draws[:, k], 0.025), digits = 4), 10), round(quantile(draws[:, k], 0.975), digits = 4))
+{{?model=probitgmm|logitesf}} 	println(rpad(m.coefnames[k], nw), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
+{{?model=probitbayes|ordered}} 	println(rpad(m.coefnames[k], nw), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), rpad(round(quantile(draws[:, k], 0.025), digits = 4), 10), round(quantile(draws[:, k], 0.975), digits = 4))
 end
 {{?model=probitgmm}} println("\nStandard errors: heteroskedasticity-robust, of the two-stage least squares step")
 {{?model=probitbayes|ordered}} println("\n", m.n_samples, " draws kept after a burn-in of ", m.burnin, "; acceptance rate of rho ", round(m.accept_rate, digits = 3), ", which should be between 0.2 and 0.5")
@@ -271,7 +265,7 @@ label = "Map of the Fitted Probabilities"
 desc = "The fitted probability of the choice in each area on a base map, each area's choice shown when it is clicked: where the model expects the choice, and where it was made against the odds"
 models = ["probitgmm", "probitbayes", "logitesf"]
 code = '''
-DBInterface.execute(con, "CREATE OR REPLACE TABLE fitted AS SELECT * FROM (VALUES $(join(("($i, $(prob[i]))" for i in 1:n), ", "))) t(i, probability)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fitted AS SELECT i, probability::DOUBLE AS probability FROM (VALUES $(join(("($i, $(prob[i]))" for i in 1:n), ", "))) t(i, probability)")
 fmap = joinpath(mktempdir(), "fitted-probabilities.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, round(f.probability, 3) AS probability, a.\"$(yname)\"::INTEGER AS choice FROM areas a JOIN fitted f USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fmap; name = "Fitted probability", column = "probability", opacity = 0.75)))  # clicking an area shows its probability and its choice
@@ -362,8 +356,8 @@ label = "Moran's I of the Residuals"
 desc = "Moran's I of the Pearson residuals of the tab's model, each choice minus its fitted probability over the standard deviation of a 0 or 1 with that probability, with a pseudo p-value from 999 random permutations: spatial autocorrelation left that the spillover or the filter has not taken up"
 models = ["probitgmm", "probitbayes", "logitesf"]
 code = '''
-pearson = (y .- prob) ./ sqrt.(prob .* (1 .- prob))  # each residual over its standard deviation under the model
-mr = moran_global(pearson, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+pearson_residuals = (y .- prob) ./ sqrt.(prob .* (1 .- prob))  # each residual over its standard deviation under the model
+mr = moran_global(pearson_residuals, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
 println("Moran's I of the Pearson residuals: ", round(mr.I_stat, digits = 4), " (expected ", round(mr.E_I, digits = 4), " without spatial autocorrelation), pseudo p-value ", mr.p_value)
 println(mr.p_value < 0.05 ? "Spatial autocorrelation is left in the residuals: the model has not taken it all up" : "No significant spatial autocorrelation is left in the residuals")
 '''
@@ -383,9 +377,9 @@ code = '''
 {{?model=probitbayes}} gibbs = m
 {{?model=probitbayes}} gmm = fit_spatial_probit(W, X, y; varnames = xnames, instrument_lags = {{instrumentLags}})  # Instrument Lags from the inputs
 se_gmm, sd_gibbs = sqrt.(diag(gmm.vcov)), sqrt.(diag(gibbs.vcov))
-println(rpad("", 14), rpad("GMM", 12), rpad("Std. Error", 13), rpad("Gibbs", 12), "Post. SD")
+println(rpad("", nw), rpad("GMM", 12), rpad("Std. Error", 13), rpad("Gibbs", 12), "Post. SD")
 for k in eachindex(gmm.coef)  # the intercept, the explanatory variables and rho, in the same order in both
-	println(rpad(gmm.coefnames[k], 14), rpad(round(gmm.coef[k], digits = 4), 12), rpad(round(se_gmm[k], digits = 4), 13), rpad(round(gibbs.coef[k], digits = 4), 12), round(sd_gibbs[k], digits = 4))
+	println(rpad(gmm.coefnames[k], nw), rpad(round(gmm.coef[k], digits = 4), 12), rpad(round(se_gmm[k], digits = 4), 13), rpad(round(gibbs.coef[k], digits = 4), 12), round(sd_gibbs[k], digits = 4))
 end
 hits(f) = round(mean((f.fitted_prob .>= 0.5) .== (y .== 1)), digits = 3)
 println("\nHit rate: ", hits(gmm), " by GMM, ", hits(gibbs), " by Gibbs sampling")
@@ -404,11 +398,11 @@ using GLM
 Xi = hcat(ones(n), X)
 probit = glm(Xi, y, Binomial(), ProbitLink())  # the ordinary probit: rho fixed at 0
 b, se_probit, se = coef(probit), stderror(probit), sqrt.(diag(m.vcov))
-println(rpad("", 14), rpad("Probit", 12), rpad("Std. Error", 13), rpad("Spatial", 12), "Std. Error")
+println(rpad("", nw), rpad("Probit", 12), rpad("Std. Error", 13), rpad("Spatial", 12), "Std. Error")
 for k in eachindex(b)  # the intercept and the explanatory variables
-	println(rpad(m.coefnames[k], 14), rpad(round(b[k], digits = 4), 12), rpad(round(se_probit[k], digits = 4), 13), rpad(round(m.coef[k], digits = 4), 12), round(se[k], digits = 4))
+	println(rpad(m.coefnames[k], nw), rpad(round(b[k], digits = 4), 12), rpad(round(se_probit[k], digits = 4), 13), rpad(round(m.coef[k], digits = 4), 12), round(se[k], digits = 4))
 end
-println(rpad("rho", 14), rpad("0", 25), rpad(round(m.rho, digits = 4), 12), round(se[end], digits = 4))
+println(rpad("rho", nw), rpad("0", 25), rpad(round(m.rho, digits = 4), 12), round(se[end], digits = 4))
 {{?model=probitbayes}} println("(the spatial probit's are posterior means and standard deviations)")
 
 pearson(q) = (y .- q) ./ sqrt.(q .* (1 .- q))  # each residual over its standard deviation under the model
@@ -421,9 +415,9 @@ end
 {{?model=probitgmm}} # The coefficients of the two are not on the same scale, as the spatial multiplier also spreads the latent errors: compare effects on the probability
 {{?model=probitgmm}} effects = marginal_effects(m)
 {{?model=probitgmm}} density = exp.(-(Xi * b) .^ 2 ./ 2) ./ sqrt(2 * pi)  # the standard normal density at each area's probit index
-{{?model=probitgmm}} println("\n", rpad("", 14), rpad("Probit AME", 13), "Spatial total effect")
+{{?model=probitgmm}} println("\n", rpad("", nw), rpad("Probit AME", 13), "Spatial total effect")
 {{?model=probitgmm}} for k in 1:p
-{{?model=probitgmm}} 	println(rpad(xnames[k], 14), rpad(round(mean(density) * b[k + 1], digits = 4), 13), round(effects.total[k], digits = 4))
+{{?model=probitgmm}} 	println(rpad(xnames[k], nw), rpad(round(mean(density) * b[k + 1], digits = 4), 13), round(effects.total[k], digits = 4))
 {{?model=probitgmm}} end
 '''
 
@@ -451,9 +445,9 @@ println("\nThe lag probit's rho: ", round(lag.rho, digits = 4), "; the filter: "
 {{?model!=probitbayes}} # Probit and logit coefficients are on different scales: compare their effects on the probability
 {{?model!=probitbayes}} effects = marginal_effects(lag)
 {{?model!=probitbayes}} slope = mean(filtered.fitted .* (1 .- filtered.fitted))  # the average slope of the logistic curve at the fitted probabilities
-{{?model!=probitbayes}} println("\n", rpad("", 14), rpad("Lag direct", 12), rpad("Lag indirect", 14), rpad("Lag total", 12), "Filter AME")
+{{?model!=probitbayes}} println("\n", rpad("", nw), rpad("Lag direct", 12), rpad("Lag indirect", 14), rpad("Lag total", 12), "Filter AME")
 {{?model!=probitbayes}} for k in 1:p
-{{?model!=probitbayes}} 	println(rpad(xnames[k], 14), rpad(round(effects.direct[k], digits = 4), 12), rpad(round(effects.indirect[k], digits = 4), 14), rpad(round(effects.total[k], digits = 4), 12), round(slope * filtered.coef[k + 1], digits = 4))
+{{?model!=probitbayes}} 	println(rpad(xnames[k], nw), rpad(round(effects.direct[k], digits = 4), 12), rpad(round(effects.indirect[k], digits = 4), 14), rpad(round(effects.total[k], digits = 4), 12), round(slope * filtered.coef[k + 1], digits = 4))
 {{?model!=probitbayes}} end
 {{?model!=probitbayes}} println("The filter's average marginal effect holds the filter fixed: it has no indirect effect through the neighbours")
 '''
@@ -469,9 +463,9 @@ desc = "The effect of each explanatory variable on the probability of the choice
 models = ["probitgmm"]
 code = '''
 effects = marginal_effects(m)  # the effects of LeSage and Pace (2009), from the normal density at each area's index and the spatial multiplier
-println(rpad("", 14), rpad("Direct", 11), rpad("Indirect", 11), rpad("Total", 11), "Indirect share")
+println(rpad("", nw), rpad("Direct", 11), rpad("Indirect", 11), rpad("Total", 11), "Indirect share")
 for k in 1:p
-	println(rpad(effects.varnames[k], 14), rpad(round(effects.direct[k], digits = 4), 11), rpad(round(effects.indirect[k], digits = 4), 11), rpad(round(effects.total[k], digits = 4), 11), round(100 * effects.indirect[k] / effects.total[k], digits = 1), "%")
+	println(rpad(effects.varnames[k], nw), rpad(round(effects.direct[k], digits = 4), 11), rpad(round(effects.indirect[k], digits = 4), 11), rpad(round(effects.total[k], digits = 4), 11), round(100 * effects.indirect[k] / effects.total[k], digits = 1), "%")
 end
 println("\nEach effect is a change in the probability of the choice, from 0 to 1, for one more unit of the variable")
 println("Direct: one more unit in an area, on that area's own probability, feedback through its neighbours included")
@@ -489,12 +483,10 @@ label = "New Orleans After Katrina"
 desc = "Table 3 of LeSage, Pace, Lam, Campanella and Liu (2011): the reopening of 673 businesses on three New Orleans streets within 6 and within 12 months of Hurricane Katrina, by a spatial lag probit fitted by Gibbs sampling on the 15 nearest neighbours, the posterior means and standard deviations beside those of the article"
 models = ["probitbayes"]
 code = '''
-using Downloads, RData
+using PollisDatasets
 
 let
-	file = joinpath(mktempdir(), "Katrina.RData")
-	Downloads.download("https://raw.githubusercontent.com/stefanwilhelm/spatialprobit/7b624f571a740caf491671ef6cf4ae1135593a6c/data/Katrina.RData", file)  # the data of the R package spatialprobit, GPL-2 or later
-	katrina = Tables.columntable(RData.load(file)["Katrina"])  # read as columns, one vector per variable
+	katrina = dataset("katrina")  # the data of the R package spatialprobit
 	names = ["flood_depth", "log_medinc", "small_size", "large_size", "low_status_customers", "high_status_customers", "owntype_sole_proprietor", "owntype_national_chain"]
 	Xk = reduce(hcat, (Float64.(Tables.getcolumn(katrina, Symbol(c))) for c in names))
 	coords = hcat(Float64.(katrina.lat), Float64.(katrina.long))

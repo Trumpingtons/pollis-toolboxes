@@ -14,7 +14,7 @@ The GWR4 test files in libpysal hold GWR fits of the percentage with a bachelor'
 
 ## Replicating Oshan, Li, Kang, Wolf and Fotheringham (2019)
 
-The article fits GWR with an adaptive bisquare kernel chosen by AICc, and reports the bandwidth, the residual sum of squares, the AIC, the AICc and the R-squared. It then fits multiscale GWR to the standardised variables and reports one bandwidth per coefficient ([Oshan, Li, Kang, Wolf and Fotheringham (2019)](#ref-OLKWF2019a)). The panel's article step prints each of these beside Julia's. The search of SpatialEconometrics.jl and the golden section search of mgwr can stop at neighbouring bandwidths where the AICc is flat ([Randsley (2026)](#ref-Ran2026a)).
+The article fits GWR with an adaptive bisquare kernel chosen by AICc, and reports the bandwidth, the residual sum of squares, the AIC, the AICc and the R-squared. It then fits multiscale GWR to the standardised variables and reports one bandwidth per coefficient ([Oshan, Li, Kang, Wolf and Fotheringham (2019)](#ref-OLKWF2019a)). The article searches each multiscale bandwidth from two nearest counties upwards. The panel's article step does the same, with the golden section search of SpatialEconometrics.jl, and prints each value beside Julia's ([Randsley (2026)](#ref-Ran2026a)).
 
 ## References
 
