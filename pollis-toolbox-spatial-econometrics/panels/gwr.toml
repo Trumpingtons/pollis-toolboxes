@@ -250,8 +250,8 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbragwr.gpkg, the example first writes a grid of 400 square cells of 1 km around Coimbra with simulated nitrogen dioxide (no2), traffic and green space, in which the effect of traffic grows from west to east, unless the folder has a coimbragwr.gpkg already."
-default = "coimbragwr.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, cambridgegwr.gpkg, the example first writes a grid of 400 square cells of 1 km around Cambridge with simulated nitrogen dioxide (no2), traffic and green space, in which the effect of traffic grows from west to east, unless the folder has a cambridgegwr.gpkg already."
+default = "cambridgegwr.gpkg"
 
 [[inputs]]
 id = "dependent"
@@ -268,15 +268,15 @@ default = "traffic, green"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:3763"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:27700"
 newRow = true
 
 [[inputs]]
 id = "distanceCrs"
 label = "Distance Coordinate System"
 tooltip = "A projected coordinate system in metres, as an EPSG code: the centroids of the areas are moved into it, and the distances between them, and a fixed bandwidth, are in its metres."
-default = "EPSG:3763"
+default = "EPSG:27700"
 
 [[inputs]]
 id = "kernel"
@@ -328,15 +328,15 @@ DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which th
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-# Example file: 20 by 20 square cells of 1 km around Coimbra, in EPSG:3763, written unless the folder has one already. Replace "coimbragwr.gpkg" with your own file.
-if basename(path) == "coimbragwr.gpkg" && !isfile(path)
+# Example file: 20 by 20 square cells of 1 km around Cambridge, in EPSG:27700, written unless the folder has one already. Replace "cambridgegwr.gpkg" with your own file.
+if basename(path) == "cambridgegwr.gpkg" && !isfile(path)
 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
 	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
 	traffic = 4 .+ 16 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 30) .+ randn(rng, 400)  # thousands of vehicles a day, most in the centre
 	green = clamp.(30 .+ 1.5 .* u .- 0.8 .* traffic .+ 6 .* randn(rng, 400), 2, 90)  # percent of green space
 	no2 = (10 .+ 0.2 .* v) .+ (0.8 .+ 0.04 .* u) .* traffic .- 0.12 .* green .+ 1.5 .* randn(rng, 400)  # the effect of traffic grows from west to east
-	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:400]
-	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), ST_MakeEnvelope($(545000 + 1000 * u[c]), $(258000 + 1000 * v[c]), $(546000 + 1000 * u[c]), $(259000 + 1000 * v[c])))" for c in 1:400]
+	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
 end
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas

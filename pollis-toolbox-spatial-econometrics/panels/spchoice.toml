@@ -86,8 +86,8 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbrachoice.gpkg, the example first writes a grid of 400 square cells of 1 km around Coimbra with simulated household income, detached houses and rooftop solar adoption, which spreads between neighbouring cells, unless the folder has a coimbrachoice.gpkg already."
-default = "coimbrachoice.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, siliconvalleychoice.gpkg, the example first writes a grid of 400 square cells of 1 km in Silicon Valley with simulated household income, detached houses and rooftop solar adoption, which spreads between neighbouring cells, unless the folder has a siliconvalleychoice.gpkg already."
+default = "siliconvalleychoice.gpkg"
 
 [[inputs]]
 id = "dependent"
@@ -104,8 +104,8 @@ default = "income, detached"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:3763"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:32610, WGS 84 / UTM zone 10N. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:32610"
 newRow = true
 
 [[inputs]]
@@ -188,8 +188,8 @@ DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which th
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-# Example file: 20 by 20 square cells of 1 km around Coimbra, in EPSG:3763, written unless the folder has one already. Replace "coimbrachoice.gpkg" with your own file.
-if basename(path) == "coimbrachoice.gpkg" && !isfile(path)
+# Example file: 20 by 20 square cells of 1 km in Silicon Valley, in EPSG:32610, written unless the folder has one already. Replace "siliconvalleychoice.gpkg" with your own file.
+if basename(path) == "siliconvalleychoice.gpkg" && !isfile(path)
 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
 	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
 	income = 18 .+ 0.4 .* u .+ 3 .* randn(rng, 400)  # household income, thousand euros a year, higher to the east
@@ -199,11 +199,11 @@ if basename(path) == "coimbrachoice.gpkg" && !isfile(path)
 	latent = (I - 0.5 .* Matrix(Wgrid)) \ (-5.6 .+ 0.2 .* income .+ 0.05 .* detached .+ randn(rng, 400))  # a spatial lag of the propensity, rho = 0.5
 	solar = Int.(latent .> 0)  # 1 if at least one home in ten has rooftop solar panels
 	adoption = 1 .+ Int.(latent .> -0.6) .+ Int.(latent .> 0.6)  # adoption as 1 low, 2 medium, 3 high
-	cells = ["($(solar[c]), $(adoption[c]), $(round(income[c], digits = 2)), $(round(detached[c], digits = 1)), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:400]
-	DBInterface.execute(con, "COPY (SELECT solar::INTEGER AS solar, adoption::INTEGER AS adoption, income::DOUBLE AS income, detached::DOUBLE AS detached, geom FROM (VALUES $(join(cells, ", "))) t(solar, adoption, income, detached, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+	cells = ["($(solar[c]), $(adoption[c]), $(round(income[c], digits = 2)), $(round(detached[c], digits = 1)), ST_MakeEnvelope($(581000 + 1000 * u[c]), $(4138000 + 1000 * v[c]), $(582000 + 1000 * u[c]), $(4139000 + 1000 * v[c])))" for c in 1:400]
+	DBInterface.execute(con, "COPY (SELECT solar::INTEGER AS solar, adoption::INTEGER AS adoption, income::DOUBLE AS income, detached::DOUBLE AS detached, geom FROM (VALUES $(join(cells, ", "))) t(solar, adoption, income, detached, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:32610')")
 end
 yname = "{{dependent}}"
-{{?model=ordered}} yname = yname == "solar" && basename(path) == "coimbrachoice.gpkg" ? "adoption" : yname  # the example's ordered outcome: adoption, 1 low, 2 medium, 3 high
+{{?model=ordered}} yname = yname == "solar" && basename(path) == "siliconvalleychoice.gpkg" ? "adoption" : yname  # the example's ordered outcome: adoption, 1 low, 2 medium, 3 high
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
 # The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out

@@ -86,14 +86,14 @@ folder = "data/examples"
 [[inputs]]
 id = "areasFile"
 label = "Areas File"
-tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbrapanel.gpkg, the example first writes a grid of 400 square cells of 1 km around Coimbra, and the panel file beside it, unless the folder has both already."
-default = "coimbrapanel.gpkg"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, cambridgepanel.gpkg, the example first writes a grid of 400 square cells of 1 km around Cambridge, and the panel file beside it, unless the folder has both already."
+default = "cambridgepanel.gpkg"
 
 [[inputs]]
 id = "panelFile"
 label = "Panel File"
 tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period."
-default = "coimbrapanel.csv"
+default = "cambridgepanel.csv"
 
 [[inputs]]
 id = "areaColumn"
@@ -123,8 +123,8 @@ default = "income, construction"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:3763"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:27700"
 newRow = true
 
 [[inputs]]
@@ -223,8 +223,8 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
 panel_path = joinpath(folder, "{{panelFile}}")
-# Example files: 20 by 20 square cells of 1 km around Coimbra, in EPSG:3763, observed over 10 years, written unless the folder has both already. Replace them with your own files.
-if basename(areas_path) == "coimbrapanel.gpkg" && basename(panel_path) == "coimbrapanel.csv" && !(isfile(areas_path) && isfile(panel_path))
+# Example files: 20 by 20 square cells of 1 km around Cambridge, in EPSG:27700, observed over 10 years, written unless the folder has both already. Replace them with your own files.
+if basename(areas_path) == "cambridgepanel.gpkg" && basename(panel_path) == "cambridgepanel.csv" && !(isfile(areas_path) && isfile(panel_path))
 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
 	u, v = repeat(-10:9, outer = 20), repeat(-10:9, inner = 20)  # km east and north of the centre, row by row from the south-west
 	grid = [(c, d) for c in 1:400 for d in 1:400 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
@@ -243,8 +243,8 @@ if basename(areas_path) == "coimbrapanel.gpkg" && basename(panel_path) == "coimb
 			end
 		end
 	end
-	cells = ["($(c), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:400]
-	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+	cells = ["($(c), ST_MakeEnvelope($(545000 + 1000 * u[c]), $(258000 + 1000 * v[c]), $(546000 + 1000 * u[c]), $(259000 + 1000 * v[c])))" for c in 1:400]
+	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
 end
 yname = "{{dependent}}"
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas

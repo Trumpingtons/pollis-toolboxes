@@ -83,8 +83,8 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, coimbraesf.gpkg, the example first writes a grid of 225 square cells of 1 km around Coimbra with simulated nitrogen dioxide (no2), traffic, green space and asthma visits (a count), unless the folder has a coimbraesf.gpkg already."
-default = "coimbraesf.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, oxfordesf.gpkg, the example first writes a grid of 225 square cells of 1 km around Oxford with simulated nitrogen dioxide (no2), traffic, green space and asthma visits (a count), unless the folder has a oxfordesf.gpkg already."
+default = "oxfordesf.gpkg"
 
 [[inputs]]
 id = "dependent"
@@ -101,8 +101,8 @@ default = "traffic, green"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:3763"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps and the distances between centroids. The example's cells are in EPSG:27700, OSGB36 / British National Grid. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:27700"
 newRow = true
 
 [[inputs]]
@@ -168,8 +168,8 @@ DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which th
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-# Example file: 15 by 15 square cells of 1 km around Coimbra, in EPSG:3763, written unless the folder has one already. Replace "coimbraesf.gpkg" with your own file.
-if basename(path) == "coimbraesf.gpkg" && !isfile(path)
+# Example file: 15 by 15 square cells of 1 km around Oxford, in EPSG:27700, written unless the folder has one already. Replace "oxfordesf.gpkg" with your own file.
+if basename(path) == "oxfordesf.gpkg" && !isfile(path)
 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
 	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre cell, row by row from the south-west
 	pattern = 2 .* sin.(u ./ 3) .+ 1.5 .* cos.(v ./ 4)  # a smooth spatial pattern that the explanatory variables do not explain
@@ -185,11 +185,11 @@ if basename(path) == "coimbraesf.gpkg" && !isfile(path)
 		return k
 	end
 	asthma = [poisson(exp(1 + 0.05 * traffic[c] + 0.3 * pattern[c])) for c in 1:225]  # asthma visits in a year
-	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), $(asthma[c]), ST_MakeEnvelope($(-24000 + 1000 * u[c]), $(59000 + 1000 * v[c]), $(-23000 + 1000 * u[c]), $(60000 + 1000 * v[c])))" for c in 1:225]
-	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, asthma::INTEGER AS asthma, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, asthma, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
+	cells = ["($(round(no2[c], digits = 1)), $(round(traffic[c], digits = 2)), $(round(green[c], digits = 1)), $(asthma[c]), ST_MakeEnvelope($(451000 + 1000 * u[c]), $(206000 + 1000 * v[c]), $(452000 + 1000 * u[c]), $(207000 + 1000 * v[c])))" for c in 1:225]
+	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, traffic::DOUBLE AS traffic, green::DOUBLE AS green, asthma::INTEGER AS asthma, geom FROM (VALUES $(join(cells, ", "))) t(no2, traffic, green, asthma, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:27700')")
 end
 yname = "{{dependent}}"
-{{?model=esfcounts}} yname = yname == "no2" && basename(path) == "coimbraesf.gpkg" ? "asthma" : yname  # the example's count: asthma visits
+{{?model=esfcounts}} yname = yname == "no2" && basename(path) == "oxfordesf.gpkg" ? "asthma" : yname  # the example's count: asthma visits
 xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
 present = join(("\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
 # The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
