@@ -2,7 +2,7 @@
 
 ## Surface Model, Terrain Model and Height Above Ground
 
-Three grids are commonly derived from an airborne lidar point cloud. A digital surface model (DSM) gives the height of the highest surface in each cell, roofs and treetops included. A digital terrain model (DTM) gives the height of the bare ground, as if buildings and vegetation were removed. Their difference, often called the normalised DSM, gives the height of the objects above the ground: the heights of buildings and, over vegetation, a canopy height model. Surface and Terrain Grids computes the three at the Cell Size input of the LAS and LAZ tab of the Raster and Point Cloud Files panel.
+Three grids are commonly derived from an airborne lidar point cloud. A digital surface model (DSM) gives the height of the highest surface in each cell, roofs and treetops included. A digital terrain model (DTM) gives the height of the bare ground, as if buildings and vegetation were removed. Their difference, often called the normalised DSM, gives the height of the objects above the ground: the heights of buildings and, over vegetation, a canopy height model. Surface and Terrain Grids computes the three at the Cell Size input of the LAS and LAZ tab of the Point Cloud Files panel.
 
 ## Separating Ground Points From the Rest
 
@@ -22,7 +22,7 @@ Cells without ground points are filled by interpolating between the ground point
 
 ## Using the Grids in the GeoTIFF Tab
 
-Save Elevation Grids as GeoTIFF writes three files next to the point cloud, ending in -dsm.tif, -dtm.tif and -ndsm.tif, in the coordinate system of the cloud. Each is a single-band GeoTIFF that the GeoTIFF tab of the Raster and Point Cloud Files panel reads: Plot the Raster draws the heights above ground, Histogram of Values shows how tall the objects are, and Show on a Map places the buildings and trees on a base map ([Schouten (2026)](#ref-Sch2026a)).
+Save Elevation Grids as GeoTIFF writes three files next to the point cloud, ending in -dsm.tif, -dtm.tif and -ndsm.tif, in the coordinate system of the cloud. Each is a single-band GeoTIFF that the GeoTIFF tab of the Raster Files panel reads: Plot the Raster draws the heights above ground, Histogram of Values shows how tall the objects are, and Show on a Map places the buildings and trees on a base map ([Schouten (2026)](#ref-Sch2026a)).
 
 ## References
 

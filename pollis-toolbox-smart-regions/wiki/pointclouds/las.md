@@ -46,7 +46,7 @@ A laser pulse can produce several returns as it meets objects on its way down: t
 
 ## Reading a LAS File With PointClouds.jl
 
-`LAS(path)` of PointClouds.jl reads the header and records of a LAS file, and the points lazily ([Schmid (2026)](#ref-Sch2026b)). `length(las)` is the number of points; `coordinates(las, range)` gives their x, y and z with the scale and offset applied; `classification`, `intensity`, `return_number` and `return_count` give the other attributes. `getcrs(String, las)` gives the coordinate system as Well-Known Text. The LAS and LAZ tab of the Raster and Point Cloud Files panel collects these into the table `pts`, one row per point, which Tables.jl and DuckDB read.
+`LAS(path)` of PointClouds.jl reads the header and records of a LAS file, and the points lazily ([Schmid (2026)](#ref-Sch2026b)). `length(las)` is the number of points; `coordinates(las, range)` gives their x, y and z with the scale and offset applied; `classification`, `intensity`, `return_number` and `return_count` give the other attributes. `getcrs(String, las)` gives the coordinate system as Well-Known Text. The LAS and LAZ tab of the Point Cloud Files panel collects these into the table `pts`, one row per point, which Tables.jl and DuckDB read.
 
 ## References
 

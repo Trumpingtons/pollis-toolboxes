@@ -6,7 +6,7 @@ A LAZ file is a LAS file compressed with LASzip, a lossless compressor for lidar
 
 ## Reading a LAZ File With PointClouds.jl
 
-PointClouds.jl reads a LAZ file with the same `LAS(path)` as a LAS file, and decompresses the points as they are read ([Schmid (2026)](#ref-Sch2026b)). The accessor functions, `coordinates`, `classification`, `intensity` and the others, then work as on a LAS file, so the LAS and LAZ tab of the Raster and Point Cloud Files panel reads either with the same code. Header and Records names the format of the file read, LAS or LAZ (compressed). PointClouds.jl can also read a LAZ file from a web address, downloading it to a local cache first.
+PointClouds.jl reads a LAZ file with the same `LAS(path)` as a LAS file, and decompresses the points as they are read ([Schmid (2026)](#ref-Sch2026b)). The accessor functions, `coordinates`, `classification`, `intensity` and the others, then work as on a LAS file, so the LAS and LAZ tab of the Point Cloud Files panel reads either with the same code. Header and Records names the format of the file read, LAS or LAZ (compressed). PointClouds.jl can also read a LAZ file from a web address, downloading it to a local cache first.
 
 ## LAS or LAZ: Disk Space Against Reading Time
 

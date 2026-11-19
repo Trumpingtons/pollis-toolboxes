@@ -10,7 +10,7 @@ A GeoTIFF file holds one or more bands over the same grid of cells, each band an
 
 ## Reading a GeoTIFF File With Rasters.jl
 
-`Raster(path)` reads a GeoTIFF file into a Rasters.jl raster, with dimensions X and Y and, for a multiband file, Band ([Schouten (2026)](#ref-Sch2026a)). The keyword `lazy = true` opens the file without reading the cells, which are read when used. `r[Band(2)]` selects the second band; `crop(r; to = extent)` cuts out an area; `extract(r, points)` gives the values under a list of points. The cells the file marks as no data come back as `missing`. The GeoTIFF tab of the Raster and Point Cloud Files panel reads one band, chosen with the Band input, into `grid`.
+`Raster(path)` reads a GeoTIFF file into a Rasters.jl raster, with dimensions X and Y and, for a multiband file, Band ([Schouten (2026)](#ref-Sch2026a)). The keyword `lazy = true` opens the file without reading the cells, which are read when used. `r[Band(2)]` selects the second band; `crop(r; to = extent)` cuts out an area; `extract(r, points)` gives the values under a list of points. The cells the file marks as no data come back as `missing`. The GeoTIFF tab of the Raster Files panel reads one band, chosen with the Band input, into `grid`.
 
 ## Writing a GeoTIFF File With Rasters.jl
 
