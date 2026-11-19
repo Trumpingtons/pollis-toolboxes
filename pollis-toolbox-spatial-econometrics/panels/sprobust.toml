@@ -1,0 +1,796 @@
+# Spatial Correlation Robust Inference: least squares on areas, or on areas observed over several periods, with standard
+# errors corrected for spatial correlation by Conley's spatial HAC, by clusters or by Driscoll and Kraay, with
+# SpatialEconometrics.jl; the areas are read through DuckDB's spatial extension. Replications of Petersen's test data,
+# R's plm and fixest.
+
+[meta]
+title = "Spatial Correlation Robust Inference"
+viewType = "pollis.sprobust"
+defaultModel = "conley"
+decisionFirstColumn = "Estimator"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["Distributions.jl", "ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "sprobust/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, the inputs, the Next Steps and the example data"
+
+[[wikis]]
+name = "Overview"
+file = "sprobust/overview.md"
+bundled = true
+description = "Why spatial correlation makes the usual standard errors too small, and the ways of correcting them"
+
+[[wikis]]
+name = "Choosing a Cutoff"
+file = "sprobust/choosing-cutoff.md"
+bundled = true
+description = "The distance cutoff and kernel of Conley's estimator, the clusters and the lag: what each choice does"
+
+[[wikis]]
+name = "Decision Guide"
+file = "sprobust/decision-guide.md"
+bundled = true
+description = "Conley, clusters or Driscoll and Kraay, by the data and by what the correlation is thought to be"
+
+[[wikis]]
+name = "Replications"
+file = "sprobust/replications.md"
+bundled = true
+description = "Petersen's test data, R's plm and fixest, against which the three estimators are checked"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Conley Spatial HAC"
+file = "sprobust/conley.md"
+bundled = true
+
+[[wikis]]
+name = "Cluster-Robust"
+file = "sprobust/cluster.md"
+bundled = true
+
+[[wikis]]
+name = "Driscoll–Kraay"
+file = "sprobust/dk.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+key = "CM2008a"
+
+[[references]]
+key = "Ber2018a"
+
+[[references]]
+separator = true
+label = "Surveys"
+
+[[references]]
+key = "Gup2026a"
+
+[[references]]
+key = "CM2015a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Whi1980a"
+
+[[references]]
+key = "NW1987a"
+
+[[references]]
+key = "DK1998a"
+
+[[references]]
+key = "Con1999a"
+
+[[references]]
+key = "Pet2009a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "Pet2009b"
+
+[[faq]]
+question = "Why are the usual standard errors too small when areas are correlated?"
+answer = '''
+The usual standard errors assume that every observation brings new information. When neighbouring areas share shocks, and the explanatory variable is also alike in neighbouring areas, their errors move together, so a sample of correlated areas holds less information than its size suggests. The coefficient is still estimated without bias, but the standard errors, and the confidence intervals and tests built on them, claim more precision than there is.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "How do I choose the distance cutoff of Conley's standard errors?"
+answer = '''
+The cutoff is the distance beyond which two areas are treated as uncorrelated. It should reach as far as the correlation of the errors does. Residual Correlation by Distance shows how the correlation of the residuals falls with distance, and Standard Errors Against the Cutoff shows how much the answer depends on the choice. Reporting the standard errors at a few cutoffs is common practice.
+'''
+wiki = "Choosing a Cutoff"
+
+[[faq]]
+question = "When should I cluster instead of using Conley's standard errors?"
+answer = '''
+Clustering suits correlation that stays inside known groups, such as districts or regions, and stops at their borders, and it needs many groups. Conley's standard errors suit correlation that fades with distance and crosses any border. Driscoll and Kraay's suit panels with many periods, where any area may be correlated with any other in the same period.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I know the panel gives the same standard errors as other software?"
+answer = '''
+The Replicate group of the Next Steps computes the clustered standard errors of Petersen's test data beside the values Petersen publishes, Driscoll and Kraay's beside R's plm and fixest on the same data, and Conley's beside R's fixest on the earthquakes off Fiji of R's datasets package, each with the difference.
+'''
+wiki = "Replications"
+
+[[faq]]
+question = "Why does the Driscoll–Kraay tab need several periods?"
+answer = '''
+Driscoll and Kraay's estimator sums the scores of all areas in each period and treats the sums as a time series, whose correlation over the periods it corrects as Newey and West do. With few periods there are few sums to estimate their variance from, and the standard errors are unreliable. With a cross-section, a single period, the tab stops and says so.
+'''
+wiki = "Driscoll–Kraay"
+hidden = true
+
+[[faq]]
+question = "What does the ratio column of the table mean?"
+answer = '''
+It is the robust standard error divided by the usual one. A ratio near 1 means the correction changes little; a ratio of 2 means the usual standard error was half what it should be, and the usual t-statistic twice too large. The documentation of SpatialEconometrics.jl calls the ratio the diagnostic worth reading.
+'''
+wiki = "Overview"
+hidden = true
+
+[[faq]]
+question = "Does a spatial correction change the coefficients?"
+answer = '''
+No. All three tabs fit the same least squares regression, so the estimates are the same; only their standard errors, t-statistics and p-values change. A spatial lag model, which changes the estimates themselves, is compared in With a Spatial Lag.
+'''
+wiki = "Overview"
+hidden = true
+
+[[faq]]
+question = "Why should the distances be in a projected coordinate system?"
+answer = '''
+The tab measures straight-line distances between the centroids, in kilometres, in the Distance Coordinate System. In longitude and latitude a degree of longitude shrinks towards the poles, so straight-line distances in degrees mislead. A projected system for the region, such as a UTM zone, keeps distances close to their true length.
+'''
+wiki = "Conley Spatial HAC"
+hidden = true
+
+[[models]]
+id = "conley"
+label = "Conley Spatial HAC"
+
+[[models]]
+id = "cluster"
+label = "Cluster-Robust"
+
+[[models]]
+id = "dk"
+label = "Driscoll–Kraay"
+
+[[bullets]]
+text = "Conley Spatial HAC"
+detail = "Standard errors robust to correlation that fades with distance up to a cutoff, and in panels over a few periods"
+
+[[bullets]]
+text = "Cluster-Robust"
+detail = "Standard errors robust to any correlation inside groups of areas, with independence between groups"
+
+[[bullets]]
+text = "Driscoll–Kraay"
+detail = "Standard errors for panels, robust to any correlation between areas in the same period and over a few periods"
+
+[[decisionRows]]
+task = "Conley Spatial HAC"
+context = "Correlation fades with distance"
+purpose = "Correct the standard errors for areas whose errors are correlated with those of nearby areas, within a chosen distance"
+
+[[decisionRows]]
+task = "Cluster-Robust"
+context = "Correlation stays in groups"
+purpose = "Correct the standard errors when areas are correlated inside districts or regions but not across them, with many groups"
+
+[[decisionRows]]
+task = "Driscoll–Kraay"
+context = "Many periods"
+purpose = "Correct the standard errors of a panel for correlation of any form between areas, without distances or groups"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Results writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "areasFile"
+label = "Areas File"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bruggepanel.gpkg, the example first writes a grid of 225 square cells of 1 km around Bruges, and the panel file beside it, unless the folder has both already."
+default = "bruggepanel.gpkg"
+
+[[inputs]]
+id = "panelFile"
+label = "Panel File"
+tooltip = "The data, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. Leave it empty for a cross-section whose columns are in the areas file itself."
+default = "bruggepanel.csv"
+
+[[inputs]]
+id = "areaColumn"
+label = "Area Column"
+tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
+default = "cell"
+newRow = true
+
+[[inputs]]
+id = "periodColumn"
+label = "Period Column"
+tooltip = "The column of the panel file that names each period, a year, a quarter or a date: the periods are put in its order. Not used for a cross-section."
+default = "year"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The numeric column to explain. With the example files, price: the log of the price per square metre of the dwellings sold in the cell that year."
+default = "price"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns that explain it, separated by commas. With the example files, green: the share of green space in the cell, in per cent; noise: the mean road noise, in decibels."
+default = "green, noise"
+
+[[inputs]]
+id = "effects"
+label = "Fixed Effects"
+tooltip = "What is removed before least squares: None, a single intercept; Periods, a level for each period, common to all areas; Areas, a level of its own for each area; Areas and Periods, the two together. The effects are removed by subtracting means, which gives the same slopes as a dummy for each level. A cross-section takes None."
+kind = "select"
+default = "none"
+
+[[inputs.options]]
+value = "none"
+label = "None"
+
+[[inputs.options]]
+value = "periods"
+label = "Periods"
+
+[[inputs.options]]
+value = "areas"
+label = "Areas"
+
+[[inputs.options]]
+value = "both"
+label = "Areas and Periods"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. The example's cells are in EPSG:31370, Belgian Lambert 72. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:31370"
+newRow = true
+
+[[inputs]]
+id = "distanceCrs"
+label = "Distance Coordinate System"
+tooltip = "A projected coordinate system in metres, as an EPSG code, in which the distances between the areas' centroids are measured, in kilometres: a UTM zone or the national grid of the region. With a file in longitude and latitude, choose one here."
+default = "EPSG:31370"
+
+[[inputs]]
+id = "cutoff"
+label = "Cutoff (km)"
+tooltip = "Conley Spatial HAC: the distance between centroids, in kilometres, beyond which two areas are treated as uncorrelated. Residual Correlation by Distance and Standard Errors Against the Cutoff help to choose it."
+default = "3"
+newRow = true
+
+[[inputs]]
+id = "kernel"
+label = "Kernel"
+tooltip = "Conley Spatial HAC: how the weight of a pair of areas falls with their distance. Bartlett, from 1 for areas at the same place down to 0 at the cutoff, as Conley (1999) proposes; Uniform, 1 for every pair within the cutoff, as R's fixest does; Parzen, a smoother fall."
+kind = "select"
+default = "bartlett"
+
+[[inputs.options]]
+value = "bartlett"
+label = "Bartlett"
+
+[[inputs.options]]
+value = "uniform"
+label = "Uniform"
+
+[[inputs.options]]
+value = "parzen"
+label = "Parzen"
+
+[[inputs]]
+id = "lags"
+label = "Lags"
+tooltip = "In a panel: the number of periods over which the errors may stay correlated, with weights falling as Newey and West's. Conley Spatial HAC uses it for the correlation of each area with itself over the periods; Driscoll–Kraay for the correlation of the period sums."
+default = "2"
+
+[[inputs]]
+id = "clusterColumn"
+label = "Cluster Column"
+tooltip = "Cluster-Robust: the column whose values name the groups, numbers or text, in the panel file, or in the areas file for a cross-section. With the example files, district: 25 districts of 3 by 3 cells."
+default = "district"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random, Distributions
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
+crosssection = isempty(strip("{{panelFile}}"))  # no panel file: a cross-section, whose columns are in the areas file
+panel_path = crosssection ? "" : joinpath(folder, "{{panelFile}}")
+# Example files: 15 by 15 square cells of 1 km around Bruges, in EPSG:31370, observed over 12 years, written unless the folder has both already. Replace them with your own files.
+if basename(areas_path) == "bruggepanel.gpkg" && basename(panel_path) == "bruggepanel.csv" && !(isfile(areas_path) && isfile(panel_path))
+	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre, row by row from the south-west
+	grid = [(c, d) for c in 1:225 for d in 1:225 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
+	smooth = lu(I - 0.85 .* Matrix(row_standardize(sparse(first.(grid), last.(grid), 1.0, 225, 225))))
+	field = () -> (z = smooth \ randn(rng, 225); (z .- mean(z)) ./ std(z))  # a map whose neighbouring cells are alike, mean 0 and standard deviation 1
+	district = 5 .* div.(v .+ 7, 3) .+ div.(u .+ 7, 3) .+ 1  # 25 districts of 3 by 3 cells
+	green_level, noise_level, cell_level = 30 .+ 10 .* field(), 55 .+ 4 .* field(), 0.08 .* field()  # alike in neighbouring cells, and constant over the years
+	open(panel_path, "w") do io
+		println(io, "cell,year,district,price,green,noise")
+		for t in 1:12
+			green = green_level .+ 0.4 .* t .+ 2 .* randn(rng, 225)  # share of green space, per cent, slowly rising
+			noise = noise_level .+ 1.5 .* randn(rng, 225)  # road noise, decibels
+			# The log price per square metre: green space and noise, each cell's own level, a shock common to the year, and a shock shared by neighbouring cells
+			price = 7.8 .+ 0.006 .* green .- 0.01 .* noise .+ cell_level .+ 0.03 * randn(rng) .+ 0.04 .* field() .+ 0.02 .* randn(rng, 225)
+			for c in 1:225
+				println(io, c, ",", 2013 + t, ",", district[c], ",", round(price[c], digits = 4), ",", round(green[c], digits = 2), ",", round(noise[c], digits = 2))
+			end
+		end
+	end
+	cells = ["($(c), $(district[c]), ST_MakeEnvelope($(69000 + 1000 * u[c]), $(211000 + 1000 * v[c]), $(70000 + 1000 * u[c]), $(212000 + 1000 * v[c])))" for c in 1:225]
+	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, district::INTEGER AS district, geom FROM (VALUES $(join(cells, ", "))) t(cell, district, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:31370')")
+end
+yname = "{{dependent}}"
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+period = crosssection ? "pollis_period" : "{{periodColumn}}"
+source = crosssection ? "(SELECT * EXCLUDE (geom), 1 AS pollis_period FROM ST_Read('$(areas_path)'))" : "'$(panel_path)'"
+{{?model=cluster}} present = join(("p.\"$c\" IS NOT NULL" for c in [yname; xnames; "{{clusterColumn}}"]), " AND ")
+{{?model!=cluster}} present = join(("p.\"$c\" IS NOT NULL" for c in [yname; xnames]), " AND ")
+# The polygons, in longitude and latitude, with their centroids in kilometres in the distance coordinate system
+DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"{{areaColumn}}\" AS area, ST_X(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) / 1000 AS cx, ST_Y(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) / 1000 AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
+# The rows that have a polygon and every value, of the areas that have every period
+DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE obs AS
+	WITH p AS (SELECT p.* FROM $(source) p JOIN polygons g ON p."{{areaColumn}}" = g.area WHERE $(present)),
+	complete AS (SELECT "{{areaColumn}}" AS area FROM p GROUP BY 1 HAVING count(DISTINCT "$(period)") = (SELECT count(DISTINCT "$(period)") FROM p))
+	SELECT dense_rank() OVER (ORDER BY p."{{areaColumn}}") AS i, dense_rank() OVER (ORDER BY p."$(period)") AS t, p.*
+	FROM p JOIN complete c ON p."{{areaColumn}}" = c.area""")  # areas numbered i = 1, 2, ... and periods t = 1, 2, ...
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT o.i, o.area, g.cx, g.cy, g.geom FROM (SELECT DISTINCT i, \"{{areaColumn}}\" AS area FROM obs) o JOIN polygons g ON o.area = g.area")
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM obs ORDER BY t, i")).v)  # period by period, the areas varying fastest
+y = column(yname)
+X = reduce(hcat, column.(xnames))
+counts = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT max(i) FROM obs) AS n, (SELECT max(t) FROM obs) AS periods, (SELECT count(*) FROM obs) AS rows"))
+N, T_per = Int(only(counts.n)), Int(only(counts.periods))
+Int(only(counts.rows)) == N * T_per || error("each area must have one row per period: check Area Column and Period Column")
+nobs = N * T_per
+areacol(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT $c::DOUBLE AS v FROM areas ORDER BY i")).v)
+coords = hcat(areacol("cx"), areacol("cy"))  # the centroids, in kilometres
+println(N, " areas", T_per > 1 ? " over $(T_per) periods" : ", a cross-section")
+
+# The fixed effects removed by subtracting means, which leaves the same slopes as a dummy for each level
+effects = "{{effects}}"
+if T_per == 1 && effects != "none"
+	error("a cross-section takes Fixed Effects None")
+end
+function demean(v)
+	M = reshape(v, N, T_per)  # one column per period
+	effects == "periods" && return vec(M .- mean(M, dims = 1))
+	effects == "areas" && return vec(M .- mean(M, dims = 2))
+	effects == "both" && return vec(M .- mean(M, dims = 1) .- mean(M, dims = 2) .+ mean(M))
+	return v
+end
+Xd = effects == "none" ? hcat(ones(nobs), X) : reduce(hcat, demean.(eachcol(X)))
+yd = demean(y)
+cnames = effects == "none" ? ["(Intercept)"; xnames] : xnames
+absorbed = Dict("none" => 0, "periods" => T_per, "areas" => N, "both" => N + T_per - 1)[effects]
+b = Xd \ yd  # least squares
+res = yd - Xd * b
+V0 = sum(abs2, res) / (nobs - size(Xd, 2) - absorbed) .* inv(Symmetric(transpose(Xd) * Xd))  # the usual covariance, independent errors of equal variance
+se0 = sqrt.(diag(V0))
+
+# The neighbours of each area, sharing any point of their boundaries, for Moran's I and the spatial lag
+nbr = Tables.columntable(DBInterface.execute(con, "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)"))
+W = row_standardize(sparse(nbr.i, nbr.j, 1.0, N, N))
+
+function se_table(title, V)
+	se = sqrt.(max.(0.0, diag(V)))
+	println("\n", title)
+	println(rpad("", 16), rpad("estimate", 14), rpad("usual se", 12), rpad("robust se", 12), rpad("ratio", 8), rpad("t", 10), "p-value")
+	for j in eachindex(b)
+		z = b[j] / se[j]
+		println(rpad(cnames[j], 16), rpad(round(b[j], sigdigits = 5), 14), rpad(round(se0[j], sigdigits = 4), 12), rpad(round(se[j], sigdigits = 4), 12), rpad(round(se[j] / se0[j], digits = 2), 8), rpad(round(z, digits = 2), 10), (pz = 2 * ccdf(Normal(), abs(z)); pz < 0.0001 ? "<0.0001" : round(pz, digits = 4)))
+	end
+end
+{{?model=conley}} kernel = Dict("bartlett" => BartlettKernel(), "uniform" => UniformKernel(), "parzen" => ParzenKernel())["{{kernel}}"]
+{{?model=conley}} # Conley (1999): the scores of pairs of areas closer than the cutoff, weighted by the kernel, and of each area with itself over the lags
+{{?model=conley}} spec = ConleySpatialHAC(coords, {{cutoff}}; max_time_lag = {{lags}}, space_kernel = kernel)
+{{?model=conley}} V = vcov_conley(Xd, res, N, T_per, spec)
+{{?model=conley}} se_table("Conley spatial HAC, cutoff {{cutoff}} km, {{kernel}} kernel" * (T_per > 1 ? ", {{lags}} lags" : ""), V)
+{{?model=cluster}} # Clusters: the scores summed within each group, any correlation inside it, none between groups
+{{?model=cluster}} groups = String.(Tables.columntable(DBInterface.execute(con, "SELECT \"{{clusterColumn}}\"::VARCHAR AS v FROM obs ORDER BY t, i")).v)
+{{?model=cluster}} G = length(unique(groups))
+{{?model=cluster}} V = vcov_cluster(Xd, res, ClusterRobustVCOV(groups))  # with the usual G/(G-1) (n-1)/(n-K) adjustment
+{{?model=cluster}} se_table("Clustered by {{clusterColumn}}, $(G) clusters", V)
+{{?model=cluster}} if G < 20
+{{?model=cluster}} 	println("Only $(G) clusters: with few clusters these standard errors are too small, see Cameron and Miller (2015)")
+{{?model=cluster}} end
+{{?model=dk}} T_per > 1 || error("Driscoll–Kraay needs several periods: choose a panel file")
+{{?model=dk}} # Driscoll and Kraay (1998): the scores summed over the areas in each period, then Newey and West's correction over the periods
+{{?model=dk}} V = vcov_driscoll_kraay(Xd, res, N, T_per; spec = DriscollKraayVCOV(max_lag = {{lags}}))  # with the adjustment nobs / (nobs - K)
+{{?model=dk}} se_table("Driscoll and Kraay, $(T_per) periods, {{lags}} lags", V)
+{{?model=dk}} if T_per < 20
+{{?model=dk}} 	println("Only $(T_per) periods: the estimator leans on many periods, and with few its standard errors are unreliable")
+{{?model=dk}} end
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-residuals"
+label = "Map of the Residuals"
+desc = "Each area's residual on a base map, averaged over the periods in a panel: patches of the same sign are the spatial correlation the robust standard errors allow for"
+code = '''
+rbar = vec(mean(reshape(res, N, T_per), dims = 2))  # each area's mean residual over the periods
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT i, r::DOUBLE AS residual FROM (VALUES $(join(("($i, $(rbar[i]))" for i in 1:N), ", "))) t(i, r)")
+rmap = joinpath(mktempdir(), "residuals.geojson")
+DBInterface.execute(con, "COPY (SELECT a.area, round(f.residual, 4) AS residual, a.geom FROM areas a JOIN fit f USING (i)) TO '$(rmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(rmap; name = T_per > 1 ? "Mean residual" : "Residual", column = "residual", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "map-neighbours"
+label = "Map of the Neighbours Within the Cutoff"
+desc = "Each area coloured by how many other areas lie within the cutoff: the pairs whose correlation Conley's estimator allows for"
+models = ["conley"]
+code = '''
+within = [count(j -> j != i && hypot(coords[i, 1] - coords[j, 1], coords[i, 2] - coords[j, 2]) < {{cutoff}}, 1:N) for i in 1:N]
+println("Areas within {{cutoff}} km of each area: fewest ", minimum(within), ", median ", median(within), ", most ", maximum(within))
+minimum(within) == 0 && println(count(==(0), within), " areas have none: for them the correction is only for heteroskedasticity")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE near AS SELECT * FROM (VALUES $(join(("($i, $(within[i]))" for i in 1:N), ", "))) t(i, neighbours)")
+nmap = joinpath(mktempdir(), "neighbours.geojson")
+DBInterface.execute(con, "COPY (SELECT a.area, n.neighbours, a.geom FROM areas a JOIN near n USING (i)) TO '$(nmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(nmap; name = "Areas within {{cutoff}} km", column = "neighbours", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "map-clusters"
+label = "Map of the Clusters"
+desc = "Each area coloured by its cluster: the groups inside which the errors may be correlated in any way"
+models = ["cluster"]
+code = '''
+labels = Dict(g => k for (k, g) in enumerate(sort(unique(groups))))
+DBInterface.execute(con, "CREATE OR REPLACE TABLE clus AS SELECT * FROM (VALUES $(join(("($i, $(labels[groups[i]]))" for i in 1:N), ", "))) t(i, cluster)")  # the first period's rows: one per area
+cmap = joinpath(mktempdir(), "clusters.geojson")
+DBInterface.execute(con, "COPY (SELECT a.area, c.cluster, a.geom FROM areas a JOIN clus c USING (i)) TO '$(cmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(cmap; name = "{{clusterColumn}}", column = "cluster", opacity = 0.75)))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "residual-moran"
+label = "Moran's I of the Residuals"
+desc = "Are the residuals of neighbouring areas alike? Moran's I period by period, with a pseudo p-value from 499 random permutations"
+code = '''
+println(rpad("period", 8), rpad("Moran's I", 12), rpad("expected", 12), "pseudo p-value")
+for t in 1:T_per
+	mr = moran_global(res[(t - 1) * N + 1:t * N], W; inference = :permutation, n_perm = 499, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+	println(rpad(t, 8), rpad(round(mr.I_stat, digits = 4), 12), rpad(round(mr.E_I, digits = 4), 12), mr.p_value)
+end
+println("A small p-value: neighbouring areas' residuals are alike, and the usual standard errors are too small")
+'''
+
+[[actionGroups.actions]]
+id = "residual-correlogram"
+label = "Residual Correlation by Distance"
+desc = "The correlation of the residuals of pairs of areas in the same period, in bands of distance: how far the correlation reaches, a guide to the cutoff"
+code = '''
+using ECharts
+
+band = {{cutoff}} / 3
+edges = collect(0:band:4 * {{cutoff}})  # bands of a third of the cutoff, up to 4 times the cutoff
+num, den = zeros(length(edges) - 1), zeros(Int, length(edges) - 1)
+for t in 1:T_per
+	e = res[(t - 1) * N + 1:t * N]
+	for i in 1:N, j in i + 1:N
+		k = searchsortedlast(edges, hypot(coords[i, 1] - coords[j, 1], coords[i, 2] - coords[j, 2]))
+		if 1 <= k < length(edges)
+			num[k] += e[i] * e[j]
+			den[k] += 1
+		end
+	end
+end
+keep = findall(>(0), den)  # bands with at least one pair
+r = [num[k] / den[k] / (sum(abs2, res) / nobs) for k in keep]
+println(rpad("distance, km", 16), rpad("pairs", 10), "correlation")
+foreach(((k, rk),) -> println(rpad("$(round(edges[k], digits = 2))-$(round(edges[k + 1], digits = 2))", 16), rpad(den[k], 10), round(rk, digits = 3)), zip(keep, r))
+println("Where the correlation falls to about zero is where a cutoff stops gaining anything")
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Residual Correlation by Distance")],
+	xAxis = [ECharts.Axis(_type = "category", name = "km", data = [string(round((edges[k] + edges[k + 1]) / 2, digits = 2)) for k in keep])],
+	yAxis = [ECharts.Axis(_type = "value", name = "Correlation")],
+	series = [ECharts.XYSeries(name = "Correlation", _type = "line", data = round.(r, digits = 4))])
+'''
+
+[[actionGroups.actions]]
+id = "design-check"
+label = "Design Check"
+desc = "What each estimator leans on in these data: areas within the cutoff for Conley, the number and size of the clusters, and the number of periods for Driscoll and Kraay"
+code = '''
+within = [count(j -> j != i && hypot(coords[i, 1] - coords[j, 1], coords[i, 2] - coords[j, 2]) < {{cutoff}}, 1:N) for i in 1:N]
+println("Conley: areas within {{cutoff}} km of each area, median ", median(within), ", fewest ", minimum(within))
+try
+	g = String.(Tables.columntable(DBInterface.execute(con, "SELECT \"{{clusterColumn}}\"::VARCHAR AS v FROM obs ORDER BY t, i")).v)
+	sizes = [count(==(k), g) for k in unique(g)]
+	println("Clusters by {{clusterColumn}}: ", length(sizes), " clusters of ", minimum(sizes), " to ", maximum(sizes), " rows", length(sizes) < 20 ? ": too few for reliable cluster-robust standard errors" : "")
+catch
+	println("Clusters: no column {{clusterColumn}} in the data")
+end
+println("Driscoll and Kraay: ", T_per, " periods", T_per < 20 ? ", few for an estimator that leans on many periods" : "")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "se-vs-cutoff"
+label = "Standard Errors Against the Cutoff"
+desc = "Conley's standard error of each coefficient at cutoffs from a quarter to three times the one chosen, as a table and a chart"
+models = ["conley"]
+code = '''
+using ECharts
+
+cuts = round.({{cutoff}} .* (0.25:0.25:3), digits = 3)
+S = [sqrt(max(0.0, vcov_conley(Xd, res, N, T_per, ConleySpatialHAC(coords, c; max_time_lag = {{lags}}, space_kernel = kernel))[j, j])) for c in cuts, j in eachindex(b)]
+println(rpad("cutoff, km", 12), join((rpad(n, 16) for n in cnames)))
+println(rpad("usual", 12), join((rpad(round(s, sigdigits = 4), 16) for s in se0)))
+foreach(k -> println(rpad(cuts[k], 12), join((rpad(round(S[k, j], sigdigits = 4), 16) for j in eachindex(b)))), eachindex(cuts))
+println("A standard error that keeps rising with the cutoff: the correlation reaches further than the cutoff chosen")
+EChart(ec_width = 700, ec_height = 420, title = [ECharts.Title(text = "Standard Error Relative to the Usual One")],
+	xAxis = [ECharts.Axis(_type = "category", name = "km", data = string.(cuts))], yAxis = [ECharts.Axis(_type = "value", name = "Ratio")],
+	series = [ECharts.XYSeries(name = cnames[j], _type = "line", data = round.(S[:, j] ./ se0[j], digits = 3)) for j in eachindex(b)])
+'''
+
+[[actionGroups.actions]]
+id = "kernels"
+label = "Kernels"
+desc = "Conley's standard errors with the Bartlett, Uniform and Parzen kernels, at the same cutoff"
+models = ["conley"]
+code = '''
+println(rpad("kernel", 12), join((rpad(n, 16) for n in cnames)))
+for (name, k) in ("Bartlett" => BartlettKernel(), "Uniform" => UniformKernel(), "Parzen" => ParzenKernel())
+	Vk = vcov_conley(Xd, res, N, T_per, ConleySpatialHAC(coords, {{cutoff}}; max_time_lag = {{lags}}, space_kernel = k))
+	println(rpad(name, 12), join((rpad(round(sqrt(max(0.0, Vk[j, j])), sigdigits = 4), 16) for j in eachindex(b))))
+end
+println("Uniform gives every pair within the cutoff full weight, so it is the largest, and may not be positive definite; Bartlett and Parzen weigh nearer pairs more")
+'''
+
+[[actionGroups.actions]]
+id = "cluster-levels"
+label = "Cluster Levels"
+desc = "Standard errors clustered by each row alone (heteroskedasticity-robust), by area, by period and by the cluster column, from the narrowest groups to the widest"
+models = ["cluster"]
+code = '''
+area = repeat(1:N, T_per)
+per = repeat(1:T_per, inner = N)
+levels = Pair{String, Vector}["each row (HC1)" => collect(1:nobs), "{{clusterColumn}}" => groups]
+T_per > 1 && append!(levels, ["area" => area, "period" => per])
+println(rpad("clusters by", 20), rpad("clusters", 10), join((rpad(n, 16) for n in cnames)))
+for (name, g) in levels
+	Vg = vcov_cluster(Xd, res, ClusterRobustVCOV(g))
+	println(rpad(name, 20), rpad(length(unique(g)), 10), join((rpad(round(sqrt(max(0.0, Vg[j, j])), sigdigits = 4), 16) for j in eachindex(b))))
+end
+println("Wider groups allow for more correlation, but leave fewer clusters to estimate it from")
+'''
+
+[[actionGroups.actions]]
+id = "lags"
+label = "Lags"
+desc = "Driscoll and Kraay's standard errors with 0 lags up to 6, or up to one fewer than the periods"
+models = ["dk"]
+code = '''
+println(rpad("lags", 8), join((rpad(n, 16) for n in cnames)))
+for L in 0:min(6, T_per - 1)
+	VL = vcov_driscoll_kraay(Xd, res, N, T_per; spec = DriscollKraayVCOV(max_lag = L))
+	println(rpad(L, 8), join((rpad(round(sqrt(max(0.0, VL[j, j])), sigdigits = 4), 16) for j in eachindex(b))))
+end
+println("Rule of thumb for the lag: ", max(1, floor(Int, 4 * (T_per / 100)^(2 / 9))), ", the default of SpatialEconometrics.jl")
+'''
+
+[[actionGroups.actions]]
+id = "all-estimators"
+label = "All Estimators Side by Side"
+desc = "The usual, heteroskedasticity-robust, clustered, Conley and Driscoll–Kraay standard errors of each coefficient, with the panel's inputs"
+code = '''
+rows = Pair{String, Matrix{Float64}}["usual" => V0, "heteroskedasticity-robust (HC1)" => vcov_cluster(Xd, res, ClusterRobustVCOV(collect(1:nobs)))]
+try
+	g = String.(Tables.columntable(DBInterface.execute(con, "SELECT \"{{clusterColumn}}\"::VARCHAR AS v FROM obs ORDER BY t, i")).v)
+	push!(rows, "clustered by {{clusterColumn}}" => vcov_cluster(Xd, res, ClusterRobustVCOV(g)))
+catch
+end
+T_per > 1 && push!(rows, "clustered by area" => vcov_cluster(Xd, res, ClusterRobustVCOV(repeat(1:N, T_per))))
+push!(rows, "Conley, {{cutoff}} km, Bartlett" => vcov_conley(Xd, res, N, T_per, ConleySpatialHAC(coords, {{cutoff}}; max_time_lag = {{lags}})))
+T_per > 1 && push!(rows, "Driscoll and Kraay, {{lags}} lags" => vcov_driscoll_kraay(Xd, res, N, T_per; spec = DriscollKraayVCOV(max_lag = {{lags}})))
+println(rpad("standard errors", 34), join((rpad(n, 16) for n in cnames)))
+foreach(((name, Vr),) -> println(rpad(name, 34), join((rpad(round(sqrt(max(0.0, Vr[j, j])), sigdigits = 4), 16) for j in eachindex(b)))), rows)
+'''
+
+[[actionGroups.actions]]
+id = "with-spatial-lag"
+label = "With a Spatial Lag"
+desc = "Least squares with the tab's robust standard errors beside a spatial lag model, which lets each area's outcome depend on its neighbours', with the same robust standard errors"
+models = ["conley", "dk"]
+code = '''
+{{?model=dk}} spec = DriscollKraayVCOV(max_lag = {{lags}})
+fe = Dict("none" => NoFE(), "periods" => TimeFE(), "areas" => IndivFE(), "both" => TwoWayFE())[effects]
+lagm = T_per == 1 ? fit_spatial(SAR(), W, X, y; varnames = xnames) : fit_spatial_panel(SAR(), fe, W, X, y, N, T_per; varnames = xnames)  # maximum likelihood, neighbours sharing a boundary
+se_table("Least squares, the tab's robust standard errors", V)
+println("\nSpatial lag model, rho = ", round(lagm.rho, digits = 4), ", robust and model-based standard errors")
+println(robust_coeftable(lagm, spec))
+println("The slopes of the spatial lag model are the first round of each effect, before it travels through the neighbours")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "intervals"
+label = "Intervals and Effective Sample Size"
+desc = "Each coefficient's 95% interval with the usual and with the robust standard error, and the number of independent observations that would give the robust precision"
+code = '''
+se = sqrt.(max.(0.0, diag(V)))
+println(rpad("", 16), rpad("usual 95% interval", 28), rpad("robust 95% interval", 28), "effective observations")
+for j in eachindex(b)
+	println(rpad(cnames[j], 16), rpad("[$(round(b[j] - 1.96 * se0[j], sigdigits = 4)), $(round(b[j] + 1.96 * se0[j], sigdigits = 4))]", 28), rpad("[$(round(b[j] - 1.96 * se[j], sigdigits = 4)), $(round(b[j] + 1.96 * se[j], sigdigits = 4))]", 28), round(Int, nobs * (se0[j] / se[j])^2), " of ", nobs)
+end
+println("Effective observations: with the robust standard error, the estimate is as precise as it would be from that many independent observations")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-petersen"
+label = "Petersen's Test Data"
+desc = "The 5000 firm-years of Petersen's test data: the standard errors clustered by firm and by year beside the values Petersen publishes, and Driscoll and Kraay's beside R's plm and fixest"
+code = '''
+using Downloads
+
+let
+	file = Downloads.download("https://www.kellogg.northwestern.edu/faculty/petersen/htm/papers/se/test_data.txt", joinpath(mktempdir(), "test_data.txt"))
+	rows = [parse.(Float64, split(l)) for l in eachline(file) if !isempty(strip(l))]  # firm, year, x, y
+	P = reduce(vcat, transpose.(rows))
+	P = P[sortperm(collect(zip(P[:, 2], P[:, 1]))), :]  # year by year, the firms varying fastest
+	firm, year = Int.(P[:, 1]), Int.(P[:, 2])
+	Xp = hcat(ones(size(P, 1)), P[:, 3])
+	bp = Xp \ P[:, 4]
+	ep = P[:, 4] - Xp * bp
+	np, Np, Tp = size(P, 1), length(unique(firm)), length(unique(year))
+	se(V) = sqrt.(diag(V))
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 34), rpad("Julia", 16), rpad("published", 16), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 34), rpad(round(julia, digits = 10), 16), rpad(published, 16), round(julia - published, sigdigits = 2))
+		end
+	end
+	usual = se(sum(abs2, ep) / (np - 2) .* inv(transpose(Xp) * Xp))
+	byfirm = se(vcov_cluster(Xp, ep, ClusterRobustVCOV(firm)))
+	byyear = se(vcov_cluster(Xp, ep, ClusterRobustVCOV(year)))
+	println(np, " firm-years, ", Np, " firms, ", Tp, " years")
+	report("Petersen's published values, to 4 decimals", [("intercept", bp[1], 0.0297), ("x", bp[2], 1.0348),
+		("se intercept, usual", usual[1], 0.0284), ("se x, usual", usual[2], 0.0286),
+		("se intercept, clustered by firm", byfirm[1], 0.0670), ("se x, clustered by firm", byfirm[2], 0.0506),
+		("se intercept, clustered by year", byyear[1], 0.0234), ("se x, clustered by year", byyear[2], 0.0334)])
+	dk = se(vcov_driscoll_kraay(Xp, ep, Np, Tp; spec = DriscollKraayVCOV(max_lag = 2)))
+	dk0 = se(vcov_driscoll_kraay(Xp, ep, Np, Tp; spec = DriscollKraayVCOV(max_lag = 2, small_sample_correct = false)))
+	report("Driscoll and Kraay, 2 lags: R's plm, vcovSCC(maxlag = 2, type = \"HC1\")", [("se intercept", dk[1], 0.0228911478), ("se x", dk[2], 0.0244198042)])
+	report("Driscoll and Kraay, 2 lags, no adjustment: R's fixest, vcov_DK(lag = 2, ssc = ssc(K.adj = FALSE, G.adj = FALSE))", [("se intercept", dk0[1], 0.0228865691), ("se x", dk0[2], 0.0244149197)])
+end
+'''
+
+[[actionGroups.actions]]
+id = "replicate-fixest-conley"
+label = "Earthquakes off Fiji: fixest"
+desc = "The 1000 earthquakes of R's datasets package: Conley's standard errors with a uniform kernel and great-circle distances at 50 and 100 km beside R's fixest"
+code = '''
+using Downloads
+
+let
+	file = Downloads.download("https://vincentarelbundock.github.io/Rdatasets/csv/datasets/quakes.csv", joinpath(mktempdir(), "quakes.csv"))
+	rcon = DBInterface.connect(DuckDB.DB)
+	qk = Tables.columntable(DBInterface.execute(rcon, "SELECT lat::DOUBLE AS lat, long::DOUBLE AS lon, depth::DOUBLE AS depth, mag::DOUBLE AS mag, stations::DOUBLE AS stations FROM read_csv('$(file)')"))
+	Xq = hcat(ones(length(qk.mag)), qk.depth, qk.stations)  # magnitude on depth and the number of stations that reported the earthquake
+	eq = qk.mag - Xq * (Xq \ qk.mag)
+	println("\nConley, uniform kernel, great-circle distances on a sphere of radius 6376 km, as fixest; no small-sample adjustment, ssc = ssc(K.adj = FALSE)")
+	println(rpad("", 30), rpad("Julia", 16), rpad("fixest", 16), "difference")
+	for (cut, published) in ((50.0, [0.0214452646, 0.0000460976, 0.0003712446]), (100.0, [0.0262143995, 0.0000579418, 0.0003790993]))
+		Vq = vcov_conley(Xq, eq, length(eq), 1, ConleySpatialHAC(hcat(qk.lat, qk.lon), cut; metric = HaversineDistance(radius_km = 6376.0), space_kernel = UniformKernel(), psd_fix = false))
+		for (j, name) in enumerate(["intercept", "depth", "stations"])
+			julia = sqrt(Vq[j, j])
+			println(rpad("se $(name), $(Int(cut)) km", 30), rpad(round(julia, digits = 10), 16), rpad(published[j], 16), round(julia - published[j], sigdigits = 2))
+		end
+	end
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-results"
+label = "Save the Results"
+desc = "Write the coefficients with the usual and the tab's robust standard errors to spatial-robust-se.csv, and the areas with their mean residual to spatial-robust.parquet, in the folder above"
+code = '''
+out_csv, out_parquet = joinpath(folder, "spatial-robust-se.csv"), joinpath(folder, "spatial-robust.parquet")
+if isfile(out_csv) || isfile(out_parquet)
+	println(out_csv, " or ", out_parquet, " is there already: rename or move it first")
+else
+	se = sqrt.(max.(0.0, diag(V)))
+	open(out_csv, "w") do io
+		println(io, "coefficient,estimate,usual_se,robust_se")
+		foreach(j -> println(io, cnames[j], ",", b[j], ",", se0[j], ",", se[j]), eachindex(b))
+	end
+	rbar = vec(mean(reshape(res, N, T_per), dims = 2))
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT i, r::DOUBLE AS residual FROM (VALUES $(join(("($i, $(rbar[i]))" for i in 1:N), ", "))) t(i, r)")
+	DBInterface.execute(con, "COPY (SELECT a.area, f.residual, a.geom FROM areas a JOIN fit f USING (i) ORDER BY i) TO '$(out_parquet)' (FORMAT PARQUET)")  # GeoParquet: DuckDB writes the geometry column's metadata
+	println("Wrote ", out_csv, " and ", out_parquet)
+end
+'''

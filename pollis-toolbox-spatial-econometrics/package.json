@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-spatial-econometrics",
   "displayName": "Spatial Econometrics Toolbox",
-  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, eigenvector spatial filtering, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, and regionalisation with spatial regimes.",
-  "version": "0.1.8",
+  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, eigenvector spatial filtering, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
+  "version": "0.1.9",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -108,6 +108,16 @@
             "data": "panels/spregimes.toml",
             "defaultModel": "skater",
             "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "sprobust",
+            "command": "pollis.spatialEconometrics.sprobust",
+            "title": "Spatial Correlation Robust Inference",
+            "group": "4_inference",
+            "order": 1,
+            "data": "panels/sprobust.toml",
+            "defaultModel": "conley",
+            "decisionFirstColumn": "Estimator"
           }
         ]
       }

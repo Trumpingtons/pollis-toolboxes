@@ -25,7 +25,8 @@ Spatial Discrete Choice & The outcome is a yes or no, or an ordered choice, that
 Spatial Panel Data & The same areas are observed over several periods. \\
 Spatio-Temporal Forecasting & You want forecasts of areas observed over many periods, from their own past and their neighbours'. \\
 Spatial Causal Inference & You want the effect of a policy on the areas under it and on the areas around them. \\
-Regionalisation and Spatial Regimes & You want contiguous regions alike inside, or coefficients that differ from one region to another. \\\bottomrule
+Regionalisation and Spatial Regimes & You want contiguous regions alike inside, or coefficients that differ from one region to another. \\
+Spatial Correlation Robust Inference & You want standard errors of a regression that allow for correlation between nearby areas. \\\bottomrule
 \end{tabularx}}
 
 \medskip
@@ -83,6 +84,9 @@ Synthetic Control leaves the neighbours of the areas under the policy out of the
 \nmsection{Regionalisation and Spatial Regimes}
 SKATER Regions groups the areas into a chosen number of contiguous regions, alike inside in the variables chosen, by cutting a minimum spanning tree of neighbouring areas (\nmcite{assuncao2006}{Assun\c{c}\~{a}o, Neves, C\^{a}mara and Freitas 2006}). Regimes, OLS gives each regime its own intercept and slopes, with the test of \nmcite{chow1960}{Chow (1960)} that the split is needed. Regimes, Spatial Lag adds a spatial lag of the outcome with one rho shared by the regimes, since ignoring spatial dependence invalidates the usual tests of equal coefficients (\nmcite{anselin1990}{Anselin 1990}). The regimes come from a column, such as a city and its suburbs, or from SKATER; regions found from the data make the Chow test too optimistic, and the Bootstrap Chow Test repeats the search on data with no regimes. The actions test which coefficients differ, choose the number of regions, and compare the regimes with a single model and with geographically weighted regression. The Replicate step sets the regime spatial lag model beside PySAL's spreg on the Baltimore house prices of \nmcite{dubin1992}{Dubin (1992)}.
 
+\nmsection{Spatial Correlation Robust Inference}
+Least squares, with the coefficients' standard errors corrected for correlation between the areas' errors rather than the dependence modelled. Conley Spatial HAC allows for correlation between areas closer than a cutoff, weighted by a kernel of the distance (\nmcite{conley1999}{Conley 1999}), as \nmcite{newey1987}{Newey and West (1987)} do over time. Cluster-Robust allows for any correlation inside groups of areas, given many groups (\nmcite{cameron2015}{Cameron and Miller 2015}). Driscoll--Kraay, for panels with many periods, allows for any correlation between areas in the same period (\nmcite{driscoll1998}{Driscoll and Kraay 1998}). The actions show the residuals' correlation by distance, the standard errors across cutoffs, kernels, cluster levels and lags, and all the estimators side by side. The Replicate steps set the standard errors beside the test data of \nmcite{petersen2009}{Petersen (2009)}, R's plm and fixest.
+
 \nmsection{References}
 {\footnotesize\sloppy
 \nmref{abadie2010}{Abadie, A., Diamond, A. and Hainmueller, J. (2010). Synthetic control methods for comparative case studies: estimating the effect of California's tobacco control program. \emph{Journal of the American Statistical Association} 105(490), 493--505. \nmdoi{10.1198/jasa.2009.ap08746}}
@@ -95,7 +99,9 @@ SKATER Regions groups the areas into a chosen number of contiguous regions, alik
 \nmref{bivand2015}{Bivand, R. and Piras, G. (2015). Comparing implementations of estimation methods for spatial econometrics. \emph{Journal of Statistical Software} 63(18). \nmdoi{10.18637/jss.v063.i18}}
 \nmref{borusyak2022}{Borusyak, K., Hull, P. and Jaravel, X. (2022). Quasi-experimental shift-share research designs. \emph{The Review of Economic Studies} 89(1), 181--213. \nmdoi{10.1093/restud/rdab030}}
 \nmref{brunsdon1996}{Brunsdon, C., Fotheringham, A. S. and Charlton, M. E. (1996). Geographically weighted regression: a method for exploring spatial nonstationarity. \emph{Geographical Analysis} 28(4), 281--298. \nmdoi{10.1111/j.1538-4632.1996.tb00936.x}}
+\nmref{cameron2015}{Cameron, A. C. and Miller, D. L. (2015). A practitioner's guide to cluster-robust inference. \emph{Journal of Human Resources} 50(2), 317--372. \nmdoi{10.3368/jhr.50.2.317}}
 \nmref{chow1960}{Chow, G. C. (1960). Tests of equality between sets of coefficients in two linear regressions. \emph{Econometrica} 28(3), 591--605. \nmdoi{10.2307/1910133}}
+\nmref{conley1999}{Conley, T. G. (1999). GMM estimation with cross sectional dependence. \emph{Journal of Econometrics} 92(1), 1--45. \nmdoi{10.1016/S0304-4076(98)00084-0}}
 \nmref{dasilva2016}{da Silva, A. R. and Fotheringham, A. S. (2016). The multiple testing issue in geographically weighted regression. \emph{Geographical Analysis} 48(3), 233--247. \nmdoi{10.1111/gean.12084}}
 \nmref{delgado2015}{Delgado, M. S. and Florax, R. J. G. M. (2015). Difference-in-differences techniques for spatial data: local autocorrelation and spatial interaction. \emph{Economics Letters} 137, 123--126. \nmdoi{10.1016/j.econlet.2015.10.035}}
 \nmref{digiacinto2010}{Di Giacinto, V. (2010). On vector autoregressive modeling in space and time. \emph{Journal of Geographical Systems} 12(2), 125--154. \nmdoi{10.1007/s10109-010-0116-6}}
@@ -113,8 +119,10 @@ SKATER Regions groups the areas into a chosen number of contiguous regions, alik
 \nmref{millo2012}{Millo, G. and Piras, G. (2012). splm: spatial panel data models in R. \emph{Journal of Statistical Software} 47(1), 1--38. \nmdoi{10.18637/jss.v047.i01}}
 \nmref{murakami2015}{Murakami, D. and Griffith, D. A. (2015). Random effects specifications in eigenvector spatial filtering: a simulation study. \emph{Journal of Geographical Systems} 17(4), 311--331. \nmdoi{10.1007/s10109-015-0213-7}}
 \nmref{murakami2017}{Murakami, D. (2017). Gaussian spatial regression using the spmoran package: case study examples. arXiv. \nmdoi{10.48550/arXiv.1703.04467}}
+\nmref{newey1987}{Newey, W. K. and West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. \emph{Econometrica} 55(3), 703--708. \nmdoi{10.2307/1913610}}
 \nmref{oshan2019}{Oshan, T. M., Li, Z., Kang, W., Wolf, L. J. and Fotheringham, A. S. (2019). mgwr: a Python implementation of multiscale geographically weighted regression for investigating process spatial heterogeneity and scale. \emph{ISPRS International Journal of Geo-Information} 8(6), 269. \nmdoi{10.3390/ijgi8060269}}
 \nmref{pesaran2015}{Pesaran, M. H. (2015). Testing weak cross-sectional dependence in large panels. \emph{Econometric Reviews} 34(6--10), 1089--1117. \nmdoi{10.1080/07474938.2014.956623}}
+\nmref{petersen2009}{Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: comparing approaches. \emph{The Review of Financial Studies} 22(1), 435--480. \nmdoi{10.1093/rfs/hhn053}}
 \nmref{pfeifer1980}{Pfeifer, P. E. and Deutsch, S. J. (1980). A three-stage iterative procedure for space-time modeling. \emph{Technometrics} 22(1), 35--47. \nmdoi{10.2307/1268381}}
 \nmref{tiefelsdorf2007}{Tiefelsdorf, M. and Griffith, D. A. (2007). Semiparametric filtering of spatial autocorrelation: the eigenvector approach. \emph{Environment and Planning A} 39(5), 1193--1221. \nmdoi{10.1068/a37378}}
 \nmref{yu2008}{Yu, J., de Jong, R. and Lee, L.-f. (2008). Quasi-maximum likelihood estimators for spatial dynamic panel data with fixed effects when both n and T are large. \emph{Journal of Econometrics} 146(1), 118--134. \nmdoi{10.1016/j.jeconom.2008.08.002}}
