@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
   "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, CityGML and CityJSON 3D city models, GTFS transit feeds and OpenStreetMap PBF extracts, reads the features of OpenStreetMap with a tag in an area from the Overpass API, and the layers or the full extract of a region from Geofabrik's download server, reads the places, buildings, roads, boundaries and addresses of an area from Overture Maps, reads the NUTS regions, local administrative units, countries and Urban Audit cities of Eurostat GISCO and maps Eurostat's tables on them, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -23,74 +23,77 @@
         "order": 1,
         "duckdbExtensions": ["spatial", "httpfs"],
         "submenus": [
-          { "id": "accessFiles", "title": "Access Files", "group": "0_sr", "order": 1 },
-          { "id": "accessDataLibraries", "title": "Access Data Libraries", "group": "0_sr", "order": 2 },
-          { "id": "mapVisualisation", "title": "Map Visualisation", "group": "1_sr", "order": 0 },
-          { "id": "spatialStatistics", "title": "Spatial Statistics and Kriging", "group": "2_sr", "order": 1 },
-          { "id": "remoteSensing", "title": "Remote Sensing", "group": "3_sr", "order": 1 },
-          { "id": "pointClouds", "title": "Point Cloud Processing", "group": "3_sr", "order": 2 },
-          { "id": "smartCities", "title": "Smart Cities", "group": "4_sr", "order": 1 },
-          { "id": "smartRuralAreas", "title": "Smart Rural Areas", "group": "4_sr", "order": 2 }
+          { "id": "placesFeatures", "title": "Places and Features", "group": "1_data", "order": 1 },
+          { "id": "boundaries", "title": "Boundaries and Statistical Units", "group": "1_data", "order": 2 },
+          { "id": "imagesElevation", "title": "Images and Elevation", "group": "1_data", "order": 3 },
+          { "id": "networks", "title": "Networks", "group": "1_data", "order": 4 },
+          { "id": "cityObjects", "title": "City Objects and 3D", "group": "1_data", "order": 5 },
+          { "id": "mapsLayers", "title": "Maps and Layers", "group": "1_data", "order": 6 },
+          { "id": "spatialDependence", "title": "Spatial Dependence and Interpolation", "group": "3_analysis", "order": 1 },
+          { "id": "satelliteIndicators", "title": "Satellite Indicators", "group": "3_analysis", "order": 3 },
+          { "id": "lidar", "title": "Lidar and 3D Scans", "group": "3_analysis", "order": 4 },
+          { "id": "smartCities", "title": "Smart Cities", "group": "2_smart", "order": 1 },
+          { "id": "smartRuralAreas", "title": "Smart Rural Areas", "group": "2_smart", "order": 2 }
         ],
         "panels": [
           {
-            "id": "geofiles", "command": "pollis.smartRegions.geofiles", "title": "Geospatial Vector Files", "submenu": "accessFiles", "group": "1_files", "order": 1, "data": "panels/geofiles.toml", "defaultModel": "geojson", "decisionFirstColumn": "Format"
+            "id": "geofiles", "command": "pollis.smartRegions.geofiles", "title": "Geospatial Vector Files", "submenu": "placesFeatures", "group": "1_files", "order": 1, "data": "panels/geofiles.toml", "defaultModel": "geojson", "decisionFirstColumn": "Format"
           },
           {
-            "id": "rasterfiles", "command": "pollis.smartRegions.rasterfiles", "title": "Raster and Point Cloud Files", "submenu": "accessFiles", "group": "2_raster", "order": 1, "data": "panels/rasterfiles.toml", "defaultModel": "geotiff", "decisionFirstColumn": "Format"
+            "id": "osmdata", "command": "pollis.smartRegions.osmdata", "title": "OpenStreetMap Data", "submenu": "placesFeatures", "group": "2_online", "order": 1, "data": "panels/osmdata.toml", "defaultModel": "overpass", "decisionFirstColumn": "Source"
           },
           {
-            "id": "citymodels", "command": "pollis.smartRegions.citymodels", "title": "City Model Files", "submenu": "accessFiles", "group": "3_networks", "order": 1, "data": "panels/citymodels.toml", "defaultModel": "citygml", "decisionFirstColumn": "Format"
+            "id": "overture", "command": "pollis.smartRegions.overture", "title": "Overture Maps", "submenu": "placesFeatures", "group": "2_online", "order": 2, "data": "panels/overture.toml", "defaultModel": "places", "decisionFirstColumn": "Theme"
           },
           {
-            "id": "networkfiles", "command": "pollis.smartRegions.networkfiles", "title": "Transport Network Files", "submenu": "accessFiles", "group": "3_networks", "order": 2, "data": "panels/networkfiles.toml", "defaultModel": "gtfs", "decisionFirstColumn": "Format"
+            "id": "gisco", "command": "pollis.smartRegions.gisco", "title": "Eurostat GISCO", "submenu": "boundaries", "group": "2_online", "order": 1, "data": "panels/gisco.toml", "defaultModel": "nuts", "decisionFirstColumn": "Units"
           },
           {
-            "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "Base Map", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map"
+            "id": "rasterfiles", "command": "pollis.smartRegions.rasterfiles", "title": "Raster and Point Cloud Files", "submenu": "imagesElevation", "group": "1_files", "order": 1, "data": "panels/rasterfiles.toml", "defaultModel": "geotiff", "decisionFirstColumn": "Format"
           },
           {
-            "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "submenu": "spatialStatistics", "group": "1_autocorrelation", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic"
+            "id": "networkfiles", "command": "pollis.smartRegions.networkfiles", "title": "Transport Network Files", "submenu": "networks", "group": "1_files", "order": 1, "data": "panels/networkfiles.toml", "defaultModel": "gtfs", "decisionFirstColumn": "Format"
           },
           {
-            "id": "kriging", "command": "pollis.smartRegions.kriging", "title": "Kriging", "submenu": "spatialStatistics", "group": "2_kriging", "order": 1, "data": "panels/kriging.toml", "defaultModel": "variogram", "decisionFirstColumn": "Method"
+            "id": "citymodels", "command": "pollis.smartRegions.citymodels", "title": "City Model Files", "submenu": "cityObjects", "group": "1_files", "order": 1, "data": "panels/citymodels.toml", "defaultModel": "citygml", "decisionFirstColumn": "Format"
           },
           {
-            "id": "osmdata", "command": "pollis.smartRegions.osmdata", "title": "OpenStreetMap Data", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1, "data": "panels/osmdata.toml", "defaultModel": "overpass", "decisionFirstColumn": "Source"
+            "id": "basemaps", "command": "pollis.smartRegions.basemaps", "title": "OpenStreetMap Base Maps", "menuTitle": "Base Map", "submenu": "mapsLayers", "group": "1_basemaps", "order": 1, "data": "panels/basemaps.toml", "defaultModel": "place", "decisionFirstColumn": "Map"
           },
           {
-            "id": "overture", "command": "pollis.smartRegions.overture", "title": "Overture Maps", "submenu": "accessDataLibraries", "group": "1_vector", "order": 2, "data": "panels/overture.toml", "defaultModel": "places", "decisionFirstColumn": "Theme"
+            "id": "autocorr", "command": "pollis.smartRegions.autocorr", "title": "Spatial Autocorrelation", "submenu": "spatialDependence", "group": "1_autocorrelation", "order": 1, "data": "panels/autocorr.toml", "defaultModel": "global", "decisionFirstColumn": "Statistic"
           },
           {
-            "id": "gisco", "command": "pollis.smartRegions.gisco", "title": "Eurostat GISCO", "submenu": "accessDataLibraries", "group": "1_vector", "order": 3, "data": "panels/gisco.toml", "defaultModel": "nuts", "decisionFirstColumn": "Units"
+            "id": "kriging", "command": "pollis.smartRegions.kriging", "title": "Kriging", "submenu": "spatialDependence", "group": "2_kriging", "order": 1, "data": "panels/kriging.toml", "defaultModel": "variogram", "decisionFirstColumn": "Method"
           }
         ],
         "planned": [
-          { "title": "Copernicus Data Space", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 1 },
-          { "title": "USGS EarthExplorer", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 2 },
-          { "title": "OpenTopography", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 3 },
-          { "title": "INSPIRE Geoportal", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 4 },
-          { "title": "Mapillary Street-Level Imagery", "submenu": "accessDataLibraries", "group": "3_streetLevel", "order": 1 },
-          { "title": "Copernicus Imagery Layers", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 2 },
-          { "title": "Mapillary Street-Level Viewer", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 3 },
-          { "title": "Google Maps", "submenu": "mapVisualisation", "group": "2_google", "order": 1 },
-          { "title": "Google Photorealistic 3D Tiles", "submenu": "mapVisualisation", "group": "2_google", "order": 2 },
-          { "title": "Coordinate Transformations and Projections", "group": "1_sr", "order": 2 },
-          { "title": "Spatial Indexing", "group": "1_sr", "order": 3 },
-          { "title": "Mobility and Flows", "group": "2_sr", "order": 2 },
-          { "title": "Raster Analysis", "group": "2_sr", "order": 3 },
-          { "title": "Route and Network Analysis", "group": "2_sr", "order": 4 },
-          { "title": "Vegetation Indices (NDVI)", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 1 },
-          { "title": "Land Cover Classification", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 2 },
-          { "title": "Land Surface Temperature", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 3 },
-          { "title": "Burned Area and Flood Mapping", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 4 },
-          { "title": "Ground Movement from Radar (InSAR)", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 5 },
-          { "title": "Night-Time Lights", "submenu": "remoteSensing", "group": "1_remoteSensing", "order": 6 },
-          { "title": "Filtering and Ground Classification", "submenu": "pointClouds", "group": "1_pointClouds", "order": 1 },
-          { "title": "Building Extraction and 3D City Models", "submenu": "pointClouds", "group": "1_pointClouds", "order": 2 },
-          { "title": "Tree and Canopy Metrics", "submenu": "pointClouds", "group": "1_pointClouds", "order": 3 },
-          { "title": "Change Between Surveys", "submenu": "pointClouds", "group": "1_pointClouds", "order": 4 },
-          { "title": "Archaeological Feature Detection", "submenu": "pointClouds", "group": "1_pointClouds", "order": 5 },
-          { "title": "Terrain and Elevation Analysis", "group": "3_sr", "order": 3 },
+          { "title": "INSPIRE Geoportal", "submenu": "boundaries", "group": "2_online", "order": 2 },
+          { "title": "Copernicus Data Space", "submenu": "imagesElevation", "group": "2_online", "order": 1 },
+          { "title": "USGS EarthExplorer", "submenu": "imagesElevation", "group": "2_online", "order": 2 },
+          { "title": "OpenTopography", "submenu": "imagesElevation", "group": "2_online", "order": 3 },
+          { "title": "Mapillary Street-Level Imagery", "submenu": "imagesElevation", "group": "3_streetLevel", "order": 1 },
+          { "title": "Route and Network Analysis", "submenu": "networks", "group": "2_analysis", "order": 1 },
+          { "title": "Mobility and Flows", "submenu": "networks", "group": "2_analysis", "order": 2 },
+          { "title": "Copernicus Imagery Layers", "submenu": "mapsLayers", "group": "1_basemaps", "order": 2 },
+          { "title": "Mapillary Street-Level Viewer", "submenu": "mapsLayers", "group": "1_basemaps", "order": 3 },
+          { "title": "Google Maps", "submenu": "mapsLayers", "group": "2_google", "order": 1 },
+          { "title": "Google Photorealistic 3D Tiles", "submenu": "mapsLayers", "group": "2_google", "order": 2 },
+          { "title": "Grid Calculations", "group": "3_analysis", "order": 2 },
+          { "title": "Vegetation Indices (NDVI)", "submenu": "satelliteIndicators", "group": "1_satelliteIndicators", "order": 1 },
+          { "title": "Land Cover Classification", "submenu": "satelliteIndicators", "group": "1_satelliteIndicators", "order": 2 },
+          { "title": "Land Surface Temperature", "submenu": "satelliteIndicators", "group": "1_satelliteIndicators", "order": 3 },
+          { "title": "Burned Area and Flood Mapping", "submenu": "satelliteIndicators", "group": "1_satelliteIndicators", "order": 4 },
+          { "title": "Ground Movement from Radar (InSAR)", "submenu": "satelliteIndicators", "group": "1_satelliteIndicators", "order": 5 },
+          { "title": "Night-Time Lights", "submenu": "satelliteIndicators", "group": "1_satelliteIndicators", "order": 6 },
+          { "title": "Filtering and Ground Classification", "submenu": "lidar", "group": "1_lidar", "order": 1 },
+          { "title": "Building Extraction and 3D City Models", "submenu": "lidar", "group": "1_lidar", "order": 2 },
+          { "title": "Tree and Canopy Metrics", "submenu": "lidar", "group": "1_lidar", "order": 3 },
+          { "title": "Change Between Surveys", "submenu": "lidar", "group": "1_lidar", "order": 4 },
+          { "title": "Archaeological Feature Detection", "submenu": "lidar", "group": "1_lidar", "order": 5 },
+          { "title": "Terrain and Elevation Analysis", "group": "3_analysis", "order": 5 },
+          { "title": "Coordinate Transformations and Projections", "group": "3_analysis", "order": 6 },
+          { "title": "Spatial Indexing", "group": "3_analysis", "order": 7 },
           { "title": "Urban Mobility and Traffic", "submenu": "smartCities", "group": "1_smartCities", "order": 1 },
           { "title": "Buildings and Energy", "submenu": "smartCities", "group": "1_smartCities", "order": 2 },
           { "title": "Air Quality", "submenu": "smartCities", "group": "1_smartCities", "order": 3 },
