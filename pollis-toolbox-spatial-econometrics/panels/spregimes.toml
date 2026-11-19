@@ -1,0 +1,749 @@
+# Regionalisation and Spatial Regimes: contiguous regions found by SKATER, and regressions with one set of coefficients
+# per regime, by least squares or with a spatial lag shared by the regimes, with SpatialEconometrics.jl; the areas are
+# read, and their neighbours found, through DuckDB's spatial extension. Replication of PySAL's spreg on Baltimore houses.
+
+[meta]
+title = "Regionalisation and Spatial Regimes"
+viewType = "pollis.spregimes"
+defaultModel = "skater"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+github = "https://github.com/randsley/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["Distributions.jl", "ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "spregimes/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, the inputs, the Next Steps and the example data"
+
+[[wikis]]
+name = "Overview"
+file = "spregimes/overview.md"
+bundled = true
+description = "Regions built from areas, and regressions whose coefficients differ from one region to another"
+
+[[wikis]]
+name = "Regionalisation"
+file = "spregimes/regionalisation.md"
+bundled = true
+description = "Grouping areas into contiguous regions alike in chosen variables: the methods and their choices"
+
+[[wikis]]
+name = "Testing Regimes"
+file = "spregimes/testing-regimes.md"
+bundled = true
+description = "The Chow test, its spatial forms, the tests coefficient by coefficient, and regimes found from the data"
+
+[[wikis]]
+name = "Decision Guide"
+file = "spregimes/decision-guide.md"
+bundled = true
+description = "Given regimes or regions found from the data, least squares or a spatial lag, regimes or GWR"
+
+[[wikis]]
+name = "Replications"
+file = "spregimes/replications.md"
+bundled = true
+description = "The Baltimore house prices and PySAL's spreg, against which the regime models are checked"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "SKATER Regions"
+file = "spregimes/skater.md"
+bundled = true
+
+[[wikis]]
+name = "Regimes, OLS"
+file = "spregimes/regols.md"
+bundled = true
+
+[[wikis]]
+name = "Regimes, Spatial Lag"
+file = "spregimes/reglag.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Ran2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Ans1988a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Cho1960a"
+
+[[references]]
+key = "Ans1990a"
+
+[[references]]
+key = "ANCF2006a"
+
+[[references]]
+key = "DRS2007a"
+
+[[references]]
+key = "BFC1996a"
+
+[[references]]
+separator = true
+label = "Replications"
+
+[[references]]
+key = "Dub1992a"
+
+[[references]]
+key = "RA2007a"
+
+[[faq]]
+question = "What is the difference between regionalisation and clustering?"
+answer = '''
+Clustering groups areas that are alike, wherever they lie, so one cluster can be scattered over the map. Regionalisation groups areas that are alike and also touch: every region is one connected piece of the map. SKATER, on the SKATER Regions tab, builds such regions by cutting a tree that joins neighbouring areas, choosing each cut to make the regions as alike inside as it can.
+'''
+wiki = "Regionalisation"
+
+[[faq]]
+question = "When should I use spatial regimes rather than geographically weighted regression?"
+answer = '''
+Spatial regimes give one set of coefficients to each of a few regions, which suits a map divided by known boundaries: a city and its suburbs, regions with different laws, the two sides of a border. Geographically weighted regression lets the coefficients change smoothly from area to area. When the change is abrupt at a boundary, regimes describe it with far fewer coefficients; when it is gradual, GWR does. Regimes Against GWR compares both on the same data.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why is the Chow test too optimistic when SKATER chose the regions?"
+answer = '''
+The Chow test assumes the regimes were fixed before looking at the data. When SKATER builds the regions from the same variables the regression explains, it places the boundaries where the data differ most, so the test finds differences more often than its p-value says. The Bootstrap Chow Test repeats the search for regions on many data sets with no regimes, and compares the observed statistic with those.
+'''
+wiki = "Testing Regimes"
+
+[[faq]]
+question = "How do I know the panel gives the same results as PySAL's spreg?"
+answer = '''
+The Replicate group of the Next Steps downloads the Baltimore house prices of Dubin (1992) from PySAL's libpysal, fits the regime spatial lag model with the city and the county as regimes, and prints each estimate beside the value spreg's documentation prints for ML_Lag_Regimes, with the difference.
+'''
+wiki = "Replications"
+
+[[faq]]
+question = "Why does SKATER give fewer regions than I asked for?"
+answer = '''
+SKATER makes each cut only if both regions it leaves have at least the Minimum Region Size. When no cut of any region meets that, it stops, and the tab says so. Lower Minimum Region Size, or ask for fewer regions.
+'''
+wiki = "SKATER Regions"
+hidden = true
+
+[[faq]]
+question = "Why does the spatial lag regime model have a single rho?"
+answer = '''
+SpatialEconometrics.jl lets the intercept and the slopes differ between the regimes and keeps one spatial lag coefficient, rho, for the whole map: the outcomes of neighbours in two regimes still affect each other across the boundary. This is the default of spreg's ML_Lag_Regimes as well.
+'''
+wiki = "Regimes, Spatial Lag"
+hidden = true
+
+[[faq]]
+question = "What does Minimum Region Size do?"
+answer = '''
+It is the fewest areas a region may have. SKATER skips a cut that would leave a smaller region. A regime regression needs more areas in each region than it has coefficients, so raise Minimum Region Size when the regions feed the Regimes, OLS or Regimes, Spatial Lag tab.
+'''
+wiki = "SKATER Regions"
+hidden = true
+
+[[faq]]
+question = "Why does a regime model stop with an error about the rank of the design?"
+answer = '''
+Each regime has its own intercept and slopes, so an explanatory variable that does not vary inside one regime cannot be told apart from that regime's intercept. SpatialEconometrics.jl stops and names the column. Merge the regime with another, drop the variable, or build regions with more areas.
+'''
+wiki = "Regimes, OLS"
+hidden = true
+
+[[models]]
+id = "skater"
+label = "SKATER Regions"
+
+[[models]]
+id = "regols"
+label = "Regimes, OLS"
+
+[[models]]
+id = "reglag"
+label = "Regimes, Spatial Lag"
+
+[[bullets]]
+text = "SKATER Regions"
+detail = "Contiguous regions alike in chosen variables, by cutting a tree that joins neighbouring areas"
+
+[[bullets]]
+text = "Regimes, OLS"
+detail = "One intercept and set of slopes per regime, by least squares, with the Chow test of the split"
+
+[[bullets]]
+text = "Regimes, Spatial Lag"
+detail = "The same, with a spatial lag of the outcome whose rho is shared by the regimes, by maximum likelihood"
+
+[[decisionRows]]
+task = "SKATER Regions"
+context = "No regions given"
+purpose = "Group the areas into a chosen number of contiguous regions that are alike inside"
+
+[[decisionRows]]
+task = "Regimes, OLS"
+context = "Coefficients differ by region"
+purpose = "Estimate one set of coefficients per regime and test whether the split is needed"
+
+[[decisionRows]]
+task = "Regimes, Spatial Lag"
+context = "And outcomes spill over"
+purpose = "Estimate regime coefficients while the neighbours' outcomes affect each area, across the boundaries too"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Results as GeoParquet writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "file"
+label = "File"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bolognaregimes.gpkg, the example first writes a grid of 225 square cells of 1 km around Bologna with a simulated rent (euros per square metre a month), income (thousand euros a year per taxpayer), age of the buildings (years) and zone (1, the 37 central cells, 2, the rest), unless the folder has a bolognaregimes.gpkg already."
+default = "bolognaregimes.gpkg"
+
+[[inputs]]
+id = "dependent"
+label = "Dependent Variable"
+tooltip = "The numeric column explained by the regime models. Areas without a value in it, in an explanatory variable or in the columns that set the regimes are left out."
+default = "rent"
+
+[[inputs]]
+id = "explanatory"
+label = "Explanatory Variables"
+tooltip = "The numeric columns that explain it, separated by commas. Every regime gets its own intercept and its own slope on each of them."
+default = "income, age"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. Regimes Against GWR measures distances between centroids in it, so a projected system in metres suits it. The example's cells are in EPSG:32632, WGS 84 / UTM zone 32N. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:32632"
+newRow = true
+
+[[inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. SKATER joins neighbours into its tree, and the spatial lag averages over them, with weights summing to 1."
+kind = "select"
+default = "queen"
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "k"
+label = "k"
+tooltip = "The number of neighbours of every area with k Nearest."
+default = "6"
+
+[[inputs]]
+id = "regimesFrom"
+label = "Regimes From"
+tooltip = "On the Regimes, OLS and Regimes, Spatial Lag tabs: Column, the regimes are the values of Regime Column, fixed before looking at the outcome; SKATER, the regions SKATER builds from SKATER Variables, as on the SKATER Regions tab."
+kind = "select"
+default = "column"
+newRow = true
+
+[[inputs.options]]
+value = "column"
+label = "Column"
+
+[[inputs.options]]
+value = "skater"
+label = "SKATER"
+
+[[inputs]]
+id = "regimeColumn"
+label = "Regime Column"
+tooltip = "The column whose values name the regimes, numbers or text: one regime per distinct value, numbered in their sorted order. Also Given Regimes Against SKATER compares it with SKATER's regions."
+default = "zone"
+
+[[inputs]]
+id = "skaterVariables"
+label = "SKATER Variables"
+tooltip = "The numeric columns SKATER makes each region alike in, separated by commas, each standardised first. When they include the dependent variable, the Chow test of regimes built from them is too optimistic: see the Bootstrap Chow Test."
+default = "rent, income, age"
+newRow = true
+
+[[inputs]]
+id = "regions"
+label = "Number of Regions"
+tooltip = "How many regions SKATER builds: it cuts its tree one edge fewer times than this. Fewer come out when no cut leaves regions of at least Minimum Region Size."
+default = "2"
+
+[[inputs]]
+id = "minSize"
+label = "Minimum Region Size"
+tooltip = "The fewest areas a SKATER region may have. A regime regression needs more areas in each regime than its coefficients, the intercept and one slope per explanatory variable."
+default = "20"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+{{?model=regols}} using Distributions
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
+{{?file=bolognaregimes.gpkg}} # Example file: a grid of 15 by 15 square cells of 1 km around Bologna, in EPSG:32632, with a simulated rent, income, age of the buildings and zone, written to bolognaregimes.gpkg unless the folder has one already. Replace "bolognaregimes.gpkg" with your own file.
+{{?file=bolognaregimes.gpkg}} if !isfile(path)
+{{?file=bolognaregimes.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
+{{?file=bolognaregimes.gpkg}} 	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre cell, row by row from the south-west
+{{?file=bolognaregimes.gpkg}} 	zone = ifelse.(u .^ 2 .+ v .^ 2 .<= 12, 1, 2)  # 1: the 37 cells within about 3.5 km of the centre, 2: the others
+{{?file=bolognaregimes.gpkg}} 	income = 22 .+ 6 .* (zone .== 1) .+ 3 .* randn(rng, 225)  # thousand euros a year per taxpayer
+{{?file=bolognaregimes.gpkg}} 	age = clamp.(80 .- 6 .* sqrt.(u .^ 2 .+ v .^ 2) .+ 12 .* randn(rng, 225), 5, 120)  # mean age of the buildings, years, oldest in the centre
+{{?file=bolognaregimes.gpkg}} 	# Two regimes: in the centre the rent rises faster with income and rises with the age of the buildings; outside it rises slower with income and falls with age
+{{?file=bolognaregimes.gpkg}} 	base = ifelse.(zone .== 1, 1 .+ 0.25 .* income .+ 0.03 .* age, 2 .+ 0.12 .* income .- 0.01 .* age)
+{{?file=bolognaregimes.gpkg}} 	rent = (I - 0.4 * make_queen_weights(15)) \ (base .+ 0.6 .* randn(rng, 225))  # euros per square metre a month: a spatial lag process with rho = 0.4
+{{?file=bolognaregimes.gpkg}} 	cells = ["($(round(rent[c], digits = 2)), $(round(income[c], digits = 2)), $(round(age[c], digits = 1)), $(zone[c]), ST_MakeEnvelope($(685500 + 1000 * u[c]), $(4928900 + 1000 * v[c]), $(686500 + 1000 * u[c]), $(4929900 + 1000 * v[c])))" for c in 1:225]
+{{?file=bolognaregimes.gpkg}} 	DBInterface.execute(con, "COPY (SELECT rent::DOUBLE AS rent, income::DOUBLE AS income, age::DOUBLE AS age, zone::INTEGER AS zone, geom FROM (VALUES $(join(cells, ", "))) t(rent, income, age, zone, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:32632')")
+{{?file=bolognaregimes.gpkg}} end
+yname = "{{dependent}}"
+xnames = String.(strip.(split("{{explanatory}}", ",")))  # the explanatory variables, separated by commas
+{{?model=skater}} source = "skater"  # the SKATER Regions tab always builds its regions
+{{?model!=skater}} source = "{{regimesFrom}}"
+zvars = String.(strip.(split("{{skaterVariables}}", ",")))  # the variables SKATER makes each region alike in
+needed = unique([yname; xnames; source == "skater" ? zvars : ["{{regimeColumn}}"]])
+present = join(("\"$c\" IS NOT NULL" for c in needed), " AND ")
+# The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude, with their centroids in the file's coordinate system; areas without a value are left out
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_X(ST_Centroid(geom)) AS cx, ST_Y(ST_Centroid(geom)) AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE $(present)")
+DBInterface.execute(con, "ALTER TABLE areas DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
+column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM areas ORDER BY i")).v)
+y = column(yname)
+X = reduce(hcat, column.(xnames))  # without the intercept, which every regime gets
+n, p = size(X)
+
+# The neighbours of each area, as pairs (i, j), found with SQL
+neighbour_pairs = Dict(
+	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
+	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
+	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
+pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs["{{neighbours}}"]))
+W = row_standardize(sparse(pairs.i, pairs.j, 1.0, n, n))  # the weights of each area's neighbours sum to 1
+Wsym = W + sparse(transpose(W))  # SKATER's tree joins neighbours in both directions
+
+# The regimes: regime 1, 2, ... of each area
+if source == "skater"
+	Z = reduce(hcat, column.(zvars))
+	labels = skater_regimes(Wsym, Z, {{regions}}; min_size = {{minSize}}).labels  # SKATER, after Assuncao, Neves, Camara and Freitas (2006)
+	regime_names = ["Region $r" for r in 1:maximum(labels)]
+else
+	raw = String.(Tables.columntable(DBInterface.execute(con, "SELECT \"{{regimeColumn}}\"::VARCHAR AS v FROM areas ORDER BY i")).v)
+	levels = sort(unique(raw))
+	labels = [findfirst(==(r), levels) for r in raw]  # numbered in the sorted order of the column's values
+	regime_names = ["{{regimeColumn}} = $l" for l in levels]
+end
+R = maximum(labels)
+
+{{?model=skater}} Zs = (Z .- mean(Z, dims = 1)) ./ std(Z, dims = 1)  # standardised, as SKATER compares them
+{{?model=skater}} within = sum(sum(abs2, Zs[labels .== r, :] .- mean(Zs[labels .== r, :], dims = 1)) for r in 1:R)
+{{?model=skater}} println("SKATER: ", R, " regions", R < {{regions}} ? ", fewer than asked: no further cut leaves regions of at least {{minSize}} areas" : "", ", alike in ", join(zvars, ", "))
+{{?model=skater}} println("Share of the spread of the standardised variables between the regions: ", round(1 - within / sum(abs2, Zs), digits = 3))
+{{?model=skater}} println(rpad("region", 10), rpad("areas", 8), join((rpad("mean " * v, 16) for v in zvars)))
+{{?model=skater}} for r in 1:R
+{{?model=skater}} 	println(rpad(r, 10), rpad(count(==(r), labels), 8), join((rpad(round(mean(Z[labels .== r, j]), digits = 3), 16) for j in eachindex(zvars))))
+{{?model=skater}} end
+{{?model=regols}} m = fit_spatial_regime(W, X, y, ExogenousRegimes(labels); spatial_lag = false, varnames = xnames)  # least squares, one intercept and slopes per regime
+{{?model=regols}} pooled = fit_spatial_regime(W, X, y, ExogenousRegimes(ones(Int, n)); spatial_lag = false, varnames = xnames)  # the same model with a single regime
+{{?model=reglag}} m = fit_spatial_regime(W, X, y, ExogenousRegimes(labels); spatial_lag = true, varnames = xnames)  # maximum likelihood, with one rho shared by the regimes
+{{?model=reglag}} pooled = fit_spatial_regime(W, X, y, ExogenousRegimes(ones(Int, n)); spatial_lag = true, varnames = xnames)  # the same model with a single regime
+{{?model!=skater}} res = m.residuals
+{{?model!=skater}} println(m)
+{{?model!=skater}} println("Regimes: ", join(("R$r is $(regime_names[r])" for r in 1:R), ", "))
+{{?model!=skater}} println(regime_chow_test(pooled, m))  # the likelihood ratio test that the coefficients are the same in every regime
+{{?model=regols}} rss_one, rss_regimes = sum(abs2, pooled.residuals), sum(abs2, res)
+{{?model=regols}} q, dfr = length(m.coef) - length(pooled.coef), n - length(m.coef)
+{{?model=regols}} F = ((rss_one - rss_regimes) / q) / (rss_regimes / dfr)
+{{?model=regols}} println("Chow F test: F = ", round(F, digits = 3), " on ", q, " and ", dfr, " degrees of freedom, p-value ", round(ccdf(FDist(q, dfr), F), sigdigits = 4))
+{{?model!=skater}} source == "skater" && println("The regions were found from the data, so these p-values are too small: see the Bootstrap Chow Test")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-regimes"
+label = "Map of the Regimes"
+desc = "The areas on a base map, coloured by their regime or SKATER region; click an area for its attributes"
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE regime AS SELECT * FROM (VALUES $(join(("($i, $(labels[i]))" for i in 1:n), ", "))) t(i, regime)")
+gmap = joinpath(mktempdir(), "regimes.geojson")
+DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom, cx, cy), r.regime, a.geom FROM areas a JOIN regime r USING (i)) TO '$(gmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+foreach(r -> println(r, ": ", regime_names[r], ", ", count(==(r), labels), " areas"), 1:R)
+display(Pollis.webmap(Pollis.layer(gmap; name = "Regime", column = "regime", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "map-coefficients"
+label = "Maps of the Coefficients"
+desc = "One layer per coefficient on a base map, each area coloured by the estimate of its regime; switch the layers to compare them"
+models = ["regols", "reglag"]
+code = '''
+P = p + 1  # the intercept and the slopes of each regime
+B = [m.coef[(labels[i] - 1) * P + k] for i in 1:n, k in 1:P]  # each area gets its regime's coefficients
+DBInterface.execute(con, "CREATE OR REPLACE TABLE regcoef AS SELECT * FROM (VALUES $(join(("($i, $(join(B[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("b$k" for k in 1:P), ", ")))")
+cmap = joinpath(mktempdir(), "coefficients.geojson")
+DBInterface.execute(con, "COPY (SELECT a.geom, c.* EXCLUDE (i) FROM areas a JOIN regcoef c USING (i)) TO '$(cmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap((Pollis.layer(cmap; name = ["(Intercept)"; xnames][k], column = "b$k", opacity = 0.75) for k in 1:P)...))
+'''
+
+[[actionGroups.actions]]
+id = "map-residuals"
+label = "Map of the Residuals"
+desc = "The residuals of the tab's regime model on a base map: clusters of large residuals of the same sign are spatial dependence it leaves, or a regime boundary in the wrong place"
+models = ["regols", "reglag"]
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT i, residual::DOUBLE AS residual FROM (VALUES $(join(("($i, $(res[i]))" for i in 1:n), ", "))) t(i, residual)")
+rmap = joinpath(mktempdir(), "residuals.geojson")
+DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom, cx, cy), round(f.residual, 3) AS residual, a.geom FROM areas a JOIN fit f USING (i)) TO '$(rmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(rmap; name = "Residuals", column = "residual", opacity = 0.75)))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "residual-moran"
+label = "Moran's I of the Residuals"
+desc = "Is there spatial dependence left in the residuals of the tab's regime model? A pseudo p-value from 999 random permutations"
+models = ["regols", "reglag"]
+code = '''
+mr = moran_global(res, W; inference = :permutation, n_perm = 999, rng = Xoshiro(2026))  # a fixed seed: the same permutations every time
+println("Moran's I of the residuals ", round(mr.I_stat, digits = 4), " (expected ", round(mr.E_I, digits = 4), "), pseudo p-value ", mr.p_value, " from 999 permutations")
+{{?model=regols}} mr.p_value < 0.05 && println("Spatial dependence is left: the Regimes, Spatial Lag tab adds a spatial lag of {{dependent}}")
+'''
+
+[[actionGroups.actions]]
+id = "regime-sizes"
+label = "Regime Sizes and Spread"
+desc = "Each regime's number of areas, the mean of the dependent variable and the spread of each explanatory variable inside it, with the regimes too small or too uniform to estimate"
+code = '''
+println(rpad("regime", 24), rpad("areas", 8), rpad("mean " * yname, 16), join((rpad("sd " * v, 14) for v in xnames)))
+for r in 1:R
+	rows = labels .== r
+	sds = [count(rows) > 1 ? std(X[rows, k]) : 0.0 for k in 1:p]
+	println(rpad(regime_names[r], 24), rpad(count(rows), 8), rpad(round(mean(y[rows]), digits = 3), 16), join((rpad(round(s, digits = 3), 14) for s in sds)))
+	count(rows) <= p + 1 && println("  fewer areas than its ", p + 1, " coefficients: merge it with another, or raise Minimum Region Size")
+	any(sds .== 0) && println("  an explanatory variable does not vary here, so its slope cannot be told from the regime's intercept")
+end
+'''
+
+[[actionGroups.actions]]
+id = "which-coefficients"
+label = "Which Coefficients Differ"
+desc = "Wald tests, coefficient by coefficient, that the intercept or one slope is the same in every regime while the others are free"
+models = ["regols", "reglag"]
+code = '''
+using Distributions
+
+P = p + 1
+V = m.vcov[1:R * P, 1:R * P]
+println(rpad("coefficient", 16), rpad("Wald", 12), rpad("df", 6), "p-value")
+for (k, name) in enumerate(["(Intercept)"; xnames])
+	C = zeros(R - 1, R * P)  # regime 1's coefficient minus each other regime's
+	for r in 2:R
+		C[r - 1, k] = 1.0
+		C[r - 1, (r - 1) * P + k] = -1.0
+	end
+	d = C * m.coef[1:R * P]
+	w = dot(d, (C * V * transpose(C)) \ d)
+	println(rpad(name, 16), rpad(round(w, digits = 3), 12), rpad(R - 1, 6), round(ccdf(Chisq(R - 1), w), sigdigits = 4))
+end
+println("A small p-value: that coefficient differs between the regimes")
+source == "skater" && println("The regions were found from the data, so these p-values are too small")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "number-of-regions"
+label = "Number of Regions"
+desc = "SKATER with 2 to 8 regions: the regions found, the smallest, the share of the spread of the SKATER Variables between the regions, and the AIC of the OLS regimes they give"
+code = '''
+Zn = reduce(hcat, column.(zvars))
+Zs = (Zn .- mean(Zn, dims = 1)) ./ std(Zn, dims = 1)
+println(rpad("asked", 8), rpad("found", 8), rpad("smallest", 10), rpad("share between", 16), "AIC of the OLS regimes")
+for k in 2:8
+	lab = skater_regimes(Wsym, Zn, k; min_size = {{minSize}}).labels
+	Rk = maximum(lab)
+	within = sum(sum(abs2, Zs[lab .== r, :] .- mean(Zs[lab .== r, :], dims = 1)) for r in 1:Rk)
+	aic = try
+		fk = fit_spatial_regime(W, X, y, ExogenousRegimes(lab); spatial_lag = false)
+		round(-2 * fk.loglik + 2 * (length(fk.coef) + 1), digits = 2)  # the coefficients and the variance
+	catch
+		"not estimable"
+	end
+	println(rpad(k, 8), rpad(Rk, 8), rpad(minimum(count(==(r), lab) for r in 1:Rk), 10), rpad(round(1 - within / sum(abs2, Zs), digits = 3), 16), aic)
+end
+println("The share between rises with every cut: look for where it stops rising much. The smallest AIC fits best for its number of coefficients")
+'''
+
+[[actionGroups.actions]]
+id = "regimes-vs-one"
+label = "Regimes Against One Model"
+desc = "The coefficients of the single model beside those of each regime, with the log-likelihood, AIC and BIC of both"
+models = ["regols", "reglag"]
+code = '''
+P = p + 1
+names = ["(Intercept)"; xnames]
+println(rpad("", 16), rpad("one model", 14), join((rpad(regime_names[r], 20) for r in 1:R)))
+for k in 1:P
+	println(rpad(names[k], 16), rpad(round(pooled.coef[k], digits = 4), 14), join((rpad(round(m.coef[(r - 1) * P + k], digits = 4), 20) for r in 1:R)))
+end
+{{?model=reglag}} println(rpad("rho", 16), rpad(round(pooled.rho, digits = 4), 14), round(m.rho, digits = 4), ", shared by the regimes")
+for (name, f) in ("one model" => pooled, "regimes" => m)
+	k = length(f.coef) + 1  # the coefficients and the variance
+	println(rpad(name, 12), "log-likelihood ", round(f.loglik, digits = 3), ", AIC ", round(-2 * f.loglik + 2 * k, digits = 2), ", BIC ", round(-2 * f.loglik + k * log(n), digits = 2))
+end
+'''
+
+[[actionGroups.actions]]
+id = "ols-vs-lag"
+label = "OLS Against Spatial Lag Regimes"
+desc = "The same regimes by least squares and with a spatial lag: the coefficients with their standard errors, and the likelihood ratio test of rho = 0"
+models = ["regols", "reglag"]
+code = '''
+using Distributions
+
+fo = fit_spatial_regime(W, X, y, ExogenousRegimes(labels); spatial_lag = false, varnames = xnames)
+fl = fit_spatial_regime(W, X, y, ExogenousRegimes(labels); spatial_lag = true, varnames = xnames)
+so, sl = sqrt.(diag(fo.vcov)), sqrt.(diag(fl.vcov))
+println(rpad("", 22), rpad("OLS", 24), "spatial lag")
+for j in eachindex(fo.coef)
+	println(rpad(fo.coefnames[j], 22), rpad("$(round(fo.coef[j], digits = 4)) ($(round(so[j], digits = 4)))", 24), "$(round(fl.coef[j], digits = 4)) ($(round(sl[j], digits = 4)))")
+end
+println(rpad("rho", 22), rpad("", 24), "$(round(fl.rho, digits = 4)) ($(round(sl[end], digits = 4)))")
+lr = 2 * (fl.loglik - fo.loglik)
+println("Likelihood ratio test of rho = 0: ", round(lr, digits = 3), ", p-value ", round(ccdf(Chisq(1), lr), sigdigits = 4))
+println("Standard errors in parentheses. With a spatial lag, a slope is the first round of the effect, before it travels through the neighbours")
+'''
+
+[[actionGroups.actions]]
+id = "column-vs-skater"
+label = "Given Regimes Against SKATER"
+desc = "The regimes of Regime Column beside as many SKATER regions: the areas they share, the Rand index, and the log-likelihood of the OLS regimes each gives"
+code = '''
+rawc = String.(Tables.columntable(DBInterface.execute(con, "SELECT \"{{regimeColumn}}\"::VARCHAR AS v FROM areas ORDER BY i")).v)
+lev = sort(unique(rawc))
+given = [findfirst(==(r), lev) for r in rawc]
+found = skater_regimes(Wsym, reduce(hcat, column.(zvars)), length(lev); min_size = {{minSize}}).labels
+println("Areas by {{regimeColumn}} (rows) and by SKATER's regions on ", join(zvars, ", "), " (columns)")
+println(rpad("", 24), join((rpad("Region $r", 12) for r in 1:maximum(found))))
+for g in eachindex(lev)
+	println(rpad("{{regimeColumn}} = $(lev[g])", 24), join((rpad(count((given .== g) .& (found .== r)), 12) for r in 1:maximum(found))))
+end
+together = count((given[a] == given[b]) == (found[a] == found[b]) for a in 1:n for b in a + 1:n)
+println("Rand index, the share of pairs of areas both put together or both put apart: ", round(together / (n * (n - 1) / 2), digits = 3))
+for (name, lab) in ("{{regimeColumn}}" => given, "SKATER" => found)
+	f = fit_spatial_regime(W, X, y, ExogenousRegimes(lab); spatial_lag = false)
+	println("OLS regimes from ", name, ": log-likelihood ", round(f.loglik, digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "regimes-vs-gwr"
+label = "Regimes Against GWR"
+desc = "The single model, the OLS regimes and geographically weighted regression by AICc, and the mean of GWR's local coefficients in each regime beside the regime's own"
+models = ["regols", "reglag"]
+code = '''
+coords = hcat(column("cx"), column("cy"))  # the centroids, in the file's coordinate system: metres in a projected one
+g = fit_gwr(X, y, coords; kernel = BisquareKernel(), varnames = xnames)  # one adaptive bandwidth, chosen by AICc
+aicc(rss, trs) = n * log(rss / n) + n * (n + trs) / (n - 2 - trs)  # the AICc of SpatialEconometrics.jl's GWR, with trs coefficients
+fo = fit_spatial_regime(W, X, y, ExogenousRegimes(labels); spatial_lag = false, varnames = xnames)
+fp = fit_spatial_regime(W, X, y, ExogenousRegimes(ones(Int, n)); spatial_lag = false, varnames = xnames)
+println(rpad("model", 30), rpad("coefficients", 14), "AICc")
+println(rpad("one model, OLS", 30), rpad(p + 1, 14), round(aicc(sum(abs2, fp.residuals), p + 1), digits = 2))
+println(rpad("regimes, OLS", 30), rpad(length(fo.coef), 14), round(aicc(sum(abs2, fo.residuals), length(fo.coef)), digits = 2))
+println(rpad("GWR, $(round(Int, g.bandwidth)) nearest areas", 30), rpad(round(g.hat_trace, digits = 1), 14), round(g.AICc, digits = 2))
+P = p + 1
+println("\nMean of GWR's local coefficients / the regime's coefficient")
+println(rpad("", 16), join((rpad(regime_names[r], 26) for r in 1:R)))
+for k in 1:P
+	println(rpad(g.coefnames[k], 16), join((rpad("$(round(mean(g.coef_local[labels .== r, k]), digits = 4)) / $(round(fo.coef[(r - 1) * P + k], digits = 4))", 26) for r in 1:R)))
+end
+println("The smallest AICc fits best for its effective number of coefficients. The regimes are fitted by OLS here, as GWR has no spatial lag")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "coefficients-side-by-side"
+label = "Coefficients Side by Side"
+desc = "Each coefficient in each regime with its 95% interval, and a chart of the slopes by regime"
+models = ["regols", "reglag"]
+code = '''
+using ECharts
+
+P = p + 1
+se = sqrt.(max.(0.0, diag(m.vcov)))
+println(rpad("", 16), join((rpad(regime_names[r], 32) for r in 1:R)))
+for (k, name) in enumerate(["(Intercept)"; xnames])
+	cells = [(r - 1) * P + k for r in 1:R]
+	println(rpad(name, 16), join((rpad("$(round(m.coef[j], digits = 3)) [$(round(m.coef[j] - 1.96 * se[j], digits = 3)), $(round(m.coef[j] + 1.96 * se[j], digits = 3))]", 32) for j in cells)))
+end
+println("Estimates with 95% intervals; Which Coefficients Differ tests the differences")
+fig = EChart(ec_width = 700, ec_height = 420, title = [ECharts.Title(text = "Slopes by Regime")],
+	xAxis = [ECharts.Axis(_type = "category", data = xnames)], yAxis = [ECharts.Axis(_type = "value", name = "Slope")],
+	series = [ECharts.XYSeries(name = regime_names[r], _type = "bar", data = [m.coef[(r - 1) * P + 1 + k] for k in 1:p]) for r in 1:R])
+fig
+'''
+
+[[actionGroups.actions]]
+id = "bootstrap-chow"
+label = "Bootstrap Chow Test"
+desc = "The Chow test of SKATER's regions against 199 data sets with no regimes, on each of which SKATER searches for the regions again: a p-value that allows for the regions having been found from the data"
+models = ["skater", "regols"]
+code = '''
+Zcols = Dict(v => column(v) for v in zvars)
+Xi = hcat(ones(n), X)
+b0 = Xi \ y
+e0 = y - Xi * b0  # the single model's fit and residuals
+function search_and_test(yy)
+	Zb = reduce(hcat, [v == yname ? yy : Zcols[v] for v in zvars])  # the outcome, when SKATER uses it, is the one tested
+	lab = skater_regimes(Wsym, Zb, {{regions}}; min_size = {{minSize}}).labels
+	one_model = fit_spatial_regime(W, X, yy, ExogenousRegimes(ones(Int, n)); spatial_lag = false)
+	return regime_chow_test(one_model, fit_spatial_regime(W, X, yy, ExogenousRegimes(lab); spatial_lag = false)).stat
+end
+observed = search_and_test(y)
+rng = Xoshiro(2026)  # a fixed seed: the same data sets every time
+sims = filter(isfinite, [try search_and_test(Xi * b0 .+ e0[rand(rng, 1:n, n)]) catch; NaN end for _ in 1:199])  # no regimes: the single model's fit plus resampled residuals
+println("Chow likelihood ratio statistic of SKATER's regions on ", join(zvars, ", "), ": ", round(observed, digits = 3))
+println("Bootstrap p-value, from ", length(sims), " data sets with no regimes: ", round((1 + count(>=(observed), sims)) / (1 + length(sims)), digits = 3))
+yname in zvars || println("SKATER does not use $(yname) here, so the regions do not depend on the outcome and the chi-squared p-value of the tab holds")
+{{?model=regols}} source == "column" && println("The tab's regimes come from {{regimeColumn}}: this step tests SKATER's regions instead")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-baltimore"
+label = "Baltimore Houses: spreg"
+desc = "The sale prices of 211 houses in Baltimore (Dubin, 1992), with the city and the county as regimes, from PySAL's libpysal: the regime spatial lag model beside the values spreg's documentation prints for ML_Lag_Regimes, with queen contiguity"
+code = '''
+using Downloads
+
+let
+	dir = mktempdir()
+	base = "https://raw.githubusercontent.com/pysal/libpysal/main/libpysal/examples/baltim/"  # libpysal, BSD-3-Clause
+	for f in ("baltim.shp", "baltim.shx", "baltim.dbf", "baltim_q.gal")
+		Downloads.download(base * f, joinpath(dir, f))
+	end
+	rcon = DBInterface.connect(DuckDB.DB)
+	DBInterface.execute(rcon, "LOAD spatial")
+	DBInterface.execute(rcon, "CREATE TABLE houses AS SELECT * FROM ST_Read('$(joinpath(dir, "baltim.shp"))')")
+	cols(c) = Float64.(Tables.columntable(DBInterface.execute(rcon, "SELECT \"$c\"::DOUBLE AS v FROM houses ORDER BY STATION")).v)
+	Wb, _ = read_gal(joinpath(dir, "baltim_q.gal"); ids = string.(Int.(cols("STATION"))))  # queen contiguity, row-standardised, in the order of STATION
+	yb = cols("PRICE")
+	Xb = hcat(cols("NROOM"), cols("AGE"), cols("SQFT"))
+	regimes = ExogenousRegimes(Int.(cols("CITCOU")) .+ 1)  # CITCOU 0 is regime 1 and CITCOU 1 regime 2, in spreg's order
+	nb = length(yb)
+	function report(title, rows)
+		println("\n", title)
+		println(rpad("", 26), rpad("Julia", 14), rpad("spreg", 14), "difference")
+		for (what, julia, published) in rows
+			println(rpad(what, 26), rpad(round(julia, digits = 6), 14), rpad(published, 14), round(julia - published, sigdigits = 2))
+		end
+	end
+	lag = fit_spatial_regime(Wb, Xb, yb, regimes; spatial_lag = true, varnames = ["NROOM", "AGE", "SQFT"])
+	names = ["0_CONSTANT", "0_NROOM", "0_AGE", "0_SQFT", "1_CONSTANT", "1_NROOM", "1_AGE", "1_SQFT"]
+	k = length(lag.coef)  # the eight coefficients and rho, as spreg counts them
+	report("Regime spatial lag model (ML_Lag_Regimes, method full)", [[("mean PRICE", sum(yb) / nb, 44.30718)];
+		[(names[j], lag.coef[j], v) for (j, v) in enumerate([-15.0059, 4.496, -0.0318, 0.35, -4.5404, 3.9219, -0.1702, 0.8194])];
+		[("rho", lag.rho, 0.538503)];
+		[("variance " * names[j], lag.vcov[j, j], v) for (j, v) in enumerate([47.42, 2.3953, 0.0051, 0.0648, 69.6765, 3.2066, 0.0116, 0.0486])];
+		[("variance rho", lag.vcov[k, k], 0.004), ("sigma squared", lag.sigma2, 200.044334), ("log-likelihood", lag.loglik, -864.985056),
+		("AIC", -2 * lag.loglik + 2 * k, 1747.970112), ("Schwarz", -2 * lag.loglik + k * log(nb), 1778.136835)]])
+	ols = fit_spatial_regime(Wb, Xb, yb, regimes; spatial_lag = false, varnames = ["NROOM", "AGE", "SQFT"])
+	one_model = fit_spatial_regime(Wb, Xb, yb, ExogenousRegimes(ones(Int, nb)); spatial_lag = false, varnames = ["NROOM", "AGE", "SQFT"])
+	println("\nWithout published values to compare: the OLS regimes and the Chow test of the city and the county")
+	println(ols)
+	println(regime_chow_test(one_model, ols))
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save the Results as GeoParquet"
+desc = "Write the areas, in longitude and latitude, with their regime and, on the regime tabs, the residuals, to spatial-regimes.parquet in the folder above"
+code = '''
+out = joinpath(folder, "spatial-regimes.parquet")
+resid = @isdefined(res) ? res : fill(NaN, n)  # the SKATER Regions tab fits no regression
+DBInterface.execute(con, "CREATE OR REPLACE TABLE fit AS SELECT * FROM (VALUES $(join(("($i, $(labels[i]), $(isnan(resid[i]) ? "NULL" : resid[i]))" for i in 1:n), ", "))) t(i, regime, residual)")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom, cx, cy), f.regime, f.residual::DOUBLE AS residual, a.geom FROM areas a JOIN fit f USING (i) ORDER BY i) TO '$(out)' (FORMAT PARQUET)")  # GeoParquet: DuckDB writes the geometry column's metadata
+	println("Wrote ", out)
+end
+'''
