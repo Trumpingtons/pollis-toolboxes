@@ -413,7 +413,9 @@ R = maximum(labels)
 {{?model=regols}} q, dfr = length(m.coef) - length(pooled.coef), n - length(m.coef)
 {{?model=regols}} F = ((rss_one - rss_regimes) / q) / (rss_regimes / dfr)
 {{?model=regols}} println("Chow F test: F = ", round(F, digits = 3), " on ", q, " and ", dfr, " degrees of freedom, p-value ", round(ccdf(FDist(q, dfr), F), sigdigits = 4))
-{{?model!=skater}} source == "skater" && println("The regions were found from the data, so these p-values are too small: see the Bootstrap Chow Test")
+{{?model!=skater}} if source == "skater"
+{{?model!=skater}} 	println("The regions were found from the data, so these p-values are too small: see the Bootstrap Chow Test")
+{{?model!=skater}} end
 '''
 
 # Next Steps action groups
@@ -441,7 +443,7 @@ models = ["regols", "reglag"]
 code = '''
 P = p + 1  # the intercept and the slopes of each regime
 B = [m.coef[(labels[i] - 1) * P + k] for i in 1:n, k in 1:P]  # each area gets its regime's coefficients
-DBInterface.execute(con, "CREATE OR REPLACE TABLE regcoef AS SELECT * FROM (VALUES $(join(("($i, $(join(B[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("b$k" for k in 1:P), ", ")))")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE regcoef AS SELECT i, $(join(("b$k::DOUBLE AS b$k" for k in 1:P), ", ")) FROM (VALUES $(join(("($i, $(join(B[i, :], ", ")))" for i in 1:n), ", "))) t(i, $(join(("b$k" for k in 1:P), ", ")))")
 cmap = joinpath(mktempdir(), "coefficients.geojson")
 DBInterface.execute(con, "COPY (SELECT a.geom, c.* EXCLUDE (i) FROM areas a JOIN regcoef c USING (i)) TO '$(cmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap((Pollis.layer(cmap; name = ["(Intercept)"; xnames][k], column = "b$k", opacity = 0.75) for k in 1:P)...))
@@ -511,7 +513,9 @@ for (k, name) in enumerate(["(Intercept)"; xnames])
 	println(rpad(name, 16), rpad(round(w, digits = 3), 12), rpad(R - 1, 6), round(ccdf(Chisq(R - 1), w), sigdigits = 4))
 end
 println("A small p-value: that coefficient differs between the regimes")
-source == "skater" && println("The regions were found from the data, so these p-values are too small")
+if source == "skater"
+	println("The regions were found from the data, so these p-values are too small")
+end
 '''
 
 [[actionGroups]]
@@ -674,8 +678,12 @@ rng = Xoshiro(2026)  # a fixed seed: the same data sets every time
 sims = filter(isfinite, [try search_and_test(Xi * b0 .+ e0[rand(rng, 1:n, n)]) catch; NaN end for _ in 1:199])  # no regimes: the single model's fit plus resampled residuals
 println("Chow likelihood ratio statistic of SKATER's regions on ", join(zvars, ", "), ": ", round(observed, digits = 3))
 println("Bootstrap p-value, from ", length(sims), " data sets with no regimes: ", round((1 + count(>=(observed), sims)) / (1 + length(sims)), digits = 3))
-yname in zvars || println("SKATER does not use $(yname) here, so the regions do not depend on the outcome and the chi-squared p-value of the tab holds")
-{{?model=regols}} source == "column" && println("The tab's regimes come from {{regimeColumn}}: this step tests SKATER's regions instead")
+if !(yname in zvars)
+	println("SKATER does not use $(yname) here, so the regions do not depend on the outcome and the chi-squared p-value of the tab holds")
+end
+{{?model=regols}} if source == "column"
+{{?model=regols}} 	println("The tab's regimes come from {{regimeColumn}}: this step tests SKATER's regions instead")
+{{?model=regols}} end
 '''
 
 [[actionGroups]]
