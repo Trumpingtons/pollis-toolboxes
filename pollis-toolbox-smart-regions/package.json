@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-smart-regions",
   "displayName": "Smart Regions Toolbox",
-  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, CityGML and CityJSON 3D city models, GTFS transit feeds and OpenStreetMap PBF extracts, reads the places, buildings, roads, boundaries and addresses of an area from Overture Maps, reads the NUTS regions, local administrative units, countries and Urban Audit cities of Eurostat GISCO and maps Eurostat's tables on them, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
-  "version": "0.1.13",
+  "description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, CityGML and CityJSON 3D city models, GTFS transit feeds and OpenStreetMap PBF extracts, reads the features of OpenStreetMap with a tag in an area from the Overpass API, and the layers or the full extract of a region from Geofabrik's download server, reads the places, buildings, roads, boundaries and addresses of an area from Overture Maps, reads the NUTS regions, local administrative units, countries and Urban Audit cities of Eurostat GISCO and maps Eurostat's tables on them, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
+  "version": "0.1.14",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -55,6 +55,9 @@
             "id": "kriging", "command": "pollis.smartRegions.kriging", "title": "Kriging", "submenu": "spatialStatistics", "group": "2_kriging", "order": 1, "data": "panels/kriging.toml", "defaultModel": "variogram", "decisionFirstColumn": "Method"
           },
           {
+            "id": "osmdata", "command": "pollis.smartRegions.osmdata", "title": "OpenStreetMap Data", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1, "data": "panels/osmdata.toml", "defaultModel": "overpass", "decisionFirstColumn": "Source"
+          },
+          {
             "id": "overture", "command": "pollis.smartRegions.overture", "title": "Overture Maps", "submenu": "accessDataLibraries", "group": "1_vector", "order": 2, "data": "panels/overture.toml", "defaultModel": "places", "decisionFirstColumn": "Theme"
           },
           {
@@ -62,12 +65,10 @@
           }
         ],
         "planned": [
-          { "title": "OpenStreetMap Data", "submenu": "accessDataLibraries", "group": "1_vector", "order": 1 },
           { "title": "Copernicus Data Space", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 1 },
           { "title": "USGS EarthExplorer", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 2 },
           { "title": "OpenTopography", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 3 },
           { "title": "INSPIRE Geoportal", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 4 },
-          { "title": "Microsoft Planetary Computer", "submenu": "accessDataLibraries", "group": "2_imagery", "order": 5 },
           { "title": "Mapillary Street-Level Imagery", "submenu": "accessDataLibraries", "group": "3_streetLevel", "order": 1 },
           { "title": "Copernicus Imagery Layers", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 2 },
           { "title": "Mapillary Street-Level Viewer", "submenu": "mapVisualisation", "group": "1_basemaps", "order": 3 },

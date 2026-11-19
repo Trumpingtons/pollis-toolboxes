@@ -1,0 +1,694 @@
+# OpenStreetMap Data: the features of OpenStreetMap with a tag in an area, from the Overpass API, or the layers or the
+# full extract of a region from Geofabrik's download server, read with DuckDB's spatial extension
+
+[meta]
+title = "OpenStreetMap Data"
+viewType = "pollis.osmdata"
+defaultModel = "overpass"
+decisionFirstColumn = "Source"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "osmdata/factsheet.md"
+bundled = true
+description = "One-page reference: the three sources, how the panel reads them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "osmdata/overview.md"
+bundled = true
+description = "What OpenStreetMap is, its data model of nodes, ways and relations, and where its data can be downloaded"
+
+[[wikis]]
+name = "Diagnostics"
+file = "osmdata/diagnostics.md"
+bundled = true
+description = "Busy servers, missing tags, areas and lines, dates of the data, older files"
+
+[[wikis]]
+name = "Decision Guide"
+file = "osmdata/decision-guide.md"
+bundled = true
+description = "Which source, which tag or layer, which region, and which earlier date"
+
+[[wikis]]
+separator = true
+label = "Data and Access"
+
+[[wikis]]
+name = "Overpass API and Overpass QL"
+file = "osmdata/overpass-api-and-overpass-ql.md"
+bundled = true
+
+[[wikis]]
+name = "Geofabrik Downloads"
+file = "osmdata/geofabrik-downloads.md"
+bundled = true
+
+[[wikis]]
+name = "OpenStreetMap Tags"
+file = "osmdata/openstreetmap-tags.md"
+bundled = true
+
+[[wikis]]
+name = "Licence and Attribution"
+file = "osmdata/licence-and-attribution.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Olb2026a"
+
+[[references]]
+key = "Boe2017a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "HW2008a"
+
+[[references]]
+key = "Hak2010a"
+
+[[references]]
+key = "BM2017a"
+
+[[references]]
+separator = true
+label = "Specifications and Documentation"
+
+[[references]]
+key = "Olb2026b"
+
+[[references]]
+key = "OSMWC2026b"
+
+[[references]]
+key = "OSMWC2026c"
+
+[[references]]
+key = "OSMWC2026d"
+
+[[references]]
+key = "OSMWC2026a"
+
+[[references]]
+key = "GDALOGRC2026b"
+
+[[references]]
+key = "Geo2026a"
+
+[[references]]
+key = "RR2026a"
+
+[[references]]
+key = "Ram2024a"
+
+[[references]]
+key = "OSMF2026b"
+
+[[references]]
+key = "ODC2026a"
+
+[[faq]]
+question = "Why does the Overpass API tab sometimes wait, or stop with a busy server?"
+answer = '''
+The public Overpass API instances are shared by many users and defend themselves against overuse: a query waits for a free slot, and a query refused because of the rate limit is answered with HTTP status 429. The public instance at overpass-api.de answers 502 when all its workers are busy, and asks clients to retry with exponential backoff. The panel retries up to five times, waiting twice as long each time.
+
+As a guideline, the Overpass API's manual asks users to send at most about 10,000 queries and to download less than about 1 GB a day; above that, run your own instance and give its address in Server.
+'''
+wiki = "Overpass API and Overpass QL"
+
+[[faq]]
+question = "Which tab should I use?"
+answer = '''
+Overpass API for the features with one tag in an area, as OpenStreetMap holds them now or at an earlier date. Geofabrik Layers for ready-made layers of a whole region, such as its roads, buildings or points of interest, with a fixed set of columns. Geofabrik Full Extract for every feature of a region with a tag and all its tags, read from the region's .osm.pbf file.
+
+Both Geofabrik tabs download the file once to the Folder and read it from there afterwards, without a connection.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I credit OpenStreetMap?"
+answer = '''
+OpenStreetMap's data is licensed under the Open Data Commons Open Database License (ODbL). Wherever its data is used, the OpenStreetMap Foundation requires two things: credit to OpenStreetMap by its attribution notice, © OpenStreetMap contributors, and a statement that the data is available under the Open Database License, for example by a link to openstreetmap.org/copyright.
+
+If you alter or build upon the data, you may distribute the result only under the same licence.
+'''
+wiki = "Licence and Attribution"
+
+[[faq]]
+question = "Why do the Geofabrik Layers have fewer tags than the full extract?"
+answer = '''
+Geofabrik's .osm.pbf files are un-filtered OpenStreetMap data, with every tag. Its shape files and GeoPackages are a selection of features and attributes, mapped into layers such as roads, buildings and points of interest, each feature with an OSM id, a code, a class (fclass) and a name, and a few columns of its layer.
+
+The Geofabrik Full Extract tab reads the .osm.pbf, with every tag of each feature.
+'''
+wiki = "Geofabrik Downloads"
+
+[[faq]]
+question = "How far back can Then and Now go with the Overpass API?"
+answer = '''
+The date setting of Overpass QL runs a query against the database as of a date. The OpenStreetMap wiki says there is no attic data earlier than 2012-09-12T06:55:00Z, the first change in the ODbL-compliant planet file; an earlier date returns the database as of that moment.
+'''
+wiki = "Overpass API and Overpass QL"
+hidden = true
+
+[[faq]]
+question = "What is an OpenStreetMap tag?"
+answer = '''
+A key and a value, both free text, attached to a node, way or relation to describe what it is, such as amenity=school or highway=residential. An element may carry any number of tags, each key at most once, and the community documents the tags in common use on the OpenStreetMap wiki.
+'''
+wiki = "OpenStreetMap Tags"
+hidden = true
+
+[[faq]]
+question = "How does the panel tell areas from lines?"
+answer = '''
+It reads the OpenStreetMap files with GDAL's OSM driver and its configuration file, osmconf.ini. The driver puts multipolygon and boundary relations, and the ways it recognises as areas, in its multipolygons layer; osmconf.ini lists the tags that make a closed way an area, such as building, landuse, amenity and natural. Other ways go to the lines layer.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Does an older OpenStreetMap file show what a place was like then?"
+answer = '''
+No: Geofabrik notes that an OpenStreetMap data set of a date tells what OpenStreetMap knew about the world at that time, not what the world was like. A building that has stood for a century but was added to OpenStreetMap in 2020 is missing from the data of 2018.
+'''
+wiki = "Geofabrik Downloads"
+hidden = true
+
+[[models]]
+id = "overpass"
+label = "Overpass API"
+
+[[models]]
+id = "layers"
+label = "Geofabrik Layers"
+
+[[models]]
+id = "extract"
+label = "Geofabrik Full Extract"
+
+[[bullets]]
+text = "Overpass API"
+detail = "The features with a tag in an area, such as amenity=school, with all their tags, as OpenStreetMap holds them minutes ago or at an earlier date"
+
+[[bullets]]
+text = "Geofabrik Layers"
+detail = "One layer of a region, such as its roads, buildings or points of interest, from Geofabrik's GeoPackage, with a class and a few columns for each feature"
+
+[[bullets]]
+text = "Geofabrik Full Extract"
+detail = "The features of a region with a tag, with all their tags, from Geofabrik's .osm.pbf extract of the region, updated daily"
+
+[[decisionRows]]
+task = "Overpass API"
+context = "A tag in an area"
+purpose = "Specific features of a city or district, up to date"
+
+[[decisionRows]]
+task = "Geofabrik Layers"
+context = "A layer of a region"
+purpose = "Roads, buildings, points of interest of a whole region, with fixed columns"
+
+[[decisionRows]]
+task = "Geofabrik Full Extract"
+context = "A tag in a region"
+purpose = "Every feature of a region with a tag, with all its tags, read offline"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where Geofabrik's files and GDAL's osmconf.ini are kept once downloaded, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "bbox"
+label = "Area"
+tooltip = "The area as west, south, east, north, in degrees of longitude and latitude. The default is the historic centre of Bologna."
+default = "11.32, 44.48, 11.37, 44.51"
+models = ["overpass"]
+
+[[inputs]]
+id = "tag"
+label = "Tag"
+tooltip = "The tag of the features, as key=value (amenity=school), or a key alone for every value of the key (amenity)."
+default = "amenity=school"
+models = ["overpass"]
+
+[[inputs]]
+id = "server"
+label = "Server"
+tooltip = "The address of an Overpass API instance: the public one at overpass-api.de, or your own."
+default = "https://overpass-api.de/api/interpreter"
+models = ["overpass"]
+
+[[inputs]]
+id = "earlierDate"
+label = "Earlier Date"
+tooltip = "The date of the data Then and Now compares with, as YYYY-MM-DD. OpenStreetMap's history in the Overpass API starts on 2012-09-12."
+default = "2020-01-01"
+models = ["overpass"]
+
+[[inputs]]
+id = "region"
+label = "Region"
+tooltip = "The id of a Geofabrik region, as on download.geofabrik.de: monaco, portugal, hong-kong, cataluna. The default, Monaco, is about 1 MB."
+default = "monaco"
+models = ["layers", "extract"]
+
+[[inputs]]
+id = "layer"
+label = "Layer"
+kind = "select"
+default = "pois"
+models = ["layers"]
+
+[[inputs.options]]
+value = "pois"
+label = "Points of Interest"
+
+[[inputs.options]]
+value = "places"
+label = "Places"
+
+[[inputs.options]]
+value = "pofw"
+label = "Places of Worship"
+
+[[inputs.options]]
+value = "natural"
+label = "Natural Features"
+
+[[inputs.options]]
+value = "traffic"
+label = "Traffic"
+
+[[inputs.options]]
+value = "transport"
+label = "Transport Infrastructure"
+
+[[inputs.options]]
+value = "roads"
+label = "Roads and Paths"
+
+[[inputs.options]]
+value = "railways"
+label = "Railways"
+
+[[inputs.options]]
+value = "waterways"
+label = "Waterways"
+
+[[inputs.options]]
+value = "adminareas"
+label = "Administrative Areas"
+
+[[inputs.options]]
+value = "buildings"
+label = "Buildings"
+
+[[inputs.options]]
+value = "landuse"
+label = "Land Use and Land Cover"
+
+[[inputs.options]]
+value = "protected_areas"
+label = "Protected Areas"
+
+[[inputs.options]]
+value = "water"
+label = "Bodies of Water"
+
+[[inputs]]
+id = "tagKey"
+label = "Tag"
+tooltip = "The tag of the features, as a key alone for every value of the key (amenity), or key=value (amenity=school)."
+default = "amenity"
+models = ["extract"]
+
+[[inputs]]
+id = "earlierYear"
+label = "Earlier Year"
+tooltip = "The year whose 1 January file Then and Now compares with. Geofabrik keeps such files for each year back to 2014 for some regions, and for fewer years for regions it split up later."
+default = "2020"
+models = ["layers", "extract"]
+
+[[codeBranches]]
+model = "overpass"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # where GDAL's osmconf.ini is kept, and the Next Steps save their files
+server = "{{server}}"  # an Overpass API instance: the public one, or your own
+agent = ["User-Agent" => "Pollis (https://pollis.org)"]  # the public instance refuses requests that do not name their client
+west, south, east, north = parse.(Float64, split("{{bbox}}", ","))  # the area, in degrees of longitude and latitude
+key, value = occursin("=", "{{tag}}") ? String.(strip.(split("{{tag}}", "="; limit = 2))) : (String(strip("{{tag}}")), "")  # key=value, or a key alone for every value
+title, stem = "{{tag}}, Overpass API", replace("overpass-{{tag}}", r"[^A-Za-z0-9_-]" => "-")
+osmconf = joinpath(folder, "osmconf.ini")  # GDAL's configuration of its OSM driver, which DuckDB's spatial extension does not ship
+isfile(osmconf) || Downloads.download("https://raw.githubusercontent.com/OSGeo/gdal/v3.10.0/ogr/ogrsf_frmts/osm/data/osmconf.ini", osmconf)
+
+patient = Downloads.Downloader()  # Overpass sends nothing until its result is ready: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function overpass(date = "")  # the features with the tag in the area as an OSM XML file, now or as of a date
+	selector = isempty(value) ? "[\"$(key)\"]" : "[\"$(key)\"=\"$(value)\"]"
+	query = "[out:xml][timeout:180]$(isempty(date) ? "" : "[date:\"$(date)T00:00:00Z\"]");\nnwr$(selector)($(south),$(west),$(north),$(east));\n(._; >;);\nout;"  # the features, then the ways and nodes they are made of
+	path = joinpath(mktempdir(), "overpass.osm")
+	for k in 0:5
+		out = IOBuffer()
+		r = Downloads.request(server; method = "POST", input = IOBuffer(query), output = out, headers = agent, downloader = patient, timeout = 300)
+		r.status == 200 && (write(path, take!(out)); return query, path)
+		r.status in (429, 502, 503, 504) || error("Overpass refused the query (HTTP $(r.status)): ", first(String(take!(out)), 500))
+		k < 5 && (println("Overpass is busy (HTTP $(r.status)): trying again in $(5 * 2^k) s"); sleep(5 * 2^k))  # exponential backoff, as the server asks
+	end
+	error("Overpass stayed busy: try again later, or give another instance in Server")
+end
+osm = "open_options = ['CONFIG_FILE=$(osmconf)', 'TAGS_FORMAT=JSON', 'INTERLEAVED_READING=YES']"  # per layer, GDAL may drop features of larger files
+function read_osm(path, table)  # the features of an OSM file with the tag, from the five layers of GDAL's OSM driver, each with all its tags as JSON
+	parts = String[]
+	for layer in ("points", "lines", "multilinestrings", "multipolygons", "other_relations")
+		from = "ST_Read('$(path)', layer = '$(layer)', $(osm))"
+		named = setdiff(Tables.columntable(DBInterface.execute(con, "DESCRIBE SELECT * FROM $(from)")).column_name, ["OGC_FID", "osm_id", "osm_way_id", "other_tags", "z_order", "geom"])  # tags with a column of their own in osmconf.ini
+		tags = "json_merge_patch(coalesce(other_tags, '{}'), json_object($(join(["'$(c)', \"$(c)\"" for c in named], ", "))))"  # every tag; one the element lacks, null, is left out
+		type, id = layer == "points" ? ("'node'", "osm_id") : layer == "lines" ? ("'way'", "osm_id") : layer == "multipolygons" ? ("CASE WHEN osm_id IS NULL THEN 'way' ELSE 'relation' END", "coalesce(osm_id, osm_way_id)") : ("'relation'", "osm_id")
+		push!(parts, "SELECT $(type) AS osm_type, CAST($(id) AS BIGINT) AS osm_id, '$(layer)' AS layer, CAST($(tags) AS JSON) AS tags, geom FROM $(from)")
+	end
+	wanted = isempty(value) ? "tags->>'$(key)' IS NOT NULL" : "tags->>'$(key)' = '$(value)'"  # the nodes of the ways come with their own tags: only the features with the tag are kept
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE $(table) AS SELECT osm_type, osm_id, tags->>'$(key)' AS value, tags->>'name' AS name, layer, tags, geom FROM ($(join(parts, " UNION ALL "))) WHERE $(wanted)")
+	return only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM $(table)"))))
+end
+
+query, path = overpass()
+m = match(r"osm_base=\"(?<t>[^\"]+)\"", open(io -> String(read(io, 2000)), path))
+osm_base = m === nothing ? "unknown" : m[:t]  # the time of the OpenStreetMap data the server holds
+n = read_osm(path, "features")
+n == 0 && error("No feature with {{tag}} in the area: widen the area, or try a key alone")
+println(n, " features with {{tag}} in the area, OpenStreetMap data as of ", osm_base, "; © OpenStreetMap contributors, ODbL")
+'''
+
+[[codeBranches]]
+model = "layers"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # where Geofabrik's files are kept, and the Next Steps save theirs
+agent = ["User-Agent" => "Pollis (https://pollis.org)"]
+patient = Downloads.Downloader()  # the server may take a minute before the first byte of an older file: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function geofabrik_file(url, path)  # a file of Geofabrik's server into the folder, once; false when the server has no such file
+	isfile(path) && return true
+	part = path * ".part"  # complete files only: an interrupted download is not taken for one
+	for k in 0:4
+		r = open(io -> Downloads.request(url; output = io, headers = agent, downloader = patient, timeout = 3600), part, "w")
+		r.status == 200 && (mv(part, path; force = true); return true)
+		rm(part; force = true)
+		r.status == 404 && return false
+		r.status in (429, 500, 502, 503, 504) || error("Geofabrik's server refused $(url) (HTTP $(r.status))")
+		k < 4 && (println("Geofabrik's server is busy (HTTP $(r.status)): trying again in $(10 * 2^k) s"); sleep(10 * 2^k))
+	end
+	error("Geofabrik's server stayed busy: try again later")
+end
+index = joinpath(mktempdir(), "index.json")
+geofabrik_file("https://download.geofabrik.de/index-v1-nogeom.json", index)  # Geofabrik's regions and their files
+regions = "(SELECT unnest(features).properties AS p FROM read_json('$(index)', maximum_object_size = 100000000))"
+r = Tables.columntable(DBInterface.execute(con, "SELECT p.name AS name, p.urls.shp AS shp FROM $(regions) WHERE p.id = '{{region}}'"))
+isempty(r.name) && error("Geofabrik has no region {{region}}: its ids are on download.geofabrik.de, as monaco, portugal, hong-kong or cataluna")
+if r.shp[1] === missing  # the layers exist only for smaller regions
+	parts = Tables.columntable(DBInterface.execute(con, "SELECT p.id AS id FROM $(regions) WHERE p.parent = '{{region}}' ORDER BY id")).id
+	error("Geofabrik has no layers for $(r.name[1]), only for its parts: ", join(parts, ", "))
+end
+url = replace(r.shp[1], "-free.shp.zip" => "-free.gpkg.zip")  # the same layers as a GeoPackage
+path = joinpath(folder, basename(url))
+geofabrik_file(url, path) || error("Geofabrik's server has no $(url)")  # downloaded once, then read from the folder
+function zip_names(path)  # the files in a zip archive, from the directory at its end
+	open(path) do io
+		seek(io, max(0, filesize(path) - 65557))
+		tail = read(io)
+		k = findlast(i -> view(tail, i:i + 3) == [0x50, 0x4b, 0x05, 0x06], 1:length(tail) - 3)  # the end of the central directory
+		u16(b, i) = Int(b[i]) | Int(b[i + 1]) << 8
+		u32(b, i) = u16(b, i) | u16(b, i + 2) << 16
+		seek(io, u32(tail, k + 16))
+		directory = read(io, u32(tail, k + 12))
+		names, i = String[], 1
+		while i + 45 <= length(directory) && view(directory, i:i + 3) == [0x50, 0x4b, 0x01, 0x02]
+			l = u16(directory, i + 28)
+			push!(names, String(directory[i + 46:i + 45 + l]))
+			i += 46 + l + u16(directory, i + 30) + u16(directory, i + 32)
+		end
+		return names
+	end
+end
+source = "/vsizip/$(path)/$(only(filter(endswith(".gpkg"), zip_names(path))))"  # read inside the zip, without unpacking it
+theme = "{{layer}}"
+title, stem = "$(r.name[1]), $(theme)", replace("{{region}}-$(theme)", "/" => "-")
+available = Tables.columntable(DBInterface.execute(con, "SELECT unnest(layers).name AS name FROM ST_Read_Meta('$(source)')")).name
+chosen = filter(in(available), ["gis_osm_$(theme)_free", "gis_osm_$(theme)_a_free"])  # its points or lines, and its areas
+isempty(chosen) && error("The GeoPackage of $(r.name[1]) has no $(theme) layer: it has ", join(available, ", "))
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS " * join(["SELECT osm_id, fclass AS value, name, '$(l)' AS layer, COLUMNS(lambda c: c NOT IN ('osm_id', 'fclass', 'name', 'fid', 'geom')), geom FROM ST_Read('$(source)', layer = '$(l)')" for l in chosen], " UNION ALL BY NAME "))
+n = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM features"))))
+println(n, " features of ", join(chosen, " and "), ", ", r.name[1], ", from ", path, " (", round(filesize(path) / 2^20, digits = 1), " MB); © OpenStreetMap contributors, ODbL")
+'''
+
+[[codeBranches]]
+model = "extract"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # where Geofabrik's files and GDAL's osmconf.ini are kept, and the Next Steps save theirs
+agent = ["User-Agent" => "Pollis (https://pollis.org)"]
+key, value = occursin("=", "{{tagKey}}") ? String.(strip.(split("{{tagKey}}", "="; limit = 2))) : (String(strip("{{tagKey}}")), "")  # a key alone for every value, or key=value
+patient = Downloads.Downloader()  # the server may take a minute before the first byte of an older file: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function geofabrik_file(url, path)  # a file of Geofabrik's server into the folder, once; false when the server has no such file
+	isfile(path) && return true
+	part = path * ".part"  # complete files only: an interrupted download is not taken for one
+	for k in 0:4
+		r = open(io -> Downloads.request(url; output = io, headers = agent, downloader = patient, timeout = 3600), part, "w")
+		r.status == 200 && (mv(part, path; force = true); return true)
+		rm(part; force = true)
+		r.status == 404 && return false
+		r.status in (429, 500, 502, 503, 504) || error("Geofabrik's server refused $(url) (HTTP $(r.status))")
+		k < 4 && (println("Geofabrik's server is busy (HTTP $(r.status)): trying again in $(10 * 2^k) s"); sleep(10 * 2^k))
+	end
+	error("Geofabrik's server stayed busy: try again later")
+end
+index = joinpath(mktempdir(), "index.json")
+geofabrik_file("https://download.geofabrik.de/index-v1-nogeom.json", index)  # Geofabrik's regions and their files
+regions = "(SELECT unnest(features).properties AS p FROM read_json('$(index)', maximum_object_size = 100000000))"
+r = Tables.columntable(DBInterface.execute(con, "SELECT p.name AS name, p.urls.pbf AS pbf FROM $(regions) WHERE p.id = '{{region}}'"))
+isempty(r.name) && error("Geofabrik has no region {{region}}: its ids are on download.geofabrik.de, as monaco, portugal, hong-kong or cataluna")
+url = r.pbf[1]
+path = joinpath(folder, basename(url))
+geofabrik_file(url, path) || error("Geofabrik's server has no $(url)")  # downloaded once, then read from the folder
+title, stem = "$(r.name[1]), {{tagKey}}", replace("{{region}}-{{tagKey}}", r"[^A-Za-z0-9_-]" => "-")
+osmconf = joinpath(folder, "osmconf.ini")  # GDAL's configuration of its OSM driver, which DuckDB's spatial extension does not ship
+isfile(osmconf) || Downloads.download("https://raw.githubusercontent.com/OSGeo/gdal/v3.10.0/ogr/ogrsf_frmts/osm/data/osmconf.ini", osmconf)
+osm = "open_options = ['CONFIG_FILE=$(osmconf)', 'TAGS_FORMAT=JSON', 'INTERLEAVED_READING=YES']"  # per layer, GDAL may drop features of larger files
+function read_osm(path, table)  # the features of an OSM file with the tag, from the five layers of GDAL's OSM driver, each with all its tags as JSON
+	parts = String[]
+	for layer in ("points", "lines", "multilinestrings", "multipolygons", "other_relations")
+		from = "ST_Read('$(path)', layer = '$(layer)', $(osm))"
+		named = setdiff(Tables.columntable(DBInterface.execute(con, "DESCRIBE SELECT * FROM $(from)")).column_name, ["OGC_FID", "osm_id", "osm_way_id", "other_tags", "z_order", "geom"])  # tags with a column of their own in osmconf.ini
+		tags = "json_merge_patch(coalesce(other_tags, '{}'), json_object($(join(["'$(c)', \"$(c)\"" for c in named], ", "))))"  # every tag; one the element lacks, null, is left out
+		type, id = layer == "points" ? ("'node'", "osm_id") : layer == "lines" ? ("'way'", "osm_id") : layer == "multipolygons" ? ("CASE WHEN osm_id IS NULL THEN 'way' ELSE 'relation' END", "coalesce(osm_id, osm_way_id)") : ("'relation'", "osm_id")
+		push!(parts, "SELECT $(type) AS osm_type, CAST($(id) AS BIGINT) AS osm_id, '$(layer)' AS layer, CAST($(tags) AS JSON) AS tags, geom FROM $(from)")
+	end
+	wanted = isempty(value) ? "tags->>'$(key)' IS NOT NULL" : "tags->>'$(key)' = '$(value)'"
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE $(table) AS SELECT osm_type, osm_id, tags->>'$(key)' AS value, tags->>'name' AS name, layer, tags, geom FROM ($(join(parts, " UNION ALL "))) WHERE $(wanted)")
+	return only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM $(table)"))))
+end
+
+n = read_osm(path, "features")  # a large region takes minutes: GDAL builds every geometry of the file
+n == 0 && error("No feature of $(r.name[1]) has the tag {{tagKey}}")
+println(n, " features of ", r.name[1], " with {{tagKey}}, from ", path, " (", round(filesize(path) / 2^20, digits = 1), " MB); © OpenStreetMap contributors, ODbL")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-on-map"
+label = "Show on a Map"
+desc = "The features on an OpenStreetMap base map in Pollis's map view, coloured by the value of the tag (or Geofabrik's class), at most 50,000; click a feature for its OSM id, value and name"
+code = '''
+dir = mktempdir()
+shown = 50_000  # a map of more features is slow to draw
+{{?model=overpass|extract}}DBInterface.execute(con, "COPY (SELECT osm_type, osm_id, value, name, layer, geom FROM features LIMIT $(shown)) TO '$(joinpath(dir, "features.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+{{?model=layers}}DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), geom FROM features LIMIT $(shown)) TO '$(joinpath(dir, "features.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+n > shown && println("The map shows ", shown, " of ", n, " features")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "features.geojson"); name = title, column = "value", opacity = 0.7)))
+println("© OpenStreetMap contributors, ODbL")
+'''
+
+[[actionGroups.actions]]
+id = "counts-chart"
+label = "Counts by Value"
+desc = "The features of each value of the tag (Overpass API, Full Extract) or of each class (Layers), the 25 most frequent, as a bar chart drawn with ECharts"
+code = '''
+using ECharts
+
+d = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(value, '(none)') AS value, count(*) AS n FROM features GROUP BY ALL ORDER BY n DESC LIMIT 25"))
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "$(title): features by value")],
+	xAxis = [ECharts.Axis(_type = "category", data = collect(d.value), axisLabel = ECharts.AxisLabel(rotate = 45))], yAxis = [ECharts.Axis(_type = "value", name = "Features")],
+	series = [ECharts.XYSeries(name = "Features", _type = "bar", data = collect(d.n))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "query-and-date"
+label = "Query and Date"
+desc = "The Overpass query sent and the time of the data the server holds, or the Geofabrik file read, its size, when it was downloaded and the date of Geofabrik's current file"
+code = '''
+{{?model=overpass}}println("Server: ", server)
+{{?model=overpass}}println("Query:\n", query)
+{{?model=overpass}}println("OpenStreetMap data as of ", osm_base, " (osm_base of the response); ", round(filesize(path) / 2^20, digits = 2), " MB returned")
+{{?model=layers|extract}}using Dates
+{{?model=layers|extract}}h = try Downloads.request(url; method = "HEAD", headers = agent, downloader = patient, timeout = 120) catch; nothing end
+{{?model=layers|extract}}current = h === nothing ? "unknown (the server did not answer)" : get(Dict(lowercase(k) => v for (k, v) in h.headers), "last-modified", "unknown")
+{{?model=layers|extract}}println(url)
+{{?model=layers|extract}}println("Read from ", path, ", ", round(filesize(path) / 2^20, digits = 1), " MB, downloaded ", Dates.format(Dates.unix2datetime(mtime(path)), "yyyy-mm-dd HH:MM"), " UTC")
+{{?model=layers|extract}}println("Geofabrik's current file: ", current, ". Delete the file in the folder to download the current one")
+'''
+
+[[actionGroups.actions]]
+id = "tag-completeness"
+label = "Tag Completeness"
+desc = "The tags the features carry, the 30 most frequent, with the share of the features that have each (Overpass API, Full Extract), or the share with a value in each column (Layers)"
+code = '''
+{{?model=overpass|extract}}t = Tables.columntable(DBInterface.execute(con, "SELECT k AS tag, count(*) AS features FROM (SELECT unnest(json_keys(tags)) AS k FROM features) GROUP BY k ORDER BY features DESC, tag LIMIT 30"))
+{{?model=overpass|extract}}for i in eachindex(t.tag)
+{{?model=overpass|extract}}	println(rpad(t.tag[i], 28), rpad(t.features[i], 9), round(100 * t.features[i] / n, digits = 1), "%")
+{{?model=overpass|extract}}end
+{{?model=layers}}columns = setdiff(Tables.columntable(DBInterface.execute(con, "DESCRIBE features")).column_name, ["geom", "layer"])
+{{?model=layers}}for c in columns
+{{?model=layers}}	k = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM features WHERE \"$(c)\" IS NOT NULL AND CAST(\"$(c)\" AS VARCHAR) <> ''"))))
+{{?model=layers}}	println(rpad(c, 14), rpad(k, 9), round(100 * k / n, digits = 1), "% with a value")
+{{?model=layers}}end
+'''
+
+[[actionGroups.actions]]
+id = "geometry-check"
+label = "Geometry Check"
+desc = "The features of each layer and geometry type, with the invalid and empty geometries"
+code = '''
+g = Tables.columntable(DBInterface.execute(con, "SELECT layer, ST_GeometryType(geom)::VARCHAR AS type, count(*) AS features, count(*) FILTER (WHERE NOT ST_IsValid(geom)) AS invalid, count(*) FILTER (WHERE ST_IsEmpty(geom)) AS empty FROM features GROUP BY ALL ORDER BY features DESC"))
+println(rpad("layer", 28), rpad("geometry", 20), rpad("features", 10), rpad("invalid", 9), "empty")
+for i in eachindex(g.layer)
+	println(rpad(g.layer[i], 28), rpad(g.type[i], 20), rpad(g.features[i], 10), rpad(g.invalid[i], 9), g.empty[i])
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "then-and-now"
+label = "Then and Now"
+desc = "The same features as OpenStreetMap held them at the Earlier Date (Overpass API) or on 1 January of the Earlier Year (Geofabrik): how many then and now, kept, added and removed, and by value"
+code = '''
+{{?model=overpass}}earlier_query, earlier_path = overpass("{{earlierDate}}")
+{{?model=overpass}}read_osm(earlier_path, "earlier")
+{{?model=overpass}}when, same = "{{earlierDate}}", "osm_type, osm_id"
+{{?model=layers|extract}}yy = lpad(parse(Int, "{{earlierYear}}") % 100, 2, '0')
+{{?model=layers}}earlier_url = replace(url, "-latest-free.gpkg.zip" => "-$(yy)0101-free.shp.zip")  # older files are shape files
+{{?model=extract}}earlier_url = replace(url, "-latest.osm.pbf" => "-$(yy)0101.osm.pbf")
+{{?model=layers|extract}}earlier_path = joinpath(folder, basename(earlier_url))
+{{?model=layers|extract}}if !geofabrik_file(earlier_url, earlier_path)  # downloaded once
+{{?model=layers|extract}}	listing = String(take!(Downloads.download(replace(url, r"-latest[^/]*$" => ".html"), IOBuffer(); headers = agent, downloader = patient)))  # the region's page, which lists its older files
+{{?model=layers|extract}}	years = sort(unique(["20" * m[:y] for m in eachmatch(Regex("$(replace(basename(earlier_url), "$(yy)0101" => "(?<y>\\d\\d)0101"))"), listing)]))
+{{?model=layers|extract}}	error("Geofabrik has no file of 1 January {{earlierYear}} for $(r.name[1]); it has ", isempty(years) ? "none" : join(years, ", "))
+{{?model=layers|extract}}end
+{{?model=layers}}files = filter(f -> f in zip_names(earlier_path), ["gis_osm_$(theme)_free_1.shp", "gis_osm_$(theme)_a_free_1.shp"])
+{{?model=layers}}isempty(files) && error("The file of {{earlierYear}} has no $(theme) layer")
+{{?model=layers}}DBInterface.execute(con, "CREATE OR REPLACE TABLE earlier AS " * join(["SELECT CAST(osm_id AS VARCHAR) AS osm_id, fclass AS value, '$(replace(f, "_1.shp" => ""))' AS layer FROM ST_Read('/vsizip/$(earlier_path)/$(f)')" for f in files], " UNION ALL "))
+{{?model=layers}}DBInterface.execute(con, "CREATE OR REPLACE TABLE current_features AS SELECT CAST(osm_id AS VARCHAR) AS osm_id, value, layer FROM features")
+{{?model=extract}}read_osm(earlier_path, "earlier")
+{{?model=layers|extract}}when = "1 January {{earlierYear}}"
+{{?model=layers}}same, current = "layer, osm_id", "current_features"
+{{?model=overpass|extract}}current = "features"
+{{?model=extract}}same = "osm_type, osm_id"
+c = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT count(*) FROM earlier) AS earlier_n, (SELECT count(*) FROM $(current)) AS current_n, (SELECT count(*) FROM (SELECT $(same) FROM $(current) INTERSECT SELECT $(same) FROM earlier)) AS kept"))
+println(title, ": ", c.earlier_n[1], " features on ", when, ", ", c.current_n[1], " now; ", c.kept[1], " kept, ", c.current_n[1] - c.kept[1], " added, ", c.earlier_n[1] - c.kept[1], " removed")
+v = Tables.columntable(DBInterface.execute(con, "SELECT coalesce(value, '(none)') AS value, count(*) FILTER (WHERE t = 'earlier') AS earlier_n, count(*) FILTER (WHERE t = 'current') AS current_n FROM (SELECT value, 'earlier' AS t FROM earlier UNION ALL SELECT value, 'current' FROM $(current)) GROUP BY ALL ORDER BY current_n + earlier_n DESC LIMIT 15"))
+println(rpad("value", 28), rpad(when, 18), "now")
+for i in eachindex(v.value)
+	println(rpad(v.value[i], 28), rpad(v.earlier_n[i], 18), v.current_n[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-gpkg"
+label = "Save as GeoPackage"
+desc = "The features with their OSM id, value, name and every tag (as JSON) or column, to a GeoPackage in the folder, for the Geospatial Vector Files panel and any GIS"
+code = '''
+out = joinpath(folder, "$(stem).gpkg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+{{?model=overpass|extract}}	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (tags, geom), CAST(tags AS VARCHAR) AS tags, geom FROM features) TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'features', SRS 'EPSG:4326')")
+{{?model=layers}}	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'features', SRS 'EPSG:4326')")
+	println("Wrote ", out, "; © OpenStreetMap contributors, ODbL")
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "The features with their OSM id, value, name and every tag or column, to a GeoParquet file in the folder"
+code = '''
+out = joinpath(folder, "$(stem).parquet")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT parquet)")  # DuckDB writes GeoParquet metadata for the geometry column
+	println("Wrote ", out, "; © OpenStreetMap contributors, ODbL")
+end
+'''
