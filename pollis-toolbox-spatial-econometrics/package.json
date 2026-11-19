@@ -22,6 +22,12 @@
         "title": "Spatial Econometrics",
         "order": 1,
         "duckdbExtensions": ["spatial"],
+        "documents": [
+          {
+            "title": "Spatial Econometrics Toolbox",
+            "source": "docs/spatial-econometrics/spatial-econometrics.tex"
+          }
+        ],
         "panels": [
           {
             "id": "spatialreg",

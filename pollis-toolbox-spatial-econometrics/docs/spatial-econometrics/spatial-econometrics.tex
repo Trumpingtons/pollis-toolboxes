@@ -1,0 +1,116 @@
+% Toolbox Vignette of the Spatial Econometrics Toolbox
+% Compile with: julia -e 'using PollisTeX; display(compile("spatial-econometrics.tex"))'
+\input{vignette_style}
+\renewcommand{\vignetteauthor}{Pollis}
+\renewcommand{\vignettedate}{19 November 2026}
+\renewcommand{\vignettelicense}{AGPL-3.0}
+
+\begin{document}
+
+\nmhead{Spatial Econometrics Toolbox}
+  {Spatial Econometrics Toolbox}
+  {What its panels are for, and when to use each.}
+
+Installing the toolbox adds the submenu \menupath{Extend \gt Spatial Econometrics}, with these panels. Each has an example you can edit and run, and actions on its results. All of them run on \package{SpatialEconometrics}{https://github.com/randsley/SpatialEconometrics.jl} and read area files, such as GeoPackage, GeoJSON or Shapefile, through the spatial extension of \package{DuckDB}{https://github.com/duckdb/duckdb}.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{56mm}X@{}}
+\toprule
+\textbf{Panel} & \textbf{Use it when} \\\midrule
+Spatial Lag and Error Models & An area's outcome depends on its neighbours' outcomes, their characteristics or shocks they share, in one cross-section. \\
+Geographically Weighted Regression & A relationship seems to change from one part of the map to another. \\
+Eigenvector Spatial Filtering & You want an ordinary regression whose coefficients are not distorted by spatial autocorrelation, also for counts. \\
+Spatial Discrete Choice & The outcome is a yes or no, or an ordered choice, that depends on the neighbours' choices. \\
+Spatial Panel Data & The same areas are observed over several periods. \\
+Spatio-Temporal Forecasting & You want forecasts of areas observed over many periods, from their own past and their neighbours'. \\
+Spatial Causal Inference & You want the effect of a policy on the areas under it and on the areas around them. \\\bottomrule
+\end{tabularx}}
+
+\medskip
+The panels share the steps that matter in any spatial model: who counts as a neighbour, set by contiguity or by the nearest areas; Moran's I of the residuals, to see whether spatial dependence is left; and maps of the results.
+
+\nmsection{Spatial Lag and Error Models}
+Five tabs, from least squares to the spatial Durbin model, as set out by \nmcite{anselin1988}{Anselin (1988)} and \nmcite{lesage2009}{LeSage and Pace (2009)}.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{36mm}>{\raggedright\arraybackslash}p{58mm}X@{}}
+\toprule
+\textbf{Tab} & \textbf{Spatial term} & \textbf{Use it when} \\\midrule
+OLS and LM Tests & None & You first want to know which spatial term the data call for \\
+Spatial Lag (SAR) & The neighbours' outcome & Outcomes spill over, as prices or tax rates do \\
+Spatial Error (SEM) & The neighbours' errors & Omitted variables shared across borders \\
+Lag of X (SLX) & The neighbours' characteristics & Spillovers stay local, with no feedback \\
+Spatial Durbin (SDM) & Both the outcome and the characteristics & You are unsure; it nests the other three \\\bottomrule
+\end{tabularx}}
+
+\medskip
+In SAR and SDM a coefficient is not the effect: Direct and Indirect Effects splits it into the effect on the area itself and on the others. Likelihood Ratio Tests of the SDM test whether it reduces to a simpler model. The Replicate steps set the estimates beside those of \nmcite{bivand2015}{Bivand and Piras (2015)} and of R's spatialreg.
+
+\nmsection{Geographically Weighted Regression}
+Coefficients that vary over the map, estimated at each area from its neighbours weighted by distance (\nmcite{brunsdon1996}{Brunsdon, Fotheringham and Charlton 1996}). GWR, Fixed Bandwidth uses one distance, GWR, Adaptive a number of nearest areas, both chosen by AICc (\nmcite{hurvich1998}{Hurvich, Simonoff and Tsai 1998}). Multiscale GWR gives each coefficient its own bandwidth (\nmcite{fotheringham2017}{Fotheringham, Yang and Kang 2017}), so a coefficient that is constant over the map can be told from one that changes over short distances. The actions map the local coefficients and t-values, adjust the local tests for multiple testing (\nmcite{dasilva2016}{da Silva and Fotheringham 2016}), test whether a coefficient varies at all, and set the results beside GWR4 and \nmcite{oshan2019}{Oshan, Li, Kang, Wolf and Fotheringham (2019)} on the Georgia counties.
+
+\nmsection{Eigenvector Spatial Filtering}
+Moran eigenvectors of the spatial weights, added to the regression as variables, take up the spatial pattern of the residuals, so the other coefficients read as in an ordinary regression (\nmcite{griffith2003}{Griffith 2003}). ESF, Moran Criterion and ESF, AIC Criterion select the eigenvectors one at a time (\nmcite{tiefelsdorf2007}{Tiefelsdorf and Griffith 2007}); ESF for Counts puts them in a Poisson or negative binomial regression; Random-Effects ESF keeps them all and shrinks their coefficients (\nmcite{murakami2015}{Murakami and Griffith 2015}). The actions map the filter, test Moran's I before and after it, and compare it with least squares, SAR and SEM. The Replicate step follows the case studies of \nmcite{murakami2017}{Murakami (2017)}.
+
+\nmsection{Spatial Discrete Choice}
+Binary and ordered choices that depend on the neighbours' choices. The spatial lag probit is fitted by linearised GMM (\nmcite{klier2008}{Klier and McMillen 2008}), fast on many areas, or by Gibbs sampling (\nmcite{albert1993}{Albert and Chib 1993}; \nmcite{lesage2009}{LeSage and Pace 2009}), which gives the whole posterior. Ordered Probit handles choices with more than two ranked levels, and Logit With a Filter replaces the spatial lag with Moran eigenvectors. As in the spatial lag model, the effect on the probability has a direct and an indirect part. The Replicate step sets the estimates beside \nmcite{lesage2011}{LeSage, Pace, Lam, Campanella and Liu (2011)} on the reopening of New Orleans businesses after Hurricane Katrina.
+
+\nmsection{Spatial Panel Data}
+SAR, SEM and SDM with fixed effects of the areas, of the periods or both, removed by the transformation of \nmcite{lee2010}{Lee and Yu (2010)} or by demeaning (\nmcite{elhorst2014}{Elhorst 2014}). The Dynamic Panel adds the outcome's own lag and its neighbours', corrected for the bias the fixed effects cause (\nmcite{yu2008}{Yu, de Jong and Lee 2008}), and its effects come in the short and the long run. The actions run the panel LM tests, compute the standard errors of \nmcite{driscoll1998}{Driscoll and Kraay (1998)}, test for a structural break, and compare the specifications. The Replicate step sets the spatial error estimates beside those of \nmcite{millo2012}{Millo and Piras (2012)} on Munnell's production function for the US states.
+
+\nmsection{Spatio-Temporal Forecasting}
+Three models, each fitted on the periods before those held back and scored on them by RMSE and MAE. STAR, the space-time autoregression of \nmcite{pfeifer1980}{Pfeifer and Deutsch (1980)}, forecasts one variable from its own lags and its neighbours'. Spatial VAR, after \nmcite{digiacinto2010}{Di Giacinto (2010)}, forecasts several variables together. Panel AR leaves space out and is the benchmark: a spatial model that does not beat it adds nothing. The actions compare accuracy horizon by horizon with each area's last value, test the residuals with the CD test of \nmcite{pesaran2015}{Pesaran (2015)}, check stationarity, forecast beyond the data and trace space-time impulse responses.
+
+\nmsection{Spatial Causal Inference}
+Three designs for a policy whose effects can cross borders.
+
+\medskip
+{\small
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{26mm}>{\raggedright\arraybackslash}p{60mm}X@{}}
+\toprule
+\textbf{Tab} & \textbf{What it estimates} & \textbf{Use it when} \\\midrule
+Spatial DiD & The direct effect and the spillover from the share of neighbours under the policy (\nmcite{delgado2015}{Delgado and Florax 2015}) & Many areas, some under the policy, observed before and after \\
+Synthetic Control & The gap between an area and a weighted mix of comparison areas (\nmcite{abadie2010}{Abadie, Diamond and Hainmueller 2010}), with the penalty of \nmcite{abadie2021}{Abadie and L'Hour (2021)} & One or a few areas under the policy \\
+Shift-Share & The effect of exposure to shocks through each area's shares (\nmcite{adao2019}{Ad\~{a}o, Koles\'{a}r and Morales 2019}) & Areas differ in how much a common set of shocks reaches them \\\bottomrule
+\end{tabularx}}
+
+\medskip
+Synthetic Control leaves the neighbours of the areas under the policy out of the comparison areas, so a spillover does not bias the gap. The actions check what the design can identify before any outcome, the fit before the policy and the balance of the shocks. A permutation test ranks the gap against random sets of comparison areas. For Shift-Share, the actions show which shocks drive the estimate (\nmcite{goldsmith2020}{Goldsmith-Pinkham, Sorkin and Swift 2020}) and recompute it shock by shock (\nmcite{borusyak2022}{Borusyak, Hull and Jaravel 2022}).
+
+\nmsection{References}
+{\footnotesize\sloppy
+\nmref{abadie2010}{Abadie, A., Diamond, A. and Hainmueller, J. (2010). Synthetic control methods for comparative case studies: estimating the effect of California's tobacco control program. \emph{Journal of the American Statistical Association} 105(490), 493--505. \nmdoi{10.1198/jasa.2009.ap08746}}
+\nmref{abadie2021}{Abadie, A. and L'Hour, J. (2021). A penalized synthetic control estimator for disaggregated data. \emph{Journal of the American Statistical Association} 116(536), 1817--1834. \nmdoi{10.1080/01621459.2021.1971535}}
+\nmref{adao2019}{Ad\~{a}o, R., Koles\'{a}r, M. and Morales, E. (2019). Shift-share designs: theory and inference. \emph{The Quarterly Journal of Economics} 134(4), 1949--2010. \nmdoi{10.1093/qje/qjz025}}
+\nmref{albert1993}{Albert, J. H. and Chib, S. (1993). Bayesian analysis of binary and polychotomous response data. \emph{Journal of the American Statistical Association} 88(422), 669--679. \nmdoi{10.1080/01621459.1993.10476321}}
+\nmref{anselin1988}{Anselin, L. (1988). \emph{Spatial Econometrics: Methods and Models}. Springer Netherlands. \nmdoi{10.1007/978-94-015-7799-1}}
+\nmref{bivand2015}{Bivand, R. and Piras, G. (2015). Comparing implementations of estimation methods for spatial econometrics. \emph{Journal of Statistical Software} 63(18). \nmdoi{10.18637/jss.v063.i18}}
+\nmref{borusyak2022}{Borusyak, K., Hull, P. and Jaravel, X. (2022). Quasi-experimental shift-share research designs. \emph{The Review of Economic Studies} 89(1), 181--213. \nmdoi{10.1093/restud/rdab030}}
+\nmref{brunsdon1996}{Brunsdon, C., Fotheringham, A. S. and Charlton, M. E. (1996). Geographically weighted regression: a method for exploring spatial nonstationarity. \emph{Geographical Analysis} 28(4), 281--298. \nmdoi{10.1111/j.1538-4632.1996.tb00936.x}}
+\nmref{dasilva2016}{da Silva, A. R. and Fotheringham, A. S. (2016). The multiple testing issue in geographically weighted regression. \emph{Geographical Analysis} 48(3), 233--247. \nmdoi{10.1111/gean.12084}}
+\nmref{delgado2015}{Delgado, M. S. and Florax, R. J. G. M. (2015). Difference-in-differences techniques for spatial data: local autocorrelation and spatial interaction. \emph{Economics Letters} 137, 123--126. \nmdoi{10.1016/j.econlet.2015.10.035}}
+\nmref{digiacinto2010}{Di Giacinto, V. (2010). On vector autoregressive modeling in space and time. \emph{Journal of Geographical Systems} 12(2), 125--154. \nmdoi{10.1007/s10109-010-0116-6}}
+\nmref{driscoll1998}{Driscoll, J. C. and Kraay, A. C. (1998). Consistent covariance matrix estimation with spatially dependent panel data. \emph{The Review of Economics and Statistics} 80(4), 549--560. \nmdoi{10.1162/003465398557825}}
+\nmref{elhorst2014}{Elhorst, J. P. (2014). \emph{Spatial Econometrics: From Cross-Sectional Data to Spatial Panels}. Springer Berlin Heidelberg. \nmdoi{10.1007/978-3-642-40340-8}}
+\nmref{fotheringham2017}{Fotheringham, A. S., Yang, W. and Kang, W. (2017). Multiscale geographically weighted regression (MGWR). \emph{Annals of the American Association of Geographers} 107(6), 1247--1265. \nmdoi{10.1080/24694452.2017.1352480}}
+\nmref{goldsmith2020}{Goldsmith-Pinkham, P., Sorkin, I. and Swift, H. (2020). Bartik instruments: what, when, why, and how. \emph{American Economic Review} 110(8), 2586--2624. \nmdoi{10.1257/aer.20181047}}
+\nmref{griffith2003}{Griffith, D. A. (2003). \emph{Spatial Autocorrelation and Spatial Filtering: Gaining Understanding Through Theory and Scientific Visualization}. Springer Berlin Heidelberg. \nmdoi{10.1007/978-3-540-24806-4}}
+\nmref{hurvich1998}{Hurvich, C. M., Simonoff, J. S. and Tsai, C.-L. (1998). Smoothing parameter selection in nonparametric regression using an improved Akaike information criterion. \emph{Journal of the Royal Statistical Society Series B} 60(2), 271--293. \nmdoi{10.1111/1467-9868.00125}}
+\nmref{klier2008}{Klier, T. and McMillen, D. P. (2008). Clustering of auto supplier plants in the United States: generalized method of moments spatial logit for large samples. \emph{Journal of Business \& Economic Statistics} 26(4), 460--471. \nmdoi{10.1198/073500107000000188}}
+\nmref{lee2010}{Lee, L.-f. and Yu, J. (2010). Estimation of spatial autoregressive panel data models with fixed effects. \emph{Journal of Econometrics} 154(2), 165--185. \nmdoi{10.1016/j.jeconom.2009.08.001}}
+\nmref{lesage2009}{LeSage, J. and Pace, R. K. (2009). \emph{Introduction to Spatial Econometrics}. Chapman and Hall/CRC. \nmdoi{10.1201/9781420064254}}
+\nmref{lesage2011}{LeSage, J. P., Pace, R. K., Lam, N., Campanella, R. and Liu, X. (2011). New Orleans business recovery in the aftermath of Hurricane Katrina. \emph{Journal of the Royal Statistical Society Series A} 174(4), 1007--1027. \nmdoi{10.1111/j.1467-985X.2011.00712.x}}
+\nmref{millo2012}{Millo, G. and Piras, G. (2012). splm: spatial panel data models in R. \emph{Journal of Statistical Software} 47(1), 1--38. \nmdoi{10.18637/jss.v047.i01}}
+\nmref{murakami2015}{Murakami, D. and Griffith, D. A. (2015). Random effects specifications in eigenvector spatial filtering: a simulation study. \emph{Journal of Geographical Systems} 17(4), 311--331. \nmdoi{10.1007/s10109-015-0213-7}}
+\nmref{murakami2017}{Murakami, D. (2017). Gaussian spatial regression using the spmoran package: case study examples. arXiv. \nmdoi{10.48550/arXiv.1703.04467}}
+\nmref{oshan2019}{Oshan, T. M., Li, Z., Kang, W., Wolf, L. J. and Fotheringham, A. S. (2019). mgwr: a Python implementation of multiscale geographically weighted regression for investigating process spatial heterogeneity and scale. \emph{ISPRS International Journal of Geo-Information} 8(6), 269. \nmdoi{10.3390/ijgi8060269}}
+\nmref{pesaran2015}{Pesaran, M. H. (2015). Testing weak cross-sectional dependence in large panels. \emph{Econometric Reviews} 34(6--10), 1089--1117. \nmdoi{10.1080/07474938.2014.956623}}
+\nmref{pfeifer1980}{Pfeifer, P. E. and Deutsch, S. J. (1980). A three-stage iterative procedure for space-time modeling. \emph{Technometrics} 22(1), 35--47. \nmdoi{10.2307/1268381}}
+\nmref{tiefelsdorf2007}{Tiefelsdorf, M. and Griffith, D. A. (2007). Semiparametric filtering of spatial autocorrelation: the eigenvector approach. \emph{Environment and Planning A} 39(5), 1193--1221. \nmdoi{10.1068/a37378}}
+\nmref{yu2008}{Yu, J., de Jong, R. and Lee, L.-f. (2008). Quasi-maximum likelihood estimators for spatial dynamic panel data with fixed effects when both n and T are large. \emph{Journal of Econometrics} 146(1), 118--134. \nmdoi{10.1016/j.jeconom.2008.08.002}}
+}
+
+\nmcredit
+\end{document}
