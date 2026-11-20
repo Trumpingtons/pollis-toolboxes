@@ -168,8 +168,8 @@ chooseFolder = false
 [[inputs]]
 id = "tiffFile"
 label = "File"
-tooltip = "The GeoTIFF file (.tif or .tiff), in the folder above, or an absolute path. With the default, elevation.tif, the example first writes a simulated elevation model of the area of Coimbra to it, unless the folder has an elevation.tif already."
-default = "elevation.tif"
+tooltip = "The GeoTIFF file (.tif or .tiff), in the folder above, or an absolute path. With the default, london-dem.tif, the example first reads the Copernicus DEM GLO-30 over west and central London, about 30 m cells, from its Cloud-Optimised GeoTIFF on AWS, unless the folder has a london-dem.tif already."
+default = "london-dem.tif"
 models = ["geotiff"]
 
 [[inputs]]
@@ -183,22 +183,11 @@ models = ["geotiff"]
 model = "geotiff"
 code = '''
 using Rasters, ArchGDAL, Statistics
-{{?tiffFile=elevation.tif}}using Random
-{{?tiffFile=elevation.tif}}using Rasters.Lookups: Intervals, Center
 
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 path = joinpath(folder, "{{tiffFile}}")  # an absolute path is kept as it is
-{{?tiffFile=elevation.tif}}# Example file: a simulated elevation model of 12 by 10 km around Coimbra, in cells of 50 m on ETRS89 / Portugal TM06 (EPSG:3763), with a strip of cells without data, written as a Cloud-Optimised GeoTIFF unless the folder has an elevation.tif already. Replace "elevation.tif" with your own file.
-{{?tiffFile=elevation.tif}}if !isfile(path)
-{{?tiffFile=elevation.tif}}	rng = Xoshiro(42)  # fixed seed: the same terrain on every run
-{{?tiffFile=elevation.tif}}	xs = range(-29975.0; step = 50.0, length = 240)  # cell centres from west to east, in metres
-{{?tiffFile=elevation.tif}}	ys = range(64975.0; step = -50.0, length = 200)  # from north to south, the order GeoTIFF stores rows in
-{{?tiffFile=elevation.tif}}	hills = [(-26000.0, 61000.0, 120.0, 1500.0), (-21000.0, 62000.0, 180.0, 2500.0), (-20000.0, 57000.0, 90.0, 1200.0)]  # centre x, centre y, height and spread, in metres
-{{?tiffFile=elevation.tif}}	z = [Float32(30 + 0.004 * (x + 30000) + sum(h * exp(-((x - cx)^2 + (y - cy)^2) / (2 * s^2)) for (cx, cy, h, s) in hills) + 2 * randn(rng)) for x in xs, y in ys]
-{{?tiffFile=elevation.tif}}	z[100:115, 60:200] .= -9999f0  # a strip without data, as a river or a gap in a survey leaves
-{{?tiffFile=elevation.tif}}	sim = Raster(z, (X(xs; sampling = Intervals(Center())), Y(ys; sampling = Intervals(Center()))); crs = EPSG(3763), missingval = -9999f0)
-{{?tiffFile=elevation.tif}}	write(path, sim; driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))  # tiled, with overviews, compressed
-{{?tiffFile=elevation.tif}}end
+{{?tiffFile=london-dem.tif}}# Example file: the Copernicus DEM GLO-30, the global surface model of the Copernicus programme in cells of about 30 m, buildings and trees included, over west and central London, read from the Cloud-Optimised GeoTIFF of its tile on AWS and written to london-dem.tif unless the folder has one already. Replace "london-dem.tif" with your own GeoTIFF.
+{{?tiffFile=london-dem.tif}}isfile(path) || write(path, read(Raster("/vsicurl/https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N51_00_W001_00_DEM/Copernicus_DSM_COG_10_N51_00_W001_00_DEM.tif"; lazy = true)[X(-0.6 .. 0.0), Y(51.3 .. 51.7)]); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))  # only the cells of the window are read
 
 r = Raster(path; lazy = true)  # the file opened: its cells are read only when used
 hasdim(r, Band) && (r = r[Band({{band}})])  # one band of a multiband file
@@ -363,14 +352,14 @@ println("Quantiles 0, 5, 25, 50, 75, 95, 100%: ", join(round.(q, digits = 3), ",
 [[actionGroups.actions]]
 id = "values-at-points"
 label = "Values at Points"
-desc = "The value of the cell under each of five points: replace them with your own coordinates, in the raster's coordinate system"
+desc = "The value of the cell nearest each of five points: replace them with your own coordinates, in the raster's coordinate system"
 models = ["geotiff"]
 code = '''
 xlo, xhi = extrema(lookup(grid, X))
 ylo, yhi = extrema(lookup(grid, Y))
 places = [(xlo + (xhi - xlo) * a, ylo + (yhi - ylo) * b) for (a, b) in ((0.5, 0.5), (0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))]  # the centre and four points around it
-for p in extract(grid, places; geometry = true)
-	println("x = ", round(p.geometry[1], digits = 1), ", y = ", round(p.geometry[2], digits = 1), ": ", coalesce(last(values(p)), "missing"))
+for (x, y) in places
+	println("x = ", round(x, digits = 4), ", y = ", round(y, digits = 4), ": ", coalesce(grid[X(Near(x)), Y(Near(y))], "missing"))  # the cell whose centre is nearest, for cells as areas or as points
 end
 '''
 
