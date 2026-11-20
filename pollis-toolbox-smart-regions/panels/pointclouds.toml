@@ -193,8 +193,8 @@ chooseFolder = false
 [[inputs]]
 id = "lasFile"
 label = "File"
-tooltip = "The LAS (.las) or LAZ (.laz) file, in the folder above, or an absolute path. With the default, cloud.las, the example first writes a simulated lidar survey of a block of Coimbra to it, unless the folder has a cloud.las already."
-default = "cloud.las"
+tooltip = "The LAS (.las) or LAZ (.laz) file, in the folder above, or an absolute path. With the default, autzen_trim.laz, the example first downloads a real survey around Autzen Stadium in Eugene, Oregon, from the test data of PDAL, about 0.6 MB, unless the folder has it already."
+default = "autzen_trim.laz"
 models = ["las"]
 
 [[inputs]]
@@ -207,49 +207,33 @@ models = ["las"]
 [[inputs]]
 id = "lasCrs"
 label = "File Coordinate System"
-tooltip = "file: the coordinate system the file records. For a file that records none, give it as an EPSG code, e.g. EPSG:3763 (ETRS89 / Portugal TM06) or EPSG:25829 (ETRS89 / UTM zone 29N)."
+tooltip = "file: the coordinate system the file records. For a file that records none, give it as an EPSG code, e.g. EPSG:27700 (OSGB36 / British National Grid) or EPSG:32632 (WGS 84 / UTM zone 32N)."
 default = "file"
 models = ["las"]
 
 [[inputs]]
 id = "cellSize"
 label = "Cell Size"
-tooltip = "The side of a grid cell, in the units of the coordinate system (metres for a projected one), for Point Density and the elevation grids: a cell should hold several points."
-default = "1"
+tooltip = "The side of a grid cell, in the units of the coordinate system (metres or feet for a projected one, feet in the example), for Point Density and the elevation grids: a cell should hold several points."
+default = "6"
 models = ["las"]
 
 [[codeBranches]]
 model = "las"
 code = '''
-using PointClouds, ArchGDAL
-{{?lasFile=cloud.las}}using Random
+using PointClouds, ArchGDAL, Downloads
 
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 path = joinpath(folder, "{{lasFile}}")  # an absolute path is kept as it is
-{{?lasFile=cloud.las}}# Example file: a simulated airborne lidar survey of a block of 200 by 150 m in Coimbra, 4 points per square metre on ETRS89 / Portugal TM06 (EPSG:3763): sloping ground, two buildings and a row of trees, classified as ground (2), high vegetation (5) and building (6), written to cloud.las unless the folder has one already. Replace "cloud.las" with your own LAS or LAZ file.
-{{?lasFile=cloud.las}}if !isfile(path)
-{{?lasFile=cloud.las}}	rng = Xoshiro(42)  # fixed seed: the same survey on every run
-{{?lasFile=cloud.las}}	n = 120_000
-{{?lasFile=cloud.las}}	x0, y0 = -23700.0, 59350.0  # the south-west corner, in metres
-{{?lasFile=cloud.las}}	x = x0 .+ 200 .* rand(rng, n)
-{{?lasFile=cloud.las}}	y = y0 .+ 150 .* rand(rng, n)
-{{?lasFile=cloud.las}}	ground = 60 .+ 0.05 .* (x .- x0) .+ 0.02 .* (y .- y0)  # a gentle slope up to the north-east
-{{?lasFile=cloud.las}}	building = ((30 .< x .- x0 .< 70) .& (40 .< y .- y0 .< 90)) .| ((120 .< x .- x0 .< 160) .& (20 .< y .- y0 .< 50))  # two flat roofs
-{{?lasFile=cloud.las}}	tree = [any((xi - x0 - cx)^2 + (yi - y0 - 125)^2 < 25 for cx in 20:20:180) for (xi, yi) in zip(x, y)]  # crowns of 5 m radius along a street
-{{?lasFile=cloud.las}}	canopy = tree .& (rand(rng, n) .< 0.7)  # most pulses return from the crown, the rest reach the ground
-{{?lasFile=cloud.las}}	z = ground .+ 0.05 .* randn(rng, n) .+ ifelse.(building, ifelse.(x .- x0 .< 100, 15.0, 9.0), 0.0) .+ ifelse.(canopy .& .!building, 4 .+ 6 .* rand(rng, n), 0.0)
-{{?lasFile=cloud.las}}	class = ifelse.(building, 6, ifelse.(canopy, 5, 2))  # ASPRS classes: 2 ground, 5 high vegetation, 6 building
-{{?lasFile=cloud.las}}	strength = round.(UInt16, clamp.(ifelse.(class .== 2, 1800, ifelse.(class .== 6, 2600, 900)) .+ 150 .* randn(rng, n), 0, 65535))
-{{?lasFile=cloud.las}}	sim = LAS(PointRecord{6}, (x = x, y = y, z = z, classification = class, intensity = strength, return_number = ones(Int, n), return_count = ifelse.(tree, 2, 1)); coord_scale = (0.001, 0.001, 0.001), has_well_known_text = true)  # coordinates kept to the millimetre
-{{?lasFile=cloud.las}}	push!(sim.vlrs, PointClouds.IO.VariableLengthRecord("LASF_Projection", 2112, Vector{UInt8}(ArchGDAL.toWKT(ArchGDAL.importEPSG(3763)) * "\0"), "OGC WKT"))  # the coordinate system, as OGC WKT
-{{?lasFile=cloud.las}}	write(path, sim)
-{{?lasFile=cloud.las}}end
+{{?lasFile=autzen_trim.laz}}# Example file: autzen_trim.laz, a real airborne lidar survey of 110,000 points around Autzen Stadium in Eugene, Oregon, classified as unclassified (1) and ground (2), in feet on NAD83(HARN) / Oregon GIC Lambert, from the test data of PDAL, about 0.6 MB. Downloaded unless the folder has it already. Replace "autzen_trim.laz" with your own LAS or LAZ file.
+{{?lasFile=autzen_trim.laz}}isfile(path) || Downloads.download("https://github.com/PDAL/PDAL/raw/master/test/data/laz/autzen_trim.laz", path)
 
 las = LAS(path)  # the header now; the points are read when used, decompressed if the file is LAZ
 keep = 1:{{every}}:length(las)  # the points to read
 xyz = coordinates(las, keep)  # x, y and z, the scale and offset of the header applied
 pts = (x = first.(xyz), y = getindex.(xyz, 2), z = last.(xyz), classification = classification(las, keep), intensity = intensity(las, keep), return_number = return_number(las, keep), return_count = return_count(las, keep))  # a Tables.jl table, one row per point
-{{?lasCrs=file}}file_crs = getcrs(las) === nothing ? "" : getcrs(String, las)  # the coordinate system the file records, as WKT, or none
+{{?lasCrs=file}}wkt_record = findfirst(v -> v.record_id == 2112, las.vlrs)  # a record of the coordinate system as OGC WKT, if the file has one
+{{?lasCrs=file}}file_crs = wkt_record !== nothing ? String(rstrip(String(copy(las.vlrs[wkt_record].data)), '\0')) : getcrs(las) === nothing ? "" : getcrs(String, las)  # the WKT the file records, or one made from its GeoTIFF keys, or none
 {{?lasCrs!=file}}file_crs = "{{lasCrs}}"
 println(length(pts.x), " of ", length(las), " points, LAS ", join(Int.(las.version), "."), "; x from ", minimum(pts.x), " to ", maximum(pts.x), ", y from ", minimum(pts.y), " to ", maximum(pts.y), ", z from ", minimum(pts.z), " to ", maximum(pts.z))
 isempty(file_crs) && println("The file records no coordinate system: give its EPSG code in the File Coordinate System input")
