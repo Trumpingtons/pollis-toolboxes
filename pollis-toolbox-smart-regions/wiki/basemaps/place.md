@@ -10,7 +10,7 @@ The Zoom input of the Place tab runs from 0, where the whole world fits in one t
 
 ## The Scale of a Web Map at a Given Zoom
 
-At a given zoom, the ground that a pixel of a web map covers depends on latitude: Web Mercator enlarges the map away from the equator, so a pixel covers fewer metres in Oslo than in Lisbon at the same zoom ([Battersby, Finn, Usery and Yamamoto (2014)](#ref-BFUY2014a)). MapLibre GL JS draws the whole world 512 pixels wide at zoom 0, and twice as wide at each level up ([MapLibre Contributors (2026)](#ref-MLC2026a)). The Map Scale action of the Place tab prints the metres a pixel covers at the place's latitude and zoom, and the width of 1,000 pixels on the ground. The scale bar at the bottom left of the map shows the same at the latitude of the middle of the map, and changes as the map moves north or south.
+At a given zoom, the ground that a pixel of a web map covers depends on latitude: Web Mercator enlarges the map away from the equator, so a pixel covers fewer metres in Copenhagen than in Rome at the same zoom ([Battersby, Finn, Usery and Yamamoto (2014)](#ref-BFUY2014a)). MapLibre GL JS draws the whole world 512 pixels wide at zoom 0, and twice as wide at each level up ([MapLibre Contributors (2026)](#ref-MLC2026a)). The Map Scale action of the Place tab prints the metres a pixel covers at the place's latitude and zoom, and the width of 1,000 pixels on the ground. The scale bar at the bottom left of the map shows the same at the latitude of the middle of the map, and changes as the map moves north or south.
 
 ## References
 
