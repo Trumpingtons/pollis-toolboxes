@@ -1,0 +1,756 @@
+# Mapillary Street-Level Imagery: the street-level images of an area from the coverage tiles of Mapillary, the images found by
+# its image search with their cameras and thumbnails, and the map features located from them, read with an access token
+
+[meta]
+title = "Mapillary Street-Level Imagery"
+viewType = "pollis.mapillary"
+defaultModel = "coverage"
+decisionFirstColumn = "Tab"
+
+# The user's Mapillary client access token, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "Mapillary"
+noun = "access token"
+
+[[apiKey.fields]]
+name = "mapillaryToken"
+envVar = "MAPILLARY_ACCESS_TOKEN"
+prompt = "Mapillary client access token, from the developer dashboard of Mapillary"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "mapillary/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, what each reads, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "mapillary/overview.md"
+bundled = true
+description = "Mapillary, its street-level images, and the research that uses them"
+
+[[wikis]]
+name = "Authentication"
+file = "mapillary/authentication.md"
+bundled = true
+description = "The Mapillary client access token, where Pollis keeps it, and running the code outside the REPL"
+
+[[wikis]]
+name = "Diagnostics"
+file = "mapillary/diagnostics.md"
+bundled = true
+description = "A refused token, an area too large, no images, images without a quality score"
+
+[[wikis]]
+name = "Decision Guide"
+file = "mapillary/decision-guide.md"
+bundled = true
+description = "Which tab, which area, and which filters"
+
+[[wikis]]
+separator = true
+label = "API and Data"
+
+[[wikis]]
+name = "Coverage Tiles"
+file = "mapillary/coverage-tiles.md"
+bundled = true
+
+[[wikis]]
+name = "Image Search"
+file = "mapillary/image-search.md"
+bundled = true
+
+[[wikis]]
+name = "Map Features"
+file = "mapillary/map-features.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Documentation and Data"
+
+[[references]]
+key = "Map2026a"
+
+[[references]]
+key = "NORK2017a"
+
+[[references]]
+key = "EMOPN...2020a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "BI2021a"
+
+[[references]]
+key = "JH2016a"
+
+[[references]]
+key = "MSCCS2020a"
+
+[[faq]]
+question = "What do I need to use the panel?"
+answer = '''
+A Mapillary client access token, free from the developer dashboard of Mapillary once an application is registered there, for every tab: Mapillary answers no request without one. It is set with the key on the Powered by line.
+'''
+wiki = "Authentication"
+
+[[faq]]
+question = "Which tab should I use?"
+answer = '''
+Coverage reads the coverage tiles, which Mapillary recommends for larger areas: every image with its date, heading, sequence and quality score, up to a whole city. Images searches a smaller area for the images with their cameras, filters by date and panorama, and downloads thumbnails. Map Features lists the traffic signs and other objects located from the images.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why does the Images tab make so many requests?"
+answer = '''
+Mapillary answers an image search only over a box of less than 0.01 square degrees, with at most 2,000 images and no further pages. The tab splits the Area into boxes of that size, and splits again into four any box that returns 2,000 images, so that no image is left out.
+'''
+wiki = "Image Search"
+
+[[faq]]
+question = "How large an area can I read?"
+answer = '''
+Coverage reads at most 400 tiles of zoom 14 in one run, an area of about a city; Mapillary serves 50,000 tiles a day. Images and Map Features search at most one square degree, in boxes of less than 0.01 square degrees.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Are the positions of the images those of the camera?"
+answer = '''
+The panel uses the computed positions: those Mapillary estimates after processing the images together, in the computed coverage tiles and the computed geometry of the image search, with the original position from the camera where no computed one is given.
+'''
+wiki = "Coverage Tiles"
+hidden = true
+
+[[faq]]
+question = "What is a map feature?"
+answer = '''
+An object with a location, such as a traffic sign or a utility pole, which Mapillary derives from detections of the object in several images. Each has a value naming its kind, the dates it was first and last seen, and the compass direction it faces.
+'''
+wiki = "Map Features"
+hidden = true
+
+[[models]]
+id = "coverage"
+label = "Coverage"
+
+[[models]]
+id = "images"
+label = "Images"
+
+[[models]]
+id = "features"
+label = "Map Features"
+
+[[bullets]]
+text = "Coverage"
+detail = "Reads the computed coverage tiles of Mapillary over an area up to a city: every image with its date, heading, sequence and quality score, and the sequences as lines"
+
+[[bullets]]
+text = "Images"
+detail = "Searches the images of a smaller area with their cameras and computed positions, by date and panorama, and downloads thumbnails"
+
+[[bullets]]
+text = "Map Features"
+detail = "Lists the traffic signs and other objects Mapillary has located from its images, with when they were first and last seen"
+
+[[decisionRows]]
+task = "Coverage"
+context = "Up to a city"
+purpose = "Where and when the area was photographed, image by image and sequence by sequence"
+
+[[decisionRows]]
+task = "Images"
+context = "A neighbourhood"
+purpose = "The images themselves: their cameras, filters by date and panorama, and thumbnails to look at"
+
+[[decisionRows]]
+task = "Map Features"
+context = "A neighbourhood"
+purpose = "The traffic signs, utility poles and other objects seen in the images, as points"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the tiles and thumbnails are kept once downloaded, in a folder mapillary, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "area"
+label = "Area (W, S, E, N)"
+tooltip = "The area as west, south, east and north, in degrees of longitude and latitude: by default, the centre of Amsterdam."
+default = "4.880, 52.365, 4.910, 52.380"
+newRow = true
+
+[[inputs]]
+id = "fromDay"
+label = "Captured From"
+tooltip = "The first day of capture of the images, as 2020-01-31, or any."
+default = "any"
+models = ["images"]
+newRow = true
+
+[[inputs]]
+id = "toDay"
+label = "Captured To"
+tooltip = "The last day of capture of the images, as 2025-12-31, or any."
+default = "any"
+models = ["images"]
+
+[[inputs]]
+id = "pano"
+label = "Panoramas"
+kind = "select"
+default = "all"
+models = ["images"]
+newRow = true
+
+[[inputs.options]]
+value = "all"
+label = "All Images"
+
+[[inputs.options]]
+value = "true"
+label = "Panoramas Only"
+
+[[inputs.options]]
+value = "false"
+label = "No Panoramas"
+
+[[inputs]]
+id = "thumbs"
+label = "Thumbnails"
+kind = "select"
+default = "20"
+tooltip = "How many thumbnails, 1024 pixels wide, to download into the folder: one image of each sequence first, the newest first."
+models = ["images"]
+
+[[inputs.options]]
+value = "0"
+label = "None"
+
+[[inputs.options]]
+value = "20"
+label = "20 Images"
+
+[[inputs.options]]
+value = "100"
+label = "100 Images"
+
+[[inputs]]
+id = "kind"
+label = "Kind"
+kind = "select"
+default = "all"
+models = ["features"]
+newRow = true
+
+[[inputs.options]]
+value = "all"
+label = "Signs and Points"
+
+[[inputs.options]]
+value = "traffic_sign"
+label = "Traffic Signs"
+
+[[inputs.options]]
+value = "point"
+label = "Points"
+
+[[inputs]]
+id = "values"
+label = "Values"
+tooltip = "The kinds of map feature to search, as Mapillary names them, separated by commas, with * as a wildcard: object--support--utility-pole, or regulatory--*; or all."
+default = "all"
+models = ["features"]
+
+[[inputs]]
+id = "splitYear"
+label = "Split Year"
+tooltip = "The year Two Periods Side by Side divides the images at: before it, and from it on."
+default = "2020"
+models = ["coverage", "images"]
+newRow = true
+
+[[codeBranches]]
+model = "coverage"
+code = '''
+using DuckDB, Tables, Downloads, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+place = mkpath(joinpath(folder, "mapillary"))  # where the tiles are kept, and the Next Steps save their files
+haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Authentication wiki")
+function mly_get(url, path; headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]])  # one request of the Mapillary API, written to path; stops with the API's message
+	part = path * ".part"
+	r = open(io -> Downloads.request(url; output = io, headers = headers, throw = false), part, "w")
+	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
+	if r.status in (204, 404)  # a tile with no images
+		write(part, "")
+	elseif r.status != 200
+		answer = read(part, String)
+		rm(part; force = true)
+		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
+		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
+	end
+	return mv(part, path; force = true)
+end
+z = 14  # the zoom of the image layer of the coverage tiles
+tile_x(lon) = floor(Int, (lon + 180) / 360 * 2^z)
+tile_y(lat) = floor(Int, (1 - asinh(tand(lat)) / pi) / 2 * 2^z)
+tiles = [(x, y) for x in tile_x(west):tile_x(east) for y in tile_y(north):tile_y(south)]
+length(tiles) > 400 && error("The area needs $(length(tiles)) tiles at zoom 14, more than the 400 the tab reads in one run (Mapillary serves 50,000 tiles a day): make it smaller")
+day = joinpath(place, "tiles", string(today()))  # the tiles of today; a later day downloads them again
+tile_files = String[]
+for (x, y) in tiles
+	tile_path = joinpath(mkpath(joinpath(day, "$(z)", "$(x)")), "$(y).pbf")
+	isfile(tile_path) || mly_get("https://tiles.mapillary.com/maps/vtp/mly1_computed_public/2/$(z)/$(x)/$(y)?access_token=" * ENV["MAPILLARY_ACCESS_TOKEN"], tile_path; headers = Pair{String, String}[])
+	filesize(tile_path) > 0 && push!(tile_files, tile_path)
+end
+isempty(tile_files) && error("Mapillary has no images over the area")
+in_tiles = query("SELECT file_name, l.name AS layer FROM ST_Read_Meta(?) m, unnest(m.layers) AS u(l)", [tile_files])  # the layers of each tile
+function layer_of(name, columns)  # one layer of the tiles, read with GDAL's MVT driver, with the columns any tile may lack
+	reads = ["SELECT * FROM ST_Read('$(f)', layer = '$(name)')" for (f, l) in zip(in_tiles.file_name, in_tiles.layer) if l == name]
+	return join(["SELECT $(columns), NULL::GEOMETRY AS geom WHERE false"; reads], " UNION ALL BY NAME ")
+end
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE images AS
+SELECT DISTINCT ON (id) CAST(id AS VARCHAR) AS id, CAST(sequence_id AS VARCHAR) AS sequence_id, epoch_ms(CAST(captured_at AS BIGINT)) AS captured_at,
+	CAST(compass_angle AS DOUBLE) AS compass_angle, CAST(is_pano AS BOOLEAN) AS is_pano, CAST(quality_score AS DOUBLE) AS quality_score,
+	CAST(creator_id AS VARCHAR) AS creator, CAST(organization_id AS VARCHAR) AS organization_id, ST_Transform(geom, 'EPSG:3857', 'EPSG:4326') AS geom
+FROM ($(layer_of("image", "NULL::VARCHAR AS id, NULL::VARCHAR AS sequence_id, NULL::BIGINT AS captured_at, NULL::DOUBLE AS compass_angle, NULL::BOOLEAN AS is_pano, NULL::DOUBLE AS quality_score, NULL::VARCHAR AS creator_id, NULL::VARCHAR AS organization_id")))
+WHERE ST_Intersects(ST_Transform(geom, 'EPSG:3857', 'EPSG:4326'), $(area))
+""")  # one row per image: its sequence, date, compass angle, panorama, quality score, creator and organisation
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE sequences AS
+SELECT id, image_id, captured_at, is_pano, quality_score, ST_Intersection(geom, $(area)) AS geom FROM (
+	SELECT CAST(id AS VARCHAR) AS id, CAST(any_value(image_id) AS VARCHAR) AS image_id, epoch_ms(CAST(min(captured_at) AS BIGINT)) AS captured_at,
+		CAST(any_value(is_pano) AS BOOLEAN) AS is_pano, avg(CAST(quality_score AS DOUBLE)) AS quality_score,
+		ST_LineMerge(ST_Collect(list(ST_Transform(geom, 'EPSG:3857', 'EPSG:4326')))) AS geom
+	FROM ($(layer_of("sequence", "NULL::VARCHAR AS id, NULL::VARCHAR AS image_id, NULL::BIGINT AS captured_at, NULL::BOOLEAN AS is_pano, NULL::DOUBLE AS quality_score")))
+	GROUP BY id)
+WHERE ST_Intersects(geom, $(area))
+""")  # one row per sequence: its first image, date, panorama, mean quality score and line, pieces from several tiles joined
+kept = ["images", "sequences"]  # the tables Save as GeoParquet writes
+s = only(query("SELECT count(*) AS n, count(DISTINCT sequence_id) AS k, CAST(min(captured_at) AS DATE) AS t0, CAST(max(captured_at) AS DATE) AS t1, round(100 * avg(CAST(is_pano AS INTEGER)), 1) AS pano FROM images") |> Tables.rows)
+s.n == 0 && error("Mapillary has no images over the area")
+println(s.n, " images in ", s.k, " sequences over the area, captured from ", s.t0, " to ", s.t1, "; ", s.pano, "% panoramas; from ", length(tile_files), " tiles in ", day)
+'''
+
+[[codeBranches]]
+model = "images"
+code = '''
+using DuckDB, Tables, Downloads, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+place = mkpath(joinpath(folder, "mapillary"))  # where the thumbnails are kept, and the Next Steps save their files
+haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Authentication wiki")
+function mly_get(url, path; headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]])  # one request of the Mapillary API, written to path; stops with the API's message
+	part = path * ".part"
+	r = open(io -> Downloads.request(url; output = io, headers = headers, throw = false), part, "w")
+	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
+	if r.status != 200
+		answer = read(part, String)
+		rm(part; force = true)
+		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
+		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
+	end
+	return mv(part, path; force = true)
+end
+(east - west) * (north - south) > 1 && error("The area is $(round((east - west) * (north - south); digits = 2)) square degrees, more than the 1 the tab searches: make it smaller, or use Coverage")
+function search(endpoint, fields, filters)  # every answer over the area, in boxes under 0.01 square degrees; a box with 2,000 answers is split in four
+	boxes = [(w, s, min(w + 0.09, east), min(s + 0.09, north)) for w in west:0.09:prevfloat(east) for s in south:0.09:prevfloat(north)]
+	answers = String[]
+	while !isempty(boxes)
+		w, s, e, n = pop!(boxes)
+		answer = mly_get("https://graph.mapillary.com/$(endpoint)?" * join(["fields=$(fields)"; "bbox=$(w),$(s),$(e),$(n)"; "limit=2000"; filters], "&"), tempname() * ".json")
+		if only(query("SELECT json_array_length(content, '/data') AS k FROM read_text(?)", [answer]).k) >= 2000 && e - w > 1e-4
+			mw, ms = (w + e) / 2, (s + n) / 2
+			append!(boxes, [(w, s, mw, ms), (mw, s, e, ms), (w, ms, mw, n), (mw, ms, e, n)])
+		else
+			push!(answers, answer)
+		end
+	end
+	return answers
+end
+fields = "id,captured_at,compass_angle,computed_compass_angle,geometry,computed_geometry,camera_type,make,model,is_pano,on_foot,quality_score,sequence,creator,thumb_1024_url,width,height"
+filters = String[]
+from_day, to_day = "{{fromDay}}", "{{toDay}}"
+from_day == "any" || push!(filters, "start_captured_at=$(from_day)T00:00:00Z")
+to_day == "any" || push!(filters, "end_captured_at=$(to_day)T23:59:59Z")
+"{{pano}}" == "all" || push!(filters, "is_pano={{pano}}")
+answers = search("images", fields, filters)
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE images AS
+SELECT DISTINCT ON (id) x->>'id' AS id, x->>'sequence' AS sequence_id, epoch_ms(CAST(x->>'captured_at' AS BIGINT)) AS captured_at,
+	CAST(coalesce(x->>'computed_compass_angle', x->>'compass_angle') AS DOUBLE) AS compass_angle, CAST(x->>'is_pano' AS BOOLEAN) AS is_pano,
+	TRY_CAST(x->>'on_foot' AS BOOLEAN) AS on_foot, TRY_CAST(x->>'quality_score' AS DOUBLE) AS quality_score, x->>'camera_type' AS camera_type,
+	x->>'make' AS make, x->>'model' AS camera_model, CAST(x->>'width' AS INTEGER) AS width, CAST(x->>'height' AS INTEGER) AS height,
+	x->'creator'->>'username' AS creator, x->>'thumb_1024_url' AS thumb_url, CAST(NULL AS VARCHAR) AS thumbnail,
+	ST_GeomFromGeoJSON(coalesce(x->'computed_geometry', x->'geometry')) AS geom
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[])) AS x FROM read_text(?))
+""", [answers])  # one row per image: its sequence, date, heading, panorama, quality score, camera, creator, thumbnail and computed position
+foreach(rm, answers)
+thumbs = {{thumbs}}  # how many thumbnails to download
+if thumbs > 0
+	pick = query("SELECT id, thumb_url FROM (SELECT id, thumb_url, captured_at, row_number() OVER (PARTITION BY sequence_id ORDER BY captured_at DESC) AS k FROM images WHERE thumb_url IS NOT NULL) ORDER BY k, captured_at DESC LIMIT $(thumbs)")  # one image of each sequence first, the newest first
+	shelf = mkpath(joinpath(place, "thumbnails"))
+	for i in eachindex(pick.id)
+		thumb = joinpath(shelf, pick.id[i] * ".jpg")
+		isfile(thumb) || mv(Downloads.download(pick.thumb_url[i], thumb * ".part"), thumb)
+		DBInterface.execute(con, "UPDATE images SET thumbnail = ? WHERE id = ?", [thumb, pick.id[i]])
+	end
+end
+kept = ["images"]  # the tables Save as GeoParquet writes
+s = only(query("SELECT count(*) AS n, count(DISTINCT sequence_id) AS k, CAST(min(captured_at) AS DATE) AS t0, CAST(max(captured_at) AS DATE) AS t1, round(100 * avg(CAST(is_pano AS INTEGER)), 1) AS pano, count(thumbnail) AS shown FROM images") |> Tables.rows)
+s.n == 0 && error("Mapillary has no images over the area with these filters")
+println(s.n, " images in ", s.k, " sequences over the area, captured from ", s.t0, " to ", s.t1, "; ", s.pano, "% panoramas; ", s.shown, " thumbnails in ", joinpath(place, "thumbnails"))
+'''
+
+[[codeBranches]]
+model = "features"
+code = '''
+using DuckDB, Tables, Downloads, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+place = mkpath(joinpath(folder, "mapillary"))  # where the Next Steps save their files
+haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Authentication wiki")
+function mly_get(url, path; headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]])  # one request of the Mapillary API, written to path; stops with the API's message
+	part = path * ".part"
+	r = open(io -> Downloads.request(url; output = io, headers = headers, throw = false), part, "w")
+	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
+	if r.status != 200
+		answer = read(part, String)
+		rm(part; force = true)
+		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
+		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
+	end
+	return mv(part, path; force = true)
+end
+(east - west) * (north - south) > 1 && error("The area is $(round((east - west) * (north - south); digits = 2)) square degrees, more than the 1 the tab searches: make it smaller")
+function search(endpoint, fields, filters)  # every answer over the area, in boxes under 0.01 square degrees; a box with 2,000 answers is split in four
+	boxes = [(w, s, min(w + 0.09, east), min(s + 0.09, north)) for w in west:0.09:prevfloat(east) for s in south:0.09:prevfloat(north)]
+	answers = String[]
+	while !isempty(boxes)
+		w, s, e, n = pop!(boxes)
+		answer = mly_get("https://graph.mapillary.com/$(endpoint)?" * join(["fields=$(fields)"; "bbox=$(w),$(s),$(e),$(n)"; "limit=2000"; filters], "&"), tempname() * ".json")
+		if only(query("SELECT json_array_length(content, '/data') AS k FROM read_text(?)", [answer]).k) >= 2000 && e - w > 1e-4
+			mw, ms = (w + e) / 2, (s + n) / 2
+			append!(boxes, [(w, s, mw, ms), (mw, s, e, ms), (w, ms, mw, n), (mw, ms, e, n)])
+		else
+			push!(answers, answer)
+		end
+	end
+	return answers
+end
+filters = String[]
+wanted = "{{values}}"
+wanted == "all" || push!(filters, "object_values=" * replace(wanted, " " => ""))
+kind = "{{kind}}"
+answers = search("map_features", "id,object_value,object_type,first_seen_at,last_seen_at,aligned_direction,geometry", filters)
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE features AS
+SELECT DISTINCT ON (id) x->>'id' AS id, x->>'object_value' AS value, x->>'object_type' AS kind, split_part(x->>'object_value', '--', 1) AS family,
+	TRY_CAST(left(x->>'first_seen_at', 19) AS TIMESTAMP) AS first_seen, TRY_CAST(left(x->>'last_seen_at', 19) AS TIMESTAMP) AS last_seen,
+	TRY_CAST(x->>'aligned_direction' AS DOUBLE) AS aligned_direction, ST_GeomFromGeoJSON(x->'geometry') AS geom
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[])) AS x FROM read_text(?))
+""", [answers])  # one row per map feature: its value, kind, family, first and last seen, direction and point
+foreach(rm, answers)
+kind == "all" || DBInterface.execute(con, "DELETE FROM features WHERE kind <> ?", [kind])
+kept = ["features"]  # the tables Save as GeoParquet writes
+s = query("SELECT kind, count(*) AS n, count(DISTINCT value) AS k FROM features GROUP BY kind ORDER BY kind")
+isempty(s.n) && error("Mapillary has no map features over the area with these filters")
+for i in eachindex(s.n)
+	println(s.n[i], " ", s.kind[i] == "traffic_sign" ? "traffic signs" : "points", " of ", s.k[i], " kinds over the area")
+end
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "images-map"
+label = "Images on a Map"
+desc = "The images as points coloured by the year they were captured, on an OpenStreetMap base map in Pollis's map view, at most 20,000 (a sample when there are more); click an image for its date, heading and sequence"
+models = ["coverage", "images"]
+code = '''
+shown = joinpath(mktempdir(), "images.geojson")
+DBInterface.execute(con, "COPY (SELECT id, sequence_id, CAST(captured_at AS VARCHAR) AS captured, year(captured_at) AS year, compass_angle, is_pano, quality_score, geom FROM images USING SAMPLE reservoir(20000 ROWS) REPEATABLE (1)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Images by year", column = "year"); title = "Mapillary Images"))
+'''
+
+[[actionGroups.actions]]
+id = "images-over-time"
+label = "Images over Time"
+desc = "How many images were captured each month, panoramas and the others stacked, drawn with ECharts"
+models = ["coverage", "images"]
+code = '''
+using ECharts
+
+m = query("SELECT CAST(date_trunc('month', captured_at) AS VARCHAR) AS month, count(*) FILTER (WHERE NOT coalesce(is_pano, false)) AS others, count(*) FILTER (WHERE is_pano) AS panoramas FROM images GROUP BY month ORDER BY month")
+EChart(ec_width = 760, ec_height = 380, title = [ECharts.Title(text = "Images Captured Each Month")], tooltip = ECharts.Tooltip(trigger = "axis"), legend = ECharts.Legend(),
+	xAxis = [ECharts.Axis(_type = "time", name = "Month", axisLabel = ECharts.AxisLabel(formatter = "{yyyy}"))], yAxis = [ECharts.Axis(_type = "value", name = "Images")],
+	series = [ECharts.XYSeries(name = name, _type = "bar", stack = "images", barMaxWidth = 12, data = [[m.month[i], counts[i]] for i in eachindex(m.month)]) for (name, counts) in (("Other images", m.others), ("Panoramas", m.panoramas))])  # both series on the same months, as stacking pairs them by position
+'''
+
+[[actionGroups.actions]]
+id = "look-at-images"
+label = "Look at the Images"
+desc = "The thumbnails downloaded, newest first, with the date, heading and camera of each, on a page in Pollis's browser; each links to the image on Mapillary"
+models = ["images"]
+code = '''
+t = query("SELECT id, thumbnail, CAST(CAST(captured_at AS DATE) AS VARCHAR) AS day, CAST(round(compass_angle) AS INTEGER) AS heading, coalesce(camera_type, '') AS camera, is_pano FROM images WHERE thumbnail IS NOT NULL ORDER BY captured_at DESC")
+isempty(t.id) && error("No thumbnail has been downloaded: choose 20 or 100 Thumbnails and run the Images tab again")
+figures = ["<figure><a href=\"https://www.mapillary.com/app/?pKey=$(t.id[i])\"><img src=\"thumbnails/$(basename(t.thumbnail[i]))\" alt=\"Image $(t.id[i])\"></a><figcaption>$(t.day[i]) · heading $(coalesce(t.heading[i], "unknown"))° · $(t.camera[i])$(coalesce(t.is_pano[i], false) ? " · panorama" : "")</figcaption></figure>" for i in eachindex(t.id)]
+sheet = joinpath(place, "mapillary-images.html")
+write(sheet, """<!doctype html><html><head><meta charset="utf-8"><title>Mapillary Images</title>
+<style>body{font-family:sans-serif;margin:16px}div{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px}figure{margin:0}img{width:100%;border-radius:4px}figcaption{font-size:12px;color:#666;margin-top:4px}</style></head>
+<body><h2>Mapillary Images over the Area</h2><p>$(length(t.id)) images, newest first. Images from Mapillary.</p><div>$(join(figures))</div></body></html>""")
+Pollis.browse(sheet)
+'''
+
+[[actionGroups.actions]]
+id = "sequences-map"
+label = "Sequences on a Map"
+desc = "The sequences, each a line along the images captured in one session, coloured by the year they began, on an OpenStreetMap base map in Pollis's map view"
+models = ["coverage"]
+code = '''
+shown = joinpath(mktempdir(), "sequences.geojson")
+DBInterface.execute(con, "COPY (SELECT id, CAST(captured_at AS VARCHAR) AS captured, year(captured_at) AS year, is_pano, quality_score, geom FROM sequences) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Sequences by year", column = "year"); title = "Mapillary Sequences"))
+'''
+
+[[actionGroups.actions]]
+id = "features-map"
+label = "Map Features on a Map"
+desc = "The map features as points coloured by their family (regulatory, warning, information, object, marking...), on an OpenStreetMap base map in Pollis's map view, at most 20,000 (a sample when there are more)"
+models = ["features"]
+code = '''
+shown = joinpath(mktempdir(), "features.geojson")
+DBInterface.execute(con, "COPY (SELECT id, value, kind, family, CAST(first_seen AS VARCHAR) AS first_seen, CAST(last_seen AS VARCHAR) AS last_seen, geom FROM features USING SAMPLE reservoir(20000 ROWS) REPEATABLE (1)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Map features by family", column = "family"); title = "Mapillary Map Features"))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "image-quality"
+label = "Image Quality"
+desc = "The quality score Mapillary predicts for each image, from 0 to 1: how many images have one, its quantiles, and the share of images in each tenth of the scale"
+models = ["coverage", "images"]
+code = '''
+q = only(query("SELECT count(*) AS n, count(quality_score) AS scored, quantile_cont(quality_score, [0.05, 0.25, 0.5, 0.75, 0.95]) AS qs FROM images") |> Tables.rows)
+println(q.scored, " of ", q.n, " images have a quality score (", round(100 * q.scored / max(q.n, 1); digits = 1), "%)")
+if q.scored > 0
+	println("Quantiles 5, 25, 50, 75, 95%: ", join(round.(q.qs; digits = 3), ", "))
+	b = query("SELECT least(floor(quality_score * 10), 9) AS bin, count(*) AS n FROM images WHERE quality_score IS NOT NULL GROUP BY bin ORDER BY bin")
+	for i in eachindex(b.n)
+		println(lpad(b.bin[i] / 10, 4), " to ", rpad((b.bin[i] + 1) / 10, 4), lpad(round(100 * b.n[i] / q.scored; digits = 1), 6), "%  ", repeat("#", round(Int, 50 * b.n[i] / q.scored)))
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "cells-without-images"
+label = "Cells Without Images"
+desc = "The area divided into cells of about 100 m: how many have at least one image, and how many one of the last three years; cells without streets, such as water and parks, count among those without"
+models = ["coverage", "images"]
+code = '''
+dx, dy = 100 / (111320 * cosd((south + north) / 2)), 100 / 110574  # about 100 m, in degrees at the middle of the area
+nx, ny = ceil(Int, (east - west) / dx), ceil(Int, (north - south) / dy)
+c = only(query("SELECT count(DISTINCT i * 1000000 + j) AS n, count(DISTINCT i * 1000000 + j) FILTER (WHERE captured_at >= now() - INTERVAL 3 YEAR) AS recent FROM (SELECT floor((ST_X(geom) - $(west)) / $(dx)) AS i, floor((ST_Y(geom) - $(south)) / $(dy)) AS j, captured_at FROM images)") |> Tables.rows)
+println(nx * ny, " cells of about 100 m over the area:")
+println("  ", c.n, " with an image (", round(100 * c.n / (nx * ny); digits = 1), "%), ", c.recent, " with one of the last three years (", round(100 * c.recent / (nx * ny); digits = 1), "%)")
+println("  ", nx * ny - c.n, " without an image")
+'''
+
+[[actionGroups.actions]]
+id = "downloaded-files"
+label = "Files Downloaded"
+desc = "The files in the folder mapillary: the coverage tiles of each day, and the thumbnails, with how many and their size"
+models = ["coverage", "images"]
+code = '''
+groups = Dict{String, Vector{Int}}()
+for (root, _, names) in walkdir(place), name in names
+	root == place && continue  # the files the Next Steps saved
+	bucket = relpath(root, place)
+	bucket = startswith(bucket, "tiles") ? joinpath(splitpath(bucket)[1:min(2, end)]...) : bucket
+	push!(get!(groups, bucket, Int[]), filesize(joinpath(root, name)))
+end
+for g in sort(collect(keys(groups)))
+	println(rpad(g, 24), lpad(length(groups[g]), 7), " files", lpad(round(sum(groups[g]) / 2^20; digits = 2), 9), " MB")
+end
+isempty(groups) && println("No tiles or thumbnails have been downloaded into ", place)
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "two-periods"
+label = "Two Periods Side by Side"
+desc = "The cells of about 100 m with images before the Split Year, from it on, or both, counted and on an OpenStreetMap base map in Pollis's map view: where the area has been photographed again"
+models = ["coverage", "images"]
+code = '''
+split_year = {{splitYear}}
+dx, dy = 100 / (111320 * cosd((south + north) / 2)), 100 / 110574  # about 100 m, in degrees at the middle of the area
+cells = """SELECT i, j, CASE WHEN max(year(captured_at)) < $(split_year) THEN 'Before $(split_year) only' WHEN min(year(captured_at)) >= $(split_year) THEN 'From $(split_year) only' ELSE 'Both' END AS period
+	FROM (SELECT floor((ST_X(geom) - $(west)) / $(dx)) AS i, floor((ST_Y(geom) - $(south)) / $(dy)) AS j, captured_at FROM images) GROUP BY i, j"""
+p = query("SELECT period, count(*) AS n FROM ($(cells)) GROUP BY period ORDER BY period")
+for i in eachindex(p.n)
+	println(rpad(p.period[i], 22), lpad(p.n[i], 7), " cells")
+end
+shown = joinpath(mktempdir(), "periods.geojson")
+DBInterface.execute(con, "COPY (SELECT period, ST_MakeEnvelope($(west) + i * $(dx), $(south) + j * $(dy), $(west) + (i + 1) * $(dx), $(south) + (j + 1) * $(dy)) AS geom FROM ($(cells))) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Cells by period", column = "period", opacity = 0.5); title = "Images Before and From $(split_year)"))
+'''
+
+[[actionGroups.actions]]
+id = "panoramas-and-others"
+label = "Panoramas and Others"
+desc = "The panoramas beside the other images: how many, in how many sequences, their median quality score, and their first and last dates"
+models = ["coverage", "images"]
+code = '''
+p = query("SELECT coalesce(is_pano, false) AS pano, count(*) AS n, count(DISTINCT sequence_id) AS k, median(quality_score) AS q, CAST(min(captured_at) AS DATE) AS t0, CAST(max(captured_at) AS DATE) AS t1 FROM images GROUP BY pano ORDER BY pano")
+println(rpad("", 14), rpad("images", 9), rpad("sequences", 11), rpad("quality", 9), "first and last")
+for i in eachindex(p.n)
+	println(rpad(p.pano[i] ? "Panoramas" : "Other images", 14), rpad(p.n[i], 9), rpad(p.k[i], 11), rpad(ismissing(p.q[i]) ? "none" : round(p.q[i]; digits = 3), 9), p.t0[i], " to ", p.t1[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "signs-and-points"
+label = "Traffic Signs and Points"
+desc = "The traffic signs beside the other map features: how many, of how many kinds, and when they were first and last seen"
+models = ["features"]
+code = '''
+p = query("SELECT kind, count(*) AS n, count(DISTINCT value) AS k, CAST(min(first_seen) AS DATE) AS t0, CAST(median(last_seen) AS DATE) AS tm, CAST(max(last_seen) AS DATE) AS t1 FROM features GROUP BY kind ORDER BY kind")
+println(rpad("", 16), rpad("features", 10), rpad("kinds", 7), rpad("first seen", 13), rpad("median last", 13), "last seen")
+for i in eachindex(p.n)
+	println(rpad(p.kind[i] == "traffic_sign" ? "Traffic signs" : "Points", 16), rpad(p.n[i], 10), rpad(p.k[i], 7), rpad(string(p.t0[i]), 13), rpad(string(p.tm[i]), 13), p.t1[i])
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "newest-per-cell"
+label = "Newest Image per Cell"
+desc = "The area in cells of about 100 m coloured by the year of the newest image in each, on an OpenStreetMap base map in Pollis's map view, and the share of cells by that year: how old the coverage is"
+models = ["coverage", "images"]
+code = '''
+dx, dy = 100 / (111320 * cosd((south + north) / 2)), 100 / 110574  # about 100 m, in degrees at the middle of the area
+cells = "SELECT i, j, max(year(captured_at)) AS newest FROM (SELECT floor((ST_X(geom) - $(west)) / $(dx)) AS i, floor((ST_Y(geom) - $(south)) / $(dy)) AS j, captured_at FROM images) GROUP BY i, j"
+y = query("SELECT newest, count(*) AS n FROM ($(cells)) GROUP BY newest ORDER BY newest")
+for i in eachindex(y.n)
+	println(y.newest[i], lpad(round(100 * y.n[i] / sum(y.n); digits = 1), 7), "%  ", repeat("#", round(Int, 50 * y.n[i] / sum(y.n))))
+end
+shown = joinpath(mktempdir(), "newest.geojson")
+DBInterface.execute(con, "COPY (SELECT newest, ST_MakeEnvelope($(west) + i * $(dx), $(south) + j * $(dy), $(west) + (i + 1) * $(dx), $(south) + (j + 1) * $(dy)) AS geom FROM ($(cells))) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Year of the newest image", column = "newest", opacity = 0.6); title = "Newest Image per Cell"))
+'''
+
+[[actionGroups.actions]]
+id = "contributors"
+label = "Contributors"
+desc = "How many people captured the images of the area, and the share of the images captured by the largest ten; the Coverage tab knows them by number, the Images tab by name"
+models = ["coverage", "images"]
+code = '''
+c = query("SELECT coalesce(creator, 'unknown') AS creator, count(*) AS n, count(DISTINCT sequence_id) AS k, CAST(max(captured_at) AS DATE) AS t1 FROM images GROUP BY ALL ORDER BY n DESC")
+total = sum(c.n)
+println(length(c.n), " contributors; the largest ten captured ", round(100 * sum(c.n[1:min(10, end)]) / total; digits = 1), "% of the ", total, " images")
+for i in 1:min(10, length(c.n))
+	println(rpad(c.creator[i], 24), lpad(c.n[i], 8), " images", lpad(round(100 * c.n[i] / total; digits = 1), 7), "%", lpad(c.k[i], 6), " sequences, last ", c.t1[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "kinds-of-features"
+label = "Kinds of Map Features"
+desc = "The 25 commonest kinds of map feature over the area, with how many of each and when they were first and last seen"
+models = ["features"]
+code = '''
+k = query("SELECT value, count(*) AS n, CAST(min(first_seen) AS DATE) AS t0, CAST(max(last_seen) AS DATE) AS t1 FROM features GROUP BY value ORDER BY n DESC, value LIMIT 25")
+for i in eachindex(k.n)
+	println(lpad(k.n[i], 6), "  ", rpad(k.value[i], 52), k.t0[i], " to ", k.t1[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the tables of the tab, the images, the sequences or the map features with their attributes and positions, as GeoParquet files in the folder mapillary"
+code = '''
+for t in kept
+	parquet_file = joinpath(place, "mapillary-$(t).parquet")
+	DBInterface.execute(con, "COPY $(t) TO '$(parquet_file)' (FORMAT parquet)")
+	println("Wrote ", only(query("SELECT count(*) AS n FROM $(t)").n), " rows of ", t, " to ", parquet_file)
+end
+'''
