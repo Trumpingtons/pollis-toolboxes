@@ -1,0 +1,1066 @@
+# Route and Network Analysis: the street network of an area from OpenStreetMap, from the Overpass API or a PBF extract, as a
+# graph for walking, cycling or driving, with the fastest route between two points, the areas reached in given times, a matrix of
+# travel times between places, and measures of the network
+
+[meta]
+title = "Route and Network Analysis"
+viewType = "pollis.routes"
+defaultModel = "route"
+decisionFirstColumn = "Tab"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "Graphs.jl"
+github = "https://github.com/JuliaGraphs/Graphs.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "routes/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the network, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "routes/overview.md"
+bundled = true
+description = "Street networks as graphs, and what the panel computes on them"
+
+[[wikis]]
+name = "Diagnostics"
+file = "routes/diagnostics.md"
+bundled = true
+description = "A busy Overpass server, points far from a street, places that cannot be reached, a network in pieces"
+
+[[wikis]]
+name = "Decision Guide"
+file = "routes/decision-guide.md"
+bundled = true
+description = "Which tab, which mode, which source of the network"
+
+[[wikis]]
+separator = true
+label = "Methods"
+
+[[wikis]]
+name = "Building the Network"
+file = "routes/building-the-network.md"
+bundled = true
+
+[[wikis]]
+name = "Shortest Paths"
+file = "routes/shortest-paths.md"
+bundled = true
+
+[[wikis]]
+name = "Service Areas"
+file = "routes/service-areas.md"
+bundled = true
+
+[[wikis]]
+name = "Network Measures"
+file = "routes/network-measures.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "FBSHE...2021a"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Data and Documentation"
+
+[[references]]
+key = "HW2008a"
+
+[[references]]
+key = "Olb2026a"
+
+[[references]]
+key = "OSMWC2026b"
+
+[[references]]
+key = "OSMWC2026c"
+
+[[references]]
+key = "Geo2026a"
+
+[[references]]
+key = "OSMF2026b"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Dij1959a"
+
+[[references]]
+key = "Fre1977a"
+
+[[references]]
+key = "Bra2001a"
+
+[[references]]
+key = "PCL2006a"
+
+[[references]]
+key = "Boe2017a"
+
+[[references]]
+key = "Boe2019a"
+
+[[faq]]
+question = "Where does the street network come from?"
+answer = '''
+From OpenStreetMap: by default, the ways with a highway tag over the Area, downloaded from the Overpass API and kept in the folder; or, with Network From set to PBF File, read from an extract such as those of Geofabrik. No account or key is needed.
+'''
+wiki = "Building the Network"
+
+[[faq]]
+question = "How does the panel decide which streets a mode can use?"
+answer = '''
+Walk uses footways, paths, steps and the roads other than motorways, in both directions, at 4.8 km/h; Cycle uses cycleways, paths and roads, and footways where cycling is allowed, respecting one-way streets unless they are open to cycles, at 15 km/h; Drive uses the roads open to motor vehicles, respecting one-way streets, at their speed limit or a speed for their class. Ways tagged private or closed to the mode are left out.
+'''
+wiki = "Building the Network"
+
+[[faq]]
+question = "What is a service area?"
+answer = '''
+The part of the network reachable from the Origin within a travel time, drawn as an area around the street points reached in each of the Time Bands, with its size and the length of street it contains.
+'''
+wiki = "Service Areas"
+
+[[faq]]
+question = "Why is the betweenness computed on a sample?"
+answer = '''
+Betweenness needs a shortest-path search from every node, which is slow on a city's network; from a random sample of nodes, with a fixed seed, it gives an estimate. Betweenness Sample sets how many, or all the nodes.
+'''
+wiki = "Network Measures"
+hidden = true
+
+[[faq]]
+question = "Why does the route start on a different street from the Origin?"
+answer = '''
+The Origin, the Destination and the Places are snapped to the nearest node of the largest part of the network the mode can travel in both directions. Snapping Distances shows how far each point is from its node.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "route"
+label = "Shortest Route"
+
+[[models]]
+id = "reach"
+label = "Service Areas"
+
+[[models]]
+id = "matrix"
+label = "Travel-Time Matrix"
+
+[[models]]
+id = "measures"
+label = "Network Measures"
+
+[[bullets]]
+text = "Shortest Route"
+detail = "The fastest route between an Origin and a Destination on the streets open to walking, cycling or driving, with its time and length"
+
+[[bullets]]
+text = "Service Areas"
+detail = "The areas reachable from an Origin within each of several travel times, with their size and length of street"
+
+[[bullets]]
+text = "Travel-Time Matrix"
+detail = "The travel times and distances between every pair of a list of places"
+
+[[bullets]]
+text = "Network Measures"
+detail = "Intersections, dead ends, connected parts, density, the betweenness of each node and street, and the orientation of the streets"
+
+[[decisionRows]]
+task = "Shortest Route"
+context = "Two points"
+purpose = "How long a trip takes, how far it goes and which streets it follows"
+
+[[decisionRows]]
+task = "Service Areas"
+context = "One point"
+purpose = "How far one can get from a place in a given time: accessibility of a station, a school, a clinic"
+
+[[decisionRows]]
+task = "Travel-Time Matrix"
+context = "Several points"
+purpose = "The times between every pair of places, for accessibility and location studies"
+
+[[decisionRows]]
+task = "Network Measures"
+context = "The whole network"
+purpose = "The structure of the streets: how connected, how dense, which streets carry the shortest paths"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the networks downloaded are kept, in a folder routes, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "city"
+label = "Example City"
+kind = "select"
+default = "cambridge"
+tooltip = "Cambridge or Oxford set the Area, the Origin, the Destination and the Places; Custom shows them to set your own."
+newRow = true
+
+[[inputs.options]]
+value = "cambridge"
+label = "Cambridge"
+
+[[inputs.options]]
+value = "oxford"
+label = "Oxford"
+
+[[inputs.options]]
+value = "custom"
+label = "Custom"
+
+[[inputs]]
+id = "mode"
+label = "Mode"
+kind = "select"
+default = "walk"
+
+[[inputs.options]]
+value = "walk"
+label = "Walk"
+
+[[inputs.options]]
+value = "cycle"
+label = "Cycle"
+
+[[inputs.options]]
+value = "drive"
+label = "Drive"
+
+[[inputs]]
+id = "area"
+label = "Area (W, S, E, N)"
+tooltip = "The area of the network, as west, south, east and north in degrees of longitude and latitude."
+default = "0.105, 52.188, 0.145, 52.216"
+when = "city=custom"
+newRow = true
+
+[[inputs]]
+id = "origin"
+label = "Origin"
+tooltip = "The starting point, as longitude, latitude in degrees."
+default = "0.13772, 52.19411"
+models = ["route", "reach"]
+when = "city=custom"
+
+[[inputs]]
+id = "destination"
+label = "Destination"
+tooltip = "The end point, as longitude, latitude in degrees."
+default = "0.11654, 52.20478"
+models = ["route"]
+when = "city=custom"
+
+[[inputs]]
+id = "places"
+label = "Places"
+tooltip = "The places of the matrix, each as Name: longitude, latitude, separated by semicolons."
+default = "Cambridge Station: 0.13772, 52.19411; King's College Chapel: 0.11654, 52.20478; Fitzwilliam Museum: 0.11977, 52.19985; Parker's Piece: 0.12817, 52.20199; Jesus Green: 0.12281, 52.21167"
+models = ["matrix"]
+when = "city=custom"
+
+[[inputs]]
+id = "bands"
+label = "Time Bands (Minutes)"
+tooltip = "The travel times of the service areas, in minutes, separated by commas."
+default = "5, 10, 15"
+models = ["reach"]
+newRow = true
+
+[[inputs]]
+id = "samples"
+label = "Betweenness Sample"
+kind = "select"
+default = "500"
+tooltip = "From how many nodes, drawn at random with a fixed seed, the betweenness is estimated; All Nodes computes it exactly, which takes longer."
+models = ["measures"]
+newRow = true
+
+[[inputs.options]]
+value = "200"
+label = "200 Nodes"
+
+[[inputs.options]]
+value = "500"
+label = "500 Nodes"
+
+[[inputs.options]]
+value = "all"
+label = "All Nodes"
+
+[[inputs]]
+id = "source"
+label = "Network From"
+kind = "select"
+default = "overpass"
+tooltip = "Where the street network comes from: the Overpass API, for the Area, or an OpenStreetMap PBF extract."
+newRow = true
+
+[[inputs.options]]
+value = "overpass"
+label = "Overpass API"
+
+[[inputs.options]]
+value = "pbf"
+label = "PBF File"
+
+[[inputs]]
+id = "pbfFile"
+label = "PBF File"
+tooltip = "The OpenStreetMap extract, in the Folder or as an absolute path; auto downloads the Geofabrik extract of the county of Cambridge or Oxford."
+default = "auto"
+when = "source=pbf"
+
+[[codeBranches]]
+model = "route"
+code = '''
+using DuckDB, Tables, Downloads, Graphs, SparseArrays
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "routes"))  # where the networks downloaded are kept, and the Next Steps save their files
+city, mode = "{{city}}", "{{mode}}"
+presets = Dict("cambridge" => (area = "0.105, 52.188, 0.145, 52.216", origin = "0.13772, 52.19411", destination = "0.11654, 52.20478", county = "cambridgeshire"),
+	"oxford" => (area = "-1.275, 51.745, -1.240, 51.762", origin = "-1.26995, 51.75345", destination = "-1.25399, 51.75344", county = "oxfordshire"))  # the stations, King's College Chapel and the Radcliffe Camera
+chosen = city == "custom" ? (area = raw"{{area}}", origin = raw"{{origin}}", destination = raw"{{destination}}", county = "") : presets[city]
+west, south, east, north = parse.(Float64, split(chosen.area, ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+lonlat(text) = Tuple(parse.(Float64, split(text, ",")))
+source, pbf_name = "{{source}}", raw"{{pbfFile}}"
+patient = Downloads.Downloader()  # Overpass sends nothing until its result is ready: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function read_streets()  # the ways with a highway tag over the area, as the table ways, and their nodes inside the area, as the table points
+	if source == "overpass"
+		file = joinpath(place, "overpass_$(west)_$(south)_$(east)_$(north).json")  # one file for each area: a later run reads it
+		if !isfile(file)
+			request = "[out:json][timeout:180];\nway[\"highway\"]($(south),$(west),$(north),$(east));\n(._; >;);\nout;"  # the ways, then their nodes
+			for k in 0:5
+				answer = IOBuffer()
+				r = Downloads.request("https://overpass-api.de/api/interpreter"; method = "POST", input = IOBuffer(request), output = answer, headers = ["User-Agent" => "Pollis (https://pollis.org)"], downloader = patient, timeout = 300)
+				r.status == 200 && (write(file, take!(answer)); break)
+				r.status in (429, 502, 503, 504) || error("Overpass refused the query (HTTP $(r.status)): ", first(String(take!(answer)), 500))
+				k == 5 && error("Overpass stayed busy: try again later, or read a PBF File")
+				println("Overpass is busy (HTTP $(r.status)): trying again in $(5 * 2^k) s")
+				sleep(5 * 2^k)  # exponential backoff, as the server asks
+			end
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE elements AS SELECT unnest(CAST(json_extract(content, '/elements') AS JSON[])) AS e FROM read_text('$(file)')")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->'tags' AS MAP(VARCHAR, VARCHAR)) AS tags, CAST(e->'nodes' AS BIGINT[]) AS refs FROM elements WHERE e->>'type' = 'way'")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->>'lon' AS DOUBLE) AS lon, CAST(e->>'lat' AS DOUBLE) AS lat FROM elements WHERE e->>'type' = 'node'")
+	else
+		pbf = pbf_name == "auto" ? joinpath(folder, "$(chosen.county)-latest.osm.pbf") : joinpath(folder, pbf_name)  # an absolute path is kept as it is
+		if pbf_name == "auto" && !isfile(pbf)
+			city == "custom" && error("Give the PBF File of the Area: auto downloads only the extracts of Cambridgeshire and Oxfordshire")
+			Downloads.download("https://download.geofabrik.de/europe/united-kingdom/england/$(chosen.county)/$(chosen.county)-latest.osm.pbf", pbf)  # Geofabrik's extract of the county, © OpenStreetMap contributors, ODbL
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT id, tags, refs FROM ST_ReadOSM('$(pbf)') WHERE kind = 'way' AND tags['highway'] IS NOT NULL")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT id, lon, lat FROM ST_ReadOSM('$(pbf)') WHERE kind = 'node' AND id IN (SELECT unnest(refs) FROM ways)")
+	end
+	DBInterface.execute(con, "DELETE FROM points WHERE NOT (lon BETWEEN $(west) AND $(east) AND lat BETWEEN $(south) AND $(north))")  # the network is cut at the edges of the area
+	DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE segments AS
+	WITH p AS (SELECT id AS way, unnest(refs) AS node, generate_subscripts(refs, 1) AS i FROM ways)
+	SELECT a.way, a.node AS a, b.node AS b, w.tags['highway'] AS class, w.tags['name'] AS name, w.tags AS tags,
+		ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS metres, ST_MakeLine(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS geom
+	FROM p a JOIN p b ON a.way = b.way AND b.i = a.i + 1 JOIN ways w ON w.id = a.way JOIN points pa ON pa.id = a.node JOIN points pb ON pb.id = b.node
+	WHERE a.node <> b.node
+	""")  # each way cut into segments between consecutive nodes, with their length in metres on the WGS 84 ellipsoid
+end
+function rules(mode)  # the segments a mode may use, the directions it may travel them in, and its speed in km/h
+	t(key) = "coalesce(tags['$(key)'], '')"
+	closed(key) = "$(t(key)) IN ('no', 'private')"
+	open_to(key) = "$(t(key)) IN ('yes', 'designated', 'permissive')"
+	oneway = "CASE WHEN $(t("oneway")) = '-1' THEN 'backward' WHEN $(t("oneway")) IN ('yes', 'true', '1') OR $(t("junction")) = 'roundabout' OR class = 'motorway' THEN 'forward' ELSE 'both' END"
+	roads = "'living_street', 'residential', 'service', 'unclassified', 'road', 'tertiary', 'tertiary_link', 'secondary', 'secondary_link', 'primary', 'primary_link'"
+	mode == "walk" && return ("class IN ($(roads), 'footway', 'path', 'pedestrian', 'steps', 'track', 'cycleway', 'bridleway', 'trunk', 'trunk_link') AND NOT $(closed("foot")) AND (NOT $(closed("access")) OR $(open_to("foot")))", "'both'", "4.8")
+	mode == "cycle" && return ("(class IN ($(roads), 'cycleway', 'path', 'track', 'bridleway') OR (class IN ('footway', 'pedestrian') AND $(open_to("bicycle")))) AND NOT ($(closed("bicycle")) OR $(t("bicycle")) = 'dismount') AND (NOT $(closed("access")) OR $(open_to("bicycle")))",
+		"CASE WHEN $(t("oneway:bicycle")) = 'no' THEN 'both' ELSE $(oneway) END", "15.0")
+	speed = "coalesce(TRY_CAST(regexp_extract($(t("maxspeed")), '^([0-9]+)', 1) AS DOUBLE) * CASE WHEN $(t("maxspeed")) LIKE '%mph%' THEN 1.609344 ELSE 1 END,
+		CASE class WHEN 'motorway' THEN 110 WHEN 'trunk' THEN 90 WHEN 'primary' THEN 60 WHEN 'secondary' THEN 50 WHEN 'tertiary' THEN 40 WHEN 'living_street' THEN 10 WHEN 'service' THEN 15
+		WHEN 'motorway_link' THEN 60 WHEN 'trunk_link' THEN 50 WHEN 'primary_link' THEN 40 WHEN 'secondary_link' THEN 40 ELSE 30 END)"  # the speed limit, else a speed for the class
+	return ("class IN ($(roads), 'motorway', 'motorway_link', 'trunk', 'trunk_link') AND NOT ($(closed("access")) OR $(closed("motor_vehicle")) OR $(closed("motorcar")))", oneway, speed)
+end
+function network_of(mode; keep = true)  # the directed graph of the segments a mode may use, with the seconds and metres of each edge
+	allowed, direction, kmh = rules(mode)
+	pick = "SELECT *, $(direction) AS direction, metres / ($(kmh) / 3.6) AS seconds FROM segments WHERE $(allowed)"
+	keep && DBInterface.execute(con, "CREATE OR REPLACE TABLE network AS $(pick)")  # the streets of the mode, which the Next Steps map
+	e = query("SELECT a AS u, b AS v, seconds, metres FROM ($(pick)) WHERE direction <> 'backward' UNION ALL SELECT b, a, seconds, metres FROM ($(pick)) WHERE direction <> 'forward'")
+	isempty(e.u) && error("The area has no streets open to $(mode)")
+	ids = unique([e.u; e.v])
+	index = Dict(id => k for (k, id) in enumerate(ids))
+	us, vs = [index[x] for x in e.u], [index[x] for x in e.v]
+	g = SimpleDiGraph(length(ids))
+	foreach((x, y) -> add_edge!(g, x, y), us, vs)
+	xy = query("SELECT id, lon, lat FROM points")
+	at = Dict(zip(xy.id, zip(xy.lon, xy.lat)))
+	main = argmax(length, strongly_connected_components(g))  # the largest part in which every node reaches every other
+	return (; mode, g, ids, main, lon = [at[i][1] for i in ids], lat = [at[i][2] for i in ids],
+		seconds = sparse(us, vs, Float64.(e.seconds), length(ids), length(ids), min), metres = sparse(us, vs, Float64.(e.metres), length(ids), length(ids), min))
+end
+function snap(net, lon0, lat0)  # the node of the largest strongly connected part nearest to a point, and its distance in metres
+	k = argmin(k -> hypot((net.lon[k] - lon0) * cosd(lat0), net.lat[k] - lat0), net.main)
+	return k, only(query("SELECT ST_Distance_Spheroid(ST_Point(?, ?), ST_Point(?, ?)) AS d", [lon0, lat0, net.lon[k], net.lat[k]]).d)
+end
+read_streets()
+net = network_of(mode)
+function route_of(net, from, to)  # the fastest path between two nodes: its nodes, minutes and kilometres
+	found = dijkstra_shortest_paths(net.g, from, net.seconds)
+	path = enumerate_paths(found, to)
+	return path, found.dists[to] / 60, sum(net.metres[path[i], path[i + 1]] for i in 1:length(path) - 1; init = 0.0) / 1000
+end
+(origin_lon, origin_lat), (destination_lon, destination_lat) = lonlat(chosen.origin), lonlat(chosen.destination)
+from, from_off = snap(net, origin_lon, origin_lat)
+to, to_off = snap(net, destination_lon, destination_lat)
+snapped = [("Origin", origin_lon, origin_lat, from, from_off), ("Destination", destination_lon, destination_lat, to, to_off)]
+from == to && error("The Origin and the Destination are nearest the same node: move one of them")
+path, minutes, km = route_of(net, from, to)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE route AS SELECT ? AS mode, ? AS minutes, ? AS km, ST_GeomFromText(?) AS geom", [mode, minutes, km, "LINESTRING($(join(["$(net.lon[k]) $(net.lat[k])" for k in path], ", ")))"])
+kept = ["route", "network"]  # the tables Save as GeoParquet writes
+println("Fastest route to ", mode, ": ", round(minutes; digits = 1), " minutes, ", round(km; digits = 2), " km, through ", length(path), " nodes of a network of ", nv(net.g), " nodes and ", ne(net.g), " directed edges")
+'''
+
+[[codeBranches]]
+model = "reach"
+code = '''
+using DuckDB, Tables, Downloads, Graphs, SparseArrays
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "routes"))  # where the networks downloaded are kept, and the Next Steps save their files
+city, mode = "{{city}}", "{{mode}}"
+presets = Dict("cambridge" => (area = "0.105, 52.188, 0.145, 52.216", origin = "0.13772, 52.19411", county = "cambridgeshire"),
+	"oxford" => (area = "-1.275, 51.745, -1.240, 51.762", origin = "-1.26995, 51.75345", county = "oxfordshire"))  # from the stations
+chosen = city == "custom" ? (area = raw"{{area}}", origin = raw"{{origin}}", county = "") : presets[city]
+west, south, east, north = parse.(Float64, split(chosen.area, ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+lonlat(text) = Tuple(parse.(Float64, split(text, ",")))
+source, pbf_name = "{{source}}", raw"{{pbfFile}}"
+patient = Downloads.Downloader()  # Overpass sends nothing until its result is ready: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function read_streets()  # the ways with a highway tag over the area, as the table ways, and their nodes inside the area, as the table points
+	if source == "overpass"
+		file = joinpath(place, "overpass_$(west)_$(south)_$(east)_$(north).json")  # one file for each area: a later run reads it
+		if !isfile(file)
+			request = "[out:json][timeout:180];\nway[\"highway\"]($(south),$(west),$(north),$(east));\n(._; >;);\nout;"  # the ways, then their nodes
+			for k in 0:5
+				answer = IOBuffer()
+				r = Downloads.request("https://overpass-api.de/api/interpreter"; method = "POST", input = IOBuffer(request), output = answer, headers = ["User-Agent" => "Pollis (https://pollis.org)"], downloader = patient, timeout = 300)
+				r.status == 200 && (write(file, take!(answer)); break)
+				r.status in (429, 502, 503, 504) || error("Overpass refused the query (HTTP $(r.status)): ", first(String(take!(answer)), 500))
+				k == 5 && error("Overpass stayed busy: try again later, or read a PBF File")
+				println("Overpass is busy (HTTP $(r.status)): trying again in $(5 * 2^k) s")
+				sleep(5 * 2^k)  # exponential backoff, as the server asks
+			end
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE elements AS SELECT unnest(CAST(json_extract(content, '/elements') AS JSON[])) AS e FROM read_text('$(file)')")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->'tags' AS MAP(VARCHAR, VARCHAR)) AS tags, CAST(e->'nodes' AS BIGINT[]) AS refs FROM elements WHERE e->>'type' = 'way'")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->>'lon' AS DOUBLE) AS lon, CAST(e->>'lat' AS DOUBLE) AS lat FROM elements WHERE e->>'type' = 'node'")
+	else
+		pbf = pbf_name == "auto" ? joinpath(folder, "$(chosen.county)-latest.osm.pbf") : joinpath(folder, pbf_name)  # an absolute path is kept as it is
+		if pbf_name == "auto" && !isfile(pbf)
+			city == "custom" && error("Give the PBF File of the Area: auto downloads only the extracts of Cambridgeshire and Oxfordshire")
+			Downloads.download("https://download.geofabrik.de/europe/united-kingdom/england/$(chosen.county)/$(chosen.county)-latest.osm.pbf", pbf)  # Geofabrik's extract of the county, © OpenStreetMap contributors, ODbL
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT id, tags, refs FROM ST_ReadOSM('$(pbf)') WHERE kind = 'way' AND tags['highway'] IS NOT NULL")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT id, lon, lat FROM ST_ReadOSM('$(pbf)') WHERE kind = 'node' AND id IN (SELECT unnest(refs) FROM ways)")
+	end
+	DBInterface.execute(con, "DELETE FROM points WHERE NOT (lon BETWEEN $(west) AND $(east) AND lat BETWEEN $(south) AND $(north))")  # the network is cut at the edges of the area
+	DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE segments AS
+	WITH p AS (SELECT id AS way, unnest(refs) AS node, generate_subscripts(refs, 1) AS i FROM ways)
+	SELECT a.way, a.node AS a, b.node AS b, w.tags['highway'] AS class, w.tags['name'] AS name, w.tags AS tags,
+		ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS metres, ST_MakeLine(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS geom
+	FROM p a JOIN p b ON a.way = b.way AND b.i = a.i + 1 JOIN ways w ON w.id = a.way JOIN points pa ON pa.id = a.node JOIN points pb ON pb.id = b.node
+	WHERE a.node <> b.node
+	""")  # each way cut into segments between consecutive nodes, with their length in metres on the WGS 84 ellipsoid
+end
+function rules(mode)  # the segments a mode may use, the directions it may travel them in, and its speed in km/h
+	t(key) = "coalesce(tags['$(key)'], '')"
+	closed(key) = "$(t(key)) IN ('no', 'private')"
+	open_to(key) = "$(t(key)) IN ('yes', 'designated', 'permissive')"
+	oneway = "CASE WHEN $(t("oneway")) = '-1' THEN 'backward' WHEN $(t("oneway")) IN ('yes', 'true', '1') OR $(t("junction")) = 'roundabout' OR class = 'motorway' THEN 'forward' ELSE 'both' END"
+	roads = "'living_street', 'residential', 'service', 'unclassified', 'road', 'tertiary', 'tertiary_link', 'secondary', 'secondary_link', 'primary', 'primary_link'"
+	mode == "walk" && return ("class IN ($(roads), 'footway', 'path', 'pedestrian', 'steps', 'track', 'cycleway', 'bridleway', 'trunk', 'trunk_link') AND NOT $(closed("foot")) AND (NOT $(closed("access")) OR $(open_to("foot")))", "'both'", "4.8")
+	mode == "cycle" && return ("(class IN ($(roads), 'cycleway', 'path', 'track', 'bridleway') OR (class IN ('footway', 'pedestrian') AND $(open_to("bicycle")))) AND NOT ($(closed("bicycle")) OR $(t("bicycle")) = 'dismount') AND (NOT $(closed("access")) OR $(open_to("bicycle")))",
+		"CASE WHEN $(t("oneway:bicycle")) = 'no' THEN 'both' ELSE $(oneway) END", "15.0")
+	speed = "coalesce(TRY_CAST(regexp_extract($(t("maxspeed")), '^([0-9]+)', 1) AS DOUBLE) * CASE WHEN $(t("maxspeed")) LIKE '%mph%' THEN 1.609344 ELSE 1 END,
+		CASE class WHEN 'motorway' THEN 110 WHEN 'trunk' THEN 90 WHEN 'primary' THEN 60 WHEN 'secondary' THEN 50 WHEN 'tertiary' THEN 40 WHEN 'living_street' THEN 10 WHEN 'service' THEN 15
+		WHEN 'motorway_link' THEN 60 WHEN 'trunk_link' THEN 50 WHEN 'primary_link' THEN 40 WHEN 'secondary_link' THEN 40 ELSE 30 END)"  # the speed limit, else a speed for the class
+	return ("class IN ($(roads), 'motorway', 'motorway_link', 'trunk', 'trunk_link') AND NOT ($(closed("access")) OR $(closed("motor_vehicle")) OR $(closed("motorcar")))", oneway, speed)
+end
+function network_of(mode; keep = true)  # the directed graph of the segments a mode may use, with the seconds and metres of each edge
+	allowed, direction, kmh = rules(mode)
+	pick = "SELECT *, $(direction) AS direction, metres / ($(kmh) / 3.6) AS seconds FROM segments WHERE $(allowed)"
+	keep && DBInterface.execute(con, "CREATE OR REPLACE TABLE network AS $(pick)")  # the streets of the mode, which the Next Steps map
+	e = query("SELECT a AS u, b AS v, seconds, metres FROM ($(pick)) WHERE direction <> 'backward' UNION ALL SELECT b, a, seconds, metres FROM ($(pick)) WHERE direction <> 'forward'")
+	isempty(e.u) && error("The area has no streets open to $(mode)")
+	ids = unique([e.u; e.v])
+	index = Dict(id => k for (k, id) in enumerate(ids))
+	us, vs = [index[x] for x in e.u], [index[x] for x in e.v]
+	g = SimpleDiGraph(length(ids))
+	foreach((x, y) -> add_edge!(g, x, y), us, vs)
+	xy = query("SELECT id, lon, lat FROM points")
+	at = Dict(zip(xy.id, zip(xy.lon, xy.lat)))
+	main = argmax(length, strongly_connected_components(g))  # the largest part in which every node reaches every other
+	return (; mode, g, ids, main, lon = [at[i][1] for i in ids], lat = [at[i][2] for i in ids],
+		seconds = sparse(us, vs, Float64.(e.seconds), length(ids), length(ids), min), metres = sparse(us, vs, Float64.(e.metres), length(ids), length(ids), min))
+end
+function snap(net, lon0, lat0)  # the node of the largest strongly connected part nearest to a point, and its distance in metres
+	k = argmin(k -> hypot((net.lon[k] - lon0) * cosd(lat0), net.lat[k] - lat0), net.main)
+	return k, only(query("SELECT ST_Distance_Spheroid(ST_Point(?, ?), ST_Point(?, ?)) AS d", [lon0, lat0, net.lon[k], net.lat[k]]).d)
+end
+read_streets()
+net = network_of(mode)
+bands = sort(parse.(Float64, split("{{bands}}", ",")))  # the travel times, in minutes
+minutes_text(b) = isinteger(b) ? string(Int(b)) : string(b)
+function reach_of(net, from, table)  # the seconds from a node to every node it reaches within the longest band, as a table
+	found = dijkstra_shortest_paths(net.g, from, net.seconds)
+	near = findall(<=(60 * maximum(bands)), found.dists)
+	csv = tempname() * ".csv"
+	write(csv, "id,seconds\n" * join(["$(net.ids[k]),$(found.dists[k])" for k in near], "\n"))
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE $(table) AS SELECT * FROM read_csv('$(csv)', columns = {'id': 'BIGINT', 'seconds': 'DOUBLE'}, header = true)")
+	return found
+end
+function areas_of(table, mode)  # one area for each band: the concave hull of the nodes reached, its size and its length of street
+	return """SELECT '$(mode)' AS mode, b.band, ST_ConcaveHull(ST_Collect(list(ST_Point(p.lon, p.lat))), 0.3, false) AS geom, count(*) AS nodes,
+		(SELECT round(sum(n.metres) / 1000, 2) FROM network n JOIN $(table) ra ON ra.id = n.a JOIN $(table) rb ON rb.id = n.b WHERE greatest(ra.seconds, rb.seconds) <= 60 * b.band) AS street_km
+	FROM (SELECT unnest([$(join(bands, ", "))]) AS band) b JOIN $(table) r ON r.seconds <= 60 * b.band JOIN points p ON p.id = r.id GROUP BY b.band"""
+end
+origin_lon, origin_lat = lonlat(chosen.origin)
+from, from_off = snap(net, origin_lon, origin_lat)
+snapped = [("Origin", origin_lon, origin_lat, from, from_off)]
+reach_of(net, from, "reached")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE reach AS SELECT *, round(ST_Area_Spheroid(geom) / 1e6, 3) AS km2 FROM ($(areas_of("reached", mode))) ORDER BY band")
+kept = ["reach", "network"]  # the tables Save as GeoParquet writes
+r = query("SELECT band, km2, street_km, nodes FROM reach ORDER BY band")
+println("Reached from the Origin by ", mode, ", on a network of ", nv(net.g), " nodes:")
+for i in eachindex(r.band)
+	println("  within ", lpad(minutes_text(r.band[i]), 4), " minutes: ", lpad(r.km2[i], 7), " km², ", lpad(r.street_km[i], 7), " km of street, ", r.nodes[i], " nodes")
+end
+'''
+
+[[codeBranches]]
+model = "matrix"
+code = '''
+using DuckDB, Tables, Downloads, Graphs, SparseArrays
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "routes"))  # where the networks downloaded are kept, and the Next Steps save their files
+city, mode = "{{city}}", "{{mode}}"
+presets = Dict("cambridge" => (area = "0.105, 52.188, 0.145, 52.216", county = "cambridgeshire",
+		places = "Cambridge Station: 0.13772, 52.19411; King's College Chapel: 0.11654, 52.20478; Fitzwilliam Museum: 0.11977, 52.19985; Parker's Piece: 0.12817, 52.20199; Jesus Green: 0.12281, 52.21167"),
+	"oxford" => (area = "-1.275, 51.745, -1.240, 51.762", county = "oxfordshire",
+		places = "Oxford Station: -1.26995, 51.75345; Radcliffe Camera: -1.25399, 51.75344; Ashmolean Museum: -1.26038, 51.75549; Carfax Tower: -1.25815, 51.75196; Christ Church: -1.25523, 51.75005"))
+chosen = city == "custom" ? (area = raw"{{area}}", places = raw"{{places}}", county = "") : presets[city]
+west, south, east, north = parse.(Float64, split(chosen.area, ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+lonlat(text) = Tuple(parse.(Float64, split(text, ",")))
+source, pbf_name = "{{source}}", raw"{{pbfFile}}"
+patient = Downloads.Downloader()  # Overpass sends nothing until its result is ready: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function read_streets()  # the ways with a highway tag over the area, as the table ways, and their nodes inside the area, as the table points
+	if source == "overpass"
+		file = joinpath(place, "overpass_$(west)_$(south)_$(east)_$(north).json")  # one file for each area: a later run reads it
+		if !isfile(file)
+			request = "[out:json][timeout:180];\nway[\"highway\"]($(south),$(west),$(north),$(east));\n(._; >;);\nout;"  # the ways, then their nodes
+			for k in 0:5
+				answer = IOBuffer()
+				r = Downloads.request("https://overpass-api.de/api/interpreter"; method = "POST", input = IOBuffer(request), output = answer, headers = ["User-Agent" => "Pollis (https://pollis.org)"], downloader = patient, timeout = 300)
+				r.status == 200 && (write(file, take!(answer)); break)
+				r.status in (429, 502, 503, 504) || error("Overpass refused the query (HTTP $(r.status)): ", first(String(take!(answer)), 500))
+				k == 5 && error("Overpass stayed busy: try again later, or read a PBF File")
+				println("Overpass is busy (HTTP $(r.status)): trying again in $(5 * 2^k) s")
+				sleep(5 * 2^k)  # exponential backoff, as the server asks
+			end
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE elements AS SELECT unnest(CAST(json_extract(content, '/elements') AS JSON[])) AS e FROM read_text('$(file)')")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->'tags' AS MAP(VARCHAR, VARCHAR)) AS tags, CAST(e->'nodes' AS BIGINT[]) AS refs FROM elements WHERE e->>'type' = 'way'")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->>'lon' AS DOUBLE) AS lon, CAST(e->>'lat' AS DOUBLE) AS lat FROM elements WHERE e->>'type' = 'node'")
+	else
+		pbf = pbf_name == "auto" ? joinpath(folder, "$(chosen.county)-latest.osm.pbf") : joinpath(folder, pbf_name)  # an absolute path is kept as it is
+		if pbf_name == "auto" && !isfile(pbf)
+			city == "custom" && error("Give the PBF File of the Area: auto downloads only the extracts of Cambridgeshire and Oxfordshire")
+			Downloads.download("https://download.geofabrik.de/europe/united-kingdom/england/$(chosen.county)/$(chosen.county)-latest.osm.pbf", pbf)  # Geofabrik's extract of the county, © OpenStreetMap contributors, ODbL
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT id, tags, refs FROM ST_ReadOSM('$(pbf)') WHERE kind = 'way' AND tags['highway'] IS NOT NULL")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT id, lon, lat FROM ST_ReadOSM('$(pbf)') WHERE kind = 'node' AND id IN (SELECT unnest(refs) FROM ways)")
+	end
+	DBInterface.execute(con, "DELETE FROM points WHERE NOT (lon BETWEEN $(west) AND $(east) AND lat BETWEEN $(south) AND $(north))")  # the network is cut at the edges of the area
+	DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE segments AS
+	WITH p AS (SELECT id AS way, unnest(refs) AS node, generate_subscripts(refs, 1) AS i FROM ways)
+	SELECT a.way, a.node AS a, b.node AS b, w.tags['highway'] AS class, w.tags['name'] AS name, w.tags AS tags,
+		ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS metres, ST_MakeLine(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS geom
+	FROM p a JOIN p b ON a.way = b.way AND b.i = a.i + 1 JOIN ways w ON w.id = a.way JOIN points pa ON pa.id = a.node JOIN points pb ON pb.id = b.node
+	WHERE a.node <> b.node
+	""")  # each way cut into segments between consecutive nodes, with their length in metres on the WGS 84 ellipsoid
+end
+function rules(mode)  # the segments a mode may use, the directions it may travel them in, and its speed in km/h
+	t(key) = "coalesce(tags['$(key)'], '')"
+	closed(key) = "$(t(key)) IN ('no', 'private')"
+	open_to(key) = "$(t(key)) IN ('yes', 'designated', 'permissive')"
+	oneway = "CASE WHEN $(t("oneway")) = '-1' THEN 'backward' WHEN $(t("oneway")) IN ('yes', 'true', '1') OR $(t("junction")) = 'roundabout' OR class = 'motorway' THEN 'forward' ELSE 'both' END"
+	roads = "'living_street', 'residential', 'service', 'unclassified', 'road', 'tertiary', 'tertiary_link', 'secondary', 'secondary_link', 'primary', 'primary_link'"
+	mode == "walk" && return ("class IN ($(roads), 'footway', 'path', 'pedestrian', 'steps', 'track', 'cycleway', 'bridleway', 'trunk', 'trunk_link') AND NOT $(closed("foot")) AND (NOT $(closed("access")) OR $(open_to("foot")))", "'both'", "4.8")
+	mode == "cycle" && return ("(class IN ($(roads), 'cycleway', 'path', 'track', 'bridleway') OR (class IN ('footway', 'pedestrian') AND $(open_to("bicycle")))) AND NOT ($(closed("bicycle")) OR $(t("bicycle")) = 'dismount') AND (NOT $(closed("access")) OR $(open_to("bicycle")))",
+		"CASE WHEN $(t("oneway:bicycle")) = 'no' THEN 'both' ELSE $(oneway) END", "15.0")
+	speed = "coalesce(TRY_CAST(regexp_extract($(t("maxspeed")), '^([0-9]+)', 1) AS DOUBLE) * CASE WHEN $(t("maxspeed")) LIKE '%mph%' THEN 1.609344 ELSE 1 END,
+		CASE class WHEN 'motorway' THEN 110 WHEN 'trunk' THEN 90 WHEN 'primary' THEN 60 WHEN 'secondary' THEN 50 WHEN 'tertiary' THEN 40 WHEN 'living_street' THEN 10 WHEN 'service' THEN 15
+		WHEN 'motorway_link' THEN 60 WHEN 'trunk_link' THEN 50 WHEN 'primary_link' THEN 40 WHEN 'secondary_link' THEN 40 ELSE 30 END)"  # the speed limit, else a speed for the class
+	return ("class IN ($(roads), 'motorway', 'motorway_link', 'trunk', 'trunk_link') AND NOT ($(closed("access")) OR $(closed("motor_vehicle")) OR $(closed("motorcar")))", oneway, speed)
+end
+function network_of(mode; keep = true)  # the directed graph of the segments a mode may use, with the seconds and metres of each edge
+	allowed, direction, kmh = rules(mode)
+	pick = "SELECT *, $(direction) AS direction, metres / ($(kmh) / 3.6) AS seconds FROM segments WHERE $(allowed)"
+	keep && DBInterface.execute(con, "CREATE OR REPLACE TABLE network AS $(pick)")  # the streets of the mode, which the Next Steps map
+	e = query("SELECT a AS u, b AS v, seconds, metres FROM ($(pick)) WHERE direction <> 'backward' UNION ALL SELECT b, a, seconds, metres FROM ($(pick)) WHERE direction <> 'forward'")
+	isempty(e.u) && error("The area has no streets open to $(mode)")
+	ids = unique([e.u; e.v])
+	index = Dict(id => k for (k, id) in enumerate(ids))
+	us, vs = [index[x] for x in e.u], [index[x] for x in e.v]
+	g = SimpleDiGraph(length(ids))
+	foreach((x, y) -> add_edge!(g, x, y), us, vs)
+	xy = query("SELECT id, lon, lat FROM points")
+	at = Dict(zip(xy.id, zip(xy.lon, xy.lat)))
+	main = argmax(length, strongly_connected_components(g))  # the largest part in which every node reaches every other
+	return (; mode, g, ids, main, lon = [at[i][1] for i in ids], lat = [at[i][2] for i in ids],
+		seconds = sparse(us, vs, Float64.(e.seconds), length(ids), length(ids), min), metres = sparse(us, vs, Float64.(e.metres), length(ids), length(ids), min))
+end
+function snap(net, lon0, lat0)  # the node of the largest strongly connected part nearest to a point, and its distance in metres
+	k = argmin(k -> hypot((net.lon[k] - lon0) * cosd(lat0), net.lat[k] - lat0), net.main)
+	return k, only(query("SELECT ST_Distance_Spheroid(ST_Point(?, ?), ST_Point(?, ?)) AS d", [lon0, lat0, net.lon[k], net.lat[k]]).d)
+end
+read_streets()
+net = network_of(mode)
+named = [(String(strip(first(split(p, ":")))), lonlat(last(split(p, ":")))...) for p in split(chosen.places, ";") if occursin(":", p)]  # name, longitude, latitude
+length(named) < 2 && error("Give at least two Places, each as Name: longitude, latitude")
+snapped = [(name, x, y, snap(net, x, y)...) for (name, x, y) in named]  # name, longitude, latitude, node, metres to the node
+function matrix_of(net, nodes)  # the minutes and kilometres of the fastest path between every pair of nodes; Inf where none
+	minutes, km = fill(Inf, length(nodes), length(nodes)), fill(Inf, length(nodes), length(nodes))
+	for (i, from) in enumerate(nodes)
+		found = dijkstra_shortest_paths(net.g, from, net.seconds)
+		for (j, to) in enumerate(nodes)
+			isfinite(found.dists[to]) || continue
+			path = enumerate_paths(found, to)
+			minutes[i, j], km[i, j] = found.dists[to] / 60, sum(net.metres[path[k], path[k + 1]] for k in 1:length(path) - 1; init = 0.0) / 1000
+		end
+	end
+	return minutes, km
+end
+minutes, km = matrix_of(net, [s[4] for s in snapped])
+rows = ["('$(replace(snapped[i][1], "'" => "''"))', '$(replace(snapped[j][1], "'" => "''"))', $(isfinite(minutes[i, j]) ? minutes[i, j] : "NULL"), $(isfinite(km[i, j]) ? km[i, j] : "NULL"), $(snapped[i][2]), $(snapped[i][3]), $(snapped[j][2]), $(snapped[j][3]))" for i in eachindex(snapped), j in eachindex(snapped) if i != j]
+DBInterface.execute(con, "CREATE OR REPLACE TABLE matrix AS SELECT origin, destination, round(minutes, 2) AS minutes, round(km, 3) AS km, round(ST_Distance_Spheroid(ST_Point(x0, y0), ST_Point(x1, y1)) / 1000, 3) AS straight_km FROM (VALUES $(join(rows, ", "))) t(origin, destination, minutes, km, x0, y0, x1, y1)")
+kept = ["matrix", "network"]  # the tables Save as GeoParquet writes
+println("Minutes by ", mode, " from each place (rows) to each place (columns):")
+println(rpad("", 24), join([lpad(first(s[1], 10), 11) for s in snapped]))
+for i in eachindex(snapped)
+	println(rpad(first(snapped[i][1], 23), 24), join([lpad(i == j ? "-" : isfinite(minutes[i, j]) ? string(round(minutes[i, j]; digits = 1)) : "none", 11) for j in eachindex(snapped)]))
+end
+'''
+
+[[codeBranches]]
+model = "measures"
+code = '''
+using DuckDB, Tables, Downloads, Graphs, SparseArrays
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "routes"))  # where the networks downloaded are kept, and the Next Steps save their files
+city, mode = "{{city}}", "{{mode}}"
+presets = Dict("cambridge" => (area = "0.105, 52.188, 0.145, 52.216", county = "cambridgeshire"), "oxford" => (area = "-1.275, 51.745, -1.240, 51.762", county = "oxfordshire"))
+chosen = city == "custom" ? (area = raw"{{area}}", county = "") : presets[city]
+west, south, east, north = parse.(Float64, split(chosen.area, ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+source, pbf_name = "{{source}}", raw"{{pbfFile}}"
+patient = Downloads.Downloader()  # Overpass sends nothing until its result is ready: no limit on a silent connection
+patient.easy_hook = (easy, info) -> Downloads.Curl.setopt(easy, Downloads.Curl.CURLOPT_LOW_SPEED_TIME, 0)
+function read_streets()  # the ways with a highway tag over the area, as the table ways, and their nodes inside the area, as the table points
+	if source == "overpass"
+		file = joinpath(place, "overpass_$(west)_$(south)_$(east)_$(north).json")  # one file for each area: a later run reads it
+		if !isfile(file)
+			request = "[out:json][timeout:180];\nway[\"highway\"]($(south),$(west),$(north),$(east));\n(._; >;);\nout;"  # the ways, then their nodes
+			for k in 0:5
+				answer = IOBuffer()
+				r = Downloads.request("https://overpass-api.de/api/interpreter"; method = "POST", input = IOBuffer(request), output = answer, headers = ["User-Agent" => "Pollis (https://pollis.org)"], downloader = patient, timeout = 300)
+				r.status == 200 && (write(file, take!(answer)); break)
+				r.status in (429, 502, 503, 504) || error("Overpass refused the query (HTTP $(r.status)): ", first(String(take!(answer)), 500))
+				k == 5 && error("Overpass stayed busy: try again later, or read a PBF File")
+				println("Overpass is busy (HTTP $(r.status)): trying again in $(5 * 2^k) s")
+				sleep(5 * 2^k)  # exponential backoff, as the server asks
+			end
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE elements AS SELECT unnest(CAST(json_extract(content, '/elements') AS JSON[])) AS e FROM read_text('$(file)')")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->'tags' AS MAP(VARCHAR, VARCHAR)) AS tags, CAST(e->'nodes' AS BIGINT[]) AS refs FROM elements WHERE e->>'type' = 'way'")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT CAST(e->>'id' AS BIGINT) AS id, CAST(e->>'lon' AS DOUBLE) AS lon, CAST(e->>'lat' AS DOUBLE) AS lat FROM elements WHERE e->>'type' = 'node'")
+	else
+		pbf = pbf_name == "auto" ? joinpath(folder, "$(chosen.county)-latest.osm.pbf") : joinpath(folder, pbf_name)  # an absolute path is kept as it is
+		if pbf_name == "auto" && !isfile(pbf)
+			city == "custom" && error("Give the PBF File of the Area: auto downloads only the extracts of Cambridgeshire and Oxfordshire")
+			Downloads.download("https://download.geofabrik.de/europe/united-kingdom/england/$(chosen.county)/$(chosen.county)-latest.osm.pbf", pbf)  # Geofabrik's extract of the county, © OpenStreetMap contributors, ODbL
+		end
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE ways AS SELECT id, tags, refs FROM ST_ReadOSM('$(pbf)') WHERE kind = 'way' AND tags['highway'] IS NOT NULL")
+		DBInterface.execute(con, "CREATE OR REPLACE TABLE points AS SELECT id, lon, lat FROM ST_ReadOSM('$(pbf)') WHERE kind = 'node' AND id IN (SELECT unnest(refs) FROM ways)")
+	end
+	DBInterface.execute(con, "DELETE FROM points WHERE NOT (lon BETWEEN $(west) AND $(east) AND lat BETWEEN $(south) AND $(north))")  # the network is cut at the edges of the area
+	DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE segments AS
+	WITH p AS (SELECT id AS way, unnest(refs) AS node, generate_subscripts(refs, 1) AS i FROM ways)
+	SELECT a.way, a.node AS a, b.node AS b, w.tags['highway'] AS class, w.tags['name'] AS name, w.tags AS tags,
+		ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS metres, ST_MakeLine(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) AS geom
+	FROM p a JOIN p b ON a.way = b.way AND b.i = a.i + 1 JOIN ways w ON w.id = a.way JOIN points pa ON pa.id = a.node JOIN points pb ON pb.id = b.node
+	WHERE a.node <> b.node
+	""")  # each way cut into segments between consecutive nodes, with their length in metres on the WGS 84 ellipsoid
+end
+function rules(mode)  # the segments a mode may use, the directions it may travel them in, and its speed in km/h
+	t(key) = "coalesce(tags['$(key)'], '')"
+	closed(key) = "$(t(key)) IN ('no', 'private')"
+	open_to(key) = "$(t(key)) IN ('yes', 'designated', 'permissive')"
+	oneway = "CASE WHEN $(t("oneway")) = '-1' THEN 'backward' WHEN $(t("oneway")) IN ('yes', 'true', '1') OR $(t("junction")) = 'roundabout' OR class = 'motorway' THEN 'forward' ELSE 'both' END"
+	roads = "'living_street', 'residential', 'service', 'unclassified', 'road', 'tertiary', 'tertiary_link', 'secondary', 'secondary_link', 'primary', 'primary_link'"
+	mode == "walk" && return ("class IN ($(roads), 'footway', 'path', 'pedestrian', 'steps', 'track', 'cycleway', 'bridleway', 'trunk', 'trunk_link') AND NOT $(closed("foot")) AND (NOT $(closed("access")) OR $(open_to("foot")))", "'both'", "4.8")
+	mode == "cycle" && return ("(class IN ($(roads), 'cycleway', 'path', 'track', 'bridleway') OR (class IN ('footway', 'pedestrian') AND $(open_to("bicycle")))) AND NOT ($(closed("bicycle")) OR $(t("bicycle")) = 'dismount') AND (NOT $(closed("access")) OR $(open_to("bicycle")))",
+		"CASE WHEN $(t("oneway:bicycle")) = 'no' THEN 'both' ELSE $(oneway) END", "15.0")
+	speed = "coalesce(TRY_CAST(regexp_extract($(t("maxspeed")), '^([0-9]+)', 1) AS DOUBLE) * CASE WHEN $(t("maxspeed")) LIKE '%mph%' THEN 1.609344 ELSE 1 END,
+		CASE class WHEN 'motorway' THEN 110 WHEN 'trunk' THEN 90 WHEN 'primary' THEN 60 WHEN 'secondary' THEN 50 WHEN 'tertiary' THEN 40 WHEN 'living_street' THEN 10 WHEN 'service' THEN 15
+		WHEN 'motorway_link' THEN 60 WHEN 'trunk_link' THEN 50 WHEN 'primary_link' THEN 40 WHEN 'secondary_link' THEN 40 ELSE 30 END)"  # the speed limit, else a speed for the class
+	return ("class IN ($(roads), 'motorway', 'motorway_link', 'trunk', 'trunk_link') AND NOT ($(closed("access")) OR $(closed("motor_vehicle")) OR $(closed("motorcar")))", oneway, speed)
+end
+function network_of(mode; keep = true)  # the directed graph of the segments a mode may use, with the seconds and metres of each edge
+	allowed, direction, kmh = rules(mode)
+	pick = "SELECT *, $(direction) AS direction, metres / ($(kmh) / 3.6) AS seconds FROM segments WHERE $(allowed)"
+	keep && DBInterface.execute(con, "CREATE OR REPLACE TABLE network AS $(pick)")  # the streets of the mode, which the Next Steps map
+	e = query("SELECT a AS u, b AS v, seconds, metres FROM ($(pick)) WHERE direction <> 'backward' UNION ALL SELECT b, a, seconds, metres FROM ($(pick)) WHERE direction <> 'forward'")
+	isempty(e.u) && error("The area has no streets open to $(mode)")
+	ids = unique([e.u; e.v])
+	index = Dict(id => k for (k, id) in enumerate(ids))
+	us, vs = [index[x] for x in e.u], [index[x] for x in e.v]
+	g = SimpleDiGraph(length(ids))
+	foreach((x, y) -> add_edge!(g, x, y), us, vs)
+	xy = query("SELECT id, lon, lat FROM points")
+	at = Dict(zip(xy.id, zip(xy.lon, xy.lat)))
+	main = argmax(length, strongly_connected_components(g))  # the largest part in which every node reaches every other
+	return (; mode, g, ids, main, lon = [at[i][1] for i in ids], lat = [at[i][2] for i in ids],
+		seconds = sparse(us, vs, Float64.(e.seconds), length(ids), length(ids), min), metres = sparse(us, vs, Float64.(e.metres), length(ids), length(ids), min))
+end
+read_streets()
+net = network_of(mode)
+streets = SimpleGraph(net.g)  # the same nodes, each pair of neighbours joined once, whatever the direction
+degrees = degree(streets)
+parts = connected_components(streets)
+samples = "{{samples}}"
+k = samples == "all" ? nv(net.g) : min(nv(net.g), parse(Int, samples))
+betweenness = k == nv(net.g) ? betweenness_centrality(net.g, vertices(net.g), net.seconds) : betweenness_centrality(net.g, k, net.seconds; seed = 1)  # the share of fastest paths through each node; from k nodes drawn with a fixed seed
+csv = tempname() * ".csv"
+write(csv, "id,degree,betweenness\n" * join(["$(net.ids[v]),$(degrees[v]),$(betweenness[v])" for v in vertices(net.g)], "\n"))
+DBInterface.execute(con, "CREATE OR REPLACE TABLE nodes AS SELECT c.*, ST_Point(p.lon, p.lat) AS geom FROM read_csv('$(csv)', columns = {'id': 'BIGINT', 'degree': 'INTEGER', 'betweenness': 'DOUBLE'}, header = true) c JOIN points p USING (id)")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE network AS SELECT n.*, (na.betweenness + nb.betweenness) / 2 AS betweenness FROM network n JOIN nodes na ON na.id = n.a JOIN nodes nb ON nb.id = n.b")  # each segment, with the mean betweenness of its ends
+km2 = only(query("SELECT ST_Area_Spheroid($(area)) / 1e6 AS a").a)
+street_km = only(query("SELECT sum(metres) / 1000 AS km FROM network").km)
+kept = ["nodes", "network"]  # the tables Save as GeoParquet writes
+println("Network of ", mode, " over ", round(km2; digits = 2), " km²: ", round(street_km; digits = 1), " km of street, ", nv(streets), " nodes, ", ne(streets), " links")
+println("  intersections (3 links or more): ", count(>=(3), degrees), ", ", round(count(>=(3), degrees) / km2; digits = 1), " per km²; dead ends: ", count(==(1), degrees))
+println("  mean links per node: ", round(2 * ne(streets) / nv(streets); digits = 2), "; connected parts: ", length(parts), ", the largest with ", round(100 * maximum(length, parts) / nv(streets); digits = 1), "% of the nodes")
+println("  betweenness from ", k, " of the ", nv(net.g), " nodes", k < nv(net.g) ? " (a sample, seed 1)" : "", "; largest ", round(maximum(betweenness); digits = 4))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "route-map"
+label = "Route on a Map"
+desc = "The fastest route over the streets of the mode, with the Origin and the Destination, on an OpenStreetMap base map in Pollis's map view"
+models = ["route"]
+code = '''
+shown, streets_file, ends = joinpath(mktempdir(), "route.geojson"), joinpath(mktempdir(), "streets.geojson"), joinpath(mktempdir(), "ends.geojson")
+DBInterface.execute(con, "COPY (SELECT mode, round(minutes, 1) AS minutes, round(km, 2) AS km, geom FROM route) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT class, name, geom FROM network) TO '$(streets_file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT * FROM (VALUES ('Origin', ST_Point($(origin_lon), $(origin_lat))), ('Destination', ST_Point($(destination_lon), $(destination_lat)))) t(name, geom)) TO '$(ends)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(streets_file; name = "Streets of $(mode)", color = "#9aa5b1"), Pollis.layer(shown; name = "Route", color = "#e15759"), Pollis.layer(ends; name = "Origin and Destination", color = "#4e79a7"); title = "Fastest Route, $(round(minutes; digits = 1)) Minutes"))
+'''
+
+[[actionGroups.actions]]
+id = "reach-map"
+label = "Service Areas on a Map"
+desc = "The area reached within each of the Time Bands, the longest underneath, with the Origin, on an OpenStreetMap base map in Pollis's map view"
+models = ["reach"]
+code = '''
+shown, start = joinpath(mktempdir(), "reach.geojson"), joinpath(mktempdir(), "origin.geojson")
+DBInterface.execute(con, "COPY (SELECT band, km2, street_km, geom FROM reach ORDER BY band DESC) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT 'Origin' AS name, ST_Point($(origin_lon), $(origin_lat)) AS geom) TO '$(start)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Minutes of $(mode)", column = "band", opacity = 0.35), Pollis.layer(start; name = "Origin", color = "#e15759"); title = "Service Areas"))
+'''
+
+[[actionGroups.actions]]
+id = "network-map"
+label = "Network on a Map"
+desc = "The streets of the mode coloured by their class (residential, footway, primary...), on an OpenStreetMap base map in Pollis's map view"
+code = '''
+shown = joinpath(mktempdir(), "network.geojson")
+DBInterface.execute(con, "COPY (SELECT class, name, direction, round(metres, 1) AS metres, geom FROM network) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Streets by class", column = "class"); title = "Streets of $(mode)"))
+'''
+
+[[actionGroups.actions]]
+id = "betweenness-map"
+label = "Betweenness on a Map"
+desc = "The streets coloured by their betweenness, the share of fastest paths that pass through them, on an OpenStreetMap base map in Pollis's map view"
+models = ["measures"]
+code = '''
+shown = joinpath(mktempdir(), "betweenness.geojson")
+DBInterface.execute(con, "COPY (SELECT class, name, round(betweenness, 5) AS betweenness, geom FROM network) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Betweenness", column = "betweenness"); title = "Betweenness of the Streets of $(mode)"))
+'''
+
+[[actionGroups.actions]]
+id = "matrix-heatmap"
+label = "Travel Times as a Heat Map"
+desc = "The minutes from each place (rows) to each place (columns) as a heat map drawn with ECharts"
+models = ["matrix"]
+code = '''
+using ECharts
+
+labels = [first(s[1], 22) for s in snapped]
+cells = [[j - 1, length(snapped) - i, round(minutes[i, j]; digits = 1)] for i in eachindex(snapped), j in eachindex(snapped) if i != j && isfinite(minutes[i, j])]
+EChart(ec_width = 760, ec_height = 140 + 50 * length(snapped), title = [ECharts.Title(text = "Minutes by $(mode)")], tooltip = ECharts.Tooltip(),
+	grid = [ECharts.Grid(left = 170, bottom = 90)], xAxis = [ECharts.Axis(_type = "category", data = labels, axisLabel = ECharts.AxisLabel(rotate = 30))], yAxis = [ECharts.Axis(_type = "category", data = reverse(labels))],
+	visualMap = ECharts.VisualMap(min = 0, max = maximum(filter(isfinite, minutes)), calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#ffffcc", "#fd8d3c", "#800026"])),
+	series = [ECharts.HeatmapSeries(name = "Minutes", data = cells, label = ECharts.Label(show = true))])
+'''
+
+[[actionGroups.actions]]
+id = "street-orientation"
+label = "Street Orientation"
+desc = "The compass bearings of the streets, weighted by their length, in 36 bins of 10 degrees, as a polar chart drawn with ECharts, with the entropy of the orientations and their order, from 0 (no order) to 1 (a single grid)"
+models = ["measures"]
+code = '''
+using ECharts
+
+b = query("SELECT metres, ST_X(ST_StartPoint(geom)) AS x0, ST_Y(ST_StartPoint(geom)) AS y0, ST_X(ST_EndPoint(geom)) AS x1, ST_Y(ST_EndPoint(geom)) AS y1 FROM network")
+bearing = [mod(atand(sind(b.x1[i] - b.x0[i]) * cosd(b.y1[i]), cosd(b.y0[i]) * sind(b.y1[i]) - sind(b.y0[i]) * cosd(b.y1[i]) * cosd(b.x1[i] - b.x0[i])), 360) for i in eachindex(b.metres)]  # the initial bearing of each segment
+weights, drawn = zeros(36), zeros(36)
+for i in eachindex(bearing), angle in (bearing[i], mod(bearing[i] + 180, 360))  # each street counted in both directions
+	weights[mod(round(Int, angle / 10), 36) + 1] += b.metres[i]  # bins centred on 0, 10, 20... degrees, for the entropy
+	drawn[floor(Int, angle / 10) + 1] += b.metres[i]  # bins from 0 to 10, 10 to 20... degrees, as the chart draws them
+end
+p = weights ./ sum(weights)
+entropy = -sum(x * log(x) for x in p if x > 0)
+order = 1 - ((entropy - 1.386) / (log(36) - 1.386))^2  # Boeing's orientation order: 1.386 is the entropy of a perfect grid, log(36) that of uniform bearings
+println("Orientation entropy ", round(entropy; digits = 3), " (at most ", round(log(36); digits = 3), "); orientation order ", round(order; digits = 3))
+EChart(ec_width = 520, ec_height = 520, title = [ECharts.Title(text = "Street Orientation, $(mode)")], tooltip = ECharts.Tooltip(), polar = ECharts.Polar(),
+	angleAxis = ECharts.AngleAxis(_type = "category", data = string.(0:10:350), startAngle = 90, clockwise = true, boundaryGap = false, axisLine = ECharts.AxisLine(show = false)), radiusAxis = ECharts.RadiusAxis(axisLabel = ECharts.AxisLabel(show = false), axisLine = ECharts.AxisLine(show = false), axisTick = ECharts.AxisTick(show = false)),
+	series = [ECharts.XYSeries(name = "Share of length", _type = "bar", coordinateSystem = "polar", data = round.(drawn ./ sum(drawn); digits = 4))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "network-check"
+label = "Network Check"
+desc = "The ways and segments read, the kilometres of street of each class open to the mode, the streets without a name, and the share of the nodes in the largest part the mode can travel in both directions"
+code = '''
+c = query("SELECT class, count(*) AS segments, round(sum(metres) / 1000, 2) AS km, count(*) FILTER (WHERE name IS NULL) AS unnamed FROM network GROUP BY class ORDER BY km DESC")
+println(only(query("SELECT count(*) AS n FROM ways").n), " ways read, ", only(query("SELECT count(*) AS n FROM segments").n), " segments inside the area; ", sum(c.segments), " open to ", mode)
+println(rpad("class", 18), lpad("segments", 9), lpad("km", 9), lpad("no name", 9))
+for i in eachindex(c.class)
+	println(rpad(coalesce(c.class[i], ""), 18), lpad(c.segments[i], 9), lpad(c.km[i], 9), lpad(c.unnamed[i], 9))
+end
+println("Largest strongly connected part: ", length(net.main), " of ", nv(net.g), " nodes (", round(100 * length(net.main) / nv(net.g); digits = 1), "%); the others cannot be reached from it, or cannot reach it, by ", mode)
+'''
+
+[[actionGroups.actions]]
+id = "snapping"
+label = "Snapping Distances"
+desc = "How far each point given is from the node of the network it was snapped to: a long distance means the point is off the streets the mode can use"
+models = ["route", "reach", "matrix"]
+code = '''
+for (name, x, y, node, metres) in snapped
+	println(rpad(name, 26), lpad(round(metres; digits = 1), 8), " m to node ", net.ids[node], metres > 100 ? "  (far from a street of $(mode))" : "")
+end
+'''
+
+[[actionGroups.actions]]
+id = "unreachable"
+label = "Unreachable Places"
+desc = "The pairs of places with no path between them by the mode, and the places nearest a node outside the largest strongly connected part"
+models = ["matrix"]
+code = '''
+gone = [(snapped[i][1], snapped[j][1]) for i in eachindex(snapped), j in eachindex(snapped) if i != j && !isfinite(minutes[i, j])]
+isempty(gone) ? println("Every place reaches every other by ", mode) : foreach(p -> println("No path by ", mode, " from ", p[1], " to ", p[2]), gone)
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "modes-route"
+label = "Walk, Cycle and Drive"
+desc = "The fastest route from the Origin to the Destination by each of the three modes, with its minutes and kilometres"
+models = ["route"]
+code = '''
+println(rpad("mode", 8), lpad("minutes", 9), lpad("km", 8))
+for other in ("walk", "cycle", "drive")
+	other_net = other == mode ? net : network_of(other; keep = false)
+	a, b = snap(other_net, origin_lon, origin_lat)[1], snap(other_net, destination_lon, destination_lat)[1]
+	_, m, d = route_of(other_net, a, b)
+	println(rpad(other, 8), lpad(round(m; digits = 1), 9), lpad(round(d; digits = 2), 8))
+end
+'''
+
+[[actionGroups.actions]]
+id = "modes-reach"
+label = "Walk, Cycle and Drive"
+desc = "The service areas from the Origin by each of the three modes: the square kilometres and kilometres of street reached within each of the Time Bands"
+models = ["reach"]
+code = '''
+println(rpad("mode", 8), join([lpad("$(minutes_text(b)) min km²", 13) for b in bands]))
+for other in ("walk", "cycle", "drive")
+	other_net = other == mode ? net : network_of(other; keep = false)
+	reach_of(other_net, snap(other_net, origin_lon, origin_lat)[1], "reached_$(other)")
+	s = query("SELECT band, round(ST_Area_Spheroid(geom) / 1e6, 3) AS km2 FROM ($(areas_of("reached_$(other)", other))) ORDER BY band")
+	println(rpad(other, 8), join([lpad(x, 13) for x in s.km2]))
+end
+'''
+
+[[actionGroups.actions]]
+id = "route-vs-straight"
+label = "Route Against Straight Line"
+desc = "The route beside the straight line from the Origin to the Destination, both on an OpenStreetMap base map, with their lengths and the detour index, the ratio of the two"
+models = ["route"]
+code = '''
+straight = only(query("SELECT ST_Distance_Spheroid(ST_Point(?, ?), ST_Point(?, ?)) / 1000 AS d", [origin_lon, origin_lat, destination_lon, destination_lat]).d)
+println("Route ", round(km; digits = 2), " km, straight line ", round(straight; digits = 2), " km: detour index ", round(km / straight; digits = 2))
+shown, line = joinpath(mktempdir(), "route.geojson"), joinpath(mktempdir(), "straight.geojson")
+DBInterface.execute(con, "COPY (SELECT 'Route' AS name, geom FROM route) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT 'Straight line' AS name, ST_MakeLine(ST_Point($(origin_lon), $(origin_lat)), ST_Point($(destination_lon), $(destination_lat))) AS geom) TO '$(line)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Route", color = "#e15759"), Pollis.layer(line; name = "Straight line", color = "#4e79a7"); title = "Route and Straight Line"))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "detour-index"
+label = "Detour Index"
+desc = "For each pair of places, the length of the fastest path over the straight-line distance: 1 for a straight path, more for a roundabout one; with the mean and the extremes"
+models = ["matrix"]
+code = '''
+d = query("SELECT origin, destination, km, straight_km, round(km / straight_km, 2) AS detour FROM matrix WHERE km IS NOT NULL AND straight_km > 0 ORDER BY detour DESC")
+for i in eachindex(d.detour)
+	println(rpad(first(d.origin[i], 22), 24), rpad(first(d.destination[i], 22), 24), lpad(d.km[i], 8), " km", lpad(d.straight_km[i], 8), " km straight", lpad(d.detour[i], 7))
+end
+println("Mean detour index ", round(sum(d.detour) / length(d.detour); digits = 2))
+'''
+
+[[actionGroups.actions]]
+id = "central-streets"
+label = "Most Central Streets"
+desc = "The fifteen named streets, of 100 m or more, with the highest betweenness, weighted by the length of their segments: those the fastest paths of the network use most"
+models = ["measures"]
+code = '''
+c = query("SELECT name, string_agg(DISTINCT class, ', ') AS classes, round(sum(betweenness * metres) / sum(metres), 5) AS betweenness, round(sum(metres) / 1000, 2) AS km FROM network WHERE name IS NOT NULL GROUP BY name HAVING sum(metres) >= 100 ORDER BY betweenness DESC LIMIT 15")
+for i in eachindex(c.name)
+	println(rpad(first(c.name[i], 32), 34), lpad(c.betweenness[i], 9), lpad(c.km[i], 7), " km  ", c.classes[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "reach-summary"
+label = "Reach Summary"
+desc = "For each of the Time Bands, the area reached, its share of the Area, the kilometres of street and the nodes reached"
+models = ["reach"]
+code = '''
+whole = only(query("SELECT ST_Area_Spheroid($(area)) / 1e6 AS a").a)
+r = query("SELECT band, km2, street_km, nodes FROM reach ORDER BY band")
+for i in eachindex(r.band)
+	println(lpad(minutes_text(r.band[i]), 4), " min: ", lpad(r.km2[i], 7), " km² (", lpad(round(100 * r.km2[i] / whole; digits = 1), 5), "% of the Area), ", lpad(r.street_km[i], 7), " km of street, ", r.nodes[i], " nodes")
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the tables of the tab, the route, the service areas, the matrix or the nodes, and the streets of the mode, as GeoParquet files in the folder routes"
+code = '''
+for t in kept
+	parquet_file = joinpath(place, "$(t)-$(mode).parquet")
+	DBInterface.execute(con, "COPY $(t) TO '$(parquet_file)' (FORMAT parquet)")
+	println("Wrote ", only(query("SELECT count(*) AS n FROM $(t)").n), " rows of ", t, " to ", parquet_file)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-matrix"
+label = "Save the Matrix as CSV"
+desc = "The minutes, kilometres and straight-line kilometres between every pair of places, as a CSV file in the folder routes"
+models = ["matrix"]
+code = '''
+csv_file = joinpath(place, "matrix-$(mode).csv")
+DBInterface.execute(con, "COPY matrix TO '$(csv_file)' (HEADER, DELIMITER ',')")
+println("Wrote ", length(snapped) * (length(snapped) - 1), " pairs to ", csv_file)
+'''
