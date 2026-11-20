@@ -1,12 +1,12 @@
 # Mobility and Flows — Factsheet
 
-**Mobility and Flows** reads the flows of people and vehicles in a city from open data: the workers or jobs between the zones where people live and where they work, the trips of a month by bike, taxi or bus, the vehicles counted on the roads, and the flights between airports. Gravity models of spatial interaction are fitted to the flows ([Wilson (1971)](#ref-Wil1971a); [Flowerdew and Aitkin (1982)](#ref-FA1982a)). The panel of the Smart Regions Toolbox reads every source with DuckDB.jl and DuckDB's spatial extension, and fits the models with GLFixedEffectModels.jl ([Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b); [Boehm (2020)](#ref-Boe2020a)).
+**Mobility and Flows** reads the flows of people and vehicles in a city from open data: the workers or jobs between the zones where people live and where they work, the trips of a month by bike, taxi or bus, the vehicles counted on the roads, and the flights between airports, worldwide, within a large country or from a city. Gravity models of spatial interaction are fitted to the flows ([Wilson (1971)](#ref-Wil1971a); [Flowerdew and Aitkin (1982)](#ref-FA1982a)). The panel of the Smart Regions Toolbox reads every source with DuckDB.jl and DuckDB's spatial extension, and fits the models with GLFixedEffectModels.jl ([Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b); [Boehm (2020)](#ref-Boe2020a)).
 
 | Item | Mobility and Flows panel |
 |---|---|
 | **Purpose** | The flows between the zones of a city, the traffic on its roads and the flights between airports, and how flows fall with distance |
-| **Input** | An Example City (Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore), Global on Air Traffic, or Custom files |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [GLFixedEffectModels.jl](https://github.com/jmboehm/GLFixedEffectModels.jl), [GLM.jl](https://github.com/JuliaStats/GLM.jl), [ZipArchives.jl](https://github.com/JuliaIO/ZipArchives.jl), with DuckDB's spatial extension |
+| **Input** | An Example City (Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore), Global or a country (United States, Canada, India, Brazil, Australia) on Air Traffic, or Custom files |
+| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [GLFixedEffectModels.jl](https://github.com/jmboehm/GLFixedEffectModels.jl), [GLM.jl](https://github.com/JuliaStats/GLM.jl), [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), [ZipArchives.jl](https://github.com/JuliaIO/ZipArchives.jl), with DuckDB's spatial extension |
 | **Tabs** | Commuting Flows; Trips; Spatial Interaction; Traffic Counts; Air Traffic |
 | **Account** | An LTA DataMall account key for Singapore only |
 | **Output** | `zones` and `flows`; `hours` for trips; `modelled` and `fit` for a model; `counts` for traffic counts; `flights`, `routes` and `traffic` for air traffic |
@@ -19,7 +19,7 @@
 | Trips | London (Santander Cycles), New York (yellow taxis), Singapore (buses), Custom |
 | Spatial Interaction | Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Singapore, Custom |
 | Traffic Counts | Cambridge, Oxford, London, Paris, New York, Custom |
-| Air Traffic | Global, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore |
+| Air Traffic | Global, United States, Canada, India, Brazil, Australia, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore |
 
 ## Files Kept in the Folder of Mobility and Flows
 
@@ -31,8 +31,8 @@ Every file the panel downloads goes to the folder mobility of the Folder, under 
 |---|---|---|
 | Visualise | Flows on a Map, Inflows on a Map, Distances Travelled, Distance Decay, Trips by Hour, Count Points on a Map, Counts by Hour, Routes on a Map | The largest flows; the inflow of each zone; the flows by distance band; observed and fitted flows by distance; trips by hour; count points by flow; vehicles by hour; airports and routes |
 | Diagnose | Coverage, Fitted Against Observed, Residuals on a Map, Overdispersion, Count Points Check, Flights Without an Airport | Zones without flows and flows outside them; the fit pair by pair; where the model errs; dispersion and zeros; how counts were obtained; flights the source could not place |
-| Compare | Four Constraints, Power and Exponential, Weekdays and Weekends, Counts over the Years | The model with each constraint; with each distance function; the hours of each kind of day; counts by year |
-| Interpret | Net Flows, Largest Flows, Distance Parameter, Vehicle Types, Busiest Routes | Inflow, outflow and self-containment; the largest pairs; what the distance parameter means; the mix of vehicles; the busiest airports and routes |
+| Compare | Four Constraints, Power and Exponential, Countries Compared, Months Compared, Weekdays and Weekends, Counts over the Years | The model with each constraint; with each distance function; the domestic networks of five countries; the same month from 2019 to 2022; the hours of each kind of day; counts by year |
+| Interpret | Net Flows, Largest Flows, Distance Parameter, Vehicle Types, Busiest Routes, Air Network | Inflow, outflow and self-containment; the largest pairs; what the distance parameter means; the mix of vehicles; the busiest airports and routes; nonstop links, changes and betweenness of airports |
 | Export | Save as GeoParquet, Save Flows as CSV | The tables of the tab |
 
 ## References

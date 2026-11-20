@@ -39,7 +39,7 @@ github = "https://github.com/JuliaIO/ZipArchives.jl"
 
 # Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
 [requires]
-packages = ["ECharts.jl"]
+packages = ["ECharts.jl", "Graphs.jl"]
 
 [[wikis]]
 name = "Factsheet"
@@ -119,6 +119,9 @@ key = "Qui2023c"
 
 [[references]]
 key = "Boe2020a"
+
+[[references]]
+key = "FBSHE...2021a"
 
 [[references]]
 key = "JSC2024a"
@@ -216,7 +219,13 @@ label = "Original Papers"
 key = "Wil1971a"
 
 [[references]]
+key = "Fre1977a"
+
+[[references]]
 key = "FA1982a"
+
+[[references]]
+key = "Bra2001a"
 
 [[references]]
 key = "SST2006a"
@@ -294,6 +303,22 @@ answer = '''
 The Ville de Paris publishes the data of its permanent sensors over a rolling thirteen months, so the counts of the panel span the current year and the one before, and the current year is not complete.
 '''
 wiki = "Traffic Counts"
+hidden = true
+
+[[faq]]
+question = "Which flights count for a country in Air Traffic?"
+answer = '''
+The domestic flights: those whose airports of departure and arrival both lie in the country, by the country OurAirports gives each airport. With Flights set to Airline Flights, only flights with an airline callsign between airports with scheduled service count; with All Flights, general and business aviation count too.
+'''
+wiki = "Air Traffic Data"
+hidden = true
+
+[[faq]]
+question = "Why do some countries have so few routes in Air Traffic?"
+answer = '''
+The OpenSky Network sees only the flights within reach of its receivers. Where few receivers cover the approaches, many flights lack their airport of arrival and drop out of the routes; Countries Compared gives, for each country, the share of departures seen whose airport of arrival is known.
+'''
+wiki = "Air Traffic Data"
 hidden = true
 
 [[models]]
@@ -374,12 +399,37 @@ id = "city"
 label = "Example City"
 kind = "select"
 default = "cambridge"
-tooltip = "The city whose data the tab reads: each tab lists the cities it has open data for. Custom reads your own files."
+tooltip = "The city whose data the tab reads: each tab lists the cities it has open data for. On Air Traffic, Global reads the flights among the busiest airports of the world, and a country its domestic flights. Custom reads your own files."
 newRow = true
 
 [[inputs.options]]
 value = "global"
 label = "Global"
+models = ["air"]
+
+[[inputs.options]]
+value = "usa"
+label = "United States"
+models = ["air"]
+
+[[inputs.options]]
+value = "canada"
+label = "Canada"
+models = ["air"]
+
+[[inputs.options]]
+value = "india"
+label = "India"
+models = ["air"]
+
+[[inputs.options]]
+value = "brazil"
+label = "Brazil"
+models = ["air"]
+
+[[inputs.options]]
+value = "australia"
+label = "Australia"
 models = ["air"]
 
 [[inputs.options]]
@@ -519,9 +569,25 @@ models = ["air"]
 newRow = true
 
 [[inputs]]
+id = "flightKind"
+label = "Flights"
+kind = "select"
+default = "airline"
+tooltip = "Which flights the routes count: those with the callsign of an airline, three letters and a number, between airports that OurAirports lists with scheduled service; or all the flights seen, with general and business aviation."
+models = ["air"]
+
+[[inputs.options]]
+value = "airline"
+label = "Airline Flights"
+
+[[inputs.options]]
+value = "all"
+label = "All Flights"
+
+[[inputs]]
 id = "kept"
 label = "Airports Kept"
-tooltip = "How many of the busiest airports the gravity model is fitted to: the routes among them for Global, the routes from the city's airports to them for a city."
+tooltip = "How many of the busiest airports the gravity model is fitted to: the routes among them for Global and a country, the routes from the city's airports to them for a city."
 default = "200"
 models = ["air"]
 
@@ -683,28 +749,32 @@ unzipped(zip, entry) = (path = joinpath(place, entry); isfile(path) || write(pat
 {{?model=commuting|trips}}ismissing(left.away[1]) || println(round(Int, left.away[1]), " more ", unit, " start or end outside the zones", ismissing(left.home[1]) ? "" : ", and $(round(Int, left.home[1])) work mainly at or from home")
 {{?model=interaction}}execute("""CREATE OR REPLACE TABLE pairs AS SELECT a.zone AS origin, b.zone AS destination, coalesce(f.flow, 0) AS flow, ST_Distance_Spheroid(ST_Point(a.lon, a.lat), ST_Point(b.lon, b.lat)) / 1000 AS km
 {{?model=interaction}}	FROM zones a CROSS JOIN zones b LEFT JOIN flows f ON f.origin = a.zone AND f.destination = b.zone WHERE a.zone <> b.zone""")  # every ordered pair of different zones, with no flow as 0, and the distance between their centroids
-{{?model=air}}hubs = Dict("global" => String[], "london" => ["EGLL", "EGKK", "EGSS", "EGGW", "EGLC"], "amsterdam" => ["EHAM"], "paris" => ["LFPG", "LFPO"], "frankfurt" => ["EDDF"], "newyork" => ["KJFK", "KEWR", "KLGA"], "tokyo" => ["RJTT", "RJAA"], "hongkong" => ["VHHH"], "singapore" => ["WSSS"])[city]  # the ICAO codes of the city's airports
+{{?model=air}}hubs = Dict("global" => String[], "london" => ["EGLL", "EGKK", "EGSS", "EGGW", "EGLC"], "amsterdam" => ["EHAM"], "paris" => ["LFPG", "LFPO"], "frankfurt" => ["EDDF"], "newyork" => ["KJFK", "KEWR", "KLGA"], "tokyo" => ["RJTT", "RJAA"], "hongkong" => ["VHHH"], "singapore" => ["WSSS"], "usa" => String[], "canada" => String[], "india" => String[], "brazil" => String[], "australia" => String[])[city]  # the ICAO codes of the city's airports
+{{?model=air}}countries = Dict("usa" => ("US", "the United States"), "canada" => ("CA", "Canada"), "india" => ("IN", "India"), "brazil" => ("BR", "Brazil"), "australia" => ("AU", "Australia"))  # the ISO codes of the countries whose domestic flights the tab reads
 {{?model=air}}record = fetch("https://zenodo.org/api/records/7923702", "opensky-flightlist-record.json")  # the files of the OpenSky Network's flight list, 2019 to 2022, on Zenodo
 {{?model=air}}month_air = replace("{{airMonth}}", "-" => "")
 {{?model=air}}key = only(query("SELECT f.key FROM (SELECT unnest(files) AS f FROM read_json('$(record)')) WHERE f.key LIKE 'flightlist_$(month_air)01_%'").key)
 {{?model=air}}flights_file = fetch("https://zenodo.org/api/records/7923702/files/$(key)/content", key)  # the flights of the month seen by the OpenSky Network's receivers (150 to 200 MB, once)
 {{?model=air}}airports_file = fetch("https://davidmegginson.github.io/ourairports-data/airports.csv", "ourairports-airports.csv")  # the airports of the world, OurAirports
-{{?model=air}}execute("CREATE OR REPLACE TABLE airports AS SELECT ident AS icao, name, iso_country AS country, municipality, longitude_deg AS lon, latitude_deg AS lat FROM read_csv('$(airports_file)')")
-{{?model=air}}execute("CREATE OR REPLACE TABLE flights AS SELECT origin, destination, typecode, CAST(day AS DATE) AS day FROM read_csv('$(flights_file)', types = {'origin': 'VARCHAR', 'destination': 'VARCHAR', 'typecode': 'VARCHAR', 'day': 'VARCHAR'})")
-{{?model=air}}execute("""CREATE OR REPLACE TABLE routes AS SELECT f.origin, f.destination, count(*)::DOUBLE AS flights, ST_Distance_Spheroid(ST_Point(a.lon, a.lat), ST_Point(b.lon, b.lat)) / 1000 AS km
-{{?model=air}}	FROM flights f JOIN airports a ON a.icao = f.origin JOIN airports b ON b.icao = f.destination WHERE f.origin <> f.destination GROUP BY f.origin, f.destination, a.lon, a.lat, b.lon, b.lat""")  # flights between two known airports
+{{?model=air}}execute("CREATE OR REPLACE TABLE airports AS SELECT ident AS icao, name, iso_country AS country, municipality, longitude_deg AS lon, latitude_deg AS lat, scheduled_service = 'yes' AS scheduled FROM read_csv('$(airports_file)')")
+{{?model=air}}served = "{{flightKind}}" == "airline" ? "AND regexp_matches(f.callsign, '^[A-Z]{3}[0-9]') AND a.scheduled AND b.scheduled" : ""  # flights with an airline's callsign between airports with scheduled service, or all
+{{?model=air}}execute("CREATE OR REPLACE TABLE flights AS SELECT callsign, origin, destination, typecode, CAST(day AS DATE) AS day FROM read_csv('$(flights_file)', types = {'callsign': 'VARCHAR', 'origin': 'VARCHAR', 'destination': 'VARCHAR', 'typecode': 'VARCHAR', 'day': 'VARCHAR'})")
+{{?model=air}}routes_of(source, scope = "") = """SELECT f.origin, f.destination, count(*)::DOUBLE AS flights, ST_Distance_Spheroid(ST_Point(a.lon, a.lat), ST_Point(b.lon, b.lat)) / 1000 AS km
+{{?model=air}}	FROM $(source) f JOIN airports a ON a.icao = f.origin JOIN airports b ON b.icao = f.destination WHERE f.origin <> f.destination $(served) $(scope) GROUP BY f.origin, f.destination, a.lon, a.lat, b.lon, b.lat"""  # the flights between two known airports
+{{?model=air}}domestic(code) = "AND a.country = '$(code)' AND b.country = '$(code)'"  # both airports in the country
+{{?model=air}}execute("CREATE OR REPLACE TABLE routes AS " * routes_of("flights", haskey(countries, city) ? domestic(countries[city][1]) : ""))
 {{?model=air}}execute("CREATE OR REPLACE TABLE traffic AS SELECT icao, sum(flights) AS flights FROM (SELECT origin AS icao, flights FROM routes UNION ALL SELECT destination, flights FROM routes) GROUP BY icao")  # departures and arrivals of each airport
-{{?model=air}}execute("CREATE OR REPLACE TABLE busiest AS SELECT icao FROM traffic WHERE icao NOT IN ($(join(["'$(h)'" for h in hubs], ", "))) ORDER BY flights DESC LIMIT {{kept}}")  # the busiest airports, other than the city's
-{{?model=air}}{{?city=global}}execute("""CREATE OR REPLACE TABLE pairs AS SELECT a.icao AS origin, b.icao AS destination, coalesce(r.flights, 0) AS flow, ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) / 1000 AS km
-{{?model=air}}{{?city=global}}	FROM busiest a CROSS JOIN busiest b JOIN airports pa ON pa.icao = a.icao JOIN airports pb ON pb.icao = b.icao LEFT JOIN routes r ON r.origin = a.icao AND r.destination = b.icao WHERE a.icao <> b.icao""")  # every ordered pair of the busiest airports
-{{?model=air}}{{?city!=global}}execute("""CREATE OR REPLACE TABLE pairs AS SELECT h.icao AS origin, b.icao AS destination, coalesce(r.flights, 0) AS flow, ST_Distance_Spheroid(ST_Point(ph.lon, ph.lat), ST_Point(pb.lon, pb.lat)) / 1000 AS km
-{{?model=air}}{{?city!=global}}	FROM (SELECT unnest([$(join(["'$(h)'" for h in hubs], ", "))]) AS icao) h CROSS JOIN busiest b JOIN airports ph ON ph.icao = h.icao JOIN airports pb ON pb.icao = b.icao LEFT JOIN routes r ON r.origin = h.icao AND r.destination = b.icao""")  # from each of the city's airports to each of the busiest others
+{{?model=air}}execute("CREATE OR REPLACE TABLE busiest AS SELECT icao FROM traffic WHERE NOT list_contains([$(join(["'$(h)'" for h in hubs], ", "))]::VARCHAR[], icao) ORDER BY flights DESC LIMIT {{kept}}")  # the busiest airports, other than the city's
+{{?model=air}}{{?city=global|usa|canada|india|brazil|australia}}execute("""CREATE OR REPLACE TABLE pairs AS SELECT a.icao AS origin, b.icao AS destination, coalesce(r.flights, 0) AS flow, ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) / 1000 AS km
+{{?model=air}}{{?city=global|usa|canada|india|brazil|australia}}	FROM busiest a CROSS JOIN busiest b JOIN airports pa ON pa.icao = a.icao JOIN airports pb ON pb.icao = b.icao LEFT JOIN routes r ON r.origin = a.icao AND r.destination = b.icao WHERE a.icao <> b.icao""")  # every ordered pair of the busiest airports, of the world or of the country
+{{?model=air}}{{?city!=global|usa|canada|india|brazil|australia}}execute("""CREATE OR REPLACE TABLE pairs AS SELECT h.icao AS origin, b.icao AS destination, coalesce(r.flights, 0) AS flow, ST_Distance_Spheroid(ST_Point(ph.lon, ph.lat), ST_Point(pb.lon, pb.lat)) / 1000 AS km
+{{?model=air}}{{?city!=global|usa|canada|india|brazil|australia}}	FROM (SELECT unnest([$(join(["'$(h)'" for h in hubs], ", "))]) AS icao) h CROSS JOIN busiest b JOIN airports ph ON ph.icao = h.icao JOIN airports pb ON pb.icao = b.icao LEFT JOIN routes r ON r.origin = h.icao AND r.destination = b.icao""")  # from each of the city's airports to each of the busiest others
 {{?model=air}}unit = "flights"
 {{?model=air}}seen = query("SELECT count(*) AS n, count(*) FILTER (WHERE origin IS NOT NULL AND destination IS NOT NULL) AS both_known FROM flights")
-{{?model=air}}println(key, ": ", seen.n[1], " flights seen, ", seen.both_known[1], " with an airport of departure and of arrival; ", only(query("SELECT count(*) AS n FROM routes").n), " routes between airports")
-{{?model=air}}{{?city!=global}}masses = query("SELECT p.*, o.flights AS outflow, d.flights AS inflow FROM pairs p JOIN traffic o ON o.icao = p.origin JOIN traffic d ON d.icao = p.destination WHERE p.km > 0")  # each airport's departures and arrivals measure its size
+{{?model=air}}println(key, ": ", seen.n[1], " flights seen, ", seen.both_known[1], " with an airport of departure and of arrival; ", only(query("SELECT count(*) AS n FROM routes").n), haskey(countries, city) ? " domestic routes between airports of $(countries[city][2])" : " routes between airports")
+{{?model=air}}{{?city!=global|usa|canada|india|brazil|australia}}masses = query("SELECT p.*, o.flights AS outflow, d.flights AS inflow FROM pairs p JOIN traffic o ON o.icao = p.origin JOIN traffic d ON d.icao = p.destination WHERE p.km > 0")  # each airport's departures and arrivals measure its size
 {{?model=interaction}}masses = query("SELECT p.*, o.total AS outflow, d.total AS inflow FROM pairs p JOIN (SELECT origin, sum(flow) AS total FROM pairs GROUP BY ALL) o USING (origin) JOIN (SELECT destination, sum(flow) AS total FROM pairs GROUP BY ALL) d USING (destination) WHERE o.total > 0 AND d.total > 0 AND p.km > 0")  # the flows from each origin and to each destination measure their size
-{{?model=air}}{{?city=global}}masses = query("SELECT p.*, o.total AS outflow, d.total AS inflow FROM pairs p JOIN (SELECT origin, sum(flow) AS total FROM pairs GROUP BY ALL) o USING (origin) JOIN (SELECT destination, sum(flow) AS total FROM pairs GROUP BY ALL) d USING (destination) WHERE o.total > 0 AND d.total > 0 AND p.km > 0")
+{{?model=air}}{{?city=global|usa|canada|india|brazil|australia}}masses = query("SELECT p.*, o.total AS outflow, d.total AS inflow FROM pairs p JOIN (SELECT origin, sum(flow) AS total FROM pairs GROUP BY ALL) o USING (origin) JOIN (SELECT destination, sum(flow) AS total FROM pairs GROUP BY ALL) d USING (destination) WHERE o.total > 0 AND d.total > 0 AND p.km > 0")
 {{?model=interaction|air}}decay = "{{decay}}"
 {{?model=interaction}}per_km = 1  # the exponential's distance in km
 {{?model=air}}per_km = 1000  # the exponential's distance in thousands of km, on which the fit stays stable
@@ -716,8 +786,23 @@ unzipped(zip, entry) = (path = joinpath(place, entry); isfile(path) || write(pat
 {{?model=interaction|air}}	srmse = sqrt(sum((flow .- fitted) .^ 2) / length(flow)) / (sum(flow) / length(flow))
 {{?model=interaction|air}}	return cpc, srmse
 {{?model=interaction|air}}end
+{{?model=air}}function network_fit(routes_sql)  # the doubly constrained model of the routes among the busiest airports of a set of routes, which Countries Compared and Months Compared use
+{{?model=air}}	execute("CREATE OR REPLACE TEMP TABLE scope_routes AS $(routes_sql)")
+{{?model=air}}	execute("CREATE OR REPLACE TEMP TABLE scope_traffic AS SELECT icao, sum(flights) AS flights FROM (SELECT origin AS icao, flights FROM scope_routes UNION ALL SELECT destination, flights FROM scope_routes) GROUP BY icao")
+{{?model=air}}	totals = query("SELECT count(*) AS airports, sum(flights) / 2 AS flights, (SELECT count(*) FROM scope_routes) AS routes, (SELECT sum(flights * km) / sum(flights) FROM scope_routes) AS mean_km, (SELECT sum(flights) FROM (SELECT flights FROM scope_traffic ORDER BY flights DESC LIMIT 5)) / sum(flights) AS top5 FROM scope_traffic")
+{{?model=air}}	p = query("""SELECT * FROM (SELECT a.icao AS origin, b.icao AS destination, coalesce(r.flights, 0) AS flow, ST_Distance_Spheroid(ST_Point(pa.lon, pa.lat), ST_Point(pb.lon, pb.lat)) / 1000 AS km,
+{{?model=air}}		sum(coalesce(r.flights, 0)) OVER (PARTITION BY a.icao) AS outflow, sum(coalesce(r.flights, 0)) OVER (PARTITION BY b.icao) AS inflow
+{{?model=air}}		FROM (SELECT icao FROM scope_traffic ORDER BY flights DESC LIMIT {{kept}}) a CROSS JOIN (SELECT icao FROM scope_traffic ORDER BY flights DESC LIMIT {{kept}}) b JOIN airports pa ON pa.icao = a.icao JOIN airports pb ON pb.icao = b.icao
+{{?model=air}}		LEFT JOIN scope_routes r ON r.origin = a.icao AND r.destination = b.icao WHERE a.icao <> b.icao) WHERE outflow > 0 AND inflow > 0 AND km > 0""")
+{{?model=air}}	d = (flow = p.flow, x = decay == "power" ? log.(p.km) : p.km ./ per_km, log_outflow = log.(p.outflow), log_inflow = log.(p.inflow), origin = p.origin, destination = p.destination, everywhere = fill("all", length(p.flow)))
+{{?model=air}}	f = fit_of("doubly"; d = d)
+{{?model=air}}	mu = coalesce.(f.augmentdf.mu, NaN)
+{{?model=air}}	j = findfirst(==("x"), coefnames(f))
+{{?model=air}}	ok = isfinite.(mu)
+{{?model=air}}	return (airports = totals.airports[1], flights = totals.flights[1], routes = totals.routes[1], mean_km = totals.mean_km[1], top5 = totals.top5[1], beta = coef(f)[j], beta_se = stderror(f)[j], cpc = goodness(d.flow[ok], mu[ok])[1])
+{{?model=air}}end
 {{?model=interaction}}constraint = "{{constraint}}"
-{{?model=air}}constraint = city == "global" ? "doubly" : "production"  # all the busiest airports both ways, or the departures from the city's airports
+{{?model=air}}constraint = city == "global" || haskey(countries, city) ? "doubly" : "production"  # all the busiest airports both ways, of the world or of the country, or the departures from the city's airports
 {{?model=interaction|air}}fit = fit_of(constraint)
 {{?model=interaction|air}}fitted = coalesce.(fit.augmentdf.mu, NaN)
 {{?model=interaction|air}}k = findfirst(==("x"), coefnames(fit))
@@ -961,6 +1046,8 @@ code = '''
 unseen = query("SELECT count(*) AS n, count(*) FILTER (WHERE origin IS NULL) AS no_origin, count(*) FILTER (WHERE destination IS NULL) AS no_destination, count(*) FILTER (WHERE origin = destination) AS returned FROM flights")
 println(unseen.n[1], " flights: ", round(100 * unseen.no_origin[1] / unseen.n[1]; digits = 1), "% with no airport of departure, ", round(100 * unseen.no_destination[1] / unseen.n[1]; digits = 1), "% with no airport of arrival, ", unseen.returned[1], " back where they left")
 unlisted = query("SELECT code, count(*) AS n FROM (SELECT origin AS code FROM flights UNION ALL SELECT destination FROM flights) WHERE code IS NOT NULL AND code NOT IN (SELECT icao FROM airports) GROUP BY code ORDER BY n DESC LIMIT 10")
+{{?city=usa|canada|india|brazil|australia}}left_country = query("SELECT count(*) AS n, count(*) FILTER (WHERE f.destination IS NULL) AS lost FROM flights f JOIN airports a ON a.icao = f.origin WHERE a.country = '$(countries[city][1])'")
+{{?city=usa|canada|india|brazil|australia}}println("Of the ", left_country.n[1], " flights that left an airport of ", countries[city][2], ", ", round(100 * left_country.lost[1] / left_country.n[1]; digits = 1), "% have no airport of arrival")
 println("Codes not in OurAirports: ", isempty(unlisted.code) ? "none" : join(["$(unlisted.code[i]) ($(unlisted.n[i]))" for i in eachindex(unlisted.code)], ", "))
 '''
 
@@ -999,6 +1086,38 @@ for f in ("power", "exponential")
 	ok = isfinite.(other_fitted)
 	f_cpc, f_srmse = goodness(data.flow[ok], other_fitted[ok])
 	println(rpad(f, 13), lpad(round(coef(other_fit)[j]; digits = 5), 10), lpad(round(stderror(other_fit)[j]; digits = 5), 12), lpad(round(f_cpc; digits = 3), 8), lpad(round(f_srmse; digits = 3), 8))
+end
+'''
+
+[[actionGroups.actions]]
+id = "countries-compared"
+label = "Countries Compared"
+desc = "The domestic flights of the United States, Canada, India, Brazil and Australia in the month: airports, routes, flights, the share of the five busiest airports, the mean distance flown, the share of the departures seen whose airport of arrival is known, and the distance parameter and common part of the flows of a doubly constrained model among the busiest airports of each"
+models = ["air"]
+code = '''
+println(rpad("country", 19), lpad("airports", 9), lpad("routes", 8), lpad("flights", 9), lpad("top 5 %", 9), lpad("mean km", 9), lpad("distance", 10), lpad("CPC", 7), lpad("ends %", 8))
+for (code, title) in sort(collect(values(countries)); by = last)
+	r = network_fit(routes_of("flights", domestic(code)))
+	ends = only(query("SELECT avg((f.destination IS NOT NULL)::INTEGER) AS share FROM flights f JOIN airports a ON a.icao = f.origin WHERE a.country = ?", [code]).share)  # how often the receivers saw both ends of a flight from the country
+	println(rpad(replace(title, r"^the " => ""), 19), lpad(r.airports, 9), lpad(r.routes, 8), lpad(round(Int, r.flights), 9), lpad(round(100 * r.top5; digits = 1), 9), lpad(round(Int, r.mean_km), 9), lpad(round(r.beta; digits = 3), 10), lpad(round(r.cpc; digits = 3), 7), lpad(round(100 * ends; digits = 1), 8))
+end
+println("Domestic flights of {{airMonth}}; each model among the {{kept}} busiest airports of the country, with the ", decay, " distance function")
+'''
+
+[[actionGroups.actions]]
+id = "months-compared"
+label = "Months Compared"
+desc = "The same month of each year from 2019 to 2022, worldwide or within the country: airports, routes, flights, the share of the five busiest airports, the mean distance flown, and the distance parameter of a doubly constrained model; downloads the flight lists of the other three years"
+models = ["air"]
+when = "city=global|usa|canada|india|brazil|australia"
+code = '''
+month_of_year = "{{airMonth}}"[6:7]
+println(rpad("month", 9), lpad("airports", 9), lpad("routes", 8), lpad("flights", 9), lpad("top 5 %", 9), lpad("mean km", 9), lpad("distance", 10), lpad("CPC", 7))
+for y in 2019:2022
+	key_y = only(query("SELECT f.key FROM (SELECT unnest(files) AS f FROM read_json('$(record)')) WHERE f.key LIKE 'flightlist_$(y)$(month_of_year)01_%'").key)
+	file_y = key_y == key ? flights_file : fetch("https://zenodo.org/api/records/7923702/files/$(key_y)/content", key_y)  # a flight list of 150 to 200 MB, downloaded once
+	r = network_fit(routes_of("read_csv('$(file_y)', types = {'callsign': 'VARCHAR', 'origin': 'VARCHAR', 'destination': 'VARCHAR'})", haskey(countries, city) ? domestic(countries[city][1]) : ""))
+	println(rpad("$(y)-$(month_of_year)", 9), lpad(r.airports, 9), lpad(r.routes, 8), lpad(round(Int, r.flights), 9), lpad(round(100 * r.top5; digits = 1), 9), lpad(round(Int, r.mean_km), 9), lpad(round(r.beta; digits = 3), 10), lpad(round(r.cpc; digits = 3), 7))
 end
 '''
 
@@ -1120,6 +1239,33 @@ foreach(i -> println(rpad(top_airports.icao[i], 6), rpad(first(top_airports.name
 println()
 top_routes = query("SELECT r.origin, a.name AS from_name, r.destination, b.name AS to_name, r.flights, round(r.km) AS km FROM routes r JOIN airports a ON a.icao = r.origin JOIN airports b ON b.icao = r.destination WHERE $(isempty(hubs) ? "true" : "r.origin IN ($(join(["'$(h)'" for h in hubs], ", ")))") ORDER BY r.flights DESC LIMIT 15")
 foreach(i -> println(rpad(first(top_routes.from_name[i], 32), 34), rpad(first(top_routes.to_name[i], 32), 34), lpad(round(Int, top_routes.flights[i]), 7), lpad(round(Int, top_routes.km[i]), 7), " km"), eachindex(top_routes.origin))
+'''
+
+[[actionGroups.actions]]
+id = "air-network"
+label = "Air Network"
+desc = "The busiest airports as a network whose links are the routes flown at least eight times in the month, about twice a week: the share of pairs served nonstop, the share reachable and the flights needed on average, and the airports with the most nonstop destinations and the highest betweenness, computed with Graphs.jl"
+models = ["air"]
+when = "city=global|usa|canada|india|brazil|australia"
+code = '''
+using Graphs
+
+regular = 8  # the fewest flights in the month for a route to count as a link
+links = query("SELECT origin, destination FROM pairs WHERE flow >= ?", [regular])
+nodes = query("SELECT p.icao, a.name FROM (SELECT origin AS icao FROM pairs UNION SELECT destination FROM pairs) p JOIN airports a USING (icao) ORDER BY icao")
+index = Dict(c => i for (i, c) in enumerate(nodes.icao))
+network = SimpleDiGraph(length(nodes.icao))
+foreach(i -> add_edge!(network, index[links.origin[i]], index[links.destination[i]]), eachindex(links.origin))
+ordered = nv(network) * (nv(network) - 1)  # ordered pairs of different airports
+hops = [h for v in vertices(network) for h in gdistances(network, v) if 0 < h < typemax(Int)]  # the fewest flights from each airport to each other it reaches
+println(nv(network), " airports, ", ne(network), " routes flown at least ", regular, " times among them: ", round(100 * ne(network) / ordered; digits = 1), "% of the pairs served nonstop, ", round(100 * count(<=(2), hops) / ordered; digits = 1), "% with at most one change")
+println(round(100 * length(hops) / ordered; digits = 1), "% of the pairs reachable, in ", round(sum(hops) / length(hops); digits = 2), " flights on average; largest strongly connected part ", maximum(length, strongly_connected_components(network)), " airports")
+centrality = betweenness_centrality(network)
+nonstop = outdegree(network)
+println(rpad("airport", 48), lpad("nonstop", 9), lpad("betweenness", 13))
+for v in sortperm(centrality; rev = true)[1:min(12, nv(network))]
+	println(rpad("$(nodes.icao[v]) $(first(nodes.name[v], 42))", 48), lpad(nonstop[v], 9), lpad(round(centrality[v]; digits = 4), 13))
+end
 '''
 
 [[actionGroups]]

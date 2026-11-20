@@ -14,7 +14,7 @@ Commuting Flows answers where people live and work: the zones that draw workers 
 
 ## Which Example City of Mobility and Flows to Choose
 
-The Example Cities of Mobility and Flows differ in what their sources count and in the size of their zones. Cambridge, Oxford and London have the finest zones, the MSOAs of the Census 2021, and the counts of the Department for Transport. New York has every tab, and Paris every tab but Trips, with commuting from LODES and from the 2022 census. Amsterdam, Frankfurt and Tokyo have commuting between municipalities or districts. Hong Kong gives flows from districts to three areas, which a gravity model cannot use. Singapore has bus trips between planning areas and needs an LTA DataMall account key. Commuting Data compares the sources.
+The Example Cities of Mobility and Flows differ in what their sources count and in the size of their zones. Cambridge, Oxford and London have the finest zones, the MSOAs of the Census 2021, and the counts of the Department for Transport. New York has every tab, and Paris every tab but Trips, with commuting from LODES and from the 2022 census. Amsterdam, Frankfurt and Tokyo have commuting between municipalities or districts. Hong Kong gives flows from districts to three areas, which a gravity model cannot use. Singapore has bus trips between planning areas and needs an LTA DataMall account key. On Air Traffic, Global gives the flights among the busiest airports of the world, and the United States, Canada, India, Brazil and Australia their domestic networks, whose coverage by the OpenSky receivers differs from one country to another, as Air Traffic Data describes. Commuting Data compares the sources.
 
 ## Which Constraint of Spatial Interaction to Use
 
