@@ -210,7 +210,7 @@ question = "Why must the coordinates be in metres?"
 answer = '''
 Distances between stations are computed from their coordinates, so a coordinate system in degrees of longitude and latitude would give distances in degrees, which do not have the same length east to west as north to south.
 
-The stations are moved into the Metric Coordinate System, a projected system in metres such as EPSG:3763 for mainland Portugal, before the variogram is computed.
+The stations are moved into the Metric Coordinate System, a projected system in metres such as EPSG:27700 for Great Britain, before the variogram is computed.
 '''
 wiki = "Factsheet"
 hidden = true
@@ -300,8 +300,8 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of the stations, as points: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf, KML or GPX, in the folder above, or an absolute path. With the default, stations.gpkg, the example first writes 80 air quality stations scattered over a square of 15 km around Coimbra with a simulated annual mean of nitrogen dioxide (no2, in micrograms per cubic metre), unless the folder has a stations.gpkg already."
-default = "stations.gpkg"
+tooltip = "The file of the stations, as points: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf, KML or GPX, in the folder above, or an absolute path. With the default, london-no2.gpkg, the example first downloads the annual mean of nitrogen dioxide in 2024 (no2, in micrograms per cubic metre) at the monitoring sites of the London Air Quality Network, unless the folder has a london-no2.gpkg already."
+default = "london-no2.gpkg"
 
 [[inputs]]
 id = "column"
@@ -312,20 +312,20 @@ default = "no2"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's stations are in EPSG:3763, PT-TM06/ETRS89. GeoJSON, KML and GPX are always EPSG:4326."
-default = "EPSG:3763"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code. The example's stations are in EPSG:4326, longitude and latitude. GeoJSON, KML and GPX are always EPSG:4326."
+default = "EPSG:4326"
 
 [[inputs]]
 id = "workCrs"
 label = "Metric Coordinate System"
-tooltip = "A projected coordinate system in metres, as an EPSG code, into which the stations are moved before distances are measured: EPSG:3763 for mainland Portugal, EPSG:3035 for Europe as a whole, or the UTM zone of the area. The grid of cells is drawn in it."
-default = "EPSG:3763"
+tooltip = "A projected coordinate system in metres, as an EPSG code, into which the stations are moved before distances are measured: EPSG:27700 for Great Britain, EPSG:3035 for Europe as a whole, or the UTM zone of the area. The grid of cells is drawn in it."
+default = "EPSG:27700"
 
 [[inputs]]
 id = "cell"
 label = "Cell Size (m)"
 tooltip = "The side of the square cells of the grid over the stations' bounding box, in metres. Halving it makes four times as many cells, and four times the work."
-default = "250"
+default = "500"
 
 [[inputs]]
 id = "variogramModel"
@@ -361,7 +361,7 @@ default = "15"
 id = "maxlag"
 label = "Maximum Lag (m)"
 tooltip = "The largest distance between two stations taken into the empirical variogram, in metres: about half the width of the area is usual, as pairs farther apart are few."
-default = "8000"
+default = "15000"
 
 [[inputs]]
 id = "estimator"
@@ -406,27 +406,27 @@ newRow = true
 id = "threshold"
 label = "Threshold"
 tooltip = "The value, in the units of the column, whose exceedance Probability above a Threshold maps."
-default = "35"
+default = "40"
 models = ["simulation"]
 
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, GeoStats, Random, ECharts
+using DuckDB, Tables, GeoStats, Random, ECharts, Downloads
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-{{?file=stations.gpkg}} # Example file: 80 air quality stations scattered over a square of 15 km around Coimbra, in EPSG:3763, with a simulated annual mean of nitrogen dioxide in micrograms per cubic metre, written to stations.gpkg unless the folder has one already. Replace "stations.gpkg" with your own file.
-{{?file=stations.gpkg}} if !isfile(path)
-{{?file=stations.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same stations and values every time
-{{?file=stations.gpkg}} 	xy = [(-31000 + round(15000 * rand(rng)), 52000 + round(15000 * rand(rng))) for s in 1:80]  # metres east and north
-{{?file=stations.gpkg}} 	field = rand(rng, GaussianProcess(SphericalVariogram(sill = 16.0, range = 3000.0, nugget = 2.0)), PointSet(xy); showprogress = false).field  # variation correlated over 3 km
-{{?file=stations.gpkg}} 	rows = ["('S$(lpad(s, 2, '0'))', $(round(30 + 0.6 * (x + 23500) / 1000 + f, digits = 1)), ST_Point($x, $y))" for (s, ((x, y), f)) in enumerate(zip(xy, field))]  # 30 at the centre, rising 0.6 a kilometre to the east
-{{?file=stations.gpkg}} 	DBInterface.execute(con, "COPY (SELECT station, no2::DOUBLE AS no2, geom FROM (VALUES $(join(rows, ", "))) t(station, no2, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'stations', SRS 'EPSG:3763')")
-{{?file=stations.gpkg}} end
+{{?file=london-no2.gpkg}} # Example file: the annual mean of nitrogen dioxide in 2024, in micrograms per cubic metre, at the monitoring sites of the London Air Quality Network whose data capture was at least 75%, from the network's API, written to london-no2.gpkg unless the folder has one already. Replace "london-no2.gpkg" with your own file.
+{{?file=london-no2.gpkg}} if !isfile(path)
+{{?file=london-no2.gpkg}} 	annual = Downloads.download("https://api.erg.ic.ac.uk/AirQuality/Annual/MonitoringObjective/GroupName=London/Year=2024/Json")  # every objective of every site and pollutant in 2024
+{{?file=london-no2.gpkg}} 	DBInterface.execute(con, """COPY (SELECT site, any_value(name) AS name, any_value(kind) AS site_type, max(value) FILTER (WHERE objective = '40 ug/m3 as an annual mean') AS no2, max(value) FILTER (WHERE objective = 'Capture Rate (%)') AS capture, ST_Point(any_value(lon), any_value(lat)) AS geom
+{{?file=london-no2.gpkg}} 		FROM (SELECT s."@SiteCode" AS site, s."@SiteName" AS name, s."@SiteType" AS kind, s."@Longitude"::DOUBLE AS lon, s."@Latitude"::DOUBLE AS lat, o."@ObjectiveName" AS objective, TRY_CAST(o."@Value" AS DOUBLE) AS value
+{{?file=london-no2.gpkg}} 		FROM (SELECT unnest(SiteObjectives.Site) AS s FROM read_json('$(annual)')), unnest(s.Objective) u(o) WHERE o."@SpeciesCode" = 'NO2')
+{{?file=london-no2.gpkg}} 		GROUP BY site HAVING no2 IS NOT NULL AND capture >= 75) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'stations', SRS 'EPSG:4326')""")  # one point per site, with its annual mean and data capture
+{{?file=london-no2.gpkg}} end
 # The stations, numbered i = 1, 2, ... in the order of the file, in the metric coordinate system; stations without a value are left out
 DBInterface.execute(con, "CREATE OR REPLACE TABLE stations AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', '{{workCrs}}') AS geom FROM ST_Read('$(path)') WHERE \"{{column}}\" IS NOT NULL")
 DBInterface.execute(con, "ALTER TABLE stations DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
