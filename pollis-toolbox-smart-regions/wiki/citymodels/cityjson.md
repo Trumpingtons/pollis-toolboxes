@@ -18,7 +18,7 @@ A CityJSON geometry object has a type, MultiPoint, MultiLineString, MultiSurface
 
 ## How the CityJSON Tab Reads a File
 
-The CityJSON tab of the City Model Files panel reads a file with DuckDB's `read_json`, as a single record whose columns are the version, metadata, transform, the CityObjects as a map from identifier to JSON, and the vertices as a list of integer triples ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)). SQL then unnests the map into one row per object and one per geometry, keeps the geometry of the highest or the lowest level of detail of each object, and builds the polygons from the vertex indices. The whole file is read at once, up to 1 GB. The coordinate system is the EPSG code at the end of metadata.referenceSystem.
+The CityJSON tab of the City Model Files panel reads a file with DuckDB's `read_json`, as a single record whose columns are the version, metadata, transform, the CityObjects as a map from identifier to JSON, and the vertices as a list of integer triples ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)). SQL then unnests the map into one row per object and one per geometry, keeps the geometry of the highest or the lowest level of detail of each object, and builds the polygons from the vertex indices. The whole file is read at once, up to 1 GB, and a gzipped file, ending in `.gz`, is read as it is, without unpacking it first. The coordinate system is the EPSG code at the end of metadata.referenceSystem.
 
 ## Large Files and CityJSON Features
 

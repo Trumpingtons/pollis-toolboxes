@@ -21,7 +21,7 @@ github = "https://github.com/JuliaData/Tables.jl"
 
 # Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
 [requires]
-packages = ["ECharts.jl"]
+packages = ["ECharts.jl", "ZipArchives.jl"]
 
 [[wikis]]
 name = "Factsheet"
@@ -223,8 +223,8 @@ chooseFolder = false
 [[inputs]]
 id = "gmlFile"
 label = "File"
-tooltip = "The CityGML file (.gml or .xml), in the folder above, or an absolute path. With the default, buildings.gml, the example first writes three LoD1 buildings of Coimbra to it, unless the folder has a buildings.gml already."
-default = "buildings.gml"
+tooltip = "The CityGML file (.gml or .xml), in the folder above, or an absolute path. With the default, LoD2_33_389_5819_1_BE.xml, the example first downloads the LoD2 buildings of Berlin around the Brandenburg Gate, unless the folder has the file already."
+default = "LoD2_33_389_5819_1_BE.xml"
 models = ["citygml"]
 
 [[inputs]]
@@ -237,8 +237,8 @@ models = ["citygml"]
 [[inputs]]
 id = "jsonFile"
 label = "File"
-tooltip = "The CityJSON file (.city.json or .json), in the folder above, or an absolute path. With the default, buildings.city.json, the example first writes three LoD1 buildings of Coimbra to it, unless the folder has a buildings.city.json already."
-default = "buildings.city.json"
+tooltip = "The CityJSON file (.city.json or .json, or either gzipped as .gz), in the folder above, or an absolute path. With the default, 10-430-720.city.json.gz, the example first downloads the 3D BAG tile over Dam Square in Amsterdam, unless the folder has the file already."
+default = "10-430-720.city.json.gz"
 models = ["cityjson"]
 
 [[inputs]]
@@ -266,7 +266,7 @@ label = "Lowest"
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "file: the coordinate system the file records. For a file that records none, give it as an EPSG code, e.g. EPSG:3763 (ETRS89 / Portugal TM06) or EPSG:28992 (Amersfoort / RD New)."
+tooltip = "file: the coordinate system the file records. For a file that records none, give it as an EPSG code, e.g. EPSG:25833 (ETRS89 / UTM zone 33N) or EPSG:28992 (Amersfoort / RD New)."
 default = "file"
 newRow = true
 
@@ -274,36 +274,15 @@ newRow = true
 model = "citygml"
 code = '''
 using EzXML, DuckDB, Tables
+{{?gmlFile=LoD2_33_389_5819_1_BE.xml}}using ZipArchives, Downloads
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 path = joinpath(folder, "{{gmlFile}}")  # an absolute path is kept as it is
-{{?gmlFile=buildings.gml}}# Example file: three buildings in the centre of Coimbra in ETRS89 / Portugal TM06 (EPSG:3763), heights in metres, in CityGML 2.0: two LoD1 blocks, and a third both as an LoD1 block and in LoD2, with a gabled roof and its wall, roof and ground surfaces. Written to buildings.gml unless the folder has one already. Replace "buildings.gml" with your own file.
-{{?gmlFile=buildings.gml}}if !isfile(path)
-{{?gmlFile=buildings.gml}}	face(points) = "<gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList srsDimension=\"3\">" * join([join(p, " ") for p in [points; points[1:1]]], " ") * "</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember>"
-{{?gmlFile=buildings.gml}}	function block(x, y, w, d, h; ground = 60.0)  # an LoD1 solid of six faces: floor, roof and four walls
-{{?gmlFile=buildings.gml}}		corners = [(x, y), (x + w, y), (x + w, y + d), (x, y + d)]
-{{?gmlFile=buildings.gml}}		faces = [face([(c..., ground) for c in reverse(corners)]), face([(c..., ground + h) for c in corners])]
-{{?gmlFile=buildings.gml}}		for i in 1:4
-{{?gmlFile=buildings.gml}}			a, b = corners[i], corners[mod1(i + 1, 4)]
-{{?gmlFile=buildings.gml}}			push!(faces, face([(a..., ground), (b..., ground), (b..., ground + h), (a..., ground + h)]))
-{{?gmlFile=buildings.gml}}		end
-{{?gmlFile=buildings.gml}}		return "<bldg:lod1Solid><gml:Solid><gml:exterior><gml:CompositeSurface>" * join(faces) * "</gml:CompositeSurface></gml:exterior></gml:Solid></bldg:lod1Solid>"
-{{?gmlFile=buildings.gml}}	end
-{{?gmlFile=buildings.gml}}	function gabled(x, y, w, d, eaves, ridge; ground = 60.0)  # LoD2 boundary surfaces: a ground surface, two roof planes and four walls, the ridge along x
-{{?gmlFile=buildings.gml}}		surface(kind, polygons) = "<bldg:boundedBy><bldg:$kind><bldg:lod2MultiSurface><gml:MultiSurface>" * join(face.(polygons)) * "</gml:MultiSurface></bldg:lod2MultiSurface></bldg:$kind></bldg:boundedBy>"
-{{?gmlFile=buildings.gml}}		e, r, m = ground + eaves, ground + ridge, y + d / 2
-{{?gmlFile=buildings.gml}}		return join([surface("GroundSurface", [[(x, y, ground), (x, y + d, ground), (x + w, y + d, ground), (x + w, y, ground)]]),
-{{?gmlFile=buildings.gml}}			surface("RoofSurface", [[(x, y, e), (x + w, y, e), (x + w, m, r), (x, m, r)], [(x, m, r), (x + w, m, r), (x + w, y + d, e), (x, y + d, e)]]),
-{{?gmlFile=buildings.gml}}			surface("WallSurface", [[(x, y, ground), (x + w, y, ground), (x + w, y, e), (x, y, e)], [(x + w, y + d, ground), (x, y + d, ground), (x, y + d, e), (x + w, y + d, e)],
-{{?gmlFile=buildings.gml}}				[(x, y + d, ground), (x, y, ground), (x, y, e), (x, m, r), (x, y + d, e)], [(x + w, y, ground), (x + w, y + d, ground), (x + w, y + d, e), (x + w, m, r), (x + w, y, e)]])])
-{{?gmlFile=buildings.gml}}	end
-{{?gmlFile=buildings.gml}}	blocks = [("B1", -23640.0, 59420.0, 20.0, 12.0, 15.0, 15.0, "residential", 1965, 5), ("B2", -23610.0, 59420.0, 18.0, 18.0, 9.0, 9.0, "office", 1990, 3), ("B3", -23640.0, 59445.0, 30.0, 10.0, 22.0, 24.5, "residential", 2008, 8)]  # id, west edge, south edge, width, depth, LoD1 height, measured height, function, year, storeys
-{{?gmlFile=buildings.gml}}	members = ["<core:cityObjectMember><bldg:Building gml:id=\"$id\"><bldg:function>$fn</bldg:function><bldg:yearOfConstruction>$year</bldg:yearOfConstruction><bldg:measuredHeight uom=\"m\">$measured</bldg:measuredHeight><bldg:storeysAboveGround>$storeys</bldg:storeysAboveGround>$(block(x, y, w, d, h))$(id == "B3" ? gabled(x, y, w, d, 20.0, measured) : "")</bldg:Building></core:cityObjectMember>" for (id, x, y, w, d, h, measured, fn, year, storeys) in blocks]
-{{?gmlFile=buildings.gml}}	write(path, join(["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<core:CityModel xmlns:core=\"http://www.opengis.net/citygml/2.0\" xmlns:bldg=\"http://www.opengis.net/citygml/building/2.0\" xmlns:gml=\"http://www.opengis.net/gml\">", "<gml:boundedBy><gml:Envelope srsName=\"EPSG:3763\" srsDimension=\"3\"><gml:lowerCorner>-23640 59420 60</gml:lowerCorner><gml:upperCorner>-23592 59455 84.5</gml:upperCorner></gml:Envelope></gml:boundedBy>", members..., "</core:CityModel>"], "\n"))
-{{?gmlFile=buildings.gml}}end
+{{?gmlFile=LoD2_33_389_5819_1_BE.xml}}# Example file: the LoD2 building models of Berlin, one tile of 1 km by 1 km around the Brandenburg Gate and the Reichstag, about 2,000 buildings with their roof, wall and ground surfaces, from the Berlin Senate Department for Urban Development, in CityGML 1.0 and ETRS89 / UTM zone 33N with heights in metres. The 3 MB zip is downloaded and its file written to the folder, unless the folder has it already. Replace "LoD2_33_389_5819_1_BE.xml" with your own file.
+{{?gmlFile=LoD2_33_389_5819_1_BE.xml}}isfile(path) || write(path, zip_readentry(ZipReader(read(Downloads.download("https://gdi.berlin.de/data/a_lod2/atom/LoD2_389_5819.zip"))), "LoD2_33_389_5819_1_BE.xml"))
 
 doc = readxml(path)  # the whole XML tree
 nons = Pair{String, String}[]  # XPath below matches elements by local-name(), without namespace prefixes, so CityGML 1.0, 2.0 and 3.0 read alike
@@ -356,9 +335,18 @@ for (table, rows) in (("objects", objects), ("attrs", attrs))
 	DuckDB.close(appender)
 end
 DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT o.id, o.type, a.attributes, o.lod, o.geometry_type, ST_GeomFromText(o.wkt) AS geom FROM objects o LEFT JOIN (SELECT id, json_group_object(name, value) AS attributes FROM attrs GROUP BY id) a USING (id)")  # one row per city object, with its attributes as JSON and its geometry as a MultiPolygon Z, one polygon per face
-srs = findfirst("//*[@srsName]", root(doc), nons)  # the first srsName of the file, usually on the envelope of the whole model
+function first_srs(doc)  # the srsName of the envelope of the whole model, or else of the first object that has one
+	srs = findfirst("./*[local-name()='boundedBy']//*[@srsName]", root(doc), nons)
+	for member in findall("./*[local-name()='cityObjectMember']", root(doc), nons)
+		srs === nothing || return srs
+		srs = findfirst(".//*[@srsName]", member, nons)
+	end
+	return srs
+end
+srs = first_srs(doc)
 {{?fileCrs=file}}code = srs === nothing ? nothing : match(r"EPSG[:/]+(?:[\d.]*[:/]+)?(\d+)", srs["srsName"])
-{{?fileCrs=file}}file_crs = code === nothing ? "" : "EPSG:" * code[1]  # the first EPSG code: EPSG:3763, urn:ogc:def:crs:EPSG::25832, a compound urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::7837
+{{?fileCrs=file}}utm = srs === nothing ? nothing : match(r"ETRS89_UTM(\d\d)", srs["srsName"])  # the names of the German surveying authorities (AdV), urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH: ETRS89 / UTM zone 33N
+{{?fileCrs=file}}file_crs = code !== nothing ? "EPSG:" * code[1] : utm !== nothing ? "EPSG:258" * utm[1] : ""  # the first EPSG code: EPSG:25833, urn:ogc:def:crs:EPSG::25832, a compound urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::7837
 {{?fileCrs!=file}}file_crs = "{{fileCrs}}"
 println(length(objects), " objects of class {{gmlClass}}, ", count(o -> !ismissing(o[5]), objects), " with geometry; srsName ", srs === nothing ? "none recorded" : srs["srsName"], ", coordinate system ", isempty(file_crs) ? "none recognised" : file_crs)
 '''
@@ -367,39 +355,24 @@ println(length(objects), " objects of class {{gmlClass}}, ", count(o -> !ismissi
 model = "cityjson"
 code = '''
 using DuckDB, Tables
+{{?jsonFile=10-430-720.city.json.gz}}using Downloads
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 path = joinpath(folder, "{{jsonFile}}")  # an absolute path is kept as it is
-{{?jsonFile=buildings.city.json}}# Example file: three buildings in the centre of Coimbra as LoD1 blocks, flat roofs over straight walls, in ETRS89 / Portugal TM06 (EPSG:3763) with heights in metres, in CityJSON 2.0, written to buildings.city.json unless the folder has one already. Replace "buildings.city.json" with your own file.
-{{?jsonFile=buildings.city.json}}if !isfile(path)
-{{?jsonFile=buildings.city.json}}	blocks = [("B1", -23640.0, 59420.0, 20.0, 12.0, 15.0, "residential", 1965, 5), ("B2", -23610.0, 59420.0, 18.0, 18.0, 9.0, "office", 1990, 3), ("B3", -23640.0, 59445.0, 30.0, 10.0, 24.5, "residential", 2008, 8)]  # id, west edge, south edge, width, depth, height, function, year, storeys
-{{?jsonFile=buildings.city.json}}	vertices, objects = String[], String[]
-{{?jsonFile=buildings.city.json}}	for (id, x, y, w, d, h, fn, year, storeys) in blocks
-{{?jsonFile=buildings.city.json}}		first_vertex = length(vertices)  # vertices are numbered from 0, shared by all objects
-{{?jsonFile=buildings.city.json}}		for z in (60.0, 60.0 + h), (cx, cy) in ((x, y), (x + w, y), (x + w, y + d), (x, y + d))
-{{?jsonFile=buildings.city.json}}			push!(vertices, "[$(round(Int, (cx + 24000) * 1000)), $(round(Int, (cy - 59000) * 1000)), $(round(Int, z * 1000))]")  # integers in millimetres from the translate
-{{?jsonFile=buildings.city.json}}		end
-{{?jsonFile=buildings.city.json}}		floor, roof = collect(first_vertex .+ (0:3)), collect(first_vertex .+ (4:7))
-{{?jsonFile=buildings.city.json}}		surfaces = [[reverse(floor)], [roof]]
-{{?jsonFile=buildings.city.json}}		for i in 1:4
-{{?jsonFile=buildings.city.json}}			j = mod1(i + 1, 4)
-{{?jsonFile=buildings.city.json}}			push!(surfaces, [[floor[i], floor[j], roof[j], roof[i]]])  # a wall
-{{?jsonFile=buildings.city.json}}		end
-{{?jsonFile=buildings.city.json}}		push!(objects, "\"$id\": {\"type\": \"Building\", \"attributes\": {\"function\": \"$fn\", \"yearOfConstruction\": $year, \"measuredHeight\": $h, \"storeysAboveGround\": $storeys}, \"geometry\": [{\"type\": \"Solid\", \"lod\": \"1\", \"boundaries\": [$(string(surfaces))]}]}")
-{{?jsonFile=buildings.city.json}}	end
-{{?jsonFile=buildings.city.json}}	write(path, "{\"type\": \"CityJSON\", \"version\": \"2.0\", \"transform\": {\"scale\": [0.001, 0.001, 0.001], \"translate\": [-24000.0, 59000.0, 0.0]}, \"metadata\": {\"referenceSystem\": \"https://www.opengis.net/def/crs/EPSG/0/3763\"}, \"CityObjects\": {$(join(objects, ", "))}, \"vertices\": [$(join(vertices, ", "))]}")
-{{?jsonFile=buildings.city.json}}end
+{{?jsonFile=10-430-720.city.json.gz}}# Example file: the buildings of 3D BAG, the 3D model of every building in the Netherlands, in the tile over Dam Square in Amsterdam, about 600 buildings, each with its footprint at LoD 0 and its parts as solids at LoD 1.2, 1.3 and 2.2, in CityJSON 2.0 and Amersfoort / RD New with NAP heights in metres. Downloaded, gzipped as 3D BAG publishes it, about 2 MB, unless the folder has it already. Replace "10-430-720.city.json.gz" with your own file.
+{{?jsonFile=10-430-720.city.json.gz}}isfile(path) || Downloads.download("https://3dbag.fsn1.your-objectstorage.com/v20250903/tiles/10/430/720/10-430-720.city.json.gz", path)
 
 order = "{{lod}}" == "highest" ? "DESC" : "ASC"  # keep each object's geometry of the highest or the lowest level of detail
+only = "{{jsonType}}" == "all" ? "" : "WHERE e.value->>'\$.type' = '{{jsonType}}'"  # the objects of one type, or all
 city = "read_json('$(path)', columns = {version: 'VARCHAR', metadata: 'JSON', transform: 'STRUCT(scale DOUBLE[], translate DOUBLE[])', CityObjects: 'MAP(VARCHAR, JSON)', vertices: 'BIGINT[][]'}, maximum_object_size = 1000000000)"  # the whole file is one JSON object, read whole up to 1 GB
 DBInterface.execute(con, """
 CREATE OR REPLACE TABLE features AS
 WITH file AS (SELECT * FROM $city),
 v AS (SELECT list_transform(vertices, lambda p: [p[1] * transform.scale[1] + transform.translate[1], p[2] * transform.scale[2] + transform.translate[2], p[3] * transform.scale[3] + transform.translate[3]]) AS xyz FROM file),
-objects AS (SELECT e.key AS id, e.value AS obj FROM file, UNNEST(map_entries(CityObjects)) t(e) WHERE '{{jsonType}}' = 'all' OR e.value->>'\$.type' = '{{jsonType}}'),
+objects AS (SELECT e.key AS id, e.value AS obj FROM file, UNNEST(map_entries(CityObjects)) t(e) $only),
 geometries AS (SELECT id, obj, UNNEST(CAST(obj->'\$.geometry' AS JSON[])) AS g FROM objects),
 kept AS (SELECT *, row_number() OVER (PARTITION BY id ORDER BY TRY_CAST(g->>'\$.lod' AS DOUBLE) $order) AS k FROM geometries WHERE g->>'\$.type' IN ('MultiSurface', 'CompositeSurface', 'Solid', 'MultiSolid', 'CompositeSolid'))
 SELECT id, obj->>'\$.type' AS type, obj->'\$.attributes' AS attributes, g->>'\$.lod' AS lod, g->>'\$.type' AS geometry_type,
@@ -567,7 +540,7 @@ id = "save-footprints"
 label = "Save Footprints as GeoPackage"
 desc = "Write each object's footprint, with its height and area, to a GeoPackage next to the file read, for the Geospatial Vector Files panel and any GIS"
 code = '''
-out = replace(path, r"(\.city)?\.json$|\.[^./]*$" => "") * "-footprints.gpkg"  # buildings.city.json gives buildings-footprints.gpkg
+out = replace(path, r"(\.city)?\.json(\.gz)?$|\.[^./]*$" => "") * "-footprints.gpkg"  # 10-430-720.city.json.gz gives 10-430-720-footprints.gpkg
 if isfile(out)
 	println(out, " is there already: rename or move it first")
 else
@@ -587,7 +560,7 @@ id = "save-geoparquet"
 label = "Save as GeoParquet"
 desc = "Write the objects, with their attributes and 3D geometries as MultiPolygon Z, to a GeoParquet file next to the file read, for SQL with DuckDB"
 code = '''
-out = replace(path, r"(\.city)?\.json$|\.[^./]*$" => "") * ".parquet"
+out = replace(path, r"(\.city)?\.json(\.gz)?$|\.[^./]*$" => "") * ".parquet"
 if isfile(out)
 	println(out, " is there already: rename or move it first")
 else
