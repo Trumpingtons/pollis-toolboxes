@@ -257,8 +257,8 @@ chooseFolder = false
 [[inputs]]
 id = "bbox"
 label = "Area"
-tooltip = "The area as west, south, east, north: longitudes and latitudes in degrees, WGS 84. The default is the centre of Coimbra, about 4 by 4.5 km. A larger area reads more data and takes longer."
-default = "-8.45, 40.19, -8.40, 40.23"
+tooltip = "The area as west, south, east, north: longitudes and latitudes in degrees, WGS 84. The default is the centre of Bologna, about 4 by 4.5 km. A larger area reads more data and takes longer."
+default = "11.32, 44.475, 11.37, 44.515"
 
 [[inputs]]
 id = "release"
