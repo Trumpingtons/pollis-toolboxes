@@ -246,20 +246,20 @@ folder = "data/examples"
 [[inputs]]
 id = "file"
 label = "File"
-tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, cells.gpkg, the example first writes a grid of 225 square cells of 1 km around Coimbra with a simulated annual mean of nitrogen dioxide (no2, in micrograms per cubic metre), unless the folder has a cells.gpkg already."
-default = "cells.gpkg"
+tooltip = "The file of areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, london-msoa.gpkg, the example first downloads the 1,002 MSOAs of London with the percentage of households without a car or van in the Census 2021 (no_car), unless the folder has a london-msoa.gpkg already."
+default = "london-msoa.gpkg"
 
 [[inputs]]
 id = "column"
 label = "Column"
 tooltip = "The numeric column whose spatial autocorrelation is measured. Areas without a value in it are left out."
-default = "no2"
+default = "no_car"
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the map and for the distances between centroids. The example's cells are in EPSG:3763, PT-TM06/ETRS89. GeoJSON, KML and GPX are always EPSG:4326."
-default = "EPSG:3763"
+tooltip = "The coordinate system of the file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the map and for the distances between centroids. The example's MSOAs are in EPSG:4326 already. GeoJSON, KML and GPX are always EPSG:4326."
+default = "EPSG:4326"
 
 [[inputs]]
 id = "neighbours"
@@ -324,25 +324,20 @@ label = "False Discovery Rate (FDR)"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, SpatialDependence, SparseArrays, Random
+using DuckDB, Tables, SpatialDependence, SparseArrays, Random, Downloads
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
 path = joinpath(folder, "{{file}}")  # an absolute path is kept as it is
-{{?file=cells.gpkg}} # Example file: a grid of 15 by 15 square cells of 1 km around Coimbra, in EPSG:3763, with a simulated annual mean of nitrogen dioxide in micrograms per cubic metre, written to cells.gpkg unless the folder has one already. Replace "cells.gpkg" with your own file.
-{{?file=cells.gpkg}} if !isfile(path)
-{{?file=cells.gpkg}} 	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-{{?file=cells.gpkg}} 	cells = String[]
-{{?file=cells.gpkg}} 	for row in 0:14, col in 0:14
-{{?file=cells.gpkg}} 		u, v = col - 7, row - 7  # km east and north of the centre cell
-{{?file=cells.gpkg}} 		no2 = 28 + 14 * exp(-((u + 1)^2 + (v - 1)^2) / 8) - 9 * exp(-((u - 5)^2 + (v + 5)^2) / 6) + 2.5 * randn(rng)  # higher near the centre, lower to the south-east, and noise
-{{?file=cells.gpkg}} 		x, y = -31000 + 1000 * col, 52000 + 1000 * row  # the south-west corner of the cell, in metres
-{{?file=cells.gpkg}} 		push!(cells, "($(round(no2, digits = 1)), ST_MakeEnvelope($x, $y, $(x + 1000), $(y + 1000)))")
-{{?file=cells.gpkg}} 	end
-{{?file=cells.gpkg}} 	DBInterface.execute(con, "COPY (SELECT no2::DOUBLE AS no2, geom FROM (VALUES $(join(cells, ", "))) t(no2, geom)) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:3763')")
-{{?file=cells.gpkg}} end
+{{?file=london-msoa.gpkg}} # Example file: the 1,002 middle layer super output areas (MSOAs) of London, boundaries of the Office for National Statistics, with no_car, the percentage of households without a car or van in the Census 2021 (table TS045, through Nomis), written to london-msoa.gpkg unless the folder has one already. Replace "london-msoa.gpkg" with your own file.
+{{?file=london-msoa.gpkg}} if !isfile(path)
+{{?file=london-msoa.gpkg}} 	boundaries = Downloads.download("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/MSOA_2021_EW_BSC_V3_RUC/FeatureServer/0/query?geometry=-0.52,51.28,0.34,51.70&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=MSOA21CD,MSOA21NM&outSR=4326&f=geojson")  # the MSOAs in a box around London
+{{?file=london-msoa.gpkg}} 	census = Downloads.download("https://www.nomisweb.co.uk/api/v01/dataset/NM_2063_1.data.csv?date=latest&geography=2013265927TYPE152&c2021_cars_5=0,1&measures=20100&select=geography_code,c2021_cars_5,obs_value")  # all households, and those without a car or van, in each MSOA of the London region
+{{?file=london-msoa.gpkg}} 	DBInterface.execute(con, """COPY (SELECT b.MSOA21CD AS msoa, b.MSOA21NM AS name, round(100 * sum(c.OBS_VALUE) FILTER (WHERE c.C2021_CARS_5 = 1) / sum(c.OBS_VALUE) FILTER (WHERE c.C2021_CARS_5 = 0), 2) AS no_car, any_value(b.geom) AS geom
+{{?file=london-msoa.gpkg}} 		FROM ST_Read('$(boundaries)') b JOIN read_csv('$(census)') c ON c.GEOGRAPHY_CODE = b.MSOA21CD GROUP BY ALL) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'msoa', SRS 'EPSG:4326')""")  # the MSOAs of London, with their share
+{{?file=london-msoa.gpkg}} end
 # The areas, numbered i = 1, 2, ... in the order of the file, in longitude and latitude; areas without a value are left out
 DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT row_number() OVER () AS i, * EXCLUDE (geom), ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(path)') WHERE \"{{column}}\" IS NOT NULL")
 DBInterface.execute(con, "ALTER TABLE areas DROP COLUMN IF EXISTS ogc_fid")  # GDAL's own feature number, not a column of the file
