@@ -414,8 +414,8 @@ models = ["kml"]
 [[inputs]]
 id = "gpxFile"
 label = "File"
-tooltip = "The GPX file (.gpx), in the folder above, or an absolute path. With the default, walk.gpx, the example first writes a simulated walk in Lisbon to it, unless the folder has a walk.gpx already."
-default = "walk.gpx"
+tooltip = "The GPX file (.gpx), in the folder above, or an absolute path. With the default, amsterdam-walk.gpx, the example first downloads a walk through Amsterdam, a public GPS trace of OpenStreetMap, unless the folder has an amsterdam-walk.gpx already."
+default = "amsterdam-walk.gpx"
 models = ["gpx"]
 
 [[inputs]]
@@ -469,7 +469,7 @@ default = "EPSG:3035"
 model = "*"
 code = '''
 using DuckDB, Tables
-{{?model=gpx}}{{?gpxFile=walk.gpx}} using Dates, Random
+{{?model=gpx}}{{?gpxFile=amsterdam-walk.gpx}} using Downloads
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -496,14 +496,8 @@ folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 {{?model=kml}}{{?kmlFile=places.kml}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'KML')")
 {{?model=gpkg}}{{?gpkgFile=areas.gpkg}} areas = "SELECT name, ST_Transform(ST_Buffer(ST_Transform(geom, 'EPSG:4326', 'EPSG:3035'), 20000), 'EPSG:3035', 'EPSG:4326') AS geom FROM ($cities)"  # 20 km measured in metres on ETRS89 / LAEA Europe
 {{?model=gpkg}}{{?gpkgFile=areas.gpkg}} isfile(path) || DBInterface.execute(con, "COPY ($areas) TO '$(path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'areas', SRS 'EPSG:4326')")
-{{?model=gpx}}{{?gpxFile=walk.gpx}} # Example file: a walk of 40 minutes in Lisbon, simulated from a fixed seed, one track point a minute with its time and elevation, written to walk.gpx unless the folder has one already. Replace "walk.gpx" with your own file.
-{{?model=gpx}}{{?gpxFile=walk.gpx}} if !isfile(path)
-{{?model=gpx}}{{?gpxFile=walk.gpx}} 	rng = Xoshiro(42)  # fixed seed: the same walk on every run
-{{?model=gpx}}{{?gpxFile=walk.gpx}} 	start = DateTime(2026, 5, 1, 9, 0)
-{{?model=gpx}}{{?gpxFile=walk.gpx}} 	points = [(lat = 38.7076 + 0.00016 * i + 0.00004 * randn(rng), lon = -9.1365 + 0.00009 * i + 0.00004 * randn(rng), ele = 5 + 1.8 * i + randn(rng), time = start + Minute(i)) for i in 0:40]
-{{?model=gpx}}{{?gpxFile=walk.gpx}} 	trkpts = ["<trkpt lat=\"$(round(p.lat, digits = 6))\" lon=\"$(round(p.lon, digits = 6))\"><ele>$(round(p.ele, digits = 1))</ele><time>$(p.time)Z</time></trkpt>" for p in points]
-{{?model=gpx}}{{?gpxFile=walk.gpx}} 	write(path, join(["<?xml version=\"1.0\" encoding=\"UTF-8\"?>", "<gpx version=\"1.1\" creator=\"Pollis\" xmlns=\"http://www.topografix.com/GPX/1/1\">", "<trk><name>Walk in Lisbon</name><trkseg>", trkpts..., "</trkseg></trk></gpx>"], "\n"))
-{{?model=gpx}}{{?gpxFile=walk.gpx}} end
+{{?model=gpx}}{{?gpxFile=amsterdam-walk.gpx}} # Example file: a walk of an hour through the centre of Amsterdam, about 3.4 km, a track point every few seconds with its time, from a public GPS trace of OpenStreetMap, downloaded to amsterdam-walk.gpx unless the folder has one already. Replace "amsterdam-walk.gpx" with your own file.
+{{?model=gpx}}{{?gpxFile=amsterdam-walk.gpx}} isfile(path) || Downloads.download("https://www.openstreetmap.org/trace/12504329/data", path)
 
 {{?model=kml}} source = endswith(lowercase(path), ".kmz") ? "/vsizip/$(path)/doc.kml" : path  # a KMZ is a zipped KML: GDAL reads the doc.kml inside it
 {{?model!=kml}} source = path
