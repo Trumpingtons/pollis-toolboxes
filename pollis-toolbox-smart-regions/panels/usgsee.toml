@@ -1,0 +1,844 @@
+# USGS EarthExplorer: the scenes of the datasets of USGS EarthExplorer found through its Machine-to-Machine API, the bands of
+# a Landsat 8-9 Collection 2 Level-2 scene and the SRTM elevation of an area, downloaded with the user's account
+
+[meta]
+title = "USGS EarthExplorer"
+viewType = "pollis.usgsee"
+defaultModel = "find"
+decisionFirstColumn = "Tab"
+
+# The user's EROS Registration System account and its application token, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "USGS EarthExplorer"
+noun = "credentials"
+
+[[apiKey.fields]]
+name = "usgsUsername"
+envVar = "USGS_USERNAME"
+prompt = "USGS EROS Registration System username"
+password = false
+
+[[apiKey.fields]]
+name = "usgsToken"
+envVar = "USGS_TOKEN"
+prompt = "USGS M2M application token (not the password)"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "usgsee/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, what each downloads, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "usgsee/overview.md"
+bundled = true
+description = "USGS EarthExplorer, its Machine-to-Machine API, and the Landsat and SRTM data the panel reads"
+
+[[wikis]]
+name = "Authentication"
+file = "usgsee/authentication.md"
+bundled = true
+description = "The EROS account, access to the M2M API, the application token, and running the code outside the REPL"
+
+[[wikis]]
+name = "Diagnostics"
+file = "usgsee/diagnostics.md"
+bundled = true
+description = "A refused login, a search that finds nothing, downloads still being prepared, cells without data"
+
+[[wikis]]
+name = "Decision Guide"
+file = "usgsee/decision-guide.md"
+bundled = true
+description = "Which tab, which dataset, which bands and which elevation product"
+
+[[wikis]]
+separator = true
+label = "API and Data"
+
+[[wikis]]
+name = "The M2M API"
+file = "usgsee/m2m-api.md"
+bundled = true
+
+[[wikis]]
+name = "Landsat Collection 2 Level-2"
+file = "usgsee/landsat.md"
+bundled = true
+
+[[wikis]]
+name = "SRTM Elevation"
+file = "usgsee/srtm.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Documentation and Data"
+
+[[references]]
+key = "USGS2026a"
+
+[[references]]
+key = "USGS2025a"
+
+[[references]]
+key = "USGS2024a"
+
+[[references]]
+key = "EROSC2020a"
+
+[[references]]
+key = "EROSC2017a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "CRABV...2023a"
+
+[[references]]
+key = "MWMMC...2020a"
+
+[[references]]
+key = "VJCF2016a"
+
+[[references]]
+key = "FSGZD...2017a"
+
+[[references]]
+key = "FRCCD...2007a"
+
+[[references]]
+key = "Tuc1979a"
+
+[[faq]]
+question = "What do I need to use the panel?"
+answer = '''
+An account of the USGS EROS Registration System, access to the Machine-to-Machine API, which is requested from the account's profile and granted by USGS, and an application token made in the same profile. Every request of the API needs a login, Find Scenes included; the username and the token are set with the key on the Powered by line.
+'''
+wiki = "Authentication"
+
+[[faq]]
+question = "Why the application token and not the password?"
+answer = '''
+USGS deprecated the login of the M2M API with a password in February 2025: the endpoint login-token takes the username and an application token, which the user makes in the profile of the EROS Registration System and can revoke there without changing the password.
+'''
+wiki = "Authentication"
+
+[[faq]]
+question = "Why does Landsat Download wait before downloading?"
+answer = '''
+The M2M API prepares some files before they can be downloaded: a download request returns the files ready at once and those still being prepared, and the tab asks for the others every 15 seconds, for up to ten minutes, before it stops with the files it has. A run later downloads the rest, as the files already in the Folder are kept.
+'''
+wiki = "The M2M API"
+
+[[faq]]
+question = "How are the stored integers of Landsat turned into reflectance?"
+answer = '''
+By the scale factor and offset of the Collection 2 Level-2 product guide: surface reflectance is the stored value times 0.0000275 minus 0.2, and surface temperature, in kelvin, the stored value times 0.00341802 plus 149.0, with 0 as the fill value of both.
+'''
+wiki = "Landsat Collection 2 Level-2"
+
+[[faq]]
+question = "What does the QA_PIXEL band of Landsat hold?"
+answer = '''
+The quality of each cell as bits: fill, dilated cloud, cirrus, cloud, cloud shadow, snow, clear and water, set by the CFMask algorithm among others. Cloud Mask over the Area counts them, and NDVI over the Area leaves out the cells with dilated cloud, cloud, cloud shadow or snow when QA_PIXEL is among the Bands.
+'''
+wiki = "Landsat Collection 2 Level-2"
+hidden = true
+
+[[faq]]
+question = "Which SRTM product does Elevation read?"
+answer = '''
+The one chosen in the Elevation Product: SRTM 1 Arc-Second Global, at about 30 m, or SRTM Void Filled, at 3 arc-seconds outside the United States, with the gaps of the original data filled. The tab downloads the tiles of 1 by 1 degree that cover the Area as GeoTIFF and joins them.
+'''
+wiki = "SRTM Elevation"
+hidden = true
+
+[[faq]]
+question = "Why does the M2M API answer with an error code?"
+answer = '''
+The API answers every request with an error code and message when it cannot serve it: an unknown dataset name, a login that has expired, or an account without access to the M2M API. The panel stops with that code and message, which say what to change.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "find"
+label = "Find Scenes"
+
+[[models]]
+id = "landsat"
+label = "Landsat Download"
+
+[[models]]
+id = "elevation"
+label = "Elevation"
+
+[[bullets]]
+text = "Find Scenes"
+detail = "Searches a dataset of USGS EarthExplorer through its Machine-to-Machine API for the scenes over an area between two dates, Landsat Collection 2 by default"
+
+[[bullets]]
+text = "Landsat Download"
+detail = "Downloads the bands chosen of the least cloudy Landsat 8-9 Collection 2 Level-2 scene, or of the one named, and cuts them to the area as surface reflectance and temperature"
+
+[[bullets]]
+text = "Elevation"
+detail = "Downloads the SRTM tiles that cover the area, joins them and cuts them to it, in metres above the geoid"
+
+[[decisionRows]]
+task = "Find Scenes"
+context = "What is there"
+purpose = "List the scenes of a dataset over an area, with their dates, cloud cover and outlines"
+
+[[decisionRows]]
+task = "Landsat Download"
+context = "Optical and thermal"
+purpose = "Surface reflectance at 30 m and surface temperature, from a record that goes back decades"
+
+[[decisionRows]]
+task = "Elevation"
+context = "Terrain"
+purpose = "The height of the ground and of what stands on it, about 30 m apart"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the files are kept once downloaded, in a folder for each scene or dataset, and where the Next Steps save theirs: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "area"
+label = "Area (W, S, E, N)"
+tooltip = "The area as west, south, east and north, in degrees of longitude and latitude: by default, Manhattan in New York."
+default = "-74.05, 40.68, -73.90, 40.82"
+newRow = true
+
+[[inputs]]
+id = "firstDay"
+label = "From"
+tooltip = "The first day of the search, as year-month-day."
+default = "2026-06-01"
+models = ["find", "landsat"]
+
+[[inputs]]
+id = "lastDay"
+label = "To"
+tooltip = "The last day of the search, as year-month-day."
+default = "2026-08-31"
+models = ["find", "landsat"]
+
+[[inputs]]
+id = "dataset"
+label = "Dataset"
+tooltip = "The dataset of EarthExplorer to search, by its name in the M2M API: landsat_ot_c2_l2 is Landsat 8-9 Collection 2 Level-2, landsat_ot_c2_l1 its Level-1, landsat_etm_c2_l2 Landsat 7 and landsat_tm_c2_l2 Landsat 4-5."
+default = "landsat_ot_c2_l2"
+models = ["find"]
+newRow = true
+
+[[inputs]]
+id = "maxCloud"
+label = "Most Cloud (%)"
+tooltip = "The largest share of the scene, in per cent, classed as cloud: scenes without a cloud score are kept."
+default = "20"
+models = ["find", "landsat"]
+
+[[inputs]]
+id = "rows"
+label = "Scenes"
+tooltip = "How many scenes Find Scenes lists at most, the least cloudy first."
+default = "50"
+models = ["find"]
+
+[[inputs]]
+id = "scene"
+label = "Scene"
+tooltip = "The display identifier of a Landsat 8-9 Level-2 scene, as Find Scenes lists it: empty for the least cloudy scene that covers the most of the Area."
+default = ""
+models = ["landsat"]
+newRow = true
+
+[[inputs]]
+id = "bands"
+label = "Bands"
+tooltip = "The bands to download, as the files of a Landsat 8-9 Level-2 scene end: SR_B4 is red, SR_B5 near infrared, ST_B10 surface temperature, QA_PIXEL the quality of each cell."
+default = "SR_B4, SR_B5, QA_PIXEL"
+models = ["landsat"]
+
+[[inputs]]
+id = "dem"
+label = "Elevation Product"
+kind = "select"
+default = "SRTM 1 Arc-Second Global"
+models = ["elevation"]
+newRow = true
+
+[[inputs.options]]
+value = "SRTM 1 Arc-Second Global"
+label = "SRTM 1 Arc-Second Global"
+
+[[inputs.options]]
+value = "SRTM Void Filled"
+label = "SRTM Void Filled"
+
+[[codeBranches]]
+model = "find"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+first_day, last_day, dataset = "{{firstDay}}", "{{lastDay}}", "{{dataset}}"
+m2m, api_key = "https://m2m.cr.usgs.gov/api/api/json/stable/", nothing  # the Machine-to-Machine API of USGS EarthExplorer
+function m2m_call(endpoint, body)  # one request of the M2M API, its answer as a JSON file for DuckDB
+	out, headers = IOBuffer(), ["Content-Type" => "application/json"]
+	api_key === nothing || push!(headers, "X-Auth-Token" => api_key)
+	r = Downloads.request(m2m * endpoint; method = "POST", input = IOBuffer(body), output = out, headers = headers, throw = false)
+	r isa Downloads.Response || error("The M2M API could not be reached: $(r.message)")
+	answer = String(take!(out))
+	startswith(lstrip(answer), "{") || error("The M2M API answered $(endpoint) with HTTP $(r.status): $(first(answer, 300))")
+	file = tempname() * ".json"
+	write(file, answer)
+	e = query("SELECT json_extract_string(content, '/errorCode') AS code, json_extract_string(content, '/errorMessage') AS message FROM read_text('$(file)')")
+	ismissing(only(e.code)) || error("The M2M API answered $(endpoint) with $(only(e.code)): $(only(e.message))")
+	return file
+end
+function login()  # an API key for the session, from the username and the application token
+	for v in ("USGS_USERNAME", "USGS_TOKEN")
+		haskey(ENV, v) || error("Set the credentials of your USGS account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
+	end
+	body = only(query("SELECT CAST(json_object('username', ?, 'token', ?) AS VARCHAR) AS b", [ENV["USGS_USERNAME"], ENV["USGS_TOKEN"]]).b)
+	global api_key = only(query("SELECT json_extract_string(content, '/data') AS k FROM read_text('$(m2m_call("login-token", body))')").k)
+end
+login()
+scene_filter = """{"spatialFilter": {"filterType": "mbr", "lowerLeft": {"latitude": $(south), "longitude": $(west)}, "upperRight": {"latitude": $(north), "longitude": $(east)}}, "acquisitionFilter": {"start": "$(first_day)", "end": "$(last_day)"}, "cloudCoverFilter": {"min": 0, "max": {{maxCloud}}, "includeUnknown": true}}"""
+function search(dataset; most = 100)  # the scenes of a dataset over the area and between the dates, a hundred at a time
+	files, start = String[], 1
+	while 100 * length(files) < most
+		push!(files, m2m_call("scene-search", """{"datasetName": "$(dataset)", "maxResults": 100, "startingNumber": $(start), "sceneFilter": $(scene_filter)}"""))
+		t = query("SELECT CAST(json_extract(content, '/data/totalHits') AS BIGINT) AS total, CAST(json_extract(content, '/data/nextRecord') AS BIGINT) AS next, CAST(json_extract(content, '/data/recordsReturned') AS BIGINT) AS n FROM read_text('$(files[end])')")
+		(coalesce(only(t.n), 0) == 0 || coalesce(only(t.next), 0) <= start || only(t.next) > coalesce(only(t.total), 0)) && break
+		start = only(t.next)
+	end
+	return files
+end
+files = search(dataset; most = {{rows}})
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE scenes AS
+SELECT r->>'entityId' AS entity, r->>'displayId' AS id, TRY_CAST(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate') AS TIMESTAMP) AS acquired,
+	nullif(TRY_CAST(r->>'cloudCover' AS DOUBLE), -1) AS cloud, ST_GeomFromGeoJSON(r->'spatialCoverage') AS geom, r->'browse' AS browse
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text($(repr(files))))
+QUALIFY row_number() OVER (PARTITION BY entity) = 1
+""")  # one row per scene: its identifiers, date, cloud cover, outline and browse images
+DBInterface.execute(con, "ALTER TABLE scenes ADD COLUMN covered DOUBLE")
+DBInterface.execute(con, "UPDATE scenes SET covered = round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1)")  # the share of the area each scene covers, in per cent
+DBInterface.execute(con, "DELETE FROM scenes WHERE entity NOT IN (SELECT entity FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC LIMIT {{rows}})")
+s = query("SELECT id, acquired, cloud, covered FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC")
+isempty(s.id) && error("EarthExplorer has no scenes of $(dataset) over the area from $(first_day) to $(last_day) with at most {{maxCloud}}% of clouds: widen the dates, the area or the cloud cover")
+println(length(s.id), " scenes of ", dataset, " over the area from ", first_day, " to ", last_day, ", the least cloudy first:")
+for i in eachindex(s.id)
+	println(rpad(s.id[i], 44), " ", s.acquired[i], ismissing(s.cloud[i]) ? "" : "  cloud $(round(s.cloud[i]; digits = 1))%", "  covers $(s.covered[i])% of the area")
+end
+'''
+
+[[codeBranches]]
+model = "landsat"
+code = '''
+using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the bands are kept once downloaded, and the Next Steps save theirs
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+first_day, last_day, dataset = "{{firstDay}}", "{{lastDay}}", "landsat_ot_c2_l2"  # Landsat 8-9 Collection 2 Level-2
+m2m, api_key = "https://m2m.cr.usgs.gov/api/api/json/stable/", nothing  # the Machine-to-Machine API of USGS EarthExplorer
+function m2m_call(endpoint, body)  # one request of the M2M API, its answer as a JSON file for DuckDB
+	out, headers = IOBuffer(), ["Content-Type" => "application/json"]
+	api_key === nothing || push!(headers, "X-Auth-Token" => api_key)
+	r = Downloads.request(m2m * endpoint; method = "POST", input = IOBuffer(body), output = out, headers = headers, throw = false)
+	r isa Downloads.Response || error("The M2M API could not be reached: $(r.message)")
+	answer = String(take!(out))
+	startswith(lstrip(answer), "{") || error("The M2M API answered $(endpoint) with HTTP $(r.status): $(first(answer, 300))")
+	file = tempname() * ".json"
+	write(file, answer)
+	e = query("SELECT json_extract_string(content, '/errorCode') AS code, json_extract_string(content, '/errorMessage') AS message FROM read_text('$(file)')")
+	ismissing(only(e.code)) || error("The M2M API answered $(endpoint) with $(only(e.code)): $(only(e.message))")
+	return file
+end
+function login()  # an API key for the session, from the username and the application token
+	for v in ("USGS_USERNAME", "USGS_TOKEN")
+		haskey(ENV, v) || error("Set the credentials of your USGS account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
+	end
+	body = only(query("SELECT CAST(json_object('username', ?, 'token', ?) AS VARCHAR) AS b", [ENV["USGS_USERNAME"], ENV["USGS_TOKEN"]]).b)
+	global api_key = only(query("SELECT json_extract_string(content, '/data') AS k FROM read_text('$(m2m_call("login-token", body))')").k)
+end
+function save_url(url, dir)  # one file of a download, named as the server names it
+	tmp = joinpath(dir, "download.part")
+	r = open(io -> Downloads.request(url; output = io), tmp, "w")
+	h = Dict(lowercase(k) => v for (k, v) in r.headers)
+	m = match(r"filename=\"?([^\";]+)", get(h, "content-disposition", ""))
+	return mv(tmp, joinpath(dir, m === nothing ? basename(first(split(url, '?'))) : m[1]); force = true)
+end
+function download_all(downloads, dir)  # ask the M2M API for the files, wait for those it prepares, and download them
+	label = "pollis-$(round(Int, time()))"
+	req = m2m_call("download-request", """{"downloads": [$(join(["{\"entityId\": \"$(e)\", \"productId\": \"$(p)\"}" for (e, p) in downloads], ", "))], "label": "$(label)"}""")
+	urls = query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/availableDownloads'), '[]') AS JSON[])) AS d FROM read_text('$(req)'))").url
+	deadline = time() + 600  # ten minutes at most for the files being prepared
+	while length(urls) < length(downloads) && time() < deadline
+		sleep(15)
+		ready = m2m_call("download-retrieve", """{"label": "$(label)"}""")
+		urls = unique([urls; query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/available'), '[]') AS JSON[])) AS d FROM read_text('$(ready)'))").url])
+	end
+	length(urls) < length(downloads) && println("Only ", length(urls), " of ", length(downloads), " files were ready after ten minutes: run the tab again later for the others")
+	return [save_url(u, dir) for u in urls]
+end
+login()
+scene_filter = """{"spatialFilter": {"filterType": "mbr", "lowerLeft": {"latitude": $(south), "longitude": $(west)}, "upperRight": {"latitude": $(north), "longitude": $(east)}}, "acquisitionFilter": {"start": "$(first_day)", "end": "$(last_day)"}, "cloudCoverFilter": {"min": 0, "max": {{maxCloud}}, "includeUnknown": false}}"""
+found = m2m_call("scene-search", """{"datasetName": "$(dataset)", "maxResults": 100, "startingNumber": 1, "sceneFilter": $(scene_filter)}""")
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE scenes AS
+SELECT r->>'entityId' AS entity, r->>'displayId' AS id, TRY_CAST(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate') AS TIMESTAMP) AS acquired,
+	nullif(TRY_CAST(r->>'cloudCover' AS DOUBLE), -1) AS cloud, ST_GeomFromGeoJSON(r->'spatialCoverage') AS geom
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text('$(found)'))
+""")
+scene = "{{scene}}"
+pick = query("SELECT entity, id, acquired, cloud, round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1) AS covered FROM scenes WHERE ? = '' OR id = ? ORDER BY covered DESC, cloud, acquired DESC LIMIT 1", [scene, scene])  # the least cloudy of the scenes that cover the most of the area
+isempty(pick.id) && error(isempty(scene) ? "No Landsat 8-9 Level-2 scene over the area from $(first_day) to $(last_day) has at most {{maxCloud}}% of clouds: widen the dates or the cloud cover" : "The scene $(scene) is not among those over the area from $(first_day) to $(last_day): set the dates around it")
+entity, scene = only(pick.entity), only(pick.id)
+println("Scene ", scene, ", ", only(pick.acquired), ", cloud ", only(pick.cloud), "%, covering ", only(pick.covered), "% of the area")
+
+chosen = uppercase.(strip.(split("{{bands}}", ",")))
+dir = mkpath(joinpath(folder, "usgs", scene))  # the folder of the scene, which the Next Steps write to
+place = dir
+path_of(b) = joinpath(dir, "$(scene)_$(b).TIF")  # the file of a band, as USGS names it
+wanted = filter(b -> !isfile(path_of(b)), chosen)
+if !isempty(wanted)  # only the bands not in the folder yet
+	options = m2m_call("download-options", """{"datasetName": "$(dataset)", "entityIds": ["$(entity)"], "includeSecondaryFileGroups": true}""")
+	files = query("SELECT s->>'displayId' AS name, s->>'entityId' AS entity, s->>'id' AS id, CAST(s->>'available' AS VARCHAR) IN ('true', 'Y') AS available FROM (SELECT unnest(CAST(coalesce(o->'secondaryDownloads', '[]') AS JSON[])) AS s FROM (SELECT unnest(CAST(json_extract(content, '/data') AS JSON[])) AS o FROM read_text('$(options)')))")
+	downloads = map(wanted) do b
+		k = findfirst(n -> !ismissing(n) && endswith(uppercase(n), "_$(b).TIF"), files.name)
+		k === nothing && error("The scene has no band $(b): its files end in $(join(unique(replace.(skipmissing(files.name), r"^.*?_(?=[A-Z]+_?[A-Z0-9]*\.TIF$)"i => "")), ", "))")
+		files.available[k] || error("The band $(b) of the scene is not available for download")
+		(files.entity[k], files.id[k])
+	end
+	download_all(downloads, dir)
+end
+try m2m_call("logout", "{}") catch end  # the API key ends with the session
+
+crs = ArchGDAL.read(ArchGDAL.getproj, path_of(first(chosen)))  # the coordinate system of the scene, a zone of UTM
+box = query("SELECT ST_XMin(g) AS x0, ST_YMin(g) AS y0, ST_XMax(g) AS x1, ST_YMax(g) AS y1 FROM (SELECT ST_Transform($(area), 'EPSG:4326', ?) AS g)", [crs])
+bands = Dict{String, Any}()  # each band, cut to the area: reflectance, temperature in kelvin, or the bits of QA_PIXEL
+for b in chosen
+	isfile(path_of(b)) || error("The band $(b) was not downloaded: run the tab again")
+	cut = read(crop(Raster(path_of(b); lazy = true); to = Extent(X = (only(box.x0), only(box.x1)), Y = (only(box.y0), only(box.y1)))))  # the cells of the area only
+	scale, offset = startswith(b, "SR_") ? (2.75e-5, -0.2) : startswith(b, "ST_B") ? (0.00341802, 149.0) : (nothing, nothing)  # the scale factors of the Collection 2 Level-2 product guide
+	bands[b] = map(v -> ismissing(v) ? missing : scale === nothing ? Int(v) : v == 0 ? missing : Float32(v * scale + offset), cut)  # 0 is the fill value of reflectance and temperature
+	println(rpad(b, 9), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", path_of(b))
+end
+grid = bands[first(chosen)]  # the first band, for the Next Steps that read one
+'''
+
+[[codeBranches]]
+model = "elevation"
+code = '''
+using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the tiles are kept once downloaded, and the Next Steps save theirs
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+m2m, api_key = "https://m2m.cr.usgs.gov/api/api/json/stable/", nothing  # the Machine-to-Machine API of USGS EarthExplorer
+function m2m_call(endpoint, body)  # one request of the M2M API, its answer as a JSON file for DuckDB
+	out, headers = IOBuffer(), ["Content-Type" => "application/json"]
+	api_key === nothing || push!(headers, "X-Auth-Token" => api_key)
+	r = Downloads.request(m2m * endpoint; method = "POST", input = IOBuffer(body), output = out, headers = headers, throw = false)
+	r isa Downloads.Response || error("The M2M API could not be reached: $(r.message)")
+	answer = String(take!(out))
+	startswith(lstrip(answer), "{") || error("The M2M API answered $(endpoint) with HTTP $(r.status): $(first(answer, 300))")
+	file = tempname() * ".json"
+	write(file, answer)
+	e = query("SELECT json_extract_string(content, '/errorCode') AS code, json_extract_string(content, '/errorMessage') AS message FROM read_text('$(file)')")
+	ismissing(only(e.code)) || error("The M2M API answered $(endpoint) with $(only(e.code)): $(only(e.message))")
+	return file
+end
+function login()  # an API key for the session, from the username and the application token
+	for v in ("USGS_USERNAME", "USGS_TOKEN")
+		haskey(ENV, v) || error("Set the credentials of your USGS account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
+	end
+	body = only(query("SELECT CAST(json_object('username', ?, 'token', ?) AS VARCHAR) AS b", [ENV["USGS_USERNAME"], ENV["USGS_TOKEN"]]).b)
+	global api_key = only(query("SELECT json_extract_string(content, '/data') AS k FROM read_text('$(m2m_call("login-token", body))')").k)
+end
+function save_url(url, dir)  # one file of a download, named as the server names it
+	tmp = joinpath(dir, "download.part")
+	r = open(io -> Downloads.request(url; output = io), tmp, "w")
+	h = Dict(lowercase(k) => v for (k, v) in r.headers)
+	m = match(r"filename=\"?([^\";]+)", get(h, "content-disposition", ""))
+	return mv(tmp, joinpath(dir, m === nothing ? basename(first(split(url, '?'))) : m[1]); force = true)
+end
+function download_all(downloads, dir)  # ask the M2M API for the files, wait for those it prepares, and download them
+	label = "pollis-$(round(Int, time()))"
+	req = m2m_call("download-request", """{"downloads": [$(join(["{\"entityId\": \"$(e)\", \"productId\": \"$(p)\"}" for (e, p) in downloads], ", "))], "label": "$(label)"}""")
+	urls = query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/availableDownloads'), '[]') AS JSON[])) AS d FROM read_text('$(req)'))").url
+	deadline = time() + 600  # ten minutes at most for the files being prepared
+	while length(urls) < length(downloads) && time() < deadline
+		sleep(15)
+		ready = m2m_call("download-retrieve", """{"label": "$(label)"}""")
+		urls = unique([urls; query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/available'), '[]') AS JSON[])) AS d FROM read_text('$(ready)'))").url])
+	end
+	length(urls) < length(downloads) && println("Only ", length(urls), " of ", length(downloads), " files were ready after ten minutes: run the tab again later for the others")
+	return [save_url(u, dir) for u in urls]
+end
+login()
+product = "{{dem}}"
+known = m2m_call("dataset-search", """{"datasetName": "SRTM"}""")  # the SRTM datasets of EarthExplorer, by their names
+d = query("SELECT x->>'datasetAlias' AS alias, x->>'collectionName' AS name FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[])) AS x FROM read_text('$(known)'))")
+k = findfirst(==(product), d.name)
+k === nothing && error("EarthExplorer has no dataset $(product): its SRTM datasets are $(join(skipmissing(d.name), ", "))")
+dataset = d.alias[k]
+found = m2m_call("scene-search", """{"datasetName": "$(dataset)", "maxResults": 100, "startingNumber": 1, "sceneFilter": {"spatialFilter": {"filterType": "mbr", "lowerLeft": {"latitude": $(south), "longitude": $(west)}, "upperRight": {"latitude": $(north), "longitude": $(east)}}}}""")
+tiles = query("SELECT r->>'entityId' AS entity, r->>'displayId' AS id FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text('$(found)'))")  # the tiles of 1 by 1 degree over the area
+isempty(tiles.entity) && error("$(product) has no tile over the area: it covers the land between 60 degrees north and 56 degrees south")
+tile_dir(e) = mkpath(joinpath(folder, "usgs", dataset, e))  # a folder for each tile, as it is downloaded
+has_tif(e) = any(f -> endswith(lowercase(f), ".tif"), readdir(tile_dir(e)))
+missing_tiles = [e for e in tiles.entity if !has_tif(e)]
+if !isempty(missing_tiles)  # only the tiles not in the folder yet
+	options = m2m_call("download-options", """{"datasetName": "$(dataset)", "entityIds": [$(join(["\"$(e)\"" for e in missing_tiles], ", "))]}""")
+	o = query("SELECT x->>'entityId' AS entity, x->>'id' AS id, x->>'productName' AS name, CAST(x->>'available' AS VARCHAR) IN ('true', 'Y') AS available FROM (SELECT unnest(CAST(json_extract(content, '/data') AS JSON[])) AS x FROM read_text('$(options)')) WHERE name ILIKE '%geotiff%'")
+	for e in missing_tiles
+		ks = [j for j in eachindex(o.entity) if o.entity[j] == e && o.available[j]]
+		isempty(ks) && error("The tile $(e) has no GeoTIFF available for download")
+		j = ks[something(findfirst(j -> occursin(r"1 arc"i, o.name[j]), ks), 1)]  # the finest of the GeoTIFFs offered
+		download_all([(e, o.id[j])], tile_dir(e))
+	end
+end
+try m2m_call("logout", "{}") catch end  # the API key ends with the session
+
+files = [joinpath(tile_dir(e), f) for e in tiles.entity for f in readdir(tile_dir(e)) if endswith(lowercase(f), ".tif")]
+length(files) < length(tiles.entity) && error("Only $(length(files)) of the $(length(tiles.entity)) tiles of $(product) over the area were downloaded: run the tab again")
+parts = [read(crop(Raster(f; lazy = true); to = Extent(X = (west, east), Y = (south, north)))) for f in files]  # the tiles of the area, each cut to it
+dem = length(parts) == 1 ? only(parts) : mosaic(first, parts...)  # the tiles joined
+grid = map(v -> ismissing(v) ? missing : Float32(v), dem)  # the elevation in metres, missing where the tile has no data
+crs, chosen, scene, bands = "EPSG:4326", ["Elevation"], product, Dict{String, Any}("Elevation" => grid)
+place = joinpath(folder, "usgs", dataset)  # the folder of the product, which the Next Steps write to
+println(product, ": ", size(grid, X), " x ", size(grid, Y), " cells from ", length(parts), " tile(s), ", count(ismissing, grid), " without data; elevation from ", minimum(skipmissing(grid)), " to ", maximum(skipmissing(grid)), " m")
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "scene-outlines"
+label = "Scene Outlines on a Map"
+desc = "The outline of each scene found, coloured by its cloud cover, with the area, on an OpenStreetMap base map in Pollis's map view"
+models = ["find"]
+code = '''
+shown, box = joinpath(mktempdir(), "scenes.geojson"), joinpath(mktempdir(), "area.geojson")
+DBInterface.execute(con, "COPY (SELECT id, CAST(acquired AS VARCHAR) AS acquired, cloud, geom FROM scenes) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT 'Area' AS name, $(area) AS geom) TO '$(box)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Scenes of $(dataset)", column = all(ismissing, s.cloud) ? "acquired" : "cloud", opacity = 0.15), Pollis.layer(box; name = "Area", color = "#e15759", opacity = 0.3); title = "$(length(s.id)) Scenes"))
+'''
+
+[[actionGroups.actions]]
+id = "scenes-over-time"
+label = "Scenes over Time"
+desc = "When the scenes were taken, each a point at its date by its cloud cover, one series for each satellite, drawn with ECharts"
+models = ["find"]
+code = '''
+using ECharts
+
+t = query("SELECT CAST(acquired AS VARCHAR) AS day, coalesce(cloud, 0) AS cloud, split_part(id, '_', 1) AS satellite FROM scenes ORDER BY acquired")
+EChart(ec_width = 760, ec_height = 380, title = [ECharts.Title(text = "Scenes of $(dataset)")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "time", name = "Date")], yAxis = [ECharts.Axis(_type = "value", name = "Cloud (%)", min = 0)],
+	series = [ECharts.XYSeries(name = p, _type = "scatter", data = [[t.day[i], t.cloud[i]] for i in eachindex(t.day) if t.satellite[i] == p]) for p in unique(t.satellite)])
+'''
+
+[[actionGroups.actions]]
+id = "band-map"
+label = "Show the Band on a Map"
+desc = "The first band, or the elevation, cells coloured by value, on an OpenStreetMap base map in Pollis's map view, at most 80 cells a side (larger areas averaged over blocks of cells); click a cell for its value"
+models = ["landsat", "elevation"]
+code = '''
+using Statistics
+
+f = max(1, cld(max(size(grid, X), size(grid, Y)), 80))  # at most 80 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, Raster(grid; missingval = missing), f; skipmissingval = true) : grid, (X, Y))
+edges(d) = [(min(lo, hi), max(lo, hi)) for (lo, hi) in Rasters.intervalbounds(small, d)]  # each cell's two edges
+xe, ye = edges(X), edges(Y)
+rows = ["($(round(Float64(small[i, j]), digits = 4)), $(xe[i][1]), $(ye[j][1]), $(xe[i][2]), $(ye[j][2]))" for i in axes(small, 1), j in axes(small, 2) if !ismissing(small[i, j])]
+shown = joinpath(mktempdir(), "cells.geojson")
+DBInterface.execute(con, "SET geometry_always_xy = true")
+DBInterface.execute(con, "COPY (SELECT value, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), ?, 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(value, x0, y0, x1, y1)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')", [crs])
+display(Pollis.webmap(Pollis.layer(shown; name = "$(first(chosen)) of $(scene)", column = "value", opacity = 0.7)))
+'''
+
+[[actionGroups.actions]]
+id = "band-plot"
+label = "Plot the Band"
+desc = "The first band, or the elevation, as a heat map drawn with ECharts, north up, at most 200 cells a side (larger areas averaged over blocks of cells)"
+models = ["landsat", "elevation"]
+code = '''
+using ECharts, Statistics
+
+f = max(1, cld(max(size(grid, X), size(grid, Y)), 200))  # at most 200 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, Raster(grid; missingval = missing), f; skipmissingval = true) : grid, (X, Y))
+north_first = first(lookup(small, Y)) > last(lookup(small, Y))
+nx, ny = size(small)
+cells = [[i - 1, (north_first ? ny - j : j - 1), round(Float64(small[i, j]), digits = 4)] for i in 1:nx, j in 1:ny if !ismissing(small[i, j])]  # column, row from the south, value
+lo, hi = extrema(skipmissing(small))
+EChart(ec_width = 760, ec_height = round(Int, 60 + 680 * ny / nx), title = [ECharts.Title(text = "$(first(chosen)) of $(scene)")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "category", data = string.(round.(lookup(small, X); digits = 4)), name = "x")],
+	yAxis = [ECharts.Axis(_type = "category", data = string.(round.(north_first ? reverse(lookup(small, Y)) : lookup(small, Y); digits = 4)), name = "y")],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"])),
+	series = [ECharts.HeatmapSeries(name = first(chosen), data = cells)])
+'''
+
+[[actionGroups.actions]]
+id = "elevation-profile"
+label = "Elevation Profile"
+desc = "The elevation along the row of cells through the middle of the area, from west to east, drawn with ECharts"
+models = ["elevation"]
+code = '''
+using ECharts
+
+row = grid[Y = Near((south + north) / 2)]  # the cells of the middle row, west to east
+x = collect(lookup(row, X))
+EChart(ec_width = 760, ec_height = 360, title = [ECharts.Title(text = "Elevation at latitude $(round((south + north) / 2; digits = 4))")], tooltip = ECharts.Tooltip(trigger = "axis"),
+	xAxis = [ECharts.Axis(_type = "value", name = "Longitude", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Metres", scale = true)],
+	series = [ECharts.XYSeries(name = "Elevation", _type = "line", showSymbol = false, data = [[x[i], row[i]] for i in eachindex(x) if !ismissing(row[i])])])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "area-coverage"
+label = "How Scenes Cover the Area"
+desc = "For each path and row of the Landsat scenes found, how many scenes and how much of the area they cover: a scene of a neighbouring path or row may cover only part of it"
+models = ["find"]
+code = '''
+c = query("SELECT coalesce(split_part(id, '_', 3), '') AS pathrow, count(*) AS n, min(covered) AS least, max(covered) AS most FROM scenes GROUP BY ALL ORDER BY most DESC, n DESC")
+println(rpad("path and row", 16), rpad("scenes", 8), "covers (% of the area)")
+for i in eachindex(c.n)
+	println(rpad(c.pathrow[i], 16), rpad(c.n[i], 8), c.least[i] == c.most[i] ? c.most[i] : "$(c.least[i]) to $(c.most[i])")
+end
+'''
+
+[[actionGroups.actions]]
+id = "cloud-mask"
+label = "Cloud Mask over the Area"
+desc = "The bits of the QA_PIXEL band of Landsat over the area: fill, dilated cloud, cirrus, cloud, cloud shadow, snow, clear and water, as shares of the cells"
+models = ["landsat"]
+code = '''
+haskey(bands, "QA_PIXEL") || error("Add QA_PIXEL to the Bands: the quality of each cell")
+flags = ["Fill", "Dilated cloud", "Cirrus", "Cloud", "Cloud shadow", "Snow", "Clear", "Water"]  # bits 0 to 7 of QA_PIXEL
+v = collect(skipmissing(bands["QA_PIXEL"]))
+println("Quality of ", scene, " over the area, ", length(v), " cells of 30 m:")
+for (bit, name) in enumerate(flags)
+	n = count(q -> (q >> (bit - 1)) & 1 == 1, v)
+	println(rpad(name, 16), lpad(n, 9), "  ", round(100 * n / length(v); digits = 2), "%")
+end
+'''
+
+[[actionGroups.actions]]
+id = "downloaded-files"
+label = "Files Downloaded"
+desc = "The files of the scene or of the elevation product in the folder, with their sizes, and the cells each band has over the area"
+models = ["landsat", "elevation"]
+code = '''
+for (root, _, names) in walkdir(place), f in sort(names)
+	println(rpad(f, 52), lpad(round(filesize(joinpath(root, f)) / 2^20; digits = 1), 8), " MB")
+end
+for b in chosen
+	println(rpad(b, 10), length(bands[b]), " cells over the area, ", count(ismissing, bands[b]), " without data")
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "datasets-side-by-side"
+label = "Datasets Side by Side"
+desc = "How many scenes three datasets of Landsat Collection 2 have over the area between the dates, with at most the Most Cloud: Landsat 8-9 Level-2, Landsat 8-9 Level-1 and Landsat 7 Level-2"
+models = ["find"]
+code = '''
+println(rpad("dataset", 22), rpad("scenes", 8), "first and last")
+for d in ("landsat_ot_c2_l2", "landsat_ot_c2_l1", "landsat_etm_c2_l2")
+	pages = search(d; most = 1000)
+	counts = query("SELECT count(DISTINCT r->>'entityId') AS n, min(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate')) AS t0, max(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate')) AS t1 FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text($(repr(pages))))")
+	println(rpad(d, 22), rpad(only(counts.n), 8), only(counts.n) == 0 ? "" : "$(first(only(counts.t0), 10)) to $(first(only(counts.t1), 10))")
+end
+'''
+
+[[actionGroups.actions]]
+id = "satellites-side-by-side"
+label = "Satellites Side by Side"
+desc = "The scenes of each satellite, Landsat 8 (LC08) and Landsat 9 (LC09) for Landsat 8-9: how many, their mean cloud cover and their dates"
+models = ["find"]
+code = '''
+p = query("SELECT split_part(id, '_', 1) AS satellite, count(*) AS n, round(avg(cloud), 1) AS cloud, CAST(min(acquired) AS DATE) AS t0, CAST(max(acquired) AS DATE) AS t1 FROM scenes GROUP BY ALL ORDER BY satellite")
+println(rpad("satellite", 12), rpad("scenes", 8), rpad("mean cloud (%)", 16), "first and last")
+for i in eachindex(p.n)
+	println(rpad(p.satellite[i], 12), rpad(p.n[i], 8), rpad(coalesce(p.cloud[i], ""), 16), p.t0[i], " to ", p.t1[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "bands-side-by-side"
+label = "Bands Side by Side"
+desc = "The quantiles over the area of each band downloaded, reflectance for SR_B bands and kelvin for ST_B10, side by side"
+models = ["landsat"]
+code = '''
+using Statistics
+
+println(rpad("band", 10), join(lpad.(["5%", "25%", "50%", "75%", "95%"], 10)))
+for b in chosen
+	b == "QA_PIXEL" && continue
+	kept = Float64.(collect(skipmissing(bands[b])))
+	println(rpad(b, 10), join(lpad.(round.(quantile(kept, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 4), 10)))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "ndvi"
+label = "NDVI over the Area"
+desc = "The normalised difference vegetation index from the red band SR_B4 and the near-infrared band SR_B5 of Landsat 8-9, cells with dilated cloud, cloud, cloud shadow or snow left out when QA_PIXEL is among the Bands, with its quantiles"
+models = ["landsat"]
+code = '''
+using Statistics
+
+all(in(chosen), ("SR_B4", "SR_B5")) || error("Add SR_B4 and SR_B5 to the Bands: red and near infrared")
+ndvi = map((r, n) -> ismissing(r) || ismissing(n) || r + n <= 0 ? missing : Float32((n - r) / (n + r)), bands["SR_B4"], bands["SR_B5"])  # near infrared minus red, over their sum
+if haskey(bands, "QA_PIXEL")
+	ndvi = map((v, q) -> ismissing(q) || any(bit -> (q >> bit) & 1 == 1, (1, 3, 4, 5)) ? missing : v, ndvi, bands["QA_PIXEL"])  # dilated cloud, cloud, cloud shadow and snow left out
+end
+v = collect(skipmissing(ndvi))
+println("NDVI of ", scene, " over ", length(v), " cells of 30 m: quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 3), ", "))
+println("Cells above 0.5: ", round(100 * count(>(0.5), v) / length(v); digits = 1), "%; below 0: ", round(100 * count(<(0), v) / length(v); digits = 1), "%")
+grid, chosen = ndvi, ["NDVI"]  # Show the Band on a Map and Plot the Band now draw NDVI
+'''
+
+[[actionGroups.actions]]
+id = "surface-temperature"
+label = "Surface Temperature"
+desc = "The land surface temperature of the band ST_B10 in degrees Celsius over the area: its quantiles and its hottest and coolest cells"
+models = ["landsat"]
+code = '''
+using Statistics
+
+haskey(bands, "ST_B10") || error("Add ST_B10 to the Bands: surface temperature")
+celsius = map(k -> ismissing(k) ? missing : k - 273.15f0, bands["ST_B10"])  # kelvin to degrees Celsius
+v = collect(skipmissing(celsius))
+println("Surface temperature of ", scene, " over ", length(v), " cells: quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 1), ", "), " °C")
+println("Coolest ", round(minimum(v); digits = 1), " °C, hottest ", round(maximum(v); digits = 1), " °C")
+grid, chosen = celsius, ["Surface temperature (°C)"]  # Show the Band on a Map and Plot the Band now draw it
+'''
+
+[[actionGroups.actions]]
+id = "elevation-summary"
+label = "Elevation Summary"
+desc = "The quantiles of the elevation over the area, its range, and where its highest and lowest cells are"
+models = ["elevation"]
+code = '''
+using Statistics
+
+v = collect(skipmissing(grid))
+println("Elevation over ", length(v), " cells: quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 1), ", "), " m")
+for (name, f) in (("Highest", argmax), ("Lowest", argmin))
+	idx = f(map(x -> ismissing(x) ? (name == "Highest" ? -Inf32 : Inf32) : x, grid))
+	println(name, ": ", grid[idx], " m at longitude ", round(lookup(grid, X)[idx[1]]; digits = 5), ", latitude ", round(lookup(grid, Y)[idx[2]]; digits = 5))
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-cog"
+label = "Save as Cloud-Optimised GeoTIFF"
+desc = "Write each band, or the elevation, cut to the area as a Cloud-Optimised GeoTIFF in the folder of the scene or the product, tiled, with overviews and DEFLATE compression"
+models = ["landsat", "elevation"]
+code = '''
+for b in keys(bands)
+	out = joinpath(place, "$(replace(b, r"[^A-Za-z0-9_]" => "-"))-area.tif")
+	write(out, Raster(map(v -> ismissing(v) ? -9999f0 : Float32(v), bands[b]); missingval = -9999f0); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), force = true)
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-scenes"
+label = "Save the Scenes"
+desc = "The scenes found, with their identifiers, dates, cloud cover and outlines, as a GeoParquet file in the folder"
+models = ["find"]
+code = '''
+out = joinpath(folder, "usgs-$(dataset)-$(first_day)-$(last_day).parquet")
+DBInterface.execute(con, "COPY (SELECT entity, id, acquired, cloud, covered, geom FROM scenes ORDER BY acquired) TO '$(out)' (FORMAT parquet)")
+println("Wrote ", length(s.id), " scenes to ", out)
+'''

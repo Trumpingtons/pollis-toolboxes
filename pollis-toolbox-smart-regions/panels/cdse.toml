@@ -1,0 +1,767 @@
+# Copernicus Data Space: the scenes of the Copernicus Sentinel missions found in the STAC catalogue of the Copernicus Data
+# Space Ecosystem, and the bands of a Sentinel-2 scene or a Sentinel-1 monthly mosaic downloaded with the user's account
+
+[meta]
+title = "Copernicus Data Space"
+viewType = "pollis.cdse"
+defaultModel = "find"
+decisionFirstColumn = "Tab"
+
+# The user's account of the Copernicus Data Space Ecosystem, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "Copernicus Data Space"
+noun = "credentials"
+
+[[apiKey.fields]]
+name = "username"
+envVar = "CDSE_USERNAME"
+prompt = "Copernicus Data Space username (the email address of the account)"
+password = false
+
+[[apiKey.fields]]
+name = "password"
+envVar = "CDSE_PASSWORD"
+prompt = "Copernicus Data Space password"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "cdse/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, what each downloads, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "cdse/overview.md"
+bundled = true
+description = "The Copernicus Data Space Ecosystem, the Sentinel missions and the terms of their data"
+
+[[wikis]]
+name = "Authentication"
+file = "cdse/authentication.md"
+bundled = true
+description = "The account, where Pollis keeps it, the access token, and running the code outside the REPL"
+
+[[wikis]]
+name = "Diagnostics"
+file = "cdse/diagnostics.md"
+bundled = true
+description = "A search that finds nothing, a refused account, a download that stops, cells without data"
+
+[[wikis]]
+name = "Decision Guide"
+file = "cdse/decision-guide.md"
+bundled = true
+description = "Which collection, which dates and cloud cover, which bands"
+
+[[wikis]]
+separator = true
+label = "Catalogue and Data"
+
+[[wikis]]
+name = "Searching the STAC Catalogue"
+file = "cdse/stac-search.md"
+bundled = true
+
+[[wikis]]
+name = "Sentinel-2 Bands"
+file = "cdse/sentinel-2.md"
+bundled = true
+
+[[wikis]]
+name = "Sentinel-1 Monthly Mosaics"
+file = "cdse/sentinel-1.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Documentation and Regulations"
+
+[[references]]
+key = "CDSE2026a"
+
+[[references]]
+key = "CDSE2026b"
+
+[[references]]
+key = "CDSE2026c"
+
+[[references]]
+key = "STACC2023a"
+
+[[references]]
+key = "EC2013a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "DDCCF...2012a"
+
+[[references]]
+key = "TSGBD...2012a"
+
+[[references]]
+key = "MPLDM...2017a"
+
+[[references]]
+key = "Sma2011a"
+
+[[references]]
+key = "Sma2012a"
+
+[[references]]
+key = "Tuc1979a"
+
+[[faq]]
+question = "Do I need an account to use the panel?"
+answer = '''
+Not for Find Scenes: the STAC catalogue of the Copernicus Data Space Ecosystem is searched without one. Sentinel-2 Bands and Sentinel-1 Radar download files, and the download service asks for an access token, which the panel obtains with the username and password of a free account of the Copernicus Data Space Ecosystem, set with the key on the Powered by line.
+'''
+wiki = "Authentication"
+
+[[faq]]
+question = "Why does Sentinel-2 Bands download a whole tile for a small area?"
+answer = '''
+The bands of a Sentinel-2 product are JPEG 2000 files of a whole tile of 110 by 110 km, and the panel downloads each band it reads once, to the Folder, before cutting it to the Area: a band of 10 m is some 70 to 120 MB. Later runs on the same scene read the files from the Folder.
+'''
+wiki = "Sentinel-2 Bands"
+
+[[faq]]
+question = "Why does Sentinel-1 Radar read monthly mosaics and not single scenes?"
+answer = '''
+A single Sentinel-1 GRD scene is in the geometry of the radar and needs calibration and terrain correction before its cells can be set on a map. The monthly mosaics of the Copernicus Data Space Ecosystem are already calibrated, terrain-flattened and geocoded, composited over a month in tiles of about 100 km, as cloud-optimised GeoTIFFs of VV and VH at 20 m.
+'''
+wiki = "Sentinel-1 Monthly Mosaics"
+
+[[faq]]
+question = "May I use the Sentinel data in my own work?"
+answer = '''
+The data of the Sentinel missions are made available on a full, open and free-of-charge basis under the data policy of the Copernicus programme, Commission Delegated Regulation (EU) No 1159/2013, for any lawful use.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "What does the cloud cover of a scene measure?"
+answer = '''
+The share of the whole scene, the tile of the product, that its processing classed as cloud: a scene can be cloudy over its tile and clear over a small Area, or the other way round. Scene Classes counts the classes of the Sentinel-2 scene classification over the Area itself.
+'''
+wiki = "Searching the STAC Catalogue"
+hidden = true
+
+[[faq]]
+question = "Which bands does NDVI need?"
+answer = '''
+The red band, B04, and the near-infrared band, B08, both at 10 m: NDVI is the difference of near-infrared and red divided by their sum. With the scene classification band SCL among the Bands, cells classed as cloud, cloud shadow, cirrus or snow are left out.
+'''
+wiki = "Sentinel-2 Bands"
+hidden = true
+
+[[faq]]
+question = "Why does the panel stop with HTTP 401?"
+answer = '''
+The download service of the Copernicus Data Space Ecosystem refused the request: the username or the password is wrong, the account has two-factor authentication, which the panel does not handle, or the access token expired during a long download. The panel asks for a new token for each file.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Why are some cells of the band missing?"
+answer = '''
+The cells the product records as without data: those outside the satellite's swath at the edge of a tile, for Sentinel-2, and those without observations in the month or in radar shadow, for a Sentinel-1 mosaic. The panel reads the no-data value of each band from the catalogue and leaves those cells out.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "find"
+label = "Find Scenes"
+
+[[models]]
+id = "s2"
+label = "Sentinel-2 Bands"
+
+[[models]]
+id = "s1"
+label = "Sentinel-1 Radar"
+
+[[bullets]]
+text = "Find Scenes"
+detail = "Searches the STAC catalogue of the Copernicus Data Space Ecosystem for the scenes of a Sentinel collection over an area and between two dates, without an account"
+
+[[bullets]]
+text = "Sentinel-2 Bands"
+detail = "Downloads the bands chosen of the least cloudy Sentinel-2 Level-2A scene, or of the one named, and cuts them to the area as surface reflectance"
+
+[[bullets]]
+text = "Sentinel-1 Radar"
+detail = "Downloads the VV and VH backscatter of a Sentinel-1 monthly mosaic, calibrated and terrain-flattened, and cuts it to the area"
+
+[[decisionRows]]
+task = "Find Scenes"
+context = "What is there"
+purpose = "List the scenes of a collection over an area, with their dates, cloud cover and outlines"
+
+[[decisionRows]]
+task = "Sentinel-2 Bands"
+context = "Optical bands"
+purpose = "Surface reflectance at 10, 20 or 60 m on a clear day, for vegetation, water and land cover"
+
+[[decisionRows]]
+task = "Sentinel-1 Radar"
+context = "Through clouds"
+purpose = "Radar backscatter of a month, by day or night and whatever the clouds"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the bands are kept once downloaded, in a folder for each scene, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "area"
+label = "Area (W, S, E, N)"
+tooltip = "The area as west, south, east and north, in degrees of longitude and latitude: by default, Paris."
+default = "2.25, 48.81, 2.42, 48.90"
+newRow = true
+
+[[inputs]]
+id = "firstDay"
+label = "From"
+tooltip = "The first day of the search, as year-month-day."
+default = "2026-06-01"
+
+[[inputs]]
+id = "lastDay"
+label = "To"
+tooltip = "The last day of the search, as year-month-day."
+default = "2026-08-31"
+
+[[inputs]]
+id = "collection"
+label = "Collection"
+kind = "select"
+default = "sentinel-2-l2a"
+models = ["find"]
+newRow = true
+
+[[inputs.options]]
+value = "sentinel-2-l2a"
+label = "Sentinel-2 Level-2A"
+
+[[inputs.options]]
+value = "sentinel-2-l1c"
+label = "Sentinel-2 Level-1C"
+
+[[inputs.options]]
+value = "sentinel-1-grd"
+label = "Sentinel-1 GRD"
+
+[[inputs.options]]
+value = "sentinel-1-global-mosaics"
+label = "Sentinel-1 Monthly Mosaics"
+
+[[inputs.options]]
+value = "sentinel-3-olci-2-lfr-ntc"
+label = "Sentinel-3 OLCI Land"
+
+[[inputs.options]]
+value = "sentinel-3-sl-2-lst-ntc"
+label = "Sentinel-3 Land Surface Temperature"
+
+[[inputs.options]]
+value = "sentinel-5p-l2-no2-offl"
+label = "Sentinel-5P Nitrogen Dioxide"
+
+[[inputs]]
+id = "maxCloud"
+label = "Most Cloud (%)"
+tooltip = "The largest share of the scene, in per cent, that its processing classed as cloud: for Sentinel-2 and Sentinel-3, whose scenes record it."
+default = "20"
+models = ["find", "s2"]
+
+[[inputs]]
+id = "rows"
+label = "Scenes"
+tooltip = "How many scenes Find Scenes lists at most, the least cloudy first, or the latest first where scenes have no cloud cover."
+default = "50"
+models = ["find"]
+
+[[inputs]]
+id = "scene"
+label = "Scene"
+tooltip = "The identifier of a scene, as Find Scenes lists it: empty for the least cloudy Sentinel-2 Level-2A scene that covers the Area, or the latest Sentinel-1 monthly mosaic."
+default = ""
+models = ["s2", "s1"]
+newRow = true
+
+[[inputs]]
+id = "bands"
+label = "Bands"
+tooltip = "The bands to download, as the catalogue names the assets of a Sentinel-2 Level-2A scene, the band and its resolution: B04_10m is red, B08_10m near infrared, SCL_20m the scene classification."
+default = "B04_10m, B08_10m, SCL_20m"
+models = ["s2"]
+
+[[inputs]]
+id = "polarisations"
+label = "Polarisations"
+tooltip = "The polarisations of the mosaic to download: VV, VH or both."
+default = "VV, VH"
+models = ["s1"]
+
+[[codeBranches]]
+model = "find"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+collection, first_day, last_day = "{{collection}}", "{{firstDay}}", "{{lastDay}}"
+enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
+stac = "https://stac.dataspace.copernicus.eu/v1/search"  # the STAC catalogue of the Copernicus Data Space Ecosystem, searched without an account
+function search(collection; extra = "", most = 100)  # the scenes of a collection over the area and between the dates, page after page
+	url = "$(stac)?collections=$(collection)&bbox=$(west),$(south),$(east),$(north)&datetime=$(enc("$(first_day)T00:00:00Z/$(last_day)T23:59:59Z"))&limit=100$(extra)"
+	pages, files = mktempdir(), String[]
+	while url !== nothing && 100 * length(files) < most
+		push!(files, Downloads.download(url, joinpath(pages, "page-$(length(files) + 1).json")))
+		next = query("SELECT l->>'href' AS href FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/links'), '[]') AS JSON[])) AS l FROM read_text('$(files[end])')) WHERE l->>'rel' = 'next'").href
+		url = isempty(next) ? nothing : first(next)
+	end
+	return files
+end
+extra = ""
+{{?collection=sentinel-2-l2a|sentinel-2-l1c|sentinel-3-olci-2-lfr-ntc|sentinel-3-sl-2-lst-ntc}}extra = "&filter=$(enc("eo:cloud_cover <= {{maxCloud}}"))&filter-lang=cql2-text"  # scenes with at most this share of clouds
+files = search(collection; extra = extra, most = {{rows}})
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE scenes AS
+SELECT f->>'id' AS id, CAST(f->>'/properties/datetime' AS TIMESTAMP) AS acquired, TRY_CAST(f->>'/properties/eo:cloud_cover' AS DOUBLE) AS cloud,
+	f->>'/properties/platform' AS platform, f->>'/properties/grid:code' AS tile, f->>'/properties/sat:orbit_state' AS orbit,
+	ST_GeomFromGeoJSON(f->'geometry') AS geom, f->'assets' AS assets
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text($(repr(files))))
+QUALIFY row_number() OVER (PARTITION BY id) = 1
+""")  # one row per scene: its date, cloud cover, satellite, tile, orbit, outline and assets
+DBInterface.execute(con, "ALTER TABLE scenes ADD COLUMN covered DOUBLE")
+DBInterface.execute(con, "UPDATE scenes SET covered = round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1)")  # the share of the area each scene covers, in per cent
+DBInterface.execute(con, "DELETE FROM scenes WHERE id NOT IN (SELECT id FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC LIMIT {{rows}})")
+s = query("SELECT id, acquired, cloud, covered FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC")
+isempty(s.id) && error("The catalogue has no scenes of $(collection) over the area from $(first_day) to $(last_day)$(isempty(extra) ? "" : " with at most {{maxCloud}}% of clouds"): widen the dates, the area or the cloud cover")
+println(length(s.id), " scenes of ", collection, " over the area from ", first_day, " to ", last_day, ismissing(first(s.cloud)) ? ", the latest first:" : ", the least cloudy first:")
+for i in eachindex(s.id)
+	println(rpad(s.id[i], 66), " ", s.acquired[i], ismissing(s.cloud[i]) ? "" : "  cloud $(round(s.cloud[i]; digits = 1))%", "  covers $(s.covered[i])% of the area")
+end
+'''
+
+[[codeBranches]]
+model = "s2"
+code = '''
+using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the bands are kept once downloaded, and the Next Steps save theirs
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+first_day, last_day = "{{firstDay}}", "{{lastDay}}"
+enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
+scene = "{{scene}}"
+url = "https://stac.dataspace.copernicus.eu/v1/search?collections=sentinel-2-l2a&limit=100&" * (isempty(scene) ? "bbox=$(west),$(south),$(east),$(north)&datetime=$(enc("$(first_day)T00:00:00Z/$(last_day)T23:59:59Z"))&filter=$(enc("eo:cloud_cover <= {{maxCloud}}"))&filter-lang=cql2-text" : "ids=$(scene)")
+page = Downloads.download(url, joinpath(mktempdir(), "scenes.json"))  # the scenes of the catalogue, searched without an account
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE scenes AS
+SELECT f->>'id' AS id, CAST(f->>'/properties/datetime' AS TIMESTAMP) AS acquired, TRY_CAST(f->>'/properties/eo:cloud_cover' AS DOUBLE) AS cloud,
+	ST_GeomFromGeoJSON(f->'geometry') AS geom, f->'assets' AS assets
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text('$(page)'))
+""")
+pick = query("SELECT id, acquired, cloud, round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1) AS covered FROM scenes ORDER BY covered DESC, cloud, acquired DESC LIMIT 1")  # the least cloudy of the scenes that cover the most of the area
+isempty(pick.id) && error(isempty(scene) ? "No Sentinel-2 Level-2A scene over the area from $(first_day) to $(last_day) has at most {{maxCloud}}% of clouds: widen the dates or the cloud cover" : "The catalogue has no Sentinel-2 Level-2A scene $(scene)")
+scene = only(pick.id)
+println("Scene ", scene, ", ", only(pick.acquired), ", cloud ", round(only(pick.cloud); digits = 1), "%, covering ", only(pick.covered), "% of the area")
+
+function token()  # an access token of the Copernicus Data Space Ecosystem, for the user's account
+	for v in ("CDSE_USERNAME", "CDSE_PASSWORD")
+		haskey(ENV, v) || error("Set the credentials of your Copernicus Data Space account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
+	end
+	out = IOBuffer()
+	r = Downloads.request("https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
+		input = IOBuffer("grant_type=password&client_id=cdse-public&username=$(enc(ENV["CDSE_USERNAME"]))&password=$(enc(ENV["CDSE_PASSWORD"]))"),
+		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
+	answer = String(take!(out))
+	r isa Downloads.Response && r.status == 200 || error("The Copernicus Data Space refused the account (HTTP $(r isa Downloads.Response ? r.status : r.message)): $(first(answer, 300))")
+	return match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1]
+end
+function download_once(href, path)  # a file of the download service, kept in the folder: a new token for each, as a token lasts minutes
+	isfile(path) && return path
+	Downloads.download(href, path * ".part"; headers = ["Authorization" => "Bearer $(token())"])
+	return mv(path * ".part", path)
+end
+
+chosen = strip.(split("{{bands}}", ","))
+known = query("SELECT unnest(json_keys(assets)) AS k FROM scenes WHERE id = '$(scene)'").k
+for b in chosen
+	b in known || error("The scene has no band $(b): its assets are $(join(sort(known), ", "))")
+end
+bands = Dict{String, Any}()  # each band, cut to the area: reflectance, or the classes of SCL
+crs = ""
+for b in chosen
+	a = query("SELECT assets->'$(b)'->'alternate'->'https'->>'href' AS href, assets->'$(b)'->>'proj:code' AS code, TRY_CAST(assets->'$(b)'->>'raster:scale' AS DOUBLE) AS scale, TRY_CAST(assets->'$(b)'->>'raster:offset' AS DOUBLE) AS offset, TRY_CAST(assets->'$(b)'->>'nodata' AS DOUBLE) AS nodata FROM scenes WHERE id = '$(scene)'")
+	path = download_once(only(a.href), joinpath(mkpath(joinpath(folder, "cdse", scene)), "$(b).jp2"))
+	global crs = only(a.code)  # the coordinate system of the tile, a zone of UTM
+	box = query("SELECT ST_XMin(g) AS x0, ST_YMin(g) AS y0, ST_XMax(g) AS x1, ST_YMax(g) AS y1 FROM (SELECT ST_Transform($(area), 'EPSG:4326', '$(crs)') AS g)")
+	cut = read(crop(Raster(path; lazy = true); to = Extent(X = (only(box.x0), only(box.x1)), Y = (only(box.y0), only(box.y1)))))  # the cells of the area only
+	scale, offset, nodata = only(a.scale), only(a.offset), only(a.nodata)
+	bands[b] = map(v -> ismissing(v) || (!ismissing(nodata) && v == nodata) ? missing : ismissing(scale) ? Int(v) : Float32(v * scale + coalesce(offset, 0.0)), cut)  # reflectance from the stored integers, by the catalogue's scale and offset
+	println(rpad(b, 9), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", path)
+end
+grid = bands[first(chosen)]  # the first band, for the Next Steps that read one
+'''
+
+[[codeBranches]]
+model = "s1"
+code = '''
+using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the mosaics are kept once downloaded, and the Next Steps save theirs
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+first_day, last_day = "{{firstDay}}", "{{lastDay}}"
+enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
+scene = "{{scene}}"
+url = "https://stac.dataspace.copernicus.eu/v1/search?collections=sentinel-1-global-mosaics&limit=100&" * (isempty(scene) ? "bbox=$(west),$(south),$(east),$(north)&datetime=$(enc("$(first_day)T00:00:00Z/$(last_day)T23:59:59Z"))" : "ids=$(scene)")
+page = Downloads.download(url, joinpath(mktempdir(), "mosaics.json"))  # the monthly mosaics of the catalogue, searched without an account
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE scenes AS
+SELECT f->>'id' AS id, CAST(f->>'/properties/start_datetime' AS TIMESTAMP) AS acquired, ST_GeomFromGeoJSON(f->'geometry') AS geom, f->'assets' AS assets
+FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text('$(page)'))
+""")
+pick = query("SELECT id, acquired, round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1) AS covered FROM scenes ORDER BY covered DESC, acquired DESC LIMIT 1")  # the latest of the mosaics that cover the most of the area
+isempty(pick.id) && error(isempty(scene) ? "The catalogue has no Sentinel-1 monthly mosaic over the area from $(first_day) to $(last_day): widen the dates" : "The catalogue has no Sentinel-1 monthly mosaic $(scene)")
+scene = only(pick.id)
+println("Mosaic ", scene, ", the month from ", only(pick.acquired), ", covering ", only(pick.covered), "% of the area")
+
+function token()  # an access token of the Copernicus Data Space Ecosystem, for the user's account
+	for v in ("CDSE_USERNAME", "CDSE_PASSWORD")
+		haskey(ENV, v) || error("Set the credentials of your Copernicus Data Space account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
+	end
+	out = IOBuffer()
+	r = Downloads.request("https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
+		input = IOBuffer("grant_type=password&client_id=cdse-public&username=$(enc(ENV["CDSE_USERNAME"]))&password=$(enc(ENV["CDSE_PASSWORD"]))"),
+		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
+	answer = String(take!(out))
+	r isa Downloads.Response && r.status == 200 || error("The Copernicus Data Space refused the account (HTTP $(r isa Downloads.Response ? r.status : r.message)): $(first(answer, 300))")
+	return match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1]
+end
+function download_once(href, path)  # a file of the download service, kept in the folder: a new token for each, as a token lasts minutes
+	isfile(path) && return path
+	Downloads.download(href, path * ".part"; headers = ["Authorization" => "Bearer $(token())"])
+	return mv(path * ".part", path)
+end
+
+chosen = uppercase.(strip.(split("{{polarisations}}", ",")))
+bands = Dict{String, Any}()  # the backscatter of each polarisation, cut to the area
+crs = ""
+for b in chosen
+	b in ("VV", "VH") || error("The monthly mosaics of IW have the polarisations VV and VH, not $(b)")
+	a = query("SELECT assets->'$(b)'->'alternate'->'https'->>'href' AS href, assets->'$(b)'->>'proj:code' AS code, TRY_CAST(assets->'$(b)'->>'nodata' AS DOUBLE) AS nodata FROM scenes WHERE id = '$(scene)'")
+	ismissing(only(a.href)) && error("The mosaic $(scene) has no $(b)")
+	path = download_once(only(a.href), joinpath(mkpath(joinpath(folder, "cdse", scene)), "$(b).tif"))
+	global crs = only(a.code)  # the coordinate system of the tile, a zone of UTM
+	box = query("SELECT ST_XMin(g) AS x0, ST_YMin(g) AS y0, ST_XMax(g) AS x1, ST_YMax(g) AS y1 FROM (SELECT ST_Transform($(area), 'EPSG:4326', '$(crs)') AS g)")
+	cut = read(crop(Raster(path; lazy = true); to = Extent(X = (only(box.x0), only(box.x1)), Y = (only(box.y0), only(box.y1)))))  # the cells of the area only
+	nodata = only(a.nodata)
+	bands[b] = map(v -> ismissing(v) || (!ismissing(nodata) && v == nodata) || !isfinite(v) || v <= 0 ? missing : Float32(v), cut)  # the backscatter, missing where the mosaic has no observation
+	println(rpad(b, 4), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", path)
+end
+grid = bands[first(chosen)]  # the first polarisation, for the Next Steps that read one
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "scene-outlines"
+label = "Scene Outlines on a Map"
+desc = "The outline of each scene found, coloured by its cloud cover, or by its date where scenes have none, with the area, on an OpenStreetMap base map in Pollis's map view"
+models = ["find"]
+code = '''
+shown, box = joinpath(mktempdir(), "scenes.geojson"), joinpath(mktempdir(), "area.geojson")
+DBInterface.execute(con, "COPY (SELECT id, CAST(acquired AS VARCHAR) AS acquired, cloud, ST_Intersection(geom, ST_MakeEnvelope(-180, -90, 180, 90)) AS geom FROM scenes) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT 'Area' AS name, $(area) AS geom) TO '$(box)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+by = all(ismissing, s.cloud) ? "acquired" : "cloud"
+display(Pollis.webmap(Pollis.layer(shown; name = "Scenes of $(collection)", column = by, opacity = 0.15), Pollis.layer(box; name = "Area", color = "#e15759", opacity = 0.3); title = "$(length(s.id)) Scenes"))
+'''
+
+[[actionGroups.actions]]
+id = "scenes-over-time"
+label = "Scenes over Time"
+desc = "When the scenes were taken, each a point at its date, by its cloud cover where scenes have one, drawn with ECharts"
+models = ["find"]
+code = '''
+using ECharts
+
+t = query("SELECT CAST(acquired AS VARCHAR) AS day, coalesce(cloud, 0) AS cloud, coalesce(platform, '') AS platform FROM scenes ORDER BY acquired")
+EChart(ec_width = 760, ec_height = 380, title = [ECharts.Title(text = "Scenes of $(collection)")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "time", name = "Date")], yAxis = [ECharts.Axis(_type = "value", name = all(ismissing, s.cloud) ? "" : "Cloud (%)", min = 0)],
+	series = [ECharts.XYSeries(name = p, _type = "scatter", data = [[t.day[i], t.cloud[i]] for i in eachindex(t.day) if t.platform[i] == p]) for p in unique(t.platform)])
+'''
+
+[[actionGroups.actions]]
+id = "band-map"
+label = "Show the Band on a Map"
+desc = "The first band, cells coloured by value, on an OpenStreetMap base map in Pollis's map view, at most 80 cells a side (larger areas averaged over blocks of cells); click a cell for its value"
+models = ["s2", "s1"]
+code = '''
+using Statistics
+
+f = max(1, cld(max(size(grid, X), size(grid, Y)), 80))  # at most 80 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, Raster(grid; missingval = missing), f; skipmissingval = true) : grid, (X, Y))
+edges(d) = [(min(lo, hi), max(lo, hi)) for (lo, hi) in Rasters.intervalbounds(small, d)]  # each cell's two edges
+xe, ye = edges(X), edges(Y)
+rows = ["($(round(Float64(small[i, j]), digits = 4)), $(xe[i][1]), $(ye[j][1]), $(xe[i][2]), $(ye[j][2]))" for i in axes(small, 1), j in axes(small, 2) if !ismissing(small[i, j])]
+shown = joinpath(mktempdir(), "cells.geojson")
+DBInterface.execute(con, "COPY (SELECT value, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), '$(crs)', 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(value, x0, y0, x1, y1)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "$(first(chosen)) of $(scene)", column = "value", opacity = 0.7)))
+'''
+
+[[actionGroups.actions]]
+id = "band-plot"
+label = "Plot the Band"
+desc = "The first band as a heat map drawn with ECharts, north up, at most 200 cells a side (larger areas averaged over blocks of cells)"
+models = ["s2", "s1"]
+code = '''
+using ECharts, Statistics
+
+f = max(1, cld(max(size(grid, X), size(grid, Y)), 200))  # at most 200 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, Raster(grid; missingval = missing), f; skipmissingval = true) : grid, (X, Y))
+north_first = first(lookup(small, Y)) > last(lookup(small, Y))
+nx, ny = size(small)
+cells = [[i - 1, (north_first ? ny - j : j - 1), round(Float64(small[i, j]), digits = 4)] for i in 1:nx, j in 1:ny if !ismissing(small[i, j])]  # column, row from the south, value
+lo, hi = extrema(skipmissing(small))
+EChart(ec_width = 760, ec_height = round(Int, 60 + 680 * ny / nx), title = [ECharts.Title(text = "$(first(chosen)) of $(scene)")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "category", data = string.(round.(Int, lookup(small, X))), name = "x")],
+	yAxis = [ECharts.Axis(_type = "category", data = string.(round.(Int, north_first ? reverse(lookup(small, Y)) : lookup(small, Y))), name = "y")],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"])),
+	series = [ECharts.HeatmapSeries(name = first(chosen), data = cells)])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "area-coverage"
+label = "How Scenes Cover the Area"
+desc = "For each tile and orbit of the scenes found, how many scenes and how much of the area they cover: a scene of a neighbouring tile may cover only part of it"
+models = ["find"]
+code = '''
+c = query("SELECT coalesce(tile, '') AS tile, coalesce(orbit, '') AS orbit, count(*) AS n, min(covered) AS least, max(covered) AS most FROM scenes GROUP BY ALL ORDER BY most DESC, n DESC")
+println(rpad("tile", 16), rpad("orbit", 12), rpad("scenes", 8), "covers (% of the area)")
+for i in eachindex(c.n)
+	println(rpad(c.tile[i], 16), rpad(c.orbit[i], 12), rpad(c.n[i], 8), c.least[i] == c.most[i] ? c.most[i] : "$(c.least[i]) to $(c.most[i])")
+end
+'''
+
+[[actionGroups.actions]]
+id = "scene-classes"
+label = "Scene Classes over the Area"
+desc = "The classes of the scene classification band SCL of Sentinel-2 Level-2A over the area: cloud, cloud shadow, vegetation, water and the others, as shares of the cells"
+models = ["s2"]
+code = '''
+haskey(bands, "SCL_20m") || error("Add SCL_20m to the Bands: the scene classification")
+classes = ["No data", "Saturated or defective", "Topographic casted shadows", "Cloud shadows", "Vegetation", "Not vegetated", "Water", "Unclassified", "Cloud, medium probability", "Cloud, high probability", "Thin cirrus", "Snow or ice"]  # the classes 0 to 11 of the scene classification of Sen2Cor
+v = collect(skipmissing(bands["SCL_20m"]))
+println("Scene classification of ", scene, " over the area, ", length(v), " cells of 20 m:")
+for k in 0:11
+	n = count(==(k), v)
+	n > 0 && println(rpad(classes[k + 1], 30), lpad(n, 8), "  ", round(100 * n / length(v); digits = 2), "%")
+end
+'''
+
+[[actionGroups.actions]]
+id = "downloaded-files"
+label = "Files Downloaded"
+desc = "The files of the scene in the folder, with their sizes, and the cells each band has over the area"
+models = ["s2", "s1"]
+code = '''
+dir = joinpath(folder, "cdse", scene)
+for f in sort(readdir(dir))
+	println(rpad(f, 16), lpad(round(filesize(joinpath(dir, f)) / 2^20; digits = 1), 8), " MB")
+end
+for b in chosen
+	println(rpad(b, 9), length(bands[b]), " cells over the area, ", count(ismissing, bands[b]), " without data")
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "collections-side-by-side"
+label = "Collections Side by Side"
+desc = "How many scenes four collections have over the area between the dates: Sentinel-2 Level-2A, Sentinel-1 GRD, Sentinel-3 OLCI Land and Sentinel-5P nitrogen dioxide"
+models = ["find"]
+code = '''
+println(rpad("collection", 30), rpad("scenes", 8), "first and last")
+for c in ("sentinel-2-l2a", "sentinel-1-grd", "sentinel-3-olci-2-lfr-ntc", "sentinel-5p-l2-no2-offl")
+	pages = search(c; most = 1000)
+	counts = query("SELECT count(DISTINCT f->>'id') AS n, min(f->>'/properties/datetime') AS t0, max(f->>'/properties/datetime') AS t1 FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text($(repr(pages))))")
+	println(rpad(c, 30), rpad(only(counts.n), 8), only(counts.n) == 0 ? "" : "$(first(only(counts.t0), 10)) to $(first(only(counts.t1), 10))")
+end
+'''
+
+[[actionGroups.actions]]
+id = "satellites-side-by-side"
+label = "Satellites Side by Side"
+desc = "The scenes of each satellite of the collection, Sentinel-2A, 2B and 2C or Sentinel-1A, 1C and 1D: how many, their mean cloud cover and their dates"
+models = ["find"]
+code = '''
+p = query("SELECT coalesce(platform, 'not recorded') AS platform, count(*) AS n, round(avg(cloud), 1) AS cloud, CAST(min(acquired) AS DATE) AS t0, CAST(max(acquired) AS DATE) AS t1 FROM scenes GROUP BY ALL ORDER BY platform")
+println(rpad("satellite", 16), rpad("scenes", 8), rpad("mean cloud (%)", 16), "first and last")
+for i in eachindex(p.n)
+	println(rpad(p.platform[i], 16), rpad(p.n[i], 8), rpad(coalesce(p.cloud[i], ""), 16), p.t0[i], " to ", p.t1[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "vv-beside-vh"
+label = "VV Beside VH"
+desc = "The two polarisations of the mosaic side by side, in decibels: their quantiles over the area and how closely they vary together"
+models = ["s1"]
+code = '''
+using Statistics
+
+all(in(chosen), ("VV", "VH")) || error("Set the Polarisations to VV, VH")
+db(v) = 10 * log10(v)  # decibels of a backscatter coefficient
+both = [(db(a), db(b)) for (a, b) in zip(bands["VV"], bands["VH"]) if !ismissing(a) && !ismissing(b)]
+vv, vh = first.(both), last.(both)
+println(rpad("", 6), join(lpad.(["5%", "25%", "50%", "75%", "95%"], 9)))
+for (n, v) in ("VV" => vv, "VH" => vh)
+	println(rpad(n, 6), join(lpad.(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 2), 9)), "  dB")
+end
+println("Correlation of VV and VH in dB over ", length(vv), " cells: ", round(cor(vv, vh); digits = 3), "; VH - VV median ", round(median(vh .- vv); digits = 2), " dB")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "ndvi"
+label = "NDVI over the Area"
+desc = "The normalised difference vegetation index from the red band B04 and the near-infrared band B08, cells classed as cloud, cloud shadow, cirrus or snow left out when SCL_20m is among the Bands, with its quantiles and a map"
+models = ["s2"]
+code = '''
+using Statistics
+
+all(in(chosen), ("B04_10m", "B08_10m")) || error("Add B04_10m and B08_10m to the Bands: red and near infrared at 10 m")
+red, nir = bands["B04_10m"], bands["B08_10m"]
+ndvi = map((r, n) -> ismissing(r) || ismissing(n) || r + n <= 0 ? missing : Float32((n - r) / (n + r)), red, nir)  # near infrared minus red, over their sum
+if haskey(bands, "SCL_20m")
+	scl = resample(Raster(bands["SCL_20m"]; missingval = missing); to = ndvi, method = :near)  # the classes on the cells of 10 m
+	ndvi = map((v, c) -> ismissing(c) || c in (3, 8, 9, 10, 11) ? missing : v, ndvi, scl)  # cloud shadow, cloud, cirrus and snow left out
+end
+v = collect(skipmissing(ndvi))
+println("NDVI of ", scene, " over ", length(v), " cells of 10 m: quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 3), ", "))
+println("Cells above 0.5: ", round(100 * count(>(0.5), v) / length(v); digits = 1), "%; below 0: ", round(100 * count(<(0), v) / length(v); digits = 1), "%")
+grid, chosen = ndvi, ["NDVI"]  # Show the Band on a Map and Plot the Band now draw NDVI
+'''
+
+[[actionGroups.actions]]
+id = "backscatter-db"
+label = "Backscatter in Decibels"
+desc = "The backscatter of each polarisation in decibels, ten times its logarithm in base 10: its quantiles over the area, and the share of the cells below -20 dB"
+models = ["s1"]
+code = '''
+using Statistics
+
+for b in chosen
+	v = [10 * log10(x) for x in skipmissing(bands[b])]
+	println(rpad(b, 4), "quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 2), ", "), " dB; below -20 dB: ", round(100 * count(<(-20), v) / length(v); digits = 1), "%")
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-cog"
+label = "Save as Cloud-Optimised GeoTIFF"
+desc = "Write each band cut to the area as a Cloud-Optimised GeoTIFF in the scene's folder, tiled, with overviews and DEFLATE compression"
+models = ["s2", "s1"]
+code = '''
+for b in keys(bands)
+	out = joinpath(folder, "cdse", scene, "$(b)-area.tif")
+	write(out, Raster(map(v -> ismissing(v) ? -9999f0 : Float32(v), bands[b]); missingval = -9999f0, crs = EPSG(parse(Int, last(split(crs, ":"))))); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), force = true)
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-scenes"
+label = "Save the Scenes"
+desc = "The scenes found, with their dates, cloud cover, satellites, tiles and outlines, as a GeoParquet file in the folder"
+models = ["find"]
+code = '''
+out = joinpath(folder, "cdse-$(collection)-$(first_day)-$(last_day).parquet")
+DBInterface.execute(con, "COPY (SELECT id, acquired, cloud, platform, tile, orbit, covered, geom FROM scenes ORDER BY acquired) TO '$(out)' (FORMAT parquet)")
+println("Wrote ", length(s.id), " scenes to ", out)
+'''
