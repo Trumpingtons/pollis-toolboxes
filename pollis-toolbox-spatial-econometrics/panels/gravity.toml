@@ -1,0 +1,871 @@
+# Spatial Interaction Models: flows between places (migration, commuting, trade) on the size of the origins and
+# destinations and the distance between them, Wilson's family of unconstrained, production-, attraction- and doubly
+# constrained models fitted as Poisson regressions with GLFixedEffectModels.jl, and a negative binomial model with
+# SpatialEconometrics.jl; the areas are read through DuckDB's spatial extension. Replication of PySAL's spint on the
+# Austrian migration data.
+
+[meta]
+title = "Spatial Interaction Models"
+viewType = "pollis.gravity"
+defaultModel = "doubly"
+decisionFirstColumn = "Model"
+
+[[packages]]
+name = "GLFixedEffectModels.jl"
+github = "https://github.com/jmboehm/GLFixedEffectModels.jl"
+
+[[packages]]
+name = "SpatialEconometrics.jl"
+# Fork of randsley/SpatialEconometrics.jl whose GWR and MGWR follow GWR4 and mgwr: Gaussian and exponential kernels without a cut-off, adaptive bandwidths counting the observation itself, AICc with n log(2 pi), golden section search and mgwr's back-fitting
+github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
+fork = true
+
+[[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["Distributions.jl", "ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "gravity/factsheet.md"
+bundled = true
+description = "One-page reference: the five tabs, the inputs, the Next Steps and the example data"
+
+[[wikis]]
+name = "Overview"
+file = "gravity/overview.md"
+bundled = true
+description = "What spatial interaction models are, why they are fitted as Poisson regressions, and what the panel does"
+
+[[wikis]]
+name = "Distance Decay"
+file = "gravity/distance-decay.md"
+bundled = true
+description = "Exponential and power distance decay, and how to read the distance coefficient"
+
+[[wikis]]
+name = "Goodness of Fit"
+file = "gravity/goodness-of-fit.md"
+bundled = true
+description = "Pseudo R-squared, AIC, SRMSE and the Sørensen similarity index, and what each says about a model of flows"
+
+[[wikis]]
+name = "Decision Guide"
+file = "gravity/decision-guide.md"
+bundled = true
+description = "Which constraint, which distance decay, Poisson or negative binomial, and which standard errors"
+
+[[wikis]]
+name = "Replications"
+file = "gravity/replications.md"
+bundled = true
+description = "The Austrian migration data of PySAL's spint, against which the four constrained models are checked"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Unconstrained"
+file = "gravity/unconstrained.md"
+bundled = true
+
+[[wikis]]
+name = "Production"
+file = "gravity/production.md"
+bundled = true
+
+[[wikis]]
+name = "Attraction"
+file = "gravity/attraction.md"
+bundled = true
+
+[[wikis]]
+name = "Doubly Constrained"
+file = "gravity/doubly.md"
+bundled = true
+
+[[wikis]]
+name = "Negative Binomial"
+file = "gravity/negbin.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+[[references]]
+key = "Boe2020a"
+[[references]]
+key = "Ran2026a"
+[[references]]
+key = "RM2026a"
+[[references]]
+key = "DDBL2026b"
+[[references]]
+key = "Qui2023c"
+[[references]]
+key = "Zwi2026a"
+[[references]]
+key = "Osh2016a"
+[[references]]
+key = "CGZ2020a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+[[references]]
+key = "Wil1971a"
+[[references]]
+key = "FA1982a"
+[[references]]
+key = "AW2003a"
+[[references]]
+key = "SST2006a"
+[[references]]
+key = "CT1990a"
+[[references]]
+key = "LP2008a"
+
+[[references]]
+separator = true
+label = "Replications"
+[[references]]
+key = "Den2012a"
+
+[[faq]]
+question = "What is a spatial interaction model?"
+answer = '''
+A spatial interaction model explains the flows between places, such as migrants, commuters, shoppers or goods, by how much each origin sends, how much each destination attracts, and how far apart they are. The gravity model is its best-known form: flows grow with the size of the origin and of the destination and fall with distance. Wilson's family adds constraints, so that the predicted flows add up to the known totals leaving each origin, arriving at each destination, or both.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Why are flows modelled with a Poisson regression rather than least squares on logs?"
+answer = '''
+Flows are counts, often with many zeros, and their variance grows with their size. Least squares on the log of the flows drops the zeros and, when the errors are heteroskedastic, gives inconsistent estimates of the coefficients. A Poisson regression keeps the zeros, needs only the mean of the flows to be right, and, with origin and destination effects, reproduces the constraints of Wilson's models exactly.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Which constraint should I choose?"
+answer = '''
+Choose by what is known and what is to be predicted. With both the total outflows of each origin and the total inflows of each destination known, the Doubly Constrained model distributes them across the pairs. With only the outflows known, as in a model of where people go from where they live, the Production model predicts the destinations. With only the inflows known, the Attraction model predicts where they come from. The Unconstrained model predicts the totals as well, from the variables of the origins and destinations.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I read the distance coefficient?"
+answer = '''
+With Exponential decay, the coefficient is the change in the log of the flow for one more kilometre: a coefficient of -0.007 means about 0.7 per cent fewer migrants for each kilometre. With Power decay, it is an elasticity: a coefficient of -1.2 means about 1.2 per cent fewer for each 1 per cent more distance. Distance Decay in Plain Numbers, in the Next Steps, prints both readings and the distance over which flows halve.
+'''
+wiki = "Distance Decay"
+
+[[faq]]
+question = "What do SRMSE and the Sørensen similarity index measure?"
+answer = '''
+Both compare the predicted flows with the observed ones. The standardised root mean square error is the root mean square error of the flows divided by their mean: 0 is a perfect fit, and smaller is better. The Sørensen similarity index averages, over the pairs, the share of the two values they have in common: 1 is a perfect fit. Unlike the pseudo R-squared, both are on the scale of the flows themselves.
+'''
+wiki = "Goodness of Fit"
+hidden = true
+
+[[faq]]
+question = "When should I use the negative binomial model?"
+answer = '''
+When the flows vary much more than a Poisson model allows, which the overdispersion test of the Next Steps shows. The Poisson estimates stay consistent under overdispersion, but its model-based standard errors are then too small. The negative binomial model weights the flows differently and estimates the extra variance; robust standard errors are the other remedy, keeping the Poisson estimates.
+'''
+wiki = "Negative Binomial"
+hidden = true
+
+[[faq]]
+question = "What are the origin and destination effects of the constrained models?"
+answer = '''
+They are one parameter for each origin, each destination, or both, which make the predicted flows add up to the observed totals. In Wilson's models they are the balancing factors; in trade, Anderson and van Wincoop call them multilateral resistance terms: how hard it is for each origin to reach all destinations, and for each destination to be reached. Map of the Origin and Destination Effects, in the Next Steps, draws them.
+'''
+wiki = "Doubly Constrained"
+hidden = true
+
+[[faq]]
+question = "Does the panel reproduce PySAL's spint?"
+answer = '''
+Yes. Austrian Migration: spint, in the Replicate group of the Next Steps, fits the four models of Oshan's primer on the Austrian migration data and prints the coefficients and fit statistics of the primer and the standard errors, deviances and log-likelihoods of spint's tests beside those of Julia.
+'''
+wiki = "Replications"
+hidden = true
+
+[[models]]
+id = "unconstrained"
+label = "Unconstrained"
+
+[[models]]
+id = "production"
+label = "Production"
+
+[[models]]
+id = "attraction"
+label = "Attraction"
+
+[[models]]
+id = "doubly"
+label = "Doubly Constrained"
+
+[[models]]
+id = "negbin"
+label = "Negative Binomial"
+
+[[bullets]]
+text = "Unconstrained"
+detail = "Flows on the size of the origins and destinations and the distance between them: the gravity model, which predicts the totals as well"
+
+[[bullets]]
+text = "Production"
+detail = "The total outflow of each origin known: one effect per origin, and the flows spread over the destinations by their attraction and distance"
+
+[[bullets]]
+text = "Attraction"
+detail = "The total inflow of each destination known: one effect per destination, and the flows drawn from the origins by their size and distance"
+
+[[bullets]]
+text = "Doubly Constrained"
+detail = "Both totals known: one effect per origin and per destination, and the flows distributed by distance"
+
+[[bullets]]
+text = "Negative Binomial"
+detail = "The doubly constrained model with a variance that grows faster than the mean, for overdispersed flows"
+
+[[decisionRows]]
+task = "Unconstrained"
+context = "No totals known"
+purpose = "Explain or predict the flows, and the totals, from the variables of the origins and destinations and the distance"
+
+[[decisionRows]]
+task = "Production"
+context = "Outflows known"
+purpose = "Predict where the flows from each origin go, as in the destinations of migrants from where they live"
+
+[[decisionRows]]
+task = "Attraction"
+context = "Inflows known"
+purpose = "Predict where the flows into each destination come from, as in the origins of the shoppers of a centre"
+
+[[decisionRows]]
+task = "Doubly Constrained"
+context = "Both totals known"
+purpose = "Distribute known outflows and inflows across the pairs, and estimate the effect of distance net of everything about the places"
+
+[[decisionRows]]
+task = "Negative Binomial"
+context = "Overdispersed flows"
+purpose = "The doubly constrained model when the flows vary much more than a Poisson model allows"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another. A file given by an absolute path is read where it is. Save the Results writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "areasFile"
+label = "Areas File"
+tooltip = "The file of the places, as polygons, one per place: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, austria_nuts2.gpkg, the example first copies the nine NUTS-2 regions of Austria from PollisDatasets into the folder, unless it has the file already."
+default = "austria_nuts2.gpkg"
+
+[[inputs]]
+id = "flowsFile"
+label = "Flows File"
+tooltip = "The flows, one row per origin and destination: a CSV or Parquet file, in the folder above, or an absolute path. With the default, austria_migration.csv, the example first copies the migration between the regions of Austria in 2006 from PollisDatasets into the folder, unless the folder has the file already."
+default = "austria_migration.csv"
+
+[[inputs]]
+id = "areaColumn"
+label = "Area Column"
+tooltip = "The column of the areas file that names each place, as the origins and destinations of the flows file do."
+default = "nuts_id"
+newRow = true
+
+[[inputs]]
+id = "originColumn"
+label = "Origin Column"
+tooltip = "The column of the flows file that names the origin of each flow."
+default = "origin"
+
+[[inputs]]
+id = "destinationColumn"
+label = "Destination Column"
+tooltip = "The column of the flows file that names the destination of each flow."
+default = "destination"
+
+[[inputs]]
+id = "flowColumn"
+label = "Flow Column"
+tooltip = "The column of the flows file with the size of each flow: migrants, commuters, trips or the value of trade. Zeros are kept."
+default = "flow"
+
+[[inputs]]
+id = "originVariables"
+label = "Origin Variables"
+tooltip = "Columns of the flows file that describe the origin of each flow, separated by commas, such as its population or its total outflow; entered in logs, so their coefficients are elasticities. Used by Unconstrained and Attraction. The example's oi is the total outflow of the origin."
+default = "oi"
+newRow = true
+
+[[inputs]]
+id = "destinationVariables"
+label = "Destination Variables"
+tooltip = "Columns of the flows file that describe the destination of each flow, separated by commas, such as its jobs or its total inflow; entered in logs. Used by Unconstrained and Production. The example's dj is the total inflow of the destination."
+default = "dj"
+
+[[inputs]]
+id = "pairVariables"
+label = "Pair Variables"
+tooltip = "Columns of the flows file that describe each origin and destination together, separated by commas, such as a shared border or language, entered as they are; empty for none. Used by every tab."
+default = ""
+
+[[inputs]]
+id = "distanceColumn"
+label = "Distance Column"
+tooltip = "The column of the flows file with the distance between origin and destination, in kilometres or another unit. Leave it empty to measure the distance between the places' centroids, in kilometres, in the Distance Coordinate System. The example's dij is the published distance."
+default = "dij"
+newRow = true
+
+[[inputs]]
+id = "decay"
+label = "Distance Decay"
+tooltip = "How the flows fall with distance: Exponential, exp(beta d), the distance as it is, so the coefficient is the change in the log flow per unit of distance; Power, d to the power beta, the log of the distance, so the coefficient is an elasticity. Power needs the flows within a place dropped."
+kind = "select"
+default = "exponential"
+
+[[inputs.options]]
+value = "exponential"
+label = "Exponential"
+
+[[inputs.options]]
+value = "power"
+label = "Power"
+
+[[inputs]]
+id = "intra"
+label = "Flows Within a Place"
+tooltip = "Whether the flows from a place to itself, such as moves within a region, are left out, as is usual, or kept."
+kind = "select"
+default = "drop"
+
+[[inputs.options]]
+value = "drop"
+label = "Drop"
+
+[[inputs.options]]
+value = "keep"
+label = "Keep"
+
+[[inputs]]
+id = "standardErrors"
+label = "Standard Errors"
+tooltip = "Model-Based, those of the Poisson model, which assume a variance equal to the mean, as PySAL's spint gives; Robust, valid whatever the variance, the usual choice for Poisson pseudo-maximum likelihood; or Clustered by Origin, which also allows the flows from the same origin to be correlated. The Negative Binomial tab gives SpatialEconometrics.jl's robust standard errors."
+kind = "select"
+default = "robust"
+
+[[inputs.options]]
+value = "model"
+label = "Model-Based"
+
+[[inputs.options]]
+value = "robust"
+label = "Robust"
+
+[[inputs.options]]
+value = "origin"
+label = "Clustered by Origin"
+
+[[inputs]]
+id = "fileCrs"
+label = "File Coordinate System"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the places are moved from it into longitude and latitude on WGS 84 (EPSG:4326), for the maps. The example's regions are in EPSG:4258, ETRS89. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4258"
+newRow = true
+
+[[inputs]]
+id = "distanceCrs"
+label = "Distance Coordinate System"
+tooltip = "A projected coordinate system in metres, as an EPSG code, in which the distances between the places' centroids are measured when the Distance Column is empty: a UTM zone or the national grid of the region. The example's EPSG:31287 is MGI / Austria Lambert."
+default = "EPSG:31287"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, GLFixedEffectModels, PollisDatasets, SparseArrays, LinearAlgebra, Statistics, Random, Distributions
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
+areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
+flows_path = joinpath(folder, "{{flowsFile}}")
+# Example files: migration between the nine NUTS-2 regions of Austria in 2006, from PollisDatasets, copied into the folder unless it has them already. Replace them with your own files.
+if basename(areas_path) == "austria_nuts2.gpkg" && !isfile(areas_path)
+	cp(samplefile("austria_nuts2.gpkg"), areas_path)  # the regions' outlines, in EPSG:4258
+end
+if basename(flows_path) == "austria_migration.csv" && !isfile(flows_path)
+	cp(datafile("austria_migration"), flows_path)  # datasetinfo("austria_migration") describes the columns
+end
+names_of(s) = filter(!isempty, String.(strip.(split(s, ","))))  # a list of columns, separated by commas
+ovars, dvars, pvars = names_of("{{originVariables}}"), names_of("{{destinationVariables}}"), names_of("{{pairVariables}}")
+q(c) = "\"" * c * "\""  # a column name quoted for SQL
+
+# The places, in longitude and latitude, with their centroids in kilometres in the distance coordinate system
+DBInterface.execute(con, "CREATE OR REPLACE TABLE places AS SELECT $(q("{{areaColumn}}"))::VARCHAR AS area, ST_X(ST_Centroid(ST_Transform(geom, '{{fileCrs}}', '{{distanceCrs}}'))) / 1000 AS cx, ST_Y(ST_Centroid(ST_Transform(geom, '{{fileCrs}}', '{{distanceCrs}}'))) / 1000 AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
+# The flows whose origin and destination are both places of the areas file, with every value
+distance_sql = isempty(strip("{{distanceColumn}}")) ? "sqrt((a.cx - b.cx)^2 + (a.cy - b.cy)^2)" : "f.$(q("{{distanceColumn}}"))::DOUBLE"
+extra = join(("f.$(q(c))::DOUBLE AS $(q(c))" for c in unique([ovars; dvars; pvars])), ", ")
+present = join(("f.$(q(c)) IS NOT NULL" for c in ["{{flowColumn}}"; ovars; dvars; pvars]), " AND ")
+within = "{{intra}}" == "drop" ? " AND a.area <> b.area" : ""
+DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE flows AS
+	SELECT a.area AS origin, b.area AS destination, f.$(q("{{flowColumn}}"))::DOUBLE AS flow, $(distance_sql) AS distance$(isempty(extra) ? "" : ", " * extra)
+	FROM '$(flows_path)' f JOIN places a ON a.area = f.$(q("{{originColumn}}"))::VARCHAR JOIN places b ON b.area = f.$(q("{{destinationColumn}}"))::VARCHAR
+	WHERE $(present)$(within)""")
+t = Tables.columntable(DBInterface.execute(con, "SELECT * FROM flows ORDER BY origin, destination"))
+nflows = length(t.flow)
+decay = "{{decay}}"
+decay == "power" && any(<=(0), t.distance) && error("Power decay takes the log of the distance: choose Drop for Flows Within a Place")
+# The columns of the regression: the distance (its log with power decay), the origin and destination variables in logs, the pair variables as they are
+data = (; flow = t.flow, origin = t.origin, destination = t.destination, every = fill("all", nflows), distance = decay == "power" ? log.(t.distance) : t.distance,
+	(Symbol("log_", c) => log.(t[Symbol(c)]) for c in unique([ovars; dvars]))..., (Symbol(c) => t[Symbol(c)] for c in pvars)...)
+println(nflows, " flows between ", length(unique([t.origin; t.destination])), " places, ", round(Int, sum(t.flow)), " in all")
+
+# One of Wilson's four models, as a Poisson regression with the origin and destination effects of its constraints
+vcov_choice = Dict("model" => Vcov.simple(), "robust" => Vcov.robust(), "origin" => Vcov.cluster(:origin))["{{standardErrors}}"]
+function fit_flows(constraint; vcov = vcov_choice, columns = data, distribution = Poisson(), link = LogLink())
+	rhs = Any[]
+	constraint in ("unconstrained", "attraction") && append!(rhs, term.(Symbol.("log_" .* ovars)))
+	constraint in ("unconstrained", "production") && append!(rhs, term.(Symbol.("log_" .* dvars)))
+	append!(rhs, term.(Symbol.(pvars)))
+	push!(rhs, term(:distance))
+	nslopes = length(rhs)
+	constraint == "unconstrained" && push!(rhs, fe(:every))  # one effect shared by every flow: the intercept
+	constraint in ("production", "doubly") && push!(rhs, fe(:origin))
+	constraint in ("attraction", "doubly") && push!(rhs, fe(:destination))
+	# Started from 0: with the default start, 0.1 times distances in km overflows the first prediction
+	m = nlreg(columns, term(:flow) ~ sum(rhs), distribution, link, vcov; save = [:mu, :fe], start = zeros(nslopes))
+	m.converged || println("The fit of the $(constraint) model did not converge")
+	return m
+end
+# What every tab leaves for the Next Steps: coefficients, covariance, fitted flows and fit
+# The parameters of each model: the slopes, and the effects of its constraint, two-way effects sharing one level
+nparams(m, constraint, columns = data) = length(coef(m)) + Dict("unconstrained" => 1, "production" => length(unique(columns.origin)),
+	"attraction" => length(unique(columns.destination)), "doubly" => length(unique(columns.origin)) + length(unique(columns.destination)) - 1)[constraint]
+function summarise(m, constraint)
+	mu = predict(m)
+	y = data.flow
+	k = nparams(m, constraint)  # the origin and destination effects included
+	ll, ll0 = loglikelihood(m), nullloglikelihood(m)
+	return (b = coef(m), V = vcov(m), names = coefnames(m), mu = mu, ll = ll, ll0 = ll0, k = k, deviance = deviance(m),
+		pseudoR2 = 1 - ll / ll0, adj_pseudoR2 = 1 - (ll - k) / ll0, AIC = -2 * ll + 2 * k,
+		SRMSE = sqrt(sum(abs2, y .- mu) / length(y)) / mean(y), SSI = mean(ifelse.(y .+ mu .> 0, 2 .* min.(y, mu) ./ (y .+ mu), 1.0)))
+end
+function show_fit(title, f)
+	se = sqrt.(max.(0.0, diag(f.V)))
+	println("\n", title)
+	println(rpad("", 18), rpad("estimate", 14), rpad("std. error", 14), rpad("z", 10), "p-value")
+	for j in eachindex(f.b)
+		z = f.b[j] / se[j]
+		println(rpad(f.names[j], 18), rpad(round(f.b[j], sigdigits = 6), 14), rpad(round(se[j], sigdigits = 4), 14), rpad(round(z, digits = 2), 10), (p = 2 * ccdf(Normal(), abs(z)); p < 0.0001 ? "<0.0001" : round(p, digits = 4)))
+	end
+	println("pseudo R2 ", round(f.pseudoR2, digits = 4), ", AIC ", round(f.AIC, digits = 1), ", SRMSE ", round(f.SRMSE, digits = 4), ", SSI ", round(f.SSI, digits = 4))
+end
+se_label = Dict("model" => "model-based", "robust" => "robust", "origin" => "clustered by origin")["{{standardErrors}}"]
+
+{{?model=unconstrained}} # The gravity model: the origins' and destinations' variables, in logs, and the distance
+{{?model=unconstrained}} m = fit_flows("unconstrained")
+{{?model=unconstrained}} fit = summarise(m, "unconstrained")
+{{?model=unconstrained}} show_fit("Unconstrained Poisson model, $(decay) distance decay, $(se_label) standard errors", fit)
+{{?model=unconstrained}} println("intercept ", round(first(Tables.columntable(m.augmentdf).fe_every), sigdigits = 6), ", the effect shared by every flow")
+{{?model=production}} # One effect per origin, so that the predicted flows leaving each origin add up to the observed ones
+{{?model=production}} m = fit_flows("production")
+{{?model=production}} fit = summarise(m, "production")
+{{?model=production}} show_fit("Production-constrained Poisson model, $(decay) distance decay, $(se_label) standard errors", fit)
+{{?model=attraction}} # One effect per destination, so that the predicted flows into each destination add up to the observed ones
+{{?model=attraction}} m = fit_flows("attraction")
+{{?model=attraction}} fit = summarise(m, "attraction")
+{{?model=attraction}} show_fit("Attraction-constrained Poisson model, $(decay) distance decay, $(se_label) standard errors", fit)
+{{?model=doubly}} # One effect per origin and per destination: both totals reproduced, and the flows distributed by distance
+{{?model=doubly}} m = fit_flows("doubly")
+{{?model=doubly}} fit = summarise(m, "doubly")
+{{?model=doubly}} show_fit("Doubly constrained Poisson model, $(decay) distance decay, $(se_label) standard errors", fit)
+{{?model=negbin}} using SpatialEconometrics: fit_gravity, NegBinGravity, BilateralFE  # by name: SpatialEconometrics.jl also exports a fe of its own
+{{?model=negbin}} # The doubly constrained model with a negative binomial variance, mu + alpha mu^2, origin and destination effects swept out
+{{?model=negbin}} codes = sort(unique([data.origin; data.destination]))
+{{?model=negbin}} index = Dict(c => k for (k, c) in enumerate(codes))
+{{?model=negbin}} m = fit_gravity(NegBinGravity(), data.flow, hcat((data[Symbol(c)] for c in pvars)..., data.distance), getindex.(Ref(index), data.origin), getindex.(Ref(index), data.destination); fe = BilateralFE(), varnames = [pvars; "distance"])
+{{?model=negbin}} m.converged || println("The negative binomial fit did not converge")
+{{?model=negbin}} k = length(m.coef) + 2 * length(codes) - 1
+{{?model=negbin}} y = data.flow
+{{?model=negbin}} fit = (b = m.coef, V = m.vcov, names = m.coefnames, mu = m.fitted, ll = m.loglik, ll0 = NaN, k = k, deviance = m.deviance, pseudoR2 = m.pseudo_R2, adj_pseudoR2 = NaN, AIC = -2 * m.loglik + 2 * (k + 1), SRMSE = sqrt(sum(abs2, y .- m.fitted) / length(y)) / mean(y), SSI = mean(ifelse.(y .+ m.fitted .> 0, 2 .* min.(y, m.fitted) ./ (y .+ m.fitted), 1.0)))
+{{?model=negbin}} show_fit("Negative binomial model with origin and destination effects, $(decay) distance decay, robust standard errors", fit)
+{{?model=negbin}} println("alpha ", round(m.alpha, sigdigits = 4), ": the variance is mu + alpha mu^2, and 0 would be Poisson")
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-flows"
+label = "Map of the Flows"
+desc = "Each flow as a line from the centroid of its origin to that of its destination, coloured by its size, the largest drawn last"
+code = '''
+largest = sortperm(data.flow)[max(1, nflows - 199):end]  # at most the 200 largest flows, so the map stays readable
+DBInterface.execute(con, "CREATE OR REPLACE TABLE shown AS SELECT origin, destination, flow::DOUBLE AS flow, k FROM (VALUES $(join(("('$(data.origin[r])', '$(data.destination[r])', $(data.flow[r]), $(k))" for (k, r) in enumerate(largest)), ", "))) t(origin, destination, flow, k)")
+fmap = joinpath(mktempdir(), "flows.geojson")
+DBInterface.execute(con, "COPY (SELECT s.origin, s.destination, s.flow, ST_MakeLine(ST_Centroid(a.geom), ST_Centroid(b.geom)) AS geom FROM shown s JOIN places a ON a.area = s.origin JOIN places b ON b.area = s.destination ORDER BY s.k) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+pmap = joinpath(mktempdir(), "places.geojson")
+DBInterface.execute(con, "COPY (SELECT area, geom FROM places) TO '$(pmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(pmap; name = "Places", color = "#bab0ac", opacity = 0.25), Pollis.layer(fmap; name = "Flows", column = "flow")))
+'''
+
+[[actionGroups.actions]]
+id = "map-totals"
+label = "Map of the Outflows and Inflows"
+desc = "Each place coloured by the total of the flows leaving it and, in a second layer, of those arriving: the totals the constrained models reproduce"
+code = '''
+DBInterface.execute(con, "CREATE OR REPLACE TABLE totals AS SELECT p.area, coalesce(o.outflow, 0) AS outflow, coalesce(d.inflow, 0) AS inflow, p.geom FROM places p LEFT JOIN (SELECT origin, sum(flow) AS outflow FROM flows GROUP BY 1) o ON o.origin = p.area LEFT JOIN (SELECT destination, sum(flow) AS inflow FROM flows GROUP BY 1) d ON d.destination = p.area")
+omap, imap = joinpath(mktempdir(), "outflows.geojson"), joinpath(mktempdir(), "inflows.geojson")
+DBInterface.execute(con, "COPY (SELECT area, outflow, geom FROM totals) TO '$(omap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT area, inflow, geom FROM totals) TO '$(imap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(omap; name = "Outflows", column = "outflow", opacity = 0.75), Pollis.layer(imap; name = "Inflows", column = "inflow", opacity = 0.75)))
+'''
+
+[[actionGroups.actions]]
+id = "map-effects"
+label = "Map of the Origin and Destination Effects"
+desc = "The estimated effect of each origin and each destination, the balancing factors of Wilson's models: how much each place sends or attracts once distance is allowed for"
+models = ["production", "attraction", "doubly"]
+code = '''
+saved = Tables.columntable(m.augmentdf)  # the estimated effects, one value per flow
+effect_rows = String[]
+for (side, key) in (("origin", :fe_origin), ("destination", :fe_destination))
+	haskey(saved, key) || continue
+	places_of = side == "origin" ? data.origin : data.destination
+	for c in unique(places_of)
+		r = findfirst(==(c), places_of)
+		push!(effect_rows, "('$(c)', '$(side)', $(saved[key][r]))")
+	end
+end
+DBInterface.execute(con, "CREATE OR REPLACE TABLE effects AS SELECT area, side, effect::DOUBLE AS effect FROM (VALUES $(join(effect_rows, ", "))) t(area, side, effect)")
+layers = []
+for side in ("origin", "destination")
+	path = joinpath(mktempdir(), "$(side).geojson")
+	DBInterface.execute(con, "COPY (SELECT p.area, round(e.effect - avg(e.effect) OVER (), 4) AS effect, p.geom FROM places p JOIN effects e ON e.area = p.area AND e.side = '$(side)') TO '$(path)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	n_side = only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM effects WHERE side = '$(side)'")).n)
+	n_side > 0 && push!(layers, Pollis.layer(path; name = side == "origin" ? "Origin effect" : "Destination effect", column = "effect", opacity = 0.75))
+end
+println("Each effect is measured from the average of its side, since only differences between places are identified")
+display(Pollis.webmap(layers...))
+'''
+
+[[actionGroups.actions]]
+id = "observed-predicted"
+label = "Observed Against Predicted Flows"
+desc = "Each flow's observed size against the tab's prediction, both in logs: points on the diagonal are flows the model gets right"
+code = '''
+using ECharts
+
+positive = (data.flow .> 0) .& (fit.mu .> 0)
+lo, hi = extrema([log.(data.flow[positive]); log.(fit.mu[positive])])
+EChart(ec_width = 600, ec_height = 520, title = [ECharts.Title(text = "Observed Against Predicted Flows, in Logs")],
+	xAxis = [ECharts.Axis(_type = "value", name = "Predicted", min = floor(lo), max = ceil(hi))], yAxis = [ECharts.Axis(_type = "value", name = "Observed", min = floor(lo), max = ceil(hi))],
+	series = [ECharts.XYSeries(name = "Flows", _type = "scatter", data = [[round(log(fit.mu[r]), digits = 4), round(log(data.flow[r]), digits = 4)] for r in findall(positive)]),
+		ECharts.XYSeries(name = "Diagonal", _type = "line", data = [[floor(lo), floor(lo)], [ceil(hi), ceil(hi)]])])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "fit-statistics"
+label = "Goodness of Fit"
+desc = "The tab's pseudo R-squared, adjusted pseudo R-squared, AIC, SRMSE and Sørensen similarity index, with what each measures"
+code = '''
+println(rpad("pseudo R2", 22), round(fit.pseudoR2, digits = 4), "   1 - log-likelihood / that of a constant alone: higher is better")
+isnan(fit.adj_pseudoR2) || println(rpad("adjusted pseudo R2", 22), round(fit.adj_pseudoR2, digits = 4), "   the same, less one for each of the $(fit.k) parameters")
+println(rpad("AIC", 22), round(fit.AIC, digits = 1), "   -2 log-likelihood + 2 parameters: lower is better, for models of the same flows")
+println(rpad("SRMSE", 22), round(fit.SRMSE, digits = 4), "   root mean square error over the mean flow: 0 is a perfect fit")
+println(rpad("Sørensen (SSI)", 22), round(fit.SSI, digits = 4), "   the share each observed and predicted flow have in common: 1 is a perfect fit")
+'''
+
+[[actionGroups.actions]]
+id = "overdispersion"
+label = "Overdispersion Test"
+desc = "Cameron and Trivedi's regression test: does the variance of the flows grow faster than their mean, as a negative binomial model allows?"
+models = ["unconstrained", "production", "attraction", "doubly"]
+code = '''
+# Cameron and Trivedi (1990): regress ((y - mu)^2 - y) / mu on mu, with no intercept; alpha > 0 is overdispersion of the form mu + alpha mu^2
+aux = ((data.flow .- fit.mu) .^ 2 .- data.flow) ./ fit.mu
+alpha = sum(aux .* fit.mu) / sum(abs2, fit.mu)
+e = aux .- alpha .* fit.mu
+se_alpha = sqrt(sum(abs2, e) / (nflows - 1) / sum(abs2, fit.mu))
+z = alpha / se_alpha
+println("alpha ", round(alpha, sigdigits = 4), ", standard error ", round(se_alpha, sigdigits = 4), ", t ", round(z, digits = 2), ", one-sided p-value ", (p = ccdf(Normal(), z); p < 0.0001 ? "<0.0001" : round(p, digits = 4)))
+println(z > 1.645 ? "Overdispersion: the model-based standard errors are too small; choose Robust standard errors, or the Negative Binomial tab" : "No evidence of overdispersion at the 5 per cent level")
+'''
+
+[[actionGroups.actions]]
+id = "residual-moran"
+label = "Moran's I of the Residual Flows"
+desc = "Are the residuals of flows from neighbouring origins, or to neighbouring destinations, alike? Moran's I with origin and with destination neighbours, as LeSage and Pace define them, with pseudo p-values from 499 permutations"
+code = '''
+# Places are neighbours when their outlines touch; flows are origin neighbours when they share a destination and their origins are neighbours, and destination neighbours likewise
+touching = Tables.columntable(DBInterface.execute(con, "SELECT a.area AS a, b.area AS b FROM places a JOIN places b ON a.area <> b.area AND ST_Intersects(a.geom, b.geom)"))
+adjacent = Set(zip(touching.a, touching.b))
+r = (data.flow .- fit.mu) ./ sqrt.(max.(fit.mu, 1e-12))  # Pearson residuals
+rng = Xoshiro(2026)
+for (name, linked) in (("origin neighbours", (p, s) -> data.destination[p] == data.destination[s] && (data.origin[p], data.origin[s]) in adjacent),
+		("destination neighbours", (p, s) -> data.origin[p] == data.origin[s] && (data.destination[p], data.destination[s]) in adjacent))
+	pairs_ = [(p, s) for p in 1:nflows for s in 1:nflows if p != s && linked(p, s)]
+	isempty(pairs_) && (println(name, ": no neighbouring flows"); continue)
+	Wf = sparse(first.(pairs_), last.(pairs_), 1.0, nflows, nflows)
+	Wf = spdiagm(0 => [s > 0 ? 1 / s : 0.0 for s in vec(sum(Wf, dims = 2))]) * Wf  # each row averages the flow's neighbours
+	moran(v) = (z = v .- mean(v); dot(z, Wf * z) / dot(z, z) * nflows / sum(Wf))
+	I0 = moran(r)
+	perm = [moran(shuffle(rng, r)) for _ in 1:499]
+	println(rpad(name, 24), "I ", round(I0, digits = 4), ", expected ", round(-1 / (nflows - 1), digits = 4), ", pseudo p-value ", round((1 + count(>=(I0), perm)) / 500, digits = 3))
+end
+println("Alike residuals of neighbouring flows: dependence the model leaves out, which the spatial interaction models of LeSage and Pace (2008) estimate")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "four-models"
+label = "The Four Constrained Models"
+desc = "Unconstrained, Production, Attraction and Doubly Constrained side by side: the distance coefficient with its standard error, and the fit of each"
+code = '''
+println(rpad("model", 20), rpad("distance", 14), rpad("std. error", 14), rpad("pseudo R2", 12), rpad("AIC", 12), rpad("SRMSE", 10), "SSI")
+for constraint in ("unconstrained", "production", "attraction", "doubly")
+	f = summarise(fit_flows(constraint), constraint)
+	j = findfirst(==("distance"), f.names)
+	println(rpad(constraint, 20), rpad(round(f.b[j], sigdigits = 5), 14), rpad(round(sqrt(f.V[j, j]), sigdigits = 4), 14), rpad(round(f.pseudoR2, digits = 4), 12), rpad(round(f.AIC, digits = 1), 12), rpad(round(f.SRMSE, digits = 4), 10), round(f.SSI, digits = 4))
+end
+println("Each constraint adds what is known about the totals: the fit improves, and the distance coefficient is measured net of more of what the places are")
+'''
+
+[[actionGroups.actions]]
+id = "decay-forms"
+label = "Exponential Against Power Decay"
+desc = "The tab's model with the distance as it is and with its log: which form of distance decay fits the flows better"
+models = ["unconstrained", "production", "attraction", "doubly"]
+code = '''
+any(<=(0), t.distance) && error("Power decay takes the log of the distance: choose Drop for Flows Within a Place")
+println(rpad("decay", 14), rpad("distance", 14), rpad("std. error", 14), rpad("AIC", 12), rpad("SRMSE", 10), "SSI")
+for form in ("exponential", "power")
+	columns = merge(data, (distance = form == "power" ? log.(t.distance) : t.distance,))
+	f = summarise(fit_flows("{{model}}"; columns = columns), "{{model}}")
+	j = findfirst(==("distance"), f.names)
+	println(rpad(form, 14), rpad(round(f.b[j], sigdigits = 5), 14), rpad(round(sqrt(f.V[j, j]), sigdigits = 4), 14), rpad(round(f.AIC, digits = 1), 12), rpad(round(f.SRMSE, digits = 4), 10), round(f.SSI, digits = 4))
+end
+println("Exponential decay: the coefficient per unit of distance; power decay: an elasticity. Lower AIC and SRMSE, higher SSI: the better form")
+'''
+
+[[actionGroups.actions]]
+id = "poisson-negbin"
+label = "Poisson Against Negative Binomial"
+desc = "The doubly constrained model by Poisson and by negative binomial: the distance coefficient, its standard errors and the dispersion"
+code = '''
+using SpatialEconometrics: fit_gravity, NegBinGravity, BilateralFE  # by name: SpatialEconometrics.jl also exports a fe of its own
+codes_ = sort(unique([data.origin; data.destination]))
+index_ = Dict(c => k for (k, c) in enumerate(codes_))
+Xnb = hcat((data[Symbol(c)] for c in pvars)..., data.distance)
+nb = fit_gravity(NegBinGravity(), data.flow, Xnb, getindex.(Ref(index_), data.origin), getindex.(Ref(index_), data.destination); fe = BilateralFE(), varnames = [pvars; "distance"])
+po = fit_flows("doubly"; vcov = Vcov.simple())
+pr = fit_flows("doubly"; vcov = Vcov.robust())
+j = findfirst(==("distance"), coefnames(po))
+println(rpad("model", 34), rpad("distance", 14), "std. error")
+println(rpad("Poisson, model-based", 34), rpad(round(coef(po)[j], sigdigits = 5), 14), round(sqrt(vcov(po)[j, j]), sigdigits = 4))
+println(rpad("Poisson, robust", 34), rpad(round(coef(pr)[j], sigdigits = 5), 14), round(sqrt(vcov(pr)[j, j]), sigdigits = 4))
+println(rpad("negative binomial, robust", 34), rpad(round(nb.coef[end], sigdigits = 5), 14), round(sqrt(nb.vcov[end, end]), sigdigits = 4))
+println("Negative binomial alpha ", round(nb.alpha, sigdigits = 4), ": the variance mu + alpha mu^2, 0 being Poisson")
+'''
+
+[[actionGroups.actions]]
+id = "standard-errors"
+label = "Standard Errors Side by Side"
+desc = "The tab's coefficients with model-based, robust and origin- and destination-clustered standard errors"
+models = ["unconstrained", "production", "attraction", "doubly"]
+code = '''
+kinds = ["model-based" => Vcov.simple(), "robust" => Vcov.robust(), "clustered by origin" => Vcov.cluster(:origin), "clustered by destination" => Vcov.cluster(:destination)]
+fits_ = [name => fit_flows("{{model}}"; vcov = v) for (name, v) in kinds]
+println(rpad("standard errors", 28), join((rpad(n, 16) for n in coefnames(last(first(fits_))))))
+println(rpad("estimate", 28), join((rpad(round(b_, sigdigits = 5), 16) for b_ in coef(last(first(fits_))))))
+foreach(((name, mk),) -> println(rpad(name, 28), join((rpad(round(sqrt(max(0.0, v_)), sigdigits = 4), 16) for v_ in diag(vcov(mk))))), fits_)
+println("Model-based standard errors assume a variance equal to the mean; with overdispersed flows the others are larger")
+'''
+
+[[actionGroups.actions]]
+id = "loglinear-ppml"
+label = "Log-Linear Least Squares Against Poisson"
+desc = "The tab's model by least squares on the log of the positive flows and by Poisson, as Santos Silva and Tenreyro compare them"
+models = ["unconstrained", "production", "attraction", "doubly"]
+code = '''
+positive = data.flow .> 0
+logs = (; (k => (k == :flow ? log.(v[positive]) : v[positive]) for (k, v) in pairs(data))...)  # the positive flows, the flow in logs
+ols = fit_flows("{{model}}"; columns = logs, vcov = Vcov.robust(), distribution = Normal(), link = IdentityLink())
+ppml = fit_flows("{{model}}"; vcov = Vcov.robust())
+println(rpad("", 18), rpad("least squares", 16), rpad("std. error", 14), rpad("Poisson", 16), "std. error")
+for (j, name) in enumerate(coefnames(ppml))
+	jo = findfirst(==(name), coefnames(ols))
+	println(rpad(name, 18), rpad(round(coef(ols)[jo], sigdigits = 5), 16), rpad(round(sqrt(vcov(ols)[jo, jo]), sigdigits = 4), 14), rpad(round(coef(ppml)[j], sigdigits = 5), 16), round(sqrt(vcov(ppml)[j, j]), sigdigits = 4))
+end
+println(count(!, positive), " zero flows dropped by least squares on logs. With heteroskedastic flows, least squares on logs is inconsistent, and Poisson is not: see Santos Silva and Tenreyro (2006)")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "decay-numbers"
+label = "Distance Decay in Plain Numbers"
+desc = "What the distance coefficient means for the flows: the change for one more unit of distance, or for 10 per cent more, and the distance over which the flows halve"
+code = '''
+j = findfirst(==("distance"), fit.names)
+beta = fit.b[j]
+if decay == "exponential"
+	println("One more unit of distance changes the flows by ", round(100 * (exp(beta) - 1), digits = 3), " per cent; 100 more, by ", round(100 * (exp(100 * beta) - 1), digits = 1), " per cent")
+	beta < 0 && println("The flows halve over ", round(log(0.5) / beta, digits = 1), " units of distance")
+else
+	println("10 per cent more distance changes the flows by ", round(100 * (1.1^beta - 1), digits = 2), " per cent: an elasticity of ", round(beta, digits = 4))
+	beta < 0 && println("The flows halve when the distance is multiplied by ", round(0.5^(1 / beta), digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "shorter-distances"
+label = "Flows After Distances Shrink"
+desc = "The predicted flows if every distance were 10 per cent shorter, keeping the totals each constraint fixes: which pairs gain and which lose"
+models = ["unconstrained", "production", "attraction", "doubly"]
+code = '''
+j = findfirst(==("distance"), fit.names)
+shift = decay == "power" ? log(0.9) .* ones(nflows) : -0.1 .* t.distance  # the change in the distance term
+new = fit.mu .* exp.(fit.b[j] .* shift)
+# Restore the totals the constraint keeps, as Wilson's balancing factors do: rows for the origins, columns for the destinations
+by_origin, by_destination = [findall(==(c), data.origin) for c in unique(data.origin)], [findall(==(c), data.destination) for c in unique(data.destination)]
+for _ in 1:500
+	"{{model}}" in ("production", "doubly") && foreach(rs -> new[rs] .*= sum(fit.mu[rs]) / sum(new[rs]), by_origin)
+	"{{model}}" in ("attraction", "doubly") && foreach(rs -> new[rs] .*= sum(fit.mu[rs]) / sum(new[rs]), by_destination)
+	"{{model}}" == "doubly" || break
+end
+change = 100 .* (new ./ fit.mu .- 1)
+order = sortperm(change)
+println(rpad("origin", 12), rpad("destination", 14), rpad("distance", 12), rpad("predicted", 12), rpad("after", 12), "change, %")
+foreach(r -> println(rpad(data.origin[r], 12), rpad(data.destination[r], 14), rpad(round(t.distance[r], digits = 1), 12), rpad(round(fit.mu[r], digits = 1), 12), rpad(round(new[r], digits = 1), 12), round(change[r], digits = 2)), [order[1:min(5, end)]; order[max(end - 4, 1):end]])
+println("Total predicted flow: ", round(sum(fit.mu), digits = 1), " before, ", round(sum(new), digits = 1), " after")
+decay == "power" && "{{model}}" != "unconstrained" && println("With power decay, the same 10 per cent off every distance multiplies every flow by the same factor, which the constraints take back: the flows are unchanged")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-spint"
+label = "Austrian Migration: spint"
+desc = "The four constrained models of Oshan's primer on PySAL's spint, on the migration between Austria's regions in 2006: coefficients and fit against the primer, standard errors, deviance and log-likelihood against spint's tests"
+code = '''
+a = dataset("austria_migration")
+keep = a.origin .!= a.destination  # the flows within a region left out, as in the primer
+austria = (flow = Float64.(a.flow[keep]), origin = a.origin[keep], destination = a.destination[keep], every = fill("all", count(keep)), distance = a.dij[keep], log_oi = log.(a.oi[keep]), log_dj = log.(a.dj[keep]))
+function spint_fit(constraint, columns)
+	rhs = Any[]
+	constraint in ("unconstrained", "attraction") && push!(rhs, term(:log_oi))
+	constraint in ("unconstrained", "production") && push!(rhs, term(:log_dj))
+	push!(rhs, term(:distance))
+	nslopes = length(rhs)
+	constraint == "unconstrained" && push!(rhs, fe(:every))  # the intercept
+	constraint in ("production", "doubly") && push!(rhs, fe(:origin))
+	constraint in ("attraction", "doubly") && push!(rhs, fe(:destination))
+	m_ = nlreg(columns, term(:flow) ~ sum(rhs), Poisson(), LogLink(), Vcov.simple(); save = [:mu, :fe], start = zeros(nslopes))
+	mu, y_ = predict(m_), columns.flow
+	k_, ll = nparams(m_, constraint, columns), loglikelihood(m_)
+	if constraint == "unconstrained"  # the intercept with the slopes, and their model-based standard errors from the Poisson information matrix
+		b_ = [first(Tables.columntable(m_.augmentdf).fe_every); coef(m_)]
+		Xf = hcat(ones(length(mu)), columns.log_oi, columns.log_dj, columns.distance)
+		se_ = sqrt.(diag(inv(transpose(Xf) * (mu .* Xf))))
+	else
+		b_, se_ = coef(m_), sqrt.(diag(vcov(m_)))
+	end
+	return (b = b_, se = se_, ll = ll, deviance = deviance(m_), pseudoR2 = 1 - ll / nullloglikelihood(m_), adj = 1 - (ll - k_) / nullloglikelihood(m_), AIC = -2 * ll + 2 * k_,
+		SRMSE = sqrt(sum(abs2, y_ .- mu) / length(y_)) / mean(y_), SSI = mean(2 .* min.(y_, mu) ./ (y_ .+ mu)))
+end
+function compare(title, rows)
+	println("\n", title)
+	println(rpad("", 34), rpad("Julia", 20), rpad("published", 20), "difference")
+	foreach(((what, julia, published),) -> println(rpad(what, 34), rpad(round(julia, sigdigits = 10), 20), rpad(published, 20), round(julia - published, sigdigits = 2)), rows)
+end
+# Oshan (2016), the primer: exponential distance decay, with the totals of the dataset
+u, p, at, d = (spint_fit(c, austria) for c in ("unconstrained", "production", "attraction", "doubly"))
+compare("Oshan's primer: coefficients", [
+	("unconstrained, intercept", u.b[1], -8.01822841), ("unconstrained, log oi", u.b[2], 0.869316127), ("unconstrained, log dj", u.b[3], 0.891445153), ("unconstrained, distance", u.b[4], -0.0062293837),
+	("production, log dj", p.b[1], 0.90285448), ("production, distance", p.b[2], -0.0072617),
+	("attraction, log oi", at.b[1], 0.90037216), ("attraction, distance", at.b[2], -0.00695034),
+	("doubly, distance", d.b[1], -0.00791533)])
+compare("Oshan's primer: fit", [
+	("unconstrained, pseudo R2", u.pseudoR2, 0.885764), ("unconstrained, adjusted", u.adj, 0.885718), ("unconstrained, AIC", u.AIC, 20122.074349), ("unconstrained, SRMSE", u.SRMSE, 0.607776), ("unconstrained, SSI", u.SSI, 0.727358),
+	("production, pseudo R2", p.pseudoR2, 0.910156), ("production, adjusted", p.adj, 0.910031), ("production, AIC", p.AIC, 15841.253799), ("production, SRMSE", p.SRMSE, 0.464520), ("production, SSI", p.SSI, 0.740914),
+	("attraction, pseudo R2", at.pseudoR2, 0.909355), ("attraction, adjusted", at.adj, 0.909230), ("attraction, AIC", at.AIC, 15982.313101), ("attraction, SRMSE", at.SRMSE, 0.584048), ("attraction, SSI", at.SSI, 0.752155),
+	("doubly, pseudo R2", d.pseudoR2, 0.943540), ("doubly, adjusted", d.adj, 0.943335), ("doubly, AIC", d.AIC, 9977.159141), ("doubly, SRMSE", d.SRMSE, 0.379286), ("doubly, SSI", d.SSI, 0.811852)])
+# spint's tests: the same flows and distances, with origin and destination totals of their own for the models that use them
+oi_test = Dict("AT11" => 4320, "AT12" => 21478, "AT13" => 30500, "AT21" => 5012, "AT22" => 8811, "AT31" => 11349, "AT32" => 6021, "AT33" => 4477, "AT34" => 2275)
+dj_test = Dict("AT11" => 5452, "AT12" => 27169, "AT13" => 28710, "AT21" => 4354, "AT22" => 9069, "AT31" => 8577, "AT32" => 4963, "AT33" => 3923, "AT34" => 2026)
+tested = merge(austria, (log_oi = log.(getindex.(Ref(oi_test), austria.origin)), log_dj = log.(getindex.(Ref(dj_test), austria.destination))))
+ut, pt, att = (spint_fit(c, tested) for c in ("unconstrained", "production", "attraction"))
+compare("spint's tests: coefficients and standard errors", [
+	("unconstrained, intercept", ut.b[1], -7.95447436), ("unconstrained, log oi", ut.b[2], 0.863867812), ("unconstrained, log dj", ut.b[3], 0.880474585), ("unconstrained, distance", ut.b[4], -0.00620544765),
+	("se unconstrained, intercept", ut.se[1], 0.0755583451), ("se unconstrained, log oi", ut.se[2], 0.0051683844), ("se unconstrained, log dj", ut.se[3], 0.00478122141), ("se unconstrained, distance", ut.se[4], 5.18488192e-5),
+	("production, log dj", pt.b[1], 0.89278717), ("production, distance", pt.b[2], -0.00727113), ("se production, log dj", pt.se[1], 0.00466889578), ("se production, distance", pt.se[2], 5.26601057e-5),
+	("attraction, log oi", att.b[1], 0.89235874), ("attraction, distance", att.b[2], -0.00693755), ("se attraction, log oi", att.se[1], 0.00514257895), ("se attraction, distance", att.se[2], 5.12438958e-5),
+	("doubly, distance", d.b[1], -0.00791533), ("se doubly, distance", d.se[1], 5.06213514e-5)])
+compare("spint's tests: deviance and log-likelihood", [
+	("unconstrained, deviance", ut.deviance, 19806.408696637576), ("unconstrained, log-likelihood", ut.ll, -10193.542694454361),
+	("production, deviance", pt.deviance, 15279.974241770311), ("production, log-likelihood", pt.ll, -7930.3255090342445),
+	("attraction, deviance", att.deviance, 15673.222613627502), ("attraction, log-likelihood", att.ll, -8126.9496609469106),
+	("doubly, deviance", d.deviance, 9360.482092561484), ("doubly, log-likelihood", d.ll, -4970.5795707251054)])
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-results"
+label = "Save the Results"
+desc = "Write the coefficients with their standard errors to spatial-interaction-coefficients.csv, and every flow with its prediction and residual to spatial-interaction-flows.csv, in the folder above"
+code = '''
+out_coef, out_flows = joinpath(folder, "spatial-interaction-coefficients.csv"), joinpath(folder, "spatial-interaction-flows.csv")
+if isfile(out_coef) || isfile(out_flows)
+	println(out_coef, " or ", out_flows, " is there already: rename or move it first")
+else
+	open(out_coef, "w") do io
+		println(io, "coefficient,estimate,std_error")
+		foreach(j -> println(io, fit.names[j], ",", fit.b[j], ",", sqrt(max(0.0, fit.V[j, j]))), eachindex(fit.b))
+	end
+	open(out_flows, "w") do io
+		println(io, "origin,destination,distance,flow,predicted,residual")
+		foreach(r -> println(io, data.origin[r], ",", data.destination[r], ",", t.distance[r], ",", data.flow[r], ",", fit.mu[r], ",", data.flow[r] - fit.mu[r]), 1:nflows)
+	end
+	println("Wrote ", out_coef, " and ", out_flows)
+end
+'''

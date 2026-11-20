@@ -21,6 +21,7 @@ Installing the toolbox adds the submenu \menupath{Extend \gt Spatial Econometric
 Spatial Lag and Error Models & An area's outcome depends on its neighbours' outcomes, their characteristics or shocks they share, in one cross-section. \\
 Geographically Weighted Regression & A relationship seems to change from one part of the map to another. \\
 Spatial Discrete Choice & The outcome is a yes or no, or an ordered choice, that depends on the neighbours' choices. \\
+Spatial Interaction Models & The data are flows between places, such as migration, commuting or trade. \\
 Spatial Panel Data & The same areas are observed over several periods. \\
 Spatio-Temporal Forecasting & You want forecasts of areas observed over many periods, from their own past and their neighbours'. \\
 Spatial Causal Inference & You want the effect of a policy on the areas under it and on the areas around them. \\
@@ -55,6 +56,9 @@ Coefficients that vary over the map, estimated at each area from its neighbours 
 
 \nmsection{Spatial Discrete Choice}
 Binary and ordered choices that depend on the neighbours' choices. The spatial lag probit is fitted by linearised GMM (\nmcite{klier2008}{Klier and McMillen 2008}), fast on many areas, or by Gibbs sampling (\nmcite{albert1993}{Albert and Chib 1993}; \nmcite{lesage2009}{LeSage and Pace 2009}), which gives the whole posterior. Ordered Probit handles choices with more than two ranked levels, and Logit With a Filter replaces the spatial lag with Moran eigenvectors. As in the spatial lag model, the effect on the probability has a direct and an indirect part. The Replicate step sets the estimates beside \nmcite{lesage2011}{LeSage, Pace, Lam, Campanella and Liu (2011)} on the reopening of New Orleans businesses after Hurricane Katrina.
+
+\nmsection{Spatial Interaction Models}
+Flows between places on what each origin sends, what each destination attracts and the distance between them. The four tabs are the unconstrained, production-, attraction- and doubly constrained models of \nmcite{wilson1971}{Wilson (1971)}, fitted as Poisson regressions (\nmcite{flowerdew1982}{Flowerdew and Aitkin 1982}; \nmcite{santossilva2006}{Santos Silva and Tenreyro 2006}) whose origin and destination effects reproduce the known totals; a fifth adds a negative binomial variance. The actions map the flows and the effects, test for overdispersion and for dependence between neighbouring flows, compare the constraints, the forms of distance decay and the standard errors, and predict the flows after distances shrink. The example is the migration between the regions of Austria, and the Replicate step sets the four models beside \nmcite{oshan2016}{Oshan (2016)}'s primer on PySAL's spint.
 
 \nmsection{Spatial Panel Data}
 SAR, SEM and SDM with fixed effects of the areas, of the periods or both, removed by the transformation of \nmcite{lee2010}{Lee and Yu (2010)} or by demeaning (\nmcite{elhorst2014}{Elhorst 2014}). The Dynamic Panel adds the outcome's own lag and its neighbours', corrected for the bias the fixed effects cause (\nmcite{yu2008}{Yu, de Jong and Lee 2008}), and its effects come in the short and the long run. The actions run the panel LM tests, compute the standard errors of \nmcite{driscoll1998}{Driscoll and Kraay (1998)}, test for a structural break, and compare the specifications. The Replicate step sets the spatial error estimates beside those of \nmcite{millo2012}{Millo and Piras (2012)} on Munnell's production function for the US states.
@@ -109,6 +113,7 @@ Least squares, with the coefficients' standard errors corrected for correlation 
 \nmref{driscoll1998}{Driscoll, J. C. and Kraay, A. C. (1998). Consistent covariance matrix estimation with spatially dependent panel data. \emph{The Review of Economics and Statistics} 80(4), 549--560. \nmdoi{10.1162/003465398557825}}
 \nmref{dubin1992}{Dubin, R. A. (1992). Spatial autocorrelation and neighborhood quality. \emph{Regional Science and Urban Economics} 22(3), 433--452. \nmdoi{10.1016/0166-0462(92)90038-3}}
 \nmref{elhorst2014}{Elhorst, J. P. (2014). \emph{Spatial Econometrics: From Cross-Sectional Data to Spatial Panels}. Springer Berlin Heidelberg. \nmdoi{10.1007/978-3-642-40340-8}}
+\nmref{flowerdew1982}{Flowerdew, R. and Aitkin, M. (1982). A method of fitting the gravity model based on the Poisson distribution. \emph{Journal of Regional Science} 22(2), 191--202. \nmdoi{10.1111/j.1467-9787.1982.tb00744.x}}
 \nmref{fotheringham2017}{Fotheringham, A. S., Yang, W. and Kang, W. (2017). Multiscale geographically weighted regression (MGWR). \emph{Annals of the American Association of Geographers} 107(6), 1247--1265. \nmdoi{10.1080/24694452.2017.1352480}}
 \nmref{goldsmith2020}{Goldsmith-Pinkham, P., Sorkin, I. and Swift, H. (2020). Bartik instruments: what, when, why, and how. \emph{American Economic Review} 110(8), 2586--2624. \nmdoi{10.1257/aer.20181047}}
 \nmref{hurvich1998}{Hurvich, C. M., Simonoff, J. S. and Tsai, C.-L. (1998). Smoothing parameter selection in nonparametric regression using an improved Akaike information criterion. \emph{Journal of the Royal Statistical Society Series B} 60(2), 271--293. \nmdoi{10.1111/1467-9868.00125}}
@@ -118,10 +123,13 @@ Least squares, with the coefficients' standard errors corrected for correlation 
 \nmref{lesage2011}{LeSage, J. P., Pace, R. K., Lam, N., Campanella, R. and Liu, X. (2011). New Orleans business recovery in the aftermath of Hurricane Katrina. \emph{Journal of the Royal Statistical Society Series A} 174(4), 1007--1027. \nmdoi{10.1111/j.1467-985X.2011.00712.x}}
 \nmref{millo2012}{Millo, G. and Piras, G. (2012). splm: spatial panel data models in R. \emph{Journal of Statistical Software} 47(1), 1--38. \nmdoi{10.18637/jss.v047.i01}}
 \nmref{newey1987}{Newey, W. K. and West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. \emph{Econometrica} 55(3), 703--708. \nmdoi{10.2307/1913610}}
+\nmref{oshan2016}{Oshan, T. M. (2016). A primer for working with the Spatial Interaction modeling (SpInt) module in the Python Spatial Analysis Library (PySAL). \emph{REGION} 3(2), R11--R23. \nmdoi{10.18335/region.v3i2.175}}
 \nmref{oshan2019}{Oshan, T. M., Li, Z., Kang, W., Wolf, L. J. and Fotheringham, A. S. (2019). mgwr: a Python implementation of multiscale geographically weighted regression for investigating process spatial heterogeneity and scale. \emph{ISPRS International Journal of Geo-Information} 8(6), 269. \nmdoi{10.3390/ijgi8060269}}
 \nmref{pesaran2015}{Pesaran, M. H. (2015). Testing weak cross-sectional dependence in large panels. \emph{Econometric Reviews} 34(6--10), 1089--1117. \nmdoi{10.1080/07474938.2014.956623}}
 \nmref{petersen2009}{Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: comparing approaches. \emph{The Review of Financial Studies} 22(1), 435--480. \nmdoi{10.1093/rfs/hhn053}}
 \nmref{pfeifer1980}{Pfeifer, P. E. and Deutsch, S. J. (1980). A three-stage iterative procedure for space-time modeling. \emph{Technometrics} 22(1), 35--47. \nmdoi{10.2307/1268381}}
+\nmref{santossilva2006}{Santos Silva, J. M. C. and Tenreyro, S. (2006). The log of gravity. \emph{The Review of Economics and Statistics} 88(4), 641--658. \nmdoi{10.1162/rest.88.4.641}}
+\nmref{wilson1971}{Wilson, A. G. (1971). A family of spatial interaction models, and associated developments. \emph{Environment and Planning A} 3(1), 1--32. \nmdoi{10.1068/a030001}}
 \nmref{yu2008}{Yu, J., de Jong, R. and Lee, L.-f. (2008). Quasi-maximum likelihood estimators for spatial dynamic panel data with fixed effects when both n and T are large. \emph{Journal of Econometrics} 146(1), 118--134. \nmdoi{10.1016/j.jeconom.2008.08.002}}
 }
 

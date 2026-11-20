@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-spatial-econometrics",
   "displayName": "Spatial Econometrics Toolbox",
-  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, spatial discrete choice, spatial panel data, spatio-temporal forecasting, spatial causal inference, shift-share designs, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
-  "version": "0.1.11",
+  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, spatial discrete choice, spatial interaction models of flows, spatial panel data, spatio-temporal forecasting, spatial causal inference, shift-share designs, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
+  "version": "0.1.12",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -57,6 +57,16 @@
             "order": 3,
             "data": "panels/spchoice.toml",
             "defaultModel": "probitgmm",
+            "decisionFirstColumn": "Model"
+          },
+          {
+            "id": "gravity",
+            "command": "pollis.spatialEconometrics.gravity",
+            "title": "Spatial Interaction Models",
+            "group": "1_crossSection",
+            "order": 4,
+            "data": "panels/gravity.toml",
+            "defaultModel": "doubly",
             "decisionFirstColumn": "Model"
           },
           {
