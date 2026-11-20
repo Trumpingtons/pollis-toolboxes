@@ -558,7 +558,7 @@ using ECharts
 
 t = query("SELECT CAST(acquired AS VARCHAR) AS day, coalesce(cloud, 0) AS cloud, coalesce(platform, '') AS platform FROM scenes ORDER BY acquired")
 EChart(ec_width = 760, ec_height = 380, title = [ECharts.Title(text = "Scenes of $(collection)")], tooltip = ECharts.Tooltip(),
-	xAxis = [ECharts.Axis(_type = "time", name = "Date")], yAxis = [ECharts.Axis(_type = "value", name = all(ismissing, s.cloud) ? "" : "Cloud (%)", min = 0)],
+	legend = ECharts.Legend(), xAxis = [ECharts.Axis(_type = "time", name = "Date", axisLabel = ECharts.AxisLabel(formatter = ECharts.JSON.JSONText("""{"month": "{MMM}", "day": "{d}"}""")))], yAxis = [ECharts.Axis(_type = "value", name = all(ismissing, s.cloud) ? "" : "Cloud (%)", min = 0)],
 	series = [ECharts.XYSeries(name = p, _type = "scatter", data = [[t.day[i], t.cloud[i]] for i in eachindex(t.day) if t.platform[i] == p]) for p in unique(t.platform)])
 '''
 

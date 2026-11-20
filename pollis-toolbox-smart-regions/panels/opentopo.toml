@@ -1,0 +1,738 @@
+# OpenTopography: the point cloud and raster datasets of an area in the catalogue of OpenTopography, and the elevation of an
+# area from a global elevation model or from the 3D Elevation Program of the U.S. Geological Survey, downloaded with an API key
+
+[meta]
+title = "OpenTopography"
+viewType = "pollis.opentopo"
+defaultModel = "find"
+decisionFirstColumn = "Tab"
+
+# The user's OpenTopography API key, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "OpenTopography"
+noun = "API key"
+
+[[apiKey.fields]]
+name = "opentopographyKey"
+envVar = "OPENTOPOGRAPHY_API_KEY"
+prompt = "OpenTopography API key, from myOpenTopo"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "opentopo/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, what each downloads, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "opentopo/overview.md"
+bundled = true
+description = "OpenTopography, its API, and the elevation data it serves"
+
+[[wikis]]
+name = "Authentication"
+file = "opentopo/authentication.md"
+bundled = true
+description = "The OpenTopography API key, where Pollis keeps it, and running the code outside the REPL"
+
+[[wikis]]
+name = "Diagnostics"
+file = "opentopo/diagnostics.md"
+bundled = true
+description = "A refused key, an area too large, no 3DEP data, cells without data"
+
+[[wikis]]
+name = "Decision Guide"
+file = "opentopo/decision-guide.md"
+bundled = true
+description = "Which tab, which elevation model and which 3DEP resolution"
+
+[[wikis]]
+separator = true
+label = "API and Data"
+
+[[wikis]]
+name = "The OpenTopography Catalogue"
+file = "opentopo/catalogue.md"
+bundled = true
+
+[[wikis]]
+name = "The Global Elevation Models"
+file = "opentopo/global-dems.md"
+bundled = true
+
+[[wikis]]
+name = "USGS 3D Elevation Program"
+file = "opentopo/usgs-3dep.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Documentation and Data"
+
+[[references]]
+key = "Ope2026a"
+
+[[references]]
+key = "KCNPC...2011a"
+
+[[references]]
+key = "ESAA2022a"
+
+[[references]]
+key = "EROSC2017a"
+
+[[references]]
+key = "HPKB2020a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "FRCCD...2007a"
+
+[[references]]
+key = "CBABG...2016a"
+
+[[references]]
+key = "RMGWB...2017a"
+
+[[references]]
+key = "TIONM...2014a"
+
+[[references]]
+key = "HGLRP...2025a"
+
+[[references]]
+key = "TSSOB...2019a"
+
+[[references]]
+key = "MJADF...2018a"
+
+[[references]]
+key = "SCHJL...2014a"
+
+[[references]]
+key = "SM2022a"
+
+[[faq]]
+question = "What do I need to use the panel?"
+answer = '''
+An OpenTopography API key, free from myOpenTopo on the OpenTopography portal, for Global DEM and USGS 3DEP; it is set with the key on the Powered by line. Find Datasets searches the catalogue without a key.
+'''
+wiki = "Authentication"
+
+[[faq]]
+question = "Which global elevation model should I choose?"
+answer = '''
+The Copernicus DEM at 30 m is the default: a surface model from the TanDEM-X mission, with buildings and vegetation. SRTM and NASADEM come from the radar mission of February 2000, ALOS World 3D from optical stereo images, and GEDTM30 and the EU DTM estimate the bare ground. SRTM15+ and GEBCO also cover the sea floor, at about 500 m.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why does USGS 3DEP return no data?"
+answer = '''
+The 3D Elevation Program covers the United States only: for an area elsewhere, OpenTopography answers with no content, and the tab stops with a message. Its 1 m data are open to academic users only.
+'''
+wiki = "USGS 3D Elevation Program"
+
+[[faq]]
+question = "How large an area can I download?"
+answer = '''
+OpenTopography limits each request by area: 450,000 km² for most global models, 4,050,000 km² for the 90 m models, 125,000,000 km² for SRTM15+ and GEBCO; 225,000 km² for 3DEP at 30 m, 25,000 km² at 10 m and 250 km² at 1 m. The tabs stop before the request when the Area is larger.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Does Find Datasets download point clouds?"
+answer = '''
+No: Find Datasets lists the point cloud and raster datasets over the Area, with their dates, sources and outlines, and the datasets of other catalogues, such as the USGS 3D Elevation Program and NOAA, with their identifiers. The catalogue does not give their files; LAS and LAZ files downloaded elsewhere are read with the Point Cloud Files panel.
+'''
+wiki = "The OpenTopography Catalogue"
+hidden = true
+
+[[faq]]
+question = "What is the difference between a surface model and a terrain model?"
+answer = '''
+A digital surface model gives the height of the surface that the instrument sees, with buildings and the canopy of forests; a digital terrain model gives the height of the bare ground. The Copernicus DEM is a surface model; GEDTM30 and the EU DTM are terrain models.
+'''
+wiki = "The Global Elevation Models"
+hidden = true
+
+[[models]]
+id = "find"
+label = "Find Datasets"
+
+[[models]]
+id = "globaldem"
+label = "Global DEM"
+
+[[models]]
+id = "usgsdem"
+label = "USGS 3DEP"
+
+[[bullets]]
+text = "Find Datasets"
+detail = "Searches the catalogue of OpenTopography for the point cloud and raster datasets over an area, with those of the USGS 3D Elevation Program and NOAA, without a key"
+
+[[bullets]]
+text = "Global DEM"
+detail = "Downloads the elevation of the area from a global model: the Copernicus DEM, SRTM, NASADEM, ALOS World 3D, GEDTM30, the EU DTM, SRTM15+ or GEBCO"
+
+[[bullets]]
+text = "USGS 3DEP"
+detail = "Downloads the elevation of an area of the United States from the 3D Elevation Program, at 30 m, 10 m or 1 m"
+
+[[decisionRows]]
+task = "Find Datasets"
+context = "What is there"
+purpose = "List the lidar surveys and elevation models over an area, with their dates and outlines"
+
+[[decisionRows]]
+task = "Global DEM"
+context = "Anywhere"
+purpose = "The elevation of any area on Earth, from a choice of models at 30 m to 500 m"
+
+[[decisionRows]]
+task = "USGS 3DEP"
+context = "United States"
+purpose = "Finer elevation of an area of the United States, from lidar where it has been flown"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the elevation is kept once downloaded, in a folder for each model, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "area"
+label = "Area (W, S, E, N)"
+tooltip = "The area as west, south, east and north, in degrees of longitude and latitude: by default, part of Silicon Valley."
+default = "-122.20, 37.30, -122.00, 37.45"
+newRow = true
+
+[[inputs]]
+id = "product"
+label = "Data"
+kind = "select"
+default = "all"
+models = ["find"]
+newRow = true
+
+[[inputs.options]]
+value = "all"
+label = "Point Clouds and Rasters"
+
+[[inputs.options]]
+value = "PointCloud"
+label = "Point Clouds"
+
+[[inputs.options]]
+value = "Raster"
+label = "Rasters"
+
+[[inputs]]
+id = "federated"
+label = "Other Catalogues"
+kind = "select"
+default = "true"
+tooltip = "Whether to list the datasets of other catalogues that OpenTopography searches, such as the USGS 3D Elevation Program and NOAA."
+models = ["find"]
+
+[[inputs.options]]
+value = "true"
+label = "Included"
+
+[[inputs.options]]
+value = "false"
+label = "Left Out"
+
+[[inputs]]
+id = "demtype"
+label = "Elevation Model"
+kind = "select"
+default = "COP30"
+models = ["globaldem"]
+newRow = true
+
+[[inputs.options]]
+value = "COP30"
+label = "Copernicus DEM, 30 m"
+
+[[inputs.options]]
+value = "COP90"
+label = "Copernicus DEM, 90 m"
+
+[[inputs.options]]
+value = "SRTMGL1"
+label = "SRTM, 30 m"
+
+[[inputs.options]]
+value = "SRTMGL3"
+label = "SRTM, 90 m"
+
+[[inputs.options]]
+value = "NASADEM"
+label = "NASADEM, 30 m"
+
+[[inputs.options]]
+value = "AW3D30"
+label = "ALOS World 3D, 30 m"
+
+[[inputs.options]]
+value = "GEDTM30"
+label = "GEDTM30, 30 m"
+
+[[inputs.options]]
+value = "EU_DTM"
+label = "EU DTM, 30 m"
+
+[[inputs.options]]
+value = "SRTM15Plus"
+label = "SRTM15+, 500 m"
+
+[[inputs.options]]
+value = "GEBCOIceTopo"
+label = "GEBCO, 500 m"
+
+[[inputs]]
+id = "resolution"
+label = "Resolution"
+kind = "select"
+default = "USGS10m"
+models = ["usgsdem"]
+newRow = true
+
+[[inputs.options]]
+value = "USGS30m"
+label = "1 Arc-Second, 30 m"
+
+[[inputs.options]]
+value = "USGS10m"
+label = "1/3 Arc-Second, 10 m"
+
+[[inputs.options]]
+value = "USGS1m"
+label = "1 m (Academic Users)"
+
+[[inputs]]
+id = "otherModel"
+label = "Compare With"
+kind = "select"
+default = "SRTMGL1"
+tooltip = "The global model that Two Models Side by Side sets beside the elevation downloaded."
+models = ["globaldem", "usgsdem"]
+
+[[inputs.options]]
+value = "SRTMGL1"
+label = "SRTM, 30 m"
+
+[[inputs.options]]
+value = "COP30"
+label = "Copernicus DEM, 30 m"
+
+[[inputs.options]]
+value = "NASADEM"
+label = "NASADEM, 30 m"
+
+[[inputs.options]]
+value = "AW3D30"
+label = "ALOS World 3D, 30 m"
+
+[[inputs.options]]
+value = "GEDTM30"
+label = "GEDTM30, 30 m"
+
+[[codeBranches]]
+model = "find"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+product = "{{product}}"
+params = ["minx" => west, "miny" => south, "maxx" => east, "maxy" => north, "detail" => true, "outputFormat" => "json", "include_federated" => {{federated}}]
+product == "all" || push!(params, "productFormat" => product)
+found = Downloads.download("https://portal.opentopography.org/API/otCatalog?" * join(["$(k)=$(v)" for (k, v) in params], "&"), tempname() * ".json")  # the catalogue needs no key
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE datasets AS
+SELECT d->>'name' AS name, d->'identifier'->>'value' AS id,
+	CASE d->'identifier'->>'propertyID' WHEN 'opentopoID' THEN 'OpenTopography' WHEN 'USGS_3DEP_ID' THEN 'USGS 3DEP' WHEN 'NOAAID' THEN 'NOAA' ELSE d->'identifier'->>'propertyID' END AS source,
+	CASE WHEN d->>'fileFormat' ILIKE 'point%' THEN 'Point cloud' ELSE 'Raster' END AS format, d->>'alternateName' AS short_name,
+	TRY_CAST(split_part(d->>'temporalCoverage', ' / ', 1) AS DATE) AS first_day, TRY_CAST(nullif(split_part(d->>'temporalCoverage', ' / ', 2), '') AS DATE) AS last_day,
+	d->>'url' AS doi, ST_GeomFromGeoJSON(d->'spatialCoverage'->'geo'->'geojson'->'features'->0->'geometry') AS geom
+FROM (SELECT x->'Dataset' AS d FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/Datasets'), '[]') AS JSON[])) AS x FROM read_text('$(found)')))
+""")  # one row per dataset: its name, identifier, source, format, dates, DOI and outline
+DBInterface.execute(con, "ALTER TABLE datasets ADD COLUMN covered DOUBLE")
+DBInterface.execute(con, "UPDATE datasets SET covered = round(100 * ST_Area(ST_Intersection(ST_MakeValid(geom), $(area))) / ST_Area($(area)), 1)")  # the share of the area each dataset covers, in per cent
+s = query("SELECT name, source, format, first_day, covered FROM datasets ORDER BY format, first_day DESC NULLS LAST")
+isempty(s.name) && error("The catalogue of OpenTopography has no dataset over the area: widen the area, or include the other catalogues")
+println(length(s.name), " datasets over the area, the most recent first:")
+for i in eachindex(s.name)
+	println(rpad(s.format[i], 13), rpad(s.source[i], 16), rpad(coalesce(string(s.first_day[i]), ""), 12), lpad("$(s.covered[i])%", 7), "  ", s.name[i])
+end
+'''
+
+[[codeBranches]]
+model = "globaldem"
+code = '''
+using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the elevation is kept once downloaded, and the Next Steps save theirs
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+km2 = 6371.0088^2 * deg2rad(east - west) * (sind(north) - sind(south))  # the size of the area, in square kilometres
+function ot_download(endpoint, params, path)  # one request of the OpenTopography API, written to path; stops with the API's message
+	haskey(ENV, "OPENTOPOGRAPHY_API_KEY") || error("Set your OpenTopography API key with the key on the Powered by line, or set ENV[\"OPENTOPOGRAPHY_API_KEY\"]: see the Authentication wiki")
+	url = "https://portal.opentopography.org/API/$(endpoint)?" * join(["$(k)=$(v)" for (k, v) in [params; "outputFormat" => "GTiff"; "API_Key" => ENV["OPENTOPOGRAPHY_API_KEY"]]], "&")
+	part = path * ".part"
+	r = open(io -> Downloads.request(url; output = io, throw = false), part, "w")
+	r isa Downloads.Response || (rm(part; force = true); error("OpenTopography could not be reached: $(r.message)"))
+	if r.status != 200
+		answer = read(part, String)
+		rm(part; force = true)
+		r.status == 204 && error("OpenTopography has no data of $(endpoint) over the area")
+		m = match(r"<error>(.*?)</error>"s, answer)
+		error("OpenTopography answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : strip(m[1]))")
+	end
+	return mv(part, path; force = true)
+end
+function elevation_of(endpoint, kind, model, limit)  # the elevation of the area from a model, downloaded once into its folder
+	km2 > limit && error("The area is $(round(Int, km2)) km², more than the $(round(Int, limit)) km² OpenTopography serves of $(model): make it smaller")
+	dir = mkpath(joinpath(folder, "opentopography", model))
+	path = joinpath(dir, "$(model)_$(west)_$(south)_$(east)_$(north).tif")  # one file for each model and area
+	isfile(path) || ot_download(endpoint, [kind => model, "south" => south, "north" => north, "west" => west, "east" => east], path)
+	return map(v -> ismissing(v) ? missing : Float32(v), read(Raster(path; lazy = true))), path
+end
+limits = Dict("SRTMGL3" => 4.05e6, "COP90" => 4.05e6, "SRTM15Plus" => 1.25e8, "GEBCOIceTopo" => 1.25e8)  # the largest areas OpenTopography serves, in km²; 450,000 for the other models
+model = "{{demtype}}"
+elevation, path = elevation_of("globaldem", "demtype", model, get(limits, model, 4.5e5))
+crs = ArchGDAL.read(ArchGDAL.getproj, path)  # the coordinate system of the file
+place = dirname(path)  # the folder of the model, which the Next Steps write to
+println(model, ": ", size(elevation, X), " x ", size(elevation, Y), " cells, ", count(ismissing, elevation), " without data; elevation from ", minimum(skipmissing(elevation)), " to ", maximum(skipmissing(elevation)), " m, from ", path)
+'''
+
+[[codeBranches]]
+model = "usgsdem"
+code = '''
+using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the elevation is kept once downloaded, and the Next Steps save theirs
+west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
+km2 = 6371.0088^2 * deg2rad(east - west) * (sind(north) - sind(south))  # the size of the area, in square kilometres
+function ot_download(endpoint, params, path)  # one request of the OpenTopography API, written to path; stops with the API's message
+	haskey(ENV, "OPENTOPOGRAPHY_API_KEY") || error("Set your OpenTopography API key with the key on the Powered by line, or set ENV[\"OPENTOPOGRAPHY_API_KEY\"]: see the Authentication wiki")
+	url = "https://portal.opentopography.org/API/$(endpoint)?" * join(["$(k)=$(v)" for (k, v) in [params; "outputFormat" => "GTiff"; "API_Key" => ENV["OPENTOPOGRAPHY_API_KEY"]]], "&")
+	part = path * ".part"
+	r = open(io -> Downloads.request(url; output = io, throw = false), part, "w")
+	r isa Downloads.Response || (rm(part; force = true); error("OpenTopography could not be reached: $(r.message)"))
+	if r.status != 200
+		answer = read(part, String)
+		rm(part; force = true)
+		r.status == 204 && error(endpoint == "usgsdem" ? "USGS 3DEP has no data over the area: it covers the United States" : "OpenTopography has no data of $(endpoint) over the area")
+		m = match(r"<error>(.*?)</error>"s, answer)
+		error("OpenTopography answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : strip(m[1]))")
+	end
+	return mv(part, path; force = true)
+end
+function elevation_of(endpoint, kind, model, limit)  # the elevation of the area from a model, downloaded once into its folder
+	km2 > limit && error("The area is $(round(Int, km2)) km², more than the $(round(Int, limit)) km² OpenTopography serves of $(model): make it smaller")
+	dir = mkpath(joinpath(folder, "opentopography", model))
+	path = joinpath(dir, "$(model)_$(west)_$(south)_$(east)_$(north).tif")  # one file for each model and area
+	isfile(path) || ot_download(endpoint, [kind => model, "south" => south, "north" => north, "west" => west, "east" => east], path)
+	return map(v -> ismissing(v) ? missing : Float32(v), read(Raster(path; lazy = true))), path
+end
+limits = Dict("USGS30m" => 2.25e5, "USGS10m" => 2.5e4, "USGS1m" => 250.0)  # the largest areas OpenTopography serves of each resolution, in km²
+model = "{{resolution}}"
+elevation, path = elevation_of("usgsdem", "datasetName", model, limits[model])
+crs = ArchGDAL.read(ArchGDAL.getproj, path)  # the coordinate system of the file, NAD83 for 3DEP
+place = dirname(path)  # the folder of the resolution, which the Next Steps write to
+println(model, ": ", size(elevation, X), " x ", size(elevation, Y), " cells, ", count(ismissing, elevation), " without data; elevation from ", minimum(skipmissing(elevation)), " to ", maximum(skipmissing(elevation)), " m, from ", path)
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "dataset-outlines"
+label = "Dataset Outlines on a Map"
+desc = "The outline of each survey found, coloured by its source, with the area, on an OpenStreetMap base map in Pollis's map view; the global models, whose outlines cover the Earth, are left out"
+models = ["find"]
+code = '''
+shown, box = joinpath(mktempdir(), "datasets.geojson"), joinpath(mktempdir(), "area.geojson")
+DBInterface.execute(con, "COPY (SELECT name, source, format, CAST(first_day AS VARCHAR) AS first_day, geom FROM datasets WHERE ST_Area(geom) < 1000) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")  # less than 1,000 square degrees: the surveys, not the global models
+DBInterface.execute(con, "COPY (SELECT 'Area' AS name, $(area) AS geom) TO '$(box)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(shown; name = "Datasets", column = "source", opacity = 0.15), Pollis.layer(box; name = "Area", color = "#e15759", opacity = 0.3); title = "Datasets over the Area"))
+'''
+
+[[actionGroups.actions]]
+id = "datasets-over-time"
+label = "Datasets over Time"
+desc = "When each dataset was collected, from its first to its last day, one row per dataset, coloured by its format, drawn with ECharts"
+models = ["find"]
+code = '''
+using ECharts
+
+t = query("SELECT name, format, CAST(first_day AS VARCHAR) AS t0, CAST(coalesce(last_day, first_day) AS VARCHAR) AS t1 FROM datasets WHERE first_day IS NOT NULL ORDER BY first_day")
+EChart(ec_width = 760, ec_height = 120 + 22 * length(t.name), title = [ECharts.Title(text = "Datasets over the Area")], tooltip = ECharts.Tooltip(),
+	legend = ECharts.Legend(), xAxis = [ECharts.Axis(_type = "time", name = "Date", axisLabel = ECharts.AxisLabel(formatter = "{yyyy}"))], yAxis = [ECharts.Axis(_type = "category", data = first.(t.name, 40), axisLabel = ECharts.AxisLabel(fontSize = 10))],
+	grid = [ECharts.Grid(left = 260)],
+	series = [ECharts.XYSeries(name = f, _type = "line", showSymbol = true, lineStyle = ECharts.LineStyle(width = 6), data = reduce(vcat, [[[t.t0[i], i - 1], [t.t1[i], i - 1], "-"] for i in eachindex(t.name) if t.format[i] == f]; init = Any[])) for f in unique(t.format)])  # "-" breaks the line between datasets
+'''
+
+[[actionGroups.actions]]
+id = "elevation-map"
+label = "Show the Elevation on a Map"
+desc = "The elevation, cells coloured by value, on an OpenStreetMap base map in Pollis's map view, at most 80 cells a side (larger areas averaged over blocks of cells); click a cell for its value"
+models = ["globaldem", "usgsdem"]
+code = '''
+using Statistics
+
+f = max(1, cld(max(size(elevation, X), size(elevation, Y)), 80))  # at most 80 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, Raster(elevation; missingval = missing), f; skipmissingval = true) : elevation, (X, Y))
+edges(d) = [(min(lo, hi), max(lo, hi)) for (lo, hi) in Rasters.intervalbounds(small, d)]  # each cell's two edges
+xe, ye = edges(X), edges(Y)
+rows = ["($(round(Float64(small[i, j]), digits = 2)), $(xe[i][1]), $(ye[j][1]), $(xe[i][2]), $(ye[j][2]))" for i in axes(small, 1), j in axes(small, 2) if !ismissing(small[i, j])]
+shown = joinpath(mktempdir(), "cells.geojson")
+DBInterface.execute(con, "COPY (SELECT value, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), ?, 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(value, x0, y0, x1, y1)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')", [crs])
+display(Pollis.webmap(Pollis.layer(shown; name = "Elevation of $(model) (m)", column = "value", opacity = 0.7)))
+'''
+
+[[actionGroups.actions]]
+id = "elevation-plot"
+label = "Plot the Elevation"
+desc = "The elevation as a heat map drawn with ECharts, north up, at most 200 cells a side (larger areas averaged over blocks of cells)"
+models = ["globaldem", "usgsdem"]
+code = '''
+using ECharts, Statistics
+
+f = max(1, cld(max(size(elevation, X), size(elevation, Y)), 200))  # at most 200 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, Raster(elevation; missingval = missing), f; skipmissingval = true) : elevation, (X, Y))
+north_first = first(lookup(small, Y)) > last(lookup(small, Y))
+nx, ny = size(small)
+cells = [[i - 1, (north_first ? ny - j : j - 1), round(Float64(small[i, j]), digits = 2)] for i in 1:nx, j in 1:ny if !ismissing(small[i, j])]  # column, row from the south, value
+lo, hi = extrema(skipmissing(small))
+EChart(ec_width = 760, ec_height = round(Int, 60 + 680 * ny / nx), title = [ECharts.Title(text = "Elevation of $(model) (m)")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "category", data = string.(round.(lookup(small, X); digits = 4)), name = "Longitude")],
+	yAxis = [ECharts.Axis(_type = "category", data = string.(round.(north_first ? reverse(lookup(small, Y)) : lookup(small, Y); digits = 4)), name = "Latitude")],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"])),
+	series = [ECharts.HeatmapSeries(name = "Elevation", data = cells)])
+'''
+
+[[actionGroups.actions]]
+id = "elevation-profile"
+label = "Elevation Profile"
+desc = "The elevation along the row of cells through the middle of the area, from west to east, drawn with ECharts"
+models = ["globaldem", "usgsdem"]
+code = '''
+using ECharts
+
+row = elevation[Y = Near((south + north) / 2)]  # the cells of the middle row, west to east
+x = collect(lookup(row, X))
+EChart(ec_width = 760, ec_height = 360, title = [ECharts.Title(text = "Elevation of $(model) at latitude $(round((south + north) / 2; digits = 4))")], tooltip = ECharts.Tooltip(trigger = "axis"),
+	xAxis = [ECharts.Axis(_type = "value", name = "Longitude", scale = true)], yAxis = [ECharts.Axis(_type = "value", name = "Metres", scale = true)],
+	series = [ECharts.XYSeries(name = "Elevation", _type = "line", showSymbol = false, data = [[x[i], row[i]] for i in eachindex(x) if !ismissing(row[i])])])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "area-coverage"
+label = "How Datasets Cover the Area"
+desc = "For each survey found, the share of the area inside its outline: a survey may cover only part of the area; the global models cover all of it"
+models = ["find"]
+code = '''
+c = query("SELECT name, source, format, covered FROM datasets WHERE ST_Area(geom) < 1000 ORDER BY covered DESC, name")
+println(rpad("covers", 9), rpad("format", 13), rpad("source", 16), "dataset")
+for i in eachindex(c.name)
+	println(rpad("$(c.covered[i])%", 9), rpad(c.format[i], 13), rpad(c.source[i], 16), c.name[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "cells-without-data"
+label = "Cells Without Data"
+desc = "How many cells of the elevation have no data, where they are, and whether the grid covers the whole area"
+models = ["globaldem", "usgsdem"]
+code = '''
+gone = findall(ismissing, elevation)
+println(model, ": ", length(gone), " of ", length(elevation), " cells without data (", round(100 * length(gone) / length(elevation); digits = 2), "%)")
+if !isempty(gone)
+	xs, ys = lookup(elevation, X)[[I[1] for I in gone]], lookup(elevation, Y)[[I[2] for I in gone]]
+	println("  between longitudes ", round(minimum(xs); digits = 4), " and ", round(maximum(xs); digits = 4), ", latitudes ", round(minimum(ys); digits = 4), " and ", round(maximum(ys); digits = 4))
+end
+gx, gy = extrema(lookup(elevation, X)), extrema(lookup(elevation, Y))
+println("The grid spans longitudes ", round.(gx; digits = 4), " and latitudes ", round.(gy; digits = 4), "; the area ", (west, east), " and ", (south, north))
+'''
+
+[[actionGroups.actions]]
+id = "downloaded-files"
+label = "Files Downloaded"
+desc = "The elevation files of the model in the folder, one for each area downloaded, with their sizes"
+models = ["globaldem", "usgsdem"]
+code = '''
+for f in sort(readdir(place))
+	println(rpad(f, 60), lpad(round(filesize(joinpath(place, f)) / 2^20; digits = 2), 8), " MB")
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "sources-side-by-side"
+label = "Sources Side by Side"
+desc = "The datasets of each source, OpenTopography, the USGS 3D Elevation Program and NOAA, and of each format: how many, and their first and last dates"
+models = ["find"]
+code = '''
+p = query("SELECT source, format, count(*) AS n, min(first_day) AS t0, max(coalesce(last_day, first_day)) AS t1 FROM datasets GROUP BY ALL ORDER BY source, format")
+println(rpad("source", 16), rpad("format", 13), rpad("datasets", 10), "first and last")
+for i in eachindex(p.n)
+	println(rpad(p.source[i], 16), rpad(p.format[i], 13), rpad(p.n[i], 10), coalesce(string(p.t0[i]), ""), " to ", coalesce(string(p.t1[i]), ""))
+end
+'''
+
+[[actionGroups.actions]]
+id = "two-models"
+label = "Two Models Side by Side"
+desc = "The elevation downloaded beside the global model chosen in Compare With, over the same area: the second is downloaded, resampled to the cells of the first, and their difference summarised by quantiles, its mean and root mean square, and their correlation; the difference is left in the variable difference"
+models = ["globaldem", "usgsdem"]
+code = '''
+using Statistics
+
+other_model = "{{otherModel}}"
+other, other_path = elevation_of("globaldem", "demtype", other_model, 4.5e5)
+on_same_cells = resample(Raster(other; missingval = missing); to = elevation, method = :bilinear)  # the second model on the cells of the first
+difference = map((a, b) -> ismissing(a) || ismissing(b) ? missing : a - b, elevation, on_same_cells)
+both = [(a, b) for (a, b) in zip(elevation, on_same_cells) if !ismissing(a) && !ismissing(b)]
+d = collect(skipmissing(difference))
+println(model, " minus ", other_model, " over ", length(d), " cells, in metres:")
+println("  quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(d, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 2), ", "))
+println("  mean ", round(mean(d); digits = 2), ", root mean square ", round(sqrt(mean(abs2, d)); digits = 2), ", correlation ", round(cor(first.(both), last.(both)); digits = 4))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "elevation-summary"
+label = "Elevation Summary"
+desc = "The quantiles of the elevation over the area, its range, and where its highest and lowest cells are"
+models = ["globaldem", "usgsdem"]
+code = '''
+using Statistics
+
+v = collect(skipmissing(elevation))
+println("Elevation of ", model, " over ", length(v), " cells: quantiles 5, 25, 50, 75, 95%: ", join(round.(quantile(v, [0.05, 0.25, 0.5, 0.75, 0.95]); digits = 1), ", "), " m")
+for (label, f) in (("Highest", argmax), ("Lowest", argmin))
+	idx = f(map(x -> ismissing(x) ? (label == "Highest" ? -Inf32 : Inf32) : x, elevation))
+	println(label, ": ", elevation[idx], " m at longitude ", round(lookup(elevation, X)[idx[1]]; digits = 5), ", latitude ", round(lookup(elevation, Y)[idx[2]]; digits = 5))
+end
+'''
+
+[[actionGroups.actions]]
+id = "area-by-elevation"
+label = "Area by Elevation"
+desc = "The share of the cells of the area in each of ten bands of elevation of equal height, from the lowest cell to the highest"
+models = ["globaldem", "usgsdem"]
+code = '''
+v = collect(skipmissing(elevation))
+lo, hi = extrema(v)
+band_height = (hi - lo) / 10
+println("Share of the ", length(v), " cells of ", model, " in each band of ", round(band_height; digits = 1), " m:")
+for b in 1:10
+	n = count(x -> (b == 1 ? x >= lo : x > lo + (b - 1) * band_height) && x <= lo + b * band_height, v)
+	println(lpad(round(lo + (b - 1) * band_height; digits = 1), 9), " to ", rpad(round(lo + b * band_height; digits = 1), 9), lpad(round(100 * n / length(v); digits = 1), 6), "%  ", repeat("#", round(Int, 50 * n / length(v))))
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-cog"
+label = "Save as Cloud-Optimised GeoTIFF"
+desc = "Write the elevation of the area as a Cloud-Optimised GeoTIFF in the folder of the model, tiled, with overviews and DEFLATE compression"
+models = ["globaldem", "usgsdem"]
+code = '''
+out = joinpath(place, "$(model)-area-cog.tif")
+write(out, Raster(map(v -> ismissing(v) ? -9999f0 : v, elevation); missingval = -9999f0); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), force = true)
+println("Wrote ", out)
+'''
+
+[[actionGroups.actions]]
+id = "save-datasets"
+label = "Save the Datasets"
+desc = "The datasets found, with their names, identifiers, sources, formats, dates, DOIs and outlines, as a GeoParquet file in the folder"
+models = ["find"]
+code = '''
+out = joinpath(folder, "opentopography-datasets.parquet")
+DBInterface.execute(con, "COPY (SELECT name, id, source, format, short_name, first_day, last_day, doi, covered, geom FROM datasets ORDER BY format, first_day) TO '$(out)' (FORMAT parquet)")
+println("Wrote ", length(s.name), " datasets to ", out)
+'''
