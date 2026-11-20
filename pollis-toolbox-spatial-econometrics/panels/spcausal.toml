@@ -14,6 +14,10 @@ github = "https://github.com/Trumpingtons/SpatialEconometrics.jl"
 fork = true
 
 [[packages]]
+name = "PollisDatasets.jl"
+github = "https://github.com/Trumpingtons/PollisDatasets.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -60,65 +64,149 @@ folder = "data/examples"
 [[inputs]]
 id = "areasFile"
 label = "Areas File"
-tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, bolognapolicy.gpkg, the example first writes a grid of 225 square cells of 1 km around the centre of Bologna, and the panel file beside it, unless the folder has both already."
-default = "bolognapolicy.gpkg"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, mpdta_counties.gpkg, the example copies into the folder the 500 US counties of the minimum wage panel of Callaway and Sant'Anna (2021), from the Census Bureau's county boundaries of 2010, from PollisDatasets.jl, unless the folder has it."
+default = "mpdta_counties.gpkg"
+models = ["spdid"]
+
+[[inputs]]
+id = "synthAreasFile"
+label = "Areas File"
+tooltip = "The file of areas, as polygons, one per area: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, us_states.gpkg, the example copies into the folder the polygons of the 48 contiguous US states, from PollisDatasets.jl, unless the folder has it. Areas of the file with no rows in the panel file are left out."
+default = "us_states.gpkg"
+models = ["synth"]
 
 [[inputs]]
 id = "panelFile"
 label = "Panel File"
-tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period."
-default = "bolognapolicy.csv"
+tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. With the default, mpdta.csv, the example copies into the folder the teen employment of 500 US counties from 2003 to 2007, from the R package did, from PollisDatasets.jl, unless the folder has it."
+default = "mpdta.csv"
+models = ["spdid"]
+
+[[inputs]]
+id = "synthPanelFile"
+label = "Panel File"
+tooltip = "The panel, one row per area and period: a CSV or Parquet file, in the folder above, or an absolute path. Areas without a value in some period, or without a polygon in the areas file, are left out, so that every area left has every period. With the default, prop99.csv, the example copies into the folder the cigarette sales of 39 US states from 1970 to 2000 of Abadie, Diamond and Hainmueller (2010), from the R package tidysynth, from PollisDatasets.jl, unless the folder has it."
+default = "prop99.csv"
+models = ["synth"]
 
 [[inputs]]
 id = "areaColumn"
 label = "Area Column"
-tooltip = "The column that names each area, in both files: the panel's rows are joined to the polygons by it."
-default = "cell"
+tooltip = "The column of the panel file that names each area: the panel's rows are joined to the polygons by it. With the example files, countyreal, the county's FIPS code."
+default = "countyreal"
 newRow = true
+models = ["spdid"]
+
+[[inputs]]
+id = "synthAreaColumn"
+label = "Area Column"
+tooltip = "The column of the panel file that names each area: the panel's rows are joined to the polygons by it. With the example files, state, the state's name."
+default = "state"
+newRow = true
+models = ["synth"]
+
+[[inputs]]
+id = "polygonColumn"
+label = "Areas File Column"
+tooltip = "The column of the areas file that names each area as the Area Column names it in the panel file. With the example files, county, the county's FIPS code."
+default = "county"
+models = ["spdid"]
+
+[[inputs]]
+id = "synthPolygonColumn"
+label = "Areas File Column"
+tooltip = "The column of the areas file that names each area as the Area Column names it in the panel file. With the example files, name, the state's name: the column state of us_states.gpkg writes the names as another dataset does."
+default = "name"
+models = ["synth"]
 
 [[inputs]]
 id = "periodColumn"
 label = "Period Column"
-tooltip = "The column of the panel file that names each period, a year, a quarter or a date: the periods are put in its order."
-default = "quarter"
+tooltip = "The column of the panel file that names each period, a year, a quarter or a date: the periods are put in its order. With the example files, year."
+default = "year"
 
 [[inputs]]
 id = "dependent"
 label = "Dependent Variable"
-tooltip = "The outcome, a numeric column of the panel file. With the example files, no2: the quarterly mean concentration of nitrogen dioxide in the cell, in micrograms per cubic metre."
-default = "no2"
+tooltip = "The outcome, a numeric column of the panel file. With the example files, lemp: the log of the county's teen employment."
+default = "lemp"
+models = ["spdid"]
+
+[[inputs]]
+id = "synthDependent"
+label = "Dependent Variable"
+tooltip = "The outcome, a numeric column of the panel file. With the example files, cigsale: the cigarette sales of the state per head, in packs."
+default = "cigsale"
+models = ["synth"]
 
 [[inputs]]
 id = "treatment"
 label = "Policy Column"
-tooltip = "On Spatial DiD and Synthetic Control, the column of the panel file that is 1 in the periods an area is under the policy and 0 otherwise. With the example files, zone: 1 in the cells of a low-emission zone in the centre, from the first quarter of 2022. Synthetic Control needs the policy to start in the same period in every area under it."
-default = "zone"
+tooltip = "The column of the panel file that is 1 in the periods an area is under the policy and 0 otherwise. With the example files, minwage: 1 from the year the county's state raised its minimum wage, 2004, 2006 or 2007, and 0 before it and in the states that did not. A policy that starts in different periods is fitted with Every Period."
+default = "minwage"
+models = ["spdid"]
+
+[[inputs]]
+id = "synthTreatment"
+label = "Policy Column"
+tooltip = "The column of the panel file that is 1 in the periods an area is under the policy and 0 otherwise. With the example files, prop99: 1 in California from 1989, the first year of Proposition 99, its tobacco tax and control programme. Synthetic Control needs the policy to start in the same period in every area under it."
+default = "prop99"
+models = ["synth"]
 
 [[inputs]]
 id = "explanatory"
 label = "Explanatory Variables"
-tooltip = "Numeric columns of the panel file that vary over the periods, separated by commas, or empty: a column that never changes within an area is absorbed by the area's fixed effect. With the example files, wind, the mean wind speed in metres per second. A variable the policy itself changes does not belong here. On Synthetic Control, they enter only with Predictors set to Also Explanatory Variables."
-default = "wind"
+tooltip = "Numeric columns of the panel file that vary over the periods, separated by commas, or empty: a column that never changes within an area is absorbed by the area's fixed effect. A variable the policy itself changes does not belong here. With the example files, none: lpop, the log of the county's population, is the same in every year."
+default = ""
+models = ["spdid"]
+
+[[inputs]]
+id = "synthExplanatory"
+label = "Explanatory Variables"
+tooltip = "Numeric columns of the panel file with a value in every period, separated by commas, or empty: they enter only with Predictors set to Also Explanatory Variables, as their means before the policy. A variable the policy itself changes does not belong here. With the example files, retprice: the retail price of a pack of cigarettes, in cents."
+default = "retprice"
+models = ["synth"]
 
 [[inputs]]
 id = "fileCrs"
 label = "File Coordinate System"
-tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. The example's cells are in EPSG:32632, WGS 84 / UTM zone 32N. GeoJSON and KML are always EPSG:4326."
-default = "EPSG:32632"
+tooltip = "The coordinate system of the areas file's coordinates, as an EPSG code: the areas are moved from it into longitude and latitude on WGS 84 (EPSG:4326) for the maps. The example's files are in EPSG:4269, NAD83. GeoJSON and KML are always EPSG:4326."
+default = "EPSG:4269"
 newRow = true
 
 [[inputs]]
 id = "distanceCrs"
 label = "Distance Coordinate System"
-tooltip = "A projected coordinate system in metres, as an EPSG code: the centroids of the areas are moved into it, and the distances between them, and the Conley Cutoff, are in its metres."
-default = "EPSG:32632"
+tooltip = "A projected coordinate system in metres, as an EPSG code: the centroids of the areas are moved into it, and the distances between them, and the Conley Cutoff, are in its metres. For the example's areas, EPSG:5070, NAD83 / Conus Albers."
+default = "EPSG:5070"
 
 [[inputs]]
 id = "neighbours"
 label = "Neighbours"
-tooltip = "Which areas are neighbours, and so which areas an area under the policy spills over onto: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. An area's exposure is the share of its neighbours under the policy."
+tooltip = "Which areas are neighbours, and so which areas an area under the policy spills over onto: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids. An area's exposure is the share of its neighbours under the policy. With the example files, k Nearest: the 500 counties are a sample, and few of them share a boundary."
+kind = "select"
+default = "knn"
+models = ["spdid"]
+
+[[inputs.options]]
+value = "queen"
+label = "Queen Contiguity"
+
+[[inputs.options]]
+value = "rook"
+label = "Rook Contiguity"
+
+[[inputs.options]]
+value = "knn"
+label = "k Nearest"
+
+[[inputs]]
+id = "synthNeighbours"
+label = "Neighbours"
+tooltip = "Which areas are neighbours, and so which areas an area under the policy spills over onto, and which Exclude Neighbours leaves out of the comparison areas: Queen, those that share any point of their boundaries; Rook, those that share a stretch of boundary; k Nearest, the k areas with the nearest centroids."
 kind = "select"
 default = "queen"
+models = ["synth"]
 
 [[inputs.options]]
 value = "queen"
@@ -191,8 +279,8 @@ label = "OLS"
 [[inputs]]
 id = "cutoff"
 label = "Conley Cutoff"
-tooltip = "With Conley standard errors, the distance in metres of the distance coordinate system beyond which two areas are taken as independent, their weight falling linearly to zero at it. The documentation of SpatialEconometrics.jl advises reporting more than one cutoff and preferring the narrow end."
-default = "1500"
+tooltip = "With Conley standard errors, the distance in metres of the distance coordinate system beyond which two areas are taken as independent, their weight falling linearly to zero at it. The documentation of SpatialEconometrics.jl advises reporting more than one cutoff and preferring the narrow end. With the example's counties, 100000, 100 km."
+default = "100000"
 
 [[inputs]]
 id = "predictors"
@@ -209,6 +297,21 @@ label = "Outcome Before"
 [[inputs.options]]
 value = "explanatory"
 label = "Also Explanatory Variables"
+
+[[inputs]]
+id = "predictorWeights"
+label = "Predictor Weights"
+tooltip = "On Synthetic Control, the weight of each predictor in the distance the weights of the comparison areas minimise: Equal, every standardised predictor alike; Nested Search, the weights that make the synthetic control follow the outcome of the area under the policy most closely before the policy, as Abadie, Diamond and Hainmueller (2010) choose them, found by a search that can take a minute for each area under the policy and needs Penalty 0."
+kind = "select"
+default = "equal"
+
+[[inputs.options]]
+value = "equal"
+label = "Equal"
+
+[[inputs.options]]
+value = "nested"
+label = "Nested Search"
 
 [[inputs]]
 id = "donorPool"
@@ -228,7 +331,7 @@ label = "All Areas Not Under the Policy"
 [[inputs]]
 id = "penalty"
 label = "Penalty"
-tooltip = "On Synthetic Control, the weight of the penalty of Abadie and L'Hour (2021) on the distance from each area under the policy to the comparison areas it draws on: 0, no penalty, when several sets of weights can match equally well; larger values move the weights towards the nearest comparison areas."
+tooltip = "On Synthetic Control, the weight of the penalty of Abadie and L'Hour (2021) on the distance from each area under the policy to the comparison areas it draws on: 0, no penalty, when several sets of weights can match equally well; larger values move the weights towards the nearest comparison areas. Nested Search needs 0."
 default = "0"
 
 [[inputs]]
@@ -249,66 +352,42 @@ label = "In the Predictors"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, SpatialEconometrics, SparseArrays, LinearAlgebra, Statistics, Random
+using DuckDB, Tables, SpatialEconometrics, PollisDatasets, SparseArrays, LinearAlgebra, Statistics, Random
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the files stay where they are
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Spatial Econometrics Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files: Choose... picks another
-areas_path = joinpath(folder, "{{areasFile}}")  # an absolute path is kept as it is
-panel_path = joinpath(folder, "{{panelFile}}")
-# Example files: 15 by 15 square cells of 1 km around the centre of Bologna, in EPSG:32632, observed quarterly over 6 years, with a low-emission zone in the 9 central cells from 2022, and the jobs in each cell; written unless the folder has both already. Replace them with your own files.
-example = basename.([areas_path, panel_path]) == ["bolognapolicy.gpkg", "bolognapolicy.csv"]
-if example && !all(isfile, [areas_path, panel_path])
-	rng = Xoshiro(2026)  # a fixed seed: the same values every time
-	u, v = repeat(-7:7, outer = 15), repeat(-7:7, inner = 15)  # km east and north of the centre, row by row from the south-west
-	grid = [(c, d) for c in 1:225 for d in 1:225 if c != d && abs(u[c] - u[d]) <= 1 && abs(v[c] - v[d]) <= 1]  # queen neighbours on the grid
-	Wgrid = row_standardize(sparse(first.(grid), last.(grid), 1.0, 225, 225))
-	noise_spread = lu(I - 0.5 .* Matrix(Wgrid))  # shocks shared with the neighbours
-	zone = Float64.((abs.(u) .<= 1) .& (abs.(v) .<= 1))  # the 9 central cells
-	level = 18 .+ 14 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 20)  # micrograms per cubic metre, highest in the centre
-	shares = rand(rng, 225, 60) .^ 3
-	shares ./= sum(shares; dims = 2)  # each cell's shares of its jobs in the 60 industries, summing to 1
-	growth = 5 .+ 10 .* randn(rng, 60)  # national growth of the jobs of each industry from 2019 to 2024, percent
-	hidden = randn(rng, 225)  # a local factor that raises both the jobs and NO2
-	jobs0 = 5 .+ 25 .* exp.(-(u .^ 2 .+ v .^ 2) ./ 20)  # thousand jobs in the cell in 2019
-	job_growth = shares * growth .+ 3 .* randn(rng, 225) .+ 3 .* hidden  # percent from 2019 to 2024
-	open(panel_path, "w") do io
-		println(io, "cell,quarter,zone,wind,jobs,no2")
-		for t in 1:24  # the first quarter of 2019 to the last of 2024
-			D = t >= 13 ? zone : zeros(225)  # the zone starts in the first quarter of 2022
-			wind = 3 .+ 0.6 .* sin(pi * t / 2) .+ 0.8 .* randn(rng, 225)  # metres per second
-			jobs = jobs0 .* (1 .+ job_growth ./ 100 .* (t - 1) ./ 23)  # thousand jobs, growing steadily
-			# The zone lowers NO2 inside it, and traffic driven round it raises NO2 in the cells beside it, by the share of their neighbours in the zone; each thousand jobs more adds 0.5
-			no2 = level .+ 2.5 .* cos(pi * t / 2) .- 0.1 .* t .- 1.2 .* wind .- 5 .* D .+ 2.5 .* (Wgrid * D) .+ 0.5 .* (jobs .- jobs0) .+ hidden .* (t - 1) ./ 23 .+ noise_spread \ (1.5 .* randn(rng, 225))
-			quarter = string(2019 + (t - 1) ÷ 4, "-Q", (t - 1) % 4 + 1)
-			for c in 1:225
-				println(io, c, ",", quarter, ",", Int(D[c]), ",", round(wind[c], digits = 2), ",", round(jobs[c], digits = 3), ",", round(no2[c], digits = 2))
-			end
-		end
-	end
-	cells = ["($(c), ST_MakeEnvelope($(685500 + 1000 * u[c]), $(4928900 + 1000 * v[c]), $(686500 + 1000 * u[c]), $(4929900 + 1000 * v[c])))" for c in 1:225]
-	DBInterface.execute(con, "COPY (SELECT cell::INTEGER AS cell, geom FROM (VALUES $(join(cells, ", "))) t(cell, geom)) TO '$(areas_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'cells', SRS 'EPSG:32632')")
-end
-yname = "{{dependent}}"
-xnames = filter(!isempty, String.(strip.(split("{{explanatory}}", ","))))  # the explanatory variables, separated by commas, or none
-dname = "{{treatment}}"
+{{?model=spdid}} areas_file, panel_file, area_col, polygon_col = "{{areasFile}}", "{{panelFile}}", "{{areaColumn}}", "{{polygonColumn}}"
+{{?model=spdid}} yname, dname, xlist, neighbour_rule = "{{dependent}}", "{{treatment}}", "{{explanatory}}", "{{neighbours}}"
+{{?model=synth}} areas_file, panel_file, area_col, polygon_col = "{{synthAreasFile}}", "{{synthPanelFile}}", "{{synthAreaColumn}}", "{{synthPolygonColumn}}"
+{{?model=synth}} yname, dname, xlist, neighbour_rule = "{{synthDependent}}", "{{synthTreatment}}", "{{synthExplanatory}}", "{{synthNeighbours}}"
+period_col = "{{periodColumn}}"
+areas_path = joinpath(folder, areas_file)  # an absolute path is kept as it is
+panel_path = joinpath(folder, panel_file)
+{{?model=spdid}} # Example files: the teen employment of 500 US counties from 2003 to 2007, with the minimum wage raised in some states in 2004, 2006 or 2007, of Callaway and Sant'Anna (2021), and the counties' polygons, from PollisDatasets.jl; copied unless the folder has them. Replace them with your own files.
+{{?model=spdid}}{{?areasFile=mpdta_counties.gpkg}} isfile(areas_path) || cp(samplefile("mpdta_counties.gpkg"), areas_path)
+{{?model=spdid}}{{?panelFile=mpdta.csv}} isfile(panel_path) || cp(datafile("mpdta"), panel_path)
+{{?model=synth}} # Example files: the cigarette sales of 39 US states from 1970 to 2000, with Proposition 99 in California from 1989, of Abadie, Diamond and Hainmueller (2010), and the states' polygons, from PollisDatasets.jl; copied unless the folder has them. Replace them with your own files.
+{{?model=synth}}{{?synthAreasFile=us_states.gpkg}} isfile(areas_path) || cp(samplefile("us_states.gpkg"), areas_path)
+{{?model=synth}}{{?synthPanelFile=prop99.csv}} isfile(panel_path) || cp(datafile("prop99"), panel_path)
+xnames = filter(!isempty, String.(strip.(split(xlist, ","))))  # the explanatory variables, separated by commas, or none
 needed = [yname; dname; xnames]
 present = join(("p.\"$c\" IS NOT NULL" for c in needed), " AND ")
 # The polygons, in longitude and latitude, with their centroids in the distance coordinate system, and the panel's rows that have a polygon and every value
-DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"{{areaColumn}}\" AS area, ST_X(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cx, ST_Y(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE polygons AS SELECT \"$(polygon_col)\" AS area, ST_X(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cx, ST_Y(ST_Transform(ST_Centroid(geom), '{{fileCrs}}', '{{distanceCrs}}')) AS cy, ST_Transform(geom, '{{fileCrs}}', 'EPSG:4326') AS geom FROM ST_Read('$(areas_path)')")
 DBInterface.execute(con, """
 	CREATE OR REPLACE TABLE obs AS
-	WITH p AS (SELECT p.* FROM '$(panel_path)' p JOIN polygons g ON p."{{areaColumn}}" = g.area WHERE $(present)),
-	complete AS (SELECT "{{areaColumn}}" AS area FROM p GROUP BY 1 HAVING count(DISTINCT "{{periodColumn}}") = (SELECT count(DISTINCT "{{periodColumn}}") FROM p))
-	SELECT dense_rank() OVER (ORDER BY p."{{areaColumn}}") AS i, dense_rank() OVER (ORDER BY p."{{periodColumn}}") AS t, p.*
-	FROM p JOIN complete c ON p."{{areaColumn}}" = c.area""")  # areas numbered i = 1, 2, ... and periods t = 1, 2, ..., only areas with every period
-DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT o.i, o.area, g.cx, g.cy, g.geom FROM (SELECT DISTINCT i, \"{{areaColumn}}\" AS area FROM obs) o JOIN polygons g ON o.area = g.area")
+	WITH p AS (SELECT p.* FROM '$(panel_path)' p JOIN polygons g ON p."$(area_col)" = g.area WHERE $(present)),
+	complete AS (SELECT "$(area_col)" AS area FROM p GROUP BY 1 HAVING count(DISTINCT "$(period_col)") = (SELECT count(DISTINCT "$(period_col)") FROM p))
+	SELECT dense_rank() OVER (ORDER BY p."$(area_col)") AS i, dense_rank() OVER (ORDER BY p."$(period_col)") AS t, p.*
+	FROM p JOIN complete c ON p."$(area_col)" = c.area""")  # areas numbered i = 1, 2, ... and periods t = 1, 2, ..., only areas with every period
+DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT o.i, o.area, g.cx, g.cy, g.geom FROM (SELECT DISTINCT i, \"$(area_col)\" AS area FROM obs) o JOIN polygons g ON o.area = g.area")
 column(c) = Float64.(Tables.columntable(DBInterface.execute(con, "SELECT \"$c\"::DOUBLE AS v FROM obs ORDER BY t, i")).v)  # period by period, the areas varying fastest
 counts = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT max(i) FROM obs) AS n, (SELECT max(t) FROM obs) AS periods, (SELECT count(*) FROM polygons) AS polygons"))
 N, T_per = Int(only(counts.n)), Int(only(counts.periods))
-labels = String.(Tables.columntable(DBInterface.execute(con, "SELECT DISTINCT t, \"{{periodColumn}}\"::VARCHAR AS label FROM obs ORDER BY t")).label)  # the name of each period
-println(N, " areas over ", T_per, " periods", only(counts.polygons) > N ? "; $(only(counts.polygons) - N) areas of the areas file left out, with missing values or periods" : "")
+labels = String.(Tables.columntable(DBInterface.execute(con, "SELECT DISTINCT t, \"$(period_col)\"::VARCHAR AS label FROM obs ORDER BY t")).label)  # the name of each period
+println(N, " areas over ", T_per, " periods", only(counts.polygons) > N ? "; $(only(counts.polygons) - N) areas of the areas file left out, without rows in the panel file or without every value in every period" : "")
 xy = Tables.columntable(DBInterface.execute(con, "SELECT cx, cy FROM areas ORDER BY i"))
 coords = hcat(Float64.(xy.cx), Float64.(xy.cy))  # metres in the distance coordinate system
 
@@ -317,7 +396,7 @@ neighbour_pairs = Dict(
 	"queen" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom)",  # any shared point of the boundaries
 	"rook" => "SELECT a.i, b.i AS j FROM areas a JOIN areas b ON a.i <> b.i AND ST_Intersects(a.geom, b.geom) WHERE ST_Dimension(ST_Intersection(a.geom, b.geom)) >= 1",  # a shared stretch of boundary
 	"knn" => "WITH c AS (SELECT i, ST_Centroid(geom) AS p FROM areas) SELECT i, j FROM (SELECT a.i, b.i AS j, row_number() OVER (PARTITION BY a.i ORDER BY ST_Distance_Sphere(a.p, b.p), b.i) AS r FROM c a JOIN c b ON a.i <> b.i) WHERE r <= {{k}}")  # the nearest centroids, by great-circle distance
-pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs["{{neighbours}}"]))
+pairs = Tables.columntable(DBInterface.execute(con, neighbour_pairs[neighbour_rule]))
 W = sparse(pairs.i, pairs.j, 1.0, N, N)  # 1 for each neighbour; SpatialEconometrics.jl makes each row sum to 1, so that an area's exposure is the share of its neighbours under the policy
 
 # The outcome and the policy, areas by periods
@@ -356,7 +435,7 @@ println(count(treated), " areas under the policy, ", length(starts) == 1 ? "all 
 {{?model=spdid}}	println(rpad(coef_names[k], 30), rpad(round(m.coef[k], digits = 4), 12), rpad(round(se[k], digits = 4), 12), round(m.coef[k] / se[k], digits = 2))
 {{?model=spdid}} end
 {{?model=spdid}} r = m.interference
-{{?model=spdid}} println("\nExposure: ", r.n_control_unexposed, " of ", r.n_control, " comparison areas have no neighbour under the policy, ", r.n_control - r.n_control_unexposed, " have one or more")
+{{?model=spdid}} println("\nExposure, over the rows of the regression: ", r.n_control_unexposed, " of ", r.n_control, " rows of comparison areas have no neighbour under the policy, ", r.n_control - r.n_control_unexposed, " have one or more", m.design == :two_period ? "" : "; a row is an area in one period")
 {{?model=spdid}} println(r.identified ? "" : "The spillover is not identified. ", r.message)
 {{?model=spdid}} length(starts) > 1 && println("The policy starts in different periods: with effects that differ between the areas brought under it at different times, the two-way fixed effects estimate is a weighted mean with weights of its own, some of them negative")
 {{?model=spdid}} res = m.residuals  # one per area with two periods; one per area and period, after the within transformation, otherwise
@@ -368,10 +447,13 @@ println(count(treated), " areas under the policy, ", length(starts) == 1 ? "all 
 {{?model=synth}} # The predictors matched before the policy: the outcome in each period before it, and with Predictors set to Also Explanatory Variables, their means before it
 {{?model=synth}} predictors = "{{predictors}}" == "outcome" || X === nothing ? nothing : hcat(y[:, 1:T0], reduce(hcat, [vec(mean(X[:, k, 1:T0]; dims = 2)) for k in axes(X, 2)]))
 {{?model=synth}} # For each area under the policy, weights on the comparison areas, non-negative and summing to 1, that match its predictors; a penalty on the distance from the area under the policy to each comparison area, in km, favours the near comparison areas
-{{?model=synth}} m = fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = Symbol("{{donorPool}}"), penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}"))
+{{?model=synth}} # Predictor Weights: Equal weighs every standardised predictor alike; Nested Search chooses the weights that make the synthetic control follow the outcome before the policy most closely
+{{?model=synth}} vweights = Symbol("{{predictorWeights}}")
+{{?model=synth}} m = fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = Symbol("{{donorPool}}"), penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}"), predictor_weights = vweights)
 {{?model=synth}} println(length(m.treated), " areas under the policy matched on ", m.n_predictors, " predictors, periods ", labels[1], " to ", labels[T0], "; ", length(m.donors), " comparison areas",
 {{?model=synth}}	m.donor_pool_rule == :exclude_neighbours ? ", the $(length(m.excluded_neighbours)) neighbours of the areas under the policy left out" : ", every area not under the policy")
 {{?model=synth}} println(m.penalty > 0 ? "Penalty: $(m.penalty) on the $(m.penalty_metric == :spatial ? "distance in km" : "distance in the standardised predictors")" : "No penalty: the weights may not be unique")
+{{?model=synth}} println(m.predictor_rule == :nested ? "Predictor weights of the nested search, matching the outcome over periods $(labels[first(m.optimization_window)]) to $(labels[last(m.optimization_window)])" : "Equal weights on the standardised predictors")
 {{?model=synth}} (maximum(m.kkt_gap) > 1e-6 || maximum(m.kkt_violation) > 1e-6) && println("The weights did not reach the optimum: their optimality conditions are not met")
 {{?model=synth}} println("\nAverage effect on the areas under the policy, the mean gap after the policy: ", round(m.att, digits = 4))
 {{?model=synth}} println("Ratio of the RMSPE of the mean gap after the policy to that before: ", round(m.ratio_aggregate, digits = 3), "; the Permutation Test ranks it, as there are no standard errors")
@@ -418,7 +500,7 @@ roles = Vector{String}(undef, N)
 {{?model=synth}} end
 DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, role, share1::DOUBLE AS share1, share2::DOUBLE AS share2 FROM (VALUES $(join(("($i, '$(roles[i])', $(share1[i]), $(share2[i]))" for i in 1:N), ", "))) t(i, role, share1, share2)")
 fmap = joinpath(mktempdir(), "policy.geojson")
-DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", v.role, round(v.share1, 3) AS neighbours_under_policy, round(v.share2, 3) AS second_ring_under_policy FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"$(area_col)\", v.role, round(v.share1, 3) AS neighbours_under_policy, round(v.share2, 3) AS second_ring_under_policy FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fmap; name = "Areas under the policy and their neighbours", column = "role", opacity = 0.75)))  # clicking an area shows its role and shares
 display(Pollis.webmap(Pollis.layer(fmap; name = "Share of the neighbours under the policy", column = "neighbours_under_policy", opacity = 0.75)))
 println(rpad("", 58), rpad("Areas", 8), "Mean share of the neighbours under the policy")
@@ -443,11 +525,11 @@ title_note = "policy from: $(labels[first_treated])"
 {{?model=spdid}} groups = filter(g -> any(last(g)), [("Under the policy", treated), ("Comparison areas next to them", exposed), ("Other comparison areas", .!treated .& .!exposed)])
 {{?model=spdid}} paths = [vec(mean(y[mask, :]; dims = 1)) for (_, mask) in groups]  # the mean of each group in each period
 {{?model=spdid}} display(EChart(ec_width = 700, ec_height = 340, title = [ECharts.Title(text = "Mean $(yname) by group", subtext = title_note)],
-{{?model=spdid}}	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = yname, scale = true)],
+{{?model=spdid}}	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = yname, scale = true)],
 {{?model=spdid}}	series = [ECharts.XYSeries(name = first(g), _type = "line", data = round.(p, digits = 3)) for (g, p) in zip(groups, paths)]))
 {{?model=spdid}} base = last(groups)[1] == "Other comparison areas" ? last(paths) : error("Every comparison area has a neighbour under the policy: there is no group without exposure to compare with")
 {{?model=spdid}} display(EChart(ec_width = 700, ec_height = 300, title = [ECharts.Title(text = "Gap to the other comparison areas", subtext = title_note)],
-{{?model=spdid}}	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
+{{?model=spdid}}	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
 {{?model=spdid}}	series = [ECharts.XYSeries(name = first(g), _type = "line", data = round.(p .- base, digits = 3)) for (g, p) in zip(groups[1:(end - 1)], paths[1:(end - 1)])]))
 {{?model=spdid}} before, after = 1:(first_treated - 1), first_treated:T_per
 {{?model=spdid}} println(rpad("", 32), rpad("Areas", 8), rpad("Mean before", 14), rpad("Mean after", 14), rpad("Change", 10), "Change less that of the other comparison areas")
@@ -460,10 +542,10 @@ title_note = "policy from: $(labels[first_treated])"
 {{?model=spdid}} length(starts) > 1 && println("The policy starts in different periods: before and after are split at the first start, so some areas under the policy count as outside it after that start")
 {{?model=synth}} treated_path, synthetic_path = vec(mean(y[m.treated, :]; dims = 1)), vec(mean(m.synthetic; dims = 1))  # means over the areas under the policy
 {{?model=synth}} display(EChart(ec_width = 700, ec_height = 340, title = [ECharts.Title(text = "$(yname): areas under the policy and their synthetic controls", subtext = title_note)],
-{{?model=synth}}	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = yname, scale = true)],
+{{?model=synth}}	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = yname, scale = true)],
 {{?model=synth}}	series = [ECharts.XYSeries(name = "Under the policy", _type = "line", data = round.(treated_path, digits = 3)), ECharts.XYSeries(name = "Synthetic", _type = "line", data = round.(synthetic_path, digits = 3))]))
 {{?model=synth}} display(EChart(ec_width = 700, ec_height = 340, title = [ECharts.Title(text = "Gap of each area under the policy to its synthetic control", subtext = title_note)],
-{{?model=synth}}	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
+{{?model=synth}}	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
 {{?model=synth}}	series = [[ECharts.XYSeries(name = area_names[i], _type = "line", data = round.(m.gaps[k, :], digits = 3)) for (k, i) in enumerate(m.treated)];
 {{?model=synth}}		ECharts.XYSeries(name = "Mean", _type = "line", data = round.(m.att_path, digits = 3))]))
 {{?model=synth}} post = (T0 + 1):T_per
@@ -483,11 +565,11 @@ mean_weight = vec(mean(m.weights; dims = 1))  # each comparison area's weight, a
 DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, weight::DOUBLE AS weight FROM (VALUES $(join(("($(m.donors[q]), $(mean_weight[q]))" for q in eachindex(m.donors)), ", "))) t(i, weight)")
 dir = mktempdir()
 fdonors, ftreated, fleft = joinpath(dir, "comparison.geojson"), joinpath(dir, "under-policy.geojson"), joinpath(dir, "left-out.geojson")
-DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.weight, 4) AS weight FROM areas a JOIN mapped v USING (i)) TO '$(fdonors)' (FORMAT GDAL, DRIVER 'GeoJSON')")
-DBInterface.execute(con, "COPY (SELECT geom, area AS \"{{areaColumn}}\" FROM areas WHERE i IN ($(join(m.treated, ", ")))) TO '$(ftreated)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"$(area_col)\", round(v.weight, 4) AS weight FROM areas a JOIN mapped v USING (i)) TO '$(fdonors)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT geom, area AS \"$(area_col)\" FROM areas WHERE i IN ($(join(m.treated, ", ")))) TO '$(ftreated)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 layers = [Pollis.layer(fdonors; name = "Mean weight", column = "weight", opacity = 0.75), Pollis.layer(ftreated; name = "Under the policy", color = "#e15759", opacity = 0.9)]
 if !isempty(m.excluded_neighbours)
-	DBInterface.execute(con, "COPY (SELECT geom, area AS \"{{areaColumn}}\" FROM areas WHERE i IN ($(join(m.excluded_neighbours, ", ")))) TO '$(fleft)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	DBInterface.execute(con, "COPY (SELECT geom, area AS \"$(area_col)\" FROM areas WHERE i IN ($(join(m.excluded_neighbours, ", ")))) TO '$(fleft)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 	push!(layers, Pollis.layer(fleft; name = "Left out, neighbours of the areas under the policy", color = "#bab0ac", opacity = 0.6))
 end
 display(Pollis.webmap(layers...))  # clicking a comparison area shows its mean weight
@@ -523,7 +605,7 @@ println(rpad("Mean share of neighbours under the policy, areas under it", 62), r
 println(rpad("Mean share of neighbours under the policy, comparison areas", 62), round(report.mean_exposure_control, digits = 4))
 println(rpad("Its variance among the comparison areas", 62), round(report.exposure_var_control, sigdigits = 4))
 println(rpad("Correlation of the policy and the share", 62), round(report.exposure_cor, digits = 4))
-println("\n", report.identified ? "The spillover is identified. " : "The spillover is not identified. ", report.message)
+println("\n", report.identified ? "" : "The spillover is not identified. ", report.message)
 {{?model=synth}} println("With Comparison Areas set to Exclude Neighbours, the synthetic control is built from the areas with no neighbour under the policy: ", report.n_control_unexposed, " of them")
 # The same counts under each definition of the neighbours: the spillover is defined relative to the neighbours chosen
 println("\n", rpad("Neighbours", 20), rpad("Mean neighbours", 18), rpad("Comparison areas with none under it", 38), rpad("Mean share, comparison areas", 30), "Identified")
@@ -531,7 +613,7 @@ for (name, key) in [("Queen Contiguity", "queen"), ("Rook Contiguity", "rook"), 
 	pr = Tables.columntable(DBInterface.execute(con, neighbour_pairs[key]))
 	Wn = sparse(pr.i, pr.j, 1.0, N, N)
 	r = check_interference(exposure(Float64.(treated), Wn))
-	println(rpad(name * (key == "{{neighbours}}" ? " *" : ""), 20), rpad(round(nnz(Wn) / N, digits = 2), 18), rpad(r.n_control_unexposed, 38), rpad(round(r.mean_exposure_control, digits = 4), 30), r.identified ? "yes" : "no")
+	println(rpad(name * (key == neighbour_rule ? " *" : ""), 20), rpad(round(nnz(Wn) / N, digits = 2), 18), rpad(r.n_control_unexposed, 38), rpad(round(r.mean_exposure_control, digits = 4), 30), r.identified ? "yes" : "no")
 end
 println("* the neighbours of the tab")
 length(starts) > 1 && println("The policy starts in different periods: these counts are for the areas under the policy in some period")
@@ -547,9 +629,9 @@ code = '''
 P = predictors === nothing ? y[:, 1:T0] : predictors
 pnames = [[yname * ", " * labels[t] for t in 1:T0]; size(P, 2) > T0 ? ["Mean " * x * " before" for x in xnames] : String[]]
 synthetic_P = m.weights * P[m.donors, :]  # areas under the policy by predictors
-println(rpad("Predictor", 26), rpad("Under the policy", 18), rpad("Synthetic", 12), "Mean of the comparison areas")
+println(rpad("Predictor", 26), rpad("Under the policy", 18), rpad("Synthetic", 12), rpad("Mean of the comparison areas", 30), "Predictor weight")
 for j in axes(P, 2)  # means over the areas under the policy
-	println(rpad(pnames[j], 26), rpad(round(mean(P[m.treated, j]), digits = 3), 18), rpad(round(mean(synthetic_P[:, j]), digits = 3), 12), round(mean(P[m.donors, j]), digits = 3))
+	println(rpad(pnames[j], 26), rpad(round(mean(P[m.treated, j]), digits = 3), 18), rpad(round(mean(synthetic_P[:, j]), digits = 3), 12), rpad(round(mean(P[m.donors, j]), digits = 3), 30), round(mean(m.predictor_weights[:, j]), digits = 3))
 end
 println("\n", rpad("Area under the policy", 24), rpad("RMSPE before", 14), rpad("Its own sd before", 20), rpad("Periods beyond the comparison areas", 38), "Optimum reached")
 for (k, i) in enumerate(m.treated)
@@ -559,7 +641,7 @@ for (k, i) in enumerate(m.treated)
 	println(rpad(area_names[i], 24), rpad(round(m.rmspe_pre[k], digits = 3), 14), rpad(round(std(y[i, 1:T0]), digits = 3), 20), rpad("$(beyond) of $(T0)", 38),
 		converged ? "yes, $(m.iterations[k]) iterations" : "no: gap $(round(m.kkt_gap[k], sigdigits = 2)), violation $(round(m.kkt_violation[k], sigdigits = 2))")
 end
-println("Predictors divided by their standard deviations before the match: ", m.standardized ? "yes" : "no")
+println("Predictors divided by their standard deviations before the match: ", m.standardized ? "yes" : "no", "; predictor weights ", m.predictor_rule == :nested ? "of the nested search" : "equal")
 println("A synthetic control that fits poorly before the policy says little about the effect after it")
 '''
 
@@ -608,7 +690,7 @@ desc = "The effects of the tab with each standard error SpatialEconometrics.jl o
 models = ["spdid"]
 code = '''
 cutoffs = {{cutoff}} .* [0.5, 1, 2, 4]  # metres of the distance coordinate system
-choices = [("Clustered by area", :cluster, nothing); ("OLS", :ols, nothing); [("Conley, $(round(Int, c)) m", :conley, c) for c in cutoffs]]
+choices = [("Clustered by area", :cluster, nothing); ("OLS", :ols, nothing); [("Conley, $(round(c / 1000, digits = 1)) km", :conley, c) for c in cutoffs]]
 println(rpad("", 22), rpad("Direct", 12), rpad("z", 8), rpad("Spillover, comparison areas", 30), rpad("z", 8), rpad("Total, under it", 16), "z")
 for (name, kind, c) in choices
 	fit = fit_spatial_did(yfit, treat, W; X = Xfit, vcov = kind, coords = coords, dist_cutoff = c, order = {{exposureOrder}})
@@ -629,7 +711,7 @@ models = ["synth"]
 code = '''
 using ECharts
 
-fits = [(name, fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = pool, penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}")))
+fits = [(name, fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = pool, penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}"), predictor_weights = vweights))
 	for (name, pool) in (("Exclude Neighbours", :exclude_neighbours), ("All Areas Not Under the Policy", :all))]
 neighbour = .!treated .& (exposure(Float64.(treated), W).E[:, 1] .> 0)  # areas not under the policy with a neighbour under the policy
 println(rpad("Comparison areas", 32), rpad("Areas", 8), rpad("Effect", 10), rpad("RMSPE before", 14), rpad("Ratio", 8), "Mean weight on neighbours")
@@ -638,7 +720,7 @@ for (name, f) in fits
 	println(rpad(name, 32), rpad(length(f.donors), 8), rpad(round(f.att, digits = 4), 10), rpad(round(mean(f.rmspe_pre), digits = 3), 14), rpad(round(f.ratio_aggregate, digits = 2), 8), round(on_neighbours, digits = 3))
 end
 display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Mean gap to the synthetic controls", subtext = "policy from: $(labels[T0 + 1])")],
-	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
+	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
 	series = [ECharts.XYSeries(name = name, _type = "line", data = round.(f.att_path, digits = 3)) for (name, f) in fits]))
 println("Effect with every area not under the policy less that without the neighbours: ", round(fits[2][2].att - fits[1][2].att, digits = 4))
 println("A spillover reaches the neighbours, and they track the areas under the policy closely before the policy: as comparison areas, they carry the spillover into the counterfactual, and the gap is then the effect less the spillover their weights carry")
@@ -653,11 +735,13 @@ code = '''
 using ECharts
 
 penalties = [0, 0.001, 0.01, 0.1, 1, 10]  # the penalty multiplies the distance in km, On the Map, or in the standardised predictors, In the Predictors
+# The nested search needs penalty 0: with Nested Search, every penalty keeps the predictor weights the tab found, averaged over the areas under the policy
+pw = m.predictor_rule == :nested ? vec(mean(m.predictor_weights; dims = 1)) : :equal
 distance_km(i, j) = sqrt(sum(abs2, coords[i, :] .- coords[j, :])) / 1000
 println(rpad("Penalty", 10), rpad("Effect", 10), rpad("RMSPE before", 14), rpad("Ratio", 8), rpad("Comparison areas over 1%", 26), "Weighted mean distance, km")
 effects = Float64[]
 for p in penalties
-	f = fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = Symbol("{{donorPool}}"), penalty = p, penalty_metric = Symbol("{{penaltyMetric}}"))
+	f = fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = Symbol("{{donorPool}}"), penalty = p, penalty_metric = Symbol("{{penaltyMetric}}"), predictor_weights = pw)
 	push!(effects, f.att)
 	used = mean(count(>(0.01), f.weights[k, :]) for k in eachindex(f.treated))  # averaged over the areas under the policy
 	km = mean(sum(f.weights[k, q] * distance_km(i, f.donors[q]) for q in eachindex(f.donors)) for (k, i) in enumerate(f.treated))
@@ -672,32 +756,26 @@ println("Penalty 0 is the best match alone, whose weights may not be unique; Aba
 [[actionGroups.actions]]
 id = "did-against-synth"
 label = "Spatial DiD Against Synthetic Control"
-desc = "Spatial DiD and Synthetic Control on the same areas, policy and neighbours, each with its own inputs: the direct and total effects of the regression beside the mean gap of the synthetic controls, then the two counterfactuals period by period, before the policy and after it: whether parallel trends and a weighted match of the comparison areas give the same answer"
-models = ["spdid", "synth"]
+desc = "Spatial DiD fitted on the areas, policy and neighbours of the Synthetic Control tab, with the inputs of the Spatial DiD tab: the direct and total effects of the regression beside the mean gap of the synthetic controls, then the two counterfactuals period by period, before the policy and after it: whether parallel trends and a weighted match of the comparison areas give the same answer"
+models = ["synth"]
 code = '''
 using ECharts
 
-# The estimator of the other tab, with its inputs as they are set
-length(starts) == 1 || error("Synthetic Control needs the policy to start in the same period in every area under it, so the two cannot be compared here")
-{{?model=spdid}} did = m
-{{?model=spdid}} T0 = only(starts) - 1
-{{?model=spdid}} T0 >= 2 || error("Synthetic Control needs two or more periods before the policy")
-{{?model=spdid}} predictors = "{{predictors}}" == "outcome" || X === nothing ? nothing : hcat(y[:, 1:T0], reduce(hcat, [vec(mean(X[:, k, 1:T0]; dims = 2)) for k in axes(X, 2)]))
-{{?model=spdid}} scm = fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = Symbol("{{donorPool}}"), penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}"))
-{{?model=synth}} scm = m
-{{?model=synth}}{{?periods=every}} yfit, treat, Xfit = y, D, X
-{{?model=synth}}{{?periods=means}} before, after = 1:T0, (T0 + 1):T_per
-{{?model=synth}}{{?periods=means}} yfit = hcat(vec(mean(y[:, before]; dims = 2)), vec(mean(y[:, after]; dims = 2)))
-{{?model=synth}}{{?periods=means}} treat = Float64.(treated)
-{{?model=synth}}{{?periods=means}} Xfit = X === nothing ? nothing : cat(mean(X[:, :, before]; dims = 3), mean(X[:, :, after]; dims = 3); dims = 3)
-{{?model=synth}} did = fit_spatial_did(yfit, treat, W; X = Xfit, vcov = Symbol("{{standardErrors}}"), coords = coords, dist_cutoff = {{cutoff}}, order = {{exposureOrder}})
+# Spatial DiD on the areas of this tab, with the inputs of the Spatial DiD tab as they are set
+scm = m
+{{?periods=every}} yfit, treat, Xfit = y, D, X
+{{?periods=means}} before, after = 1:T0, (T0 + 1):T_per
+{{?periods=means}} yfit = hcat(vec(mean(y[:, before]; dims = 2)), vec(mean(y[:, after]; dims = 2)))
+{{?periods=means}} treat = Float64.(treated)
+{{?periods=means}} Xfit = X === nothing ? nothing : cat(mean(X[:, :, before]; dims = 3), mean(X[:, :, after]; dims = 3); dims = 3)
+did = fit_spatial_did(yfit, treat, W; X = Xfit, vcov = Symbol("{{standardErrors}}"), coords = coords, dist_cutoff = {{cutoff}}, order = {{exposureOrder}})
 println(rpad("", 54), rpad("Estimate", 12), rpad("Std. Error", 12), "z")
 for (name, est, se) in (("Spatial DiD: direct effect", did.att_direct, did.att_direct_se), ("Spatial DiD: total onto the areas under the policy", did.att_total_treated, did.att_total_treated_se))
 	println(rpad(name, 54), rpad(round(est, digits = 4), 12), rpad(round(se, digits = 4), 12), round(est / se, digits = 2))
 end
 println(rpad("Synthetic control: mean gap after", 54), rpad(round(scm.att, digits = 4), 12), "none, the Permutation Test ranks it")
-r = did.interference
-println("\n", r.n_treated - r.n_treated_unexposed, " of ", r.n_treated, " areas under the policy have a neighbour under the policy. The gap of a synthetic control sets an area under the policy against comparison areas, so it holds the spillover from its neighbours under the policy too: it answers to the total onto the areas under the policy more than to the direct effect")
+share_treated = exposure(Float64.(treated), W).E[:, 1]
+println("\n", count(treated .& (share_treated .> 0)), " of ", count(treated), " areas under the policy have a neighbour under the policy. The gap of a synthetic control sets an area under the policy against comparison areas, so it holds the spillover from its neighbours under the policy too: it answers to the total onto the areas under the policy more than to the direct effect")
 println(scm.donor_pool_rule == :exclude_neighbours ? "Comparison Areas is Exclude Neighbours: no comparison area has a neighbour under the policy, so the counterfactual is an area not under the policy with no exposure, as in the total onto the areas under the policy of Spatial DiD" :
 	"Comparison Areas is All Areas Not Under the Policy: comparison areas next to the areas under the policy bring the spillover they receive into the synthetic control")
 
@@ -707,7 +785,7 @@ any(unexposed) || error("Every comparison area has a neighbour under the policy:
 raw = vec(mean(y[treated, :]; dims = 1)) .- vec(mean(y[unexposed, :]; dims = 1))
 raw .-= mean(raw[1:T0])
 display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Gap to each counterfactual", subtext = "policy from: $(labels[T0 + 1])")],
-	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
+	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
 	series = [ECharts.XYSeries(name = "Synthetic control", _type = "line", data = round.(scm.att_path, digits = 3)),
 		ECharts.XYSeries(name = "Difference-in-differences, raw", _type = "line", data = round.(raw, digits = 3))]))
 rms(v) = sqrt(mean(v .^ 2))
@@ -756,7 +834,7 @@ effect = spillover .+ direct .* treated
 roles = [treated[i] ? "Under the policy" : em.E[i, 1] > 0 ? "Comparison, next to an area under the policy" : "Comparison, no neighbour under the policy" for i in 1:N]
 DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, role, share1::DOUBLE AS share1, spillover::DOUBLE AS spillover, effect::DOUBLE AS effect FROM (VALUES $(join(("($i, '$(roles[i])', $(em.E[i, 1]), $(spillover[i]), $(effect[i]))" for i in 1:N), ", "))) t(i, role, share1, spillover, effect)")
 fmap = joinpath(mktempdir(), "effects.geojson")
-DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", v.role, round(v.share1, 3) AS neighbours_under_policy, round(v.spillover, 4) AS spillover, round(v.effect, 4) AS effect FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"$(area_col)\", v.role, round(v.share1, 3) AS neighbours_under_policy, round(v.spillover, 4) AS spillover, round(v.effect, 4) AS effect FROM areas a JOIN mapped v USING (i)) TO '$(fmap)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fmap; name = "Effect on each area", column = "effect", opacity = 0.75)))  # clicking an area shows its share, spillover and effect
 println("\n", rpad("", 48), rpad("Areas", 8), rpad("Mean share", 12), rpad("Mean spillover", 16), rpad("Mean effect", 14), "Sum of the effect")
 for r in ["Under the policy", "Comparison, next to an area under the policy", "Comparison, no neighbour under the policy"]
@@ -809,15 +887,15 @@ using ECharts
 
 # The neighbours must be left out of the comparison areas to be read on their own: with All Areas Not Under the Policy, the tab's synthetic control is fitted again without them
 base = m.donor_pool_rule == :exclude_neighbours ? m :
-	fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = :exclude_neighbours, penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}"))
+	fit_synthetic_control(y, treated, T0; W = W, coords = coords ./ 1000, predictors = predictors, donor_pool = :exclude_neighbours, penalty = {{penalty}}, penalty_metric = Symbol("{{penaltyMetric}}"), predictor_weights = vweights)
 # Each neighbour is not under the policy, so with no spillover its gap after the policy is noise around 0
-sg = spillover_gaps(base, y; coords = coords ./ 1000, predictors = predictors)
+sg = spillover_gaps(base, y; coords = coords ./ 1000, predictors = predictors, predictor_weights = vweights)
 post = (T0 + 1):T_per
 println(length(sg.units), " neighbours of the areas under the policy, each given a synthetic control from ", length(sg.donors), " comparison areas")
 println("Spillover, the mean gap of the neighbours after the policy: ", round(sg.spillover, digits = 4), "; effect on the areas under the policy: ", round(base.att, digits = 4))
 println("RMSPE before the policy: neighbours, mean ", round(mean(sg.rmspe_pre), digits = 3), "; areas under the policy, mean ", round(mean(base.rmspe_pre), digits = 3))
 display(EChart(ec_width = 700, ec_height = 320, title = [ECharts.Title(text = "Mean gap to the synthetic controls", subtext = "policy from: $(labels[T0 + 1])")],
-	xAxis = [ECharts.Axis(_type = "category", name = "{{periodColumn}}", data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
+	xAxis = [ECharts.Axis(_type = "category", name = period_col, data = labels)], yAxis = [ECharts.Axis(_type = "value", name = "Gap", scale = true)],
 	series = [ECharts.XYSeries(name = "Areas under the policy, the effect", _type = "line", data = round.(base.att_path, digits = 3)),
 		ECharts.XYSeries(name = "Their neighbours, the spillover", _type = "line", data = round.(sg.spillover_path, digits = 3))]))
 
@@ -834,12 +912,65 @@ length(sg.units) > 2 && println("Correlation of the mean gap after the policy wi
 DBInterface.execute(con, "CREATE OR REPLACE TABLE mapped AS SELECT i, gap::DOUBLE AS gap FROM (VALUES $(join(("($(sg.units[q]), $(gap_after[q]))" for q in eachindex(sg.units)), ", "))) t(i, gap)")
 dir = mktempdir()
 fneighbours, fpolicy = joinpath(dir, "neighbours.geojson"), joinpath(dir, "under-policy.geojson")
-DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"{{areaColumn}}\", round(v.gap, 4) AS spillover FROM areas a JOIN mapped v USING (i)) TO '$(fneighbours)' (FORMAT GDAL, DRIVER 'GeoJSON')")
-DBInterface.execute(con, "COPY (SELECT geom, area AS \"{{areaColumn}}\" FROM areas WHERE i IN ($(join(base.treated, ", ")))) TO '$(fpolicy)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT a.geom, a.area AS \"$(area_col)\", round(v.gap, 4) AS spillover FROM areas a JOIN mapped v USING (i)) TO '$(fneighbours)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+DBInterface.execute(con, "COPY (SELECT geom, area AS \"$(area_col)\" FROM areas WHERE i IN ($(join(base.treated, ", ")))) TO '$(fpolicy)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 display(Pollis.webmap(Pollis.layer(fneighbours; name = "Spillover, mean gap after the policy", column = "spillover", opacity = 0.75), Pollis.layer(fpolicy; name = "Under the policy", color = "#e15759", opacity = 0.9)))
 
 println("\nA gap is read as spillover only where the neighbour's synthetic control followed it closely before the policy; the Permutation Test shows what gaps arise by chance")
 println("Spatial DiD estimates the same quantity, as its spillover onto the comparison areas, from the share of neighbours under the policy rather than from a synthetic control of each neighbour")
+'''
+
+[[actionGroups]]
+id = "replicate"
+label = "Replicate"
+
+[[actionGroups.actions]]
+id = "replicate-adh-prop99"
+label = "Abadie, Diamond and Hainmueller's Proposition 99"
+desc = "Abadie, Diamond and Hainmueller (2010), Tables 1 and 2: the synthetic California of Proposition 99, built from the 38 comparison states on their seven predictors with the predictor weights of the nested search, its predictors and the weights of the states beside those the article prints, the gap in cigarette sales in 2000, and the permutation test over the 38 states"
+models = ["synth"]
+code = '''
+using PollisDatasets
+
+let
+	d = Tables.columntable(DBInterface.execute(con, "SELECT * FROM '$(datafile("prop99"))'"))  # the 39 states of the article, 1970 to 2000, from the R package tidysynth
+	states, years = sort(unique(d.state)), 1970:2000
+	row = Dict((d.state[r], Int(d.year[r])) => r for r in eachindex(d.state))
+	value(v, s, t) = (x = getproperty(d, v)[row[(s, t)]]; x === missing ? NaN : Float64(x))
+	mean_of(v, s, ts) = mean(filter(!isnan, [value(v, s, t) for t in ts]))
+	# The predictors of Table 1: the log of income per head, the percent aged 15 to 24 and the retail price, means of 1980 to 1988; beer per head, mean of 1984 to 1988; cigarette sales per head in 1988, 1980 and 1975
+	predictors_of(s) = [mean_of(:lnincome, s, 1980:1988), 100 * mean_of(:age15to24, s, 1980:1988), mean_of(:retprice, s, 1980:1988), mean_of(:beer, s, 1984:1988),
+		value(:cigsale, s, 1988), value(:cigsale, s, 1980), value(:cigsale, s, 1975)]
+	Y = [value(:cigsale, s, t) for s in states, t in years]
+	P = permutedims(reduce(hcat, predictors_of.(states)))
+	ca = findfirst(==("California"), states)
+	# Every other state is a comparison state, and the predictor weights make the synthetic California follow its sales from 1970 to 1988, the 19 years before Proposition 99
+	fit = fit_synthetic_control(Y, ca, 19; predictors = P, donor_pool = :all, predictor_weights = :nested)
+	w = vec(fit.weights[1, :])
+	synthetic_P = transpose(P[fit.donors, :]) * w
+	rows = ["Ln(GDP per capita)", "Percent aged 15 to 24", "Retail price", "Beer consumption per capita", "Cigarette sales per capita 1988", "Cigarette sales per capita 1980", "Cigarette sales per capita 1975"]
+	real_article = [10.08, 17.40, 89.42, 24.28, 90.10, 120.20, 127.10]
+	synthetic_article = [9.86, 17.40, 89.41, 24.20, 91.62, 120.43, 126.99]
+	println("Table 1, the predictors before Proposition 99\n", rpad("", 34), rpad("California", 12), rpad("Article", 10), rpad("Synthetic", 12), "Article")
+	for j in eachindex(rows)
+		println(rpad(rows[j], 34), rpad(round(P[ca, j], digits = 2), 12), rpad(real_article[j], 10), rpad(round(synthetic_P[j], digits = 2), 12), synthetic_article[j])
+	end
+	weights_article = Dict("Colorado" => 0.164, "Connecticut" => 0.069, "Montana" => 0.199, "Nevada" => 0.234, "Utah" => 0.334)  # every other state 0
+	println("\nTable 2, the weights of the states in the synthetic California\n", rpad("State", 16), rpad("Julia", 10), "Article")
+	for q in sortperm(w; rev = true)
+		s = states[fit.donors[q]]
+		(w[q] >= 0.0005 || haskey(weights_article, s)) && println(rpad(s, 16), rpad(round(w[q], digits = 3), 10), get(weights_article, s, 0.0))
+	end
+	println("Every other state: below 0.0005 in Julia, 0 in the article")
+	println("\nGap in cigarette sales per head in 2000, California less its synthetic control: ", round(fit.gaps[1, end], digits = 1), " packs; the article, about 26 packs fewer")
+	println("RMSPE before Proposition 99: ", round(fit.rmspe_pre[1], digits = 2))
+	println("Predictor weights of the nested search: ", join(round.(fit.predictor_weights[1, :], digits = 3), ", "))
+	println("The predictor weights need not be unique: other predictor weights, with other weights of the states, can follow the sales before 1989 about as closely")
+	# Each of the 38 states in turn as if under the policy, with its synthetic control from the other 37 and the same nested search: a couple of minutes
+	pt = placebo_test(fit, Y; predictors = P)
+	println("\nPermutation test: ratio of the RMSPE after Proposition 99 to that before, California ", round(pt.ratio_observed, digits = 2), ", ", count(>=(pt.ratio_observed), pt.ratio_placebo), " of the ", pt.n_placebo, " states as large or larger")
+	println("p-value ", round(pt.p_value, digits = 3), "; the article, 1/39 = 0.026")
+end
 '''
 
 [[wikis]]
@@ -871,6 +1002,12 @@ name = "Inference Without Standard Errors"
 file = "spcausal/inference.md"
 bundled = true
 description = "The permutation test of a synthetic control, why it ranks a ratio, and its limits"
+
+[[wikis]]
+name = "Replications"
+file = "spcausal/replications.md"
+bundled = true
+description = "Tables 1 and 2 of Abadie, Diamond and Hainmueller (2010) on Proposition 99: the predictors, the weights of the states, the nested search and the permutation test"
 
 [[wikis]]
 separator = true
@@ -923,6 +1060,9 @@ key = "AL2021a"
 
 [[references]]
 key = "Aba2021a"
+
+[[references]]
+key = "CS2021a"
 
 [[faq]]
 question = "Which tab of the Spatial Causal Inference panel should I start with?"
@@ -980,6 +1120,14 @@ hidden = true
 question = "What does the Penalty of the Synthetic Control tab do?"
 answer = '''
 Abadie and L'Hour (2021) observe that the weights that best reproduce an area under the policy may not be unique, especially with many areas, and penalise the discrepancies between the area under the policy and each comparison area it draws on. Penalty Distance sets the discrepancy: the distance on the map, in km between centroids, or the distance between the standardised predictors. A penalty of 0 is the best match alone; larger values move the weights towards the single nearest comparison area. The Penalty step fits six values.
+'''
+wiki = "Synthetic Control"
+hidden = true
+
+[[faq]]
+question = "What does Predictor Weights do on the Synthetic Control tab?"
+answer = '''
+It sets the weight of each predictor in the distance between an area under the policy and its synthetic control. Equal weighs every standardised predictor alike, the default of fit_synthetic_control. Nested Search chooses the weights as Abadie, Diamond and Hainmueller (2010) do, those whose synthetic control gives the smallest mean squared gap in the outcome before the policy. The documentation of fit_synthetic_control states that this search is not unique, so its result depends on the search, and that it needs a penalty of 0.
 '''
 wiki = "Synthetic Control"
 hidden = true

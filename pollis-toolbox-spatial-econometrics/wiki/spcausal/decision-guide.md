@@ -9,7 +9,7 @@
 
 ## Spatial DiD or Synthetic Control
 
-Spatial DiD assumes that the areas under the policy and the comparison areas would have changed alike without it, the common trend Delgado and Florax (2015) name among their assumptions, and models the spillover through the share of neighbours under the policy ([Delgado and Florax (2015)](#ref-DF2015a)). Synthetic Control assumes instead that a weighted mean of comparison areas that followed an area under the policy before it would have gone on following it. Abadie (2021) describes the settings where synthetic controls give reliable estimates and those where they may fail, and the article recommends them when few aggregate units are affected ([Abadie (2021)](#ref-Aba2021a); [Abadie, Diamond and Hainmueller (2010)](#ref-ADH2010a)). The Spatial DiD Against Synthetic Control step fits both on the same data.
+Spatial DiD assumes that the areas under the policy and the comparison areas would have changed alike without it, the common trend Delgado and Florax (2015) name among their assumptions, and models the spillover through the share of neighbours under the policy ([Delgado and Florax (2015)](#ref-DF2015a)). Synthetic Control assumes instead that a weighted mean of comparison areas that followed an area under the policy before it would have gone on following it. Abadie (2021) describes the settings where synthetic controls give reliable estimates and those where they may fail, and the article recommends them when few aggregate units are affected ([Abadie (2021)](#ref-Aba2021a); [Abadie, Diamond and Hainmueller (2010)](#ref-ADH2010a)). The Spatial DiD Against Synthetic Control step of the Synthetic Control tab fits both on its data.
 
 ## Choosing the Neighbours
 
