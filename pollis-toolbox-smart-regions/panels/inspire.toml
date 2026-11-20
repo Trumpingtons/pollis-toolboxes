@@ -1,0 +1,871 @@
+# INSPIRE Data: the INSPIRE datasets of administrative and statistical units that data.europa.eu lists, found with its
+# search API, and read from the countries' download services (WFS, Atom feeds and OGC API Features) with DuckDB
+
+[meta]
+title = "INSPIRE Data"
+viewType = "pollis.inspire"
+defaultModel = "find"
+decisionFirstColumn = "Service"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "EzXML.jl"
+github = "https://github.com/JuliaIO/EzXML.jl"
+
+[[packages]]
+name = "ZipArchives.jl"
+github = "https://github.com/JuliaIO/ZipArchives.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "inspire/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, how each reads its service, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "inspire/overview.md"
+bundled = true
+description = "What INSPIRE is, its download services, and data.europa.eu as the European entry point to its datasets"
+
+[[wikis]]
+name = "Diagnostics"
+file = "inspire/diagnostics.md"
+bundled = true
+description = "Services that send nothing, GML that DuckDB cannot read, missing columns, coordinate systems, licences"
+
+[[wikis]]
+name = "Decision Guide"
+file = "inspire/decision-guide.md"
+bundled = true
+description = "Which service to read a dataset from, and which page size, name and colour columns"
+
+[[wikis]]
+separator = true
+label = "Services and Themes"
+
+[[wikis]]
+name = "Searching data.europa.eu"
+file = "inspire/data-europa-search.md"
+bundled = true
+
+[[wikis]]
+name = "Web Feature Service"
+file = "inspire/wfs.md"
+bundled = true
+
+[[wikis]]
+name = "Atom Download Feeds"
+file = "inspire/atom-feeds.md"
+bundled = true
+
+[[wikis]]
+name = "OGC API Features"
+file = "inspire/ogc-api-features.md"
+bundled = true
+
+[[wikis]]
+name = "Administrative and Statistical Units"
+file = "inspire/units-themes.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Sat2026a"
+
+[[references]]
+key = "Zim2026a"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Regulations"
+
+[[references]]
+key = "EPCEU2007a"
+
+[[references]]
+key = "EC2009a"
+
+[[references]]
+key = "EC2010a"
+
+[[references]]
+key = "EC2023b"
+
+[[references]]
+separator = true
+label = "Standards and Documentation"
+
+[[references]]
+key = "IOCTF2013a"
+
+[[references]]
+key = "IMIG2024a"
+
+[[references]]
+key = "IMIG2024b"
+
+[[references]]
+key = "OGC2014a"
+
+[[references]]
+key = "OGC2022a"
+
+[[references]]
+key = "NS2005a"
+
+[[references]]
+key = "SEM2026a"
+
+[[references]]
+key = "POEU2026a"
+
+[[references]]
+key = "EC2026a"
+
+[[references]]
+key = "Eur2026a"
+
+[[faq]]
+question = "Where is the INSPIRE Geoportal?"
+answer = '''
+The European Commission decommissioned the INSPIRE Geoportal by 1 July 2026: the European Data Portal, data.europa.eu, is the European entry point for geospatial datasets, and the existing metadata and catalogue services are integrated into it through GeoDCAT-AP. The countries' own download services go on serving the data.
+
+The Find Datasets tab searches data.europa.eu; the other three tabs read the services it lists.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Which tab should I read a dataset with?"
+answer = '''
+The one of the service the dataset offers. WFS Download asks a Web Feature Service for one layer, page by page; Atom Download downloads a ready-made file from an INSPIRE Atom feed; OGC API Features reads a collection of a web API, page by page. When a dataset offers several, a WFS or an OGC API sends GeoJSON that DuckDB reads directly, and an Atom feed one file to download at once.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why does the panel ask the WFS for GeoJSON?"
+answer = '''
+INSPIRE services encode their features by default in GML, which may hold curves, multi-surfaces or two properties with the same name that DuckDB's spatial extension cannot read. When the service lists a JSON output format for GetFeature, WFS Download asks for it, and DuckDB reads the GeoJSON as it reads any file; otherwise it reads the GML.
+'''
+wiki = "Web Feature Service"
+
+[[faq]]
+question = "Why are the features downloaded only once?"
+answer = '''
+Each download goes to the Folder: the features of a WFS layer or of an OGC API collection as one GeoParquet file, the file of an Atom feed as it is, with a .zip unpacked beside it. The tab reads them from there afterwards; delete the file to download the features again, after the service's data have changed.
+'''
+wiki = "Factsheet"
+
+[[faq]]
+question = "What is an INSPIRE Atom feed?"
+answer = '''
+A pre-defined dataset download service as an Atom feed: a top feed for the service with an entry for each dataset, and a feed for each dataset with an entry for each file, in one part or several, in a coordinate reference system and a format. Atom Download follows the links from the top feed to the files.
+'''
+wiki = "Atom Download Feeds"
+hidden = true
+
+[[faq]]
+question = "Which country code does Find Datasets take?"
+answer = '''
+The two-letter code of the country in data.europa.eu, as its country facet writes it, in lower or upper case: NL for the Netherlands, BE for Belgium, GR for Greece. Beside GISCO's Units turns GR into EL, the code Eurostat uses for Greece.
+'''
+wiki = "Searching data.europa.eu"
+hidden = true
+
+[[faq]]
+question = "What is an administrative unit in INSPIRE?"
+answer = '''
+A unit of administration where a member state has and/or exercises jurisdictional rights, for local, regional and national governance, in the words of Regulation (EU) No 1089/2010. The units of a country form a hierarchy of levels, from the country itself down to the municipalities.
+'''
+wiki = "Administrative and Statistical Units"
+hidden = true
+
+[[faq]]
+question = "Why does a WFS send no features, or only some?"
+answer = '''
+A service may refuse a page larger than its own limit, take longer than the download allows, or need a layer name with its namespace prefix. WFS Download lists the layers of the service when the one given is not among them; a smaller Page Size asks for fewer features at a time.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "find"
+label = "Find Datasets"
+
+[[models]]
+id = "wfs"
+label = "WFS Download"
+
+[[models]]
+id = "atom"
+label = "Atom Download"
+
+[[models]]
+id = "ogcapi"
+label = "OGC API Features"
+
+[[bullets]]
+text = "Find Datasets"
+detail = "Searches data.europa.eu, the European entry point for INSPIRE's datasets, by theme and country, and lists each dataset's download services"
+
+[[bullets]]
+text = "WFS Download"
+detail = "Asks a Web Feature Service for the features of one layer, page by page, as GeoJSON when the service offers it, otherwise as GML"
+
+[[bullets]]
+text = "Atom Download"
+detail = "Follows an INSPIRE Atom feed from the service to its datasets and their files, and downloads and unpacks the file chosen"
+
+[[bullets]]
+text = "OGC API Features"
+detail = "Reads the features of a collection of an OGC API, page after page, as GeoJSON"
+
+[[decisionRows]]
+task = "Find Datasets"
+context = "No address yet"
+purpose = "Find the datasets of a theme in a country, and the addresses of their services"
+
+[[decisionRows]]
+task = "WFS Download"
+context = "A WFS address"
+purpose = "Read one layer of a Web Feature Service, in pages"
+
+[[decisionRows]]
+task = "Atom Download"
+context = "An Atom feed"
+purpose = "Download a ready-made file of a dataset, in GML, GeoPackage or another format"
+
+[[decisionRows]]
+task = "OGC API Features"
+context = "An OGC API address"
+purpose = "Read one collection of a web API of features, in pages"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the features are kept once downloaded, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "theme"
+label = "Theme"
+kind = "select"
+default = "administrative units"
+models = ["find"]
+
+[[inputs.options]]
+value = "administrative units"
+label = "Administrative Units"
+
+[[inputs.options]]
+value = "statistical units"
+label = "Statistical Units"
+
+[[inputs]]
+id = "country"
+label = "Country"
+tooltip = "The two-letter code of a country, as data.europa.eu writes it (GR for Greece): the datasets of Find Datasets, and the GISCO units of Beside GISCO's Units."
+default = "NL"
+
+[[inputs]]
+id = "rows"
+label = "Datasets"
+tooltip = "How many of the datasets found, the most relevant first, Find Datasets lists with their download services."
+default = "25"
+models = ["find"]
+
+[[inputs]]
+id = "wfsUrl"
+label = "Service Address"
+tooltip = "The address of the Web Feature Service, as Find Datasets lists it: a GetCapabilities request in it is left out."
+default = "https://service.pdok.nl/kadaster/brk-administratieve-eenheden/wfs/v2_0"
+models = ["wfs"]
+newRow = true
+
+[[inputs]]
+id = "wfsLayer"
+label = "Layer"
+tooltip = "The feature type to read, with its namespace prefix, as the service names it: an unknown one lists the layers the service has."
+default = "au:administrativeunit"
+models = ["wfs"]
+
+[[inputs]]
+id = "atomUrl"
+label = "Feed Address"
+tooltip = "The address of the INSPIRE Atom feed, the top feed of the download service or the feed of one dataset, as Find Datasets lists it."
+default = "https://service.pdok.nl/kadaster/brk-administratieve-eenheden/atom/index.xml"
+models = ["atom"]
+newRow = true
+
+[[inputs]]
+id = "atomFile"
+label = "File"
+tooltip = "Part of the address of the file to download, among those the feed lists: empty for the first file DuckDB reads."
+default = ""
+models = ["atom"]
+
+[[inputs]]
+id = "atomLayer"
+label = "Layer"
+tooltip = "The layer of the file to read: a GML file of INSPIRE holds one layer for each type of spatial object. Empty for the first layer."
+default = "AdministrativeUnit"
+models = ["atom"]
+
+[[inputs]]
+id = "ogcUrl"
+label = "API Address"
+tooltip = "The landing page of the OGC API, as Find Datasets lists it."
+default = "https://api.pdok.nl/kadaster/brk-administratieve-eenheden/ogc/v1"
+models = ["ogcapi"]
+newRow = true
+
+[[inputs]]
+id = "ogcCollection"
+label = "Collection"
+tooltip = "The identifier of the collection to read: an unknown one lists the collections the API has."
+default = "administrativeunit"
+models = ["ogcapi"]
+
+[[inputs]]
+id = "pageSize"
+label = "Page Size"
+tooltip = "How many features each request asks for: a service may refuse more than its own limit."
+default = "1000"
+models = ["wfs", "ogcapi"]
+
+[[inputs]]
+id = "wfsName"
+label = "Name Column"
+tooltip = "The column with the name of each unit, for the map and the comparison with GISCO."
+default = "name"
+models = ["wfs"]
+newRow = true
+
+[[inputs]]
+id = "wfsColour"
+label = "Colour By"
+tooltip = "The column the map colours by, and by which Units by Level counts: the level of each unit, in INSPIRE's administrative units."
+default = "nationalLevelName"
+models = ["wfs"]
+
+[[inputs]]
+id = "atomName"
+label = "Name Column"
+tooltip = "The column with the name of each unit, for the map and the comparison with GISCO: in INSPIRE's GML, GDAL names it after the last element of its path, text."
+default = "text"
+models = ["atom"]
+newRow = true
+
+[[inputs]]
+id = "atomColour"
+label = "Colour By"
+tooltip = "The column the map colours by, and by which Units by Level counts: in INSPIRE's GML of administrative units, LocalisedCharacterString holds the national name of each unit's level."
+default = "LocalisedCharacterString"
+models = ["atom"]
+
+[[inputs]]
+id = "ogcName"
+label = "Name Column"
+tooltip = "The column with the name of each unit, for the map and the comparison with GISCO."
+default = "name"
+models = ["ogcapi"]
+newRow = true
+
+[[inputs]]
+id = "ogcColour"
+label = "Colour By"
+tooltip = "The column the map colours by, and by which Units by Level counts: the level of each unit, in INSPIRE's administrative units."
+default = "national_level_name"
+models = ["ogcapi"]
+
+[[codeBranches]]
+model = "find"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
+api = "https://data.europa.eu/api/hub/search/search"  # the search API of data.europa.eu, the European entry point for INSPIRE's datasets
+theme, country = "{{theme}}", lowercase("{{country}}")
+words = join([split(theme); "inspire"], "+AND+")  # every word of the theme, and inspire
+search = joinpath(mktempdir(), "search.json")
+Downloads.download("$(api)?q=$(words)&filter=dataset&limit={{rows}}&facets={\"country\":[\"$(country)\"]}", search)  # the most relevant first
+total = only(query("SELECT CAST(json_extract(content, '/result/count') AS BIGINT) AS n FROM read_text('$(search)')").n)
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE datasets AS
+SELECT row_number() OVER () AS n, coalesce(r->>'/title/en', r->'/title'->>(json_keys(r->'/title')[1])) AS title, r->>'/catalog/id' AS catalogue, r
+FROM (SELECT unnest(CAST(json_extract(content, '/result/results') AS JSON[])) AS r FROM read_text('$(search)'))
+""")  # one row per dataset, its title in English when the portal has it
+DBInterface.execute(con, """
+CREATE OR REPLACE TABLE services AS
+SELECT DISTINCT n, kind, CASE WHEN kind = 'WFS' THEN rtrim(regexp_replace(url, '(?i)(service|request|version|acceptversions|typenames?|outputformat|count|maxfeatures|startindex|srsname|content-disposition)=[^&]*&?', '', 'g'), '?&') ELSE url END AS address, licence
+FROM (
+	SELECT n, d->>'/format/id' AS format, coalesce(d->>'/download_url/0', d->>'/access_url/0') AS url, d->>'/license/id' AS licence,
+		CASE WHEN format = 'WFS_SRVC' OR url ILIKE '%service=wfs%' OR url ILIKE '%/wfs%' THEN 'WFS'
+			WHEN (format IN ('OGCFEAT', 'ogcapi-features') OR url ILIKE '%/ogc/%') AND url NOT ILIKE '%service=wms%' THEN 'OGC API Features'
+			WHEN (format = 'ATOM' OR url ILIKE '%atom%') AND (url ILIKE '%atom%' OR url ILIKE '%.xml%') AND url NOT LIKE '%#%' THEN 'Atom'
+			WHEN format IN ('GPKG', 'GEOJSON', 'SHP', 'GML', 'FGB', 'KML') THEN 'File' END AS kind
+	FROM (SELECT n, unnest(CAST(coalesce(r->'/distributions', '[]') AS JSON[])) AS d FROM datasets)
+) WHERE kind IS NOT NULL
+""")  # the download services of each dataset, a WFS by its address without a request
+s = query("SELECT d.n, d.title, d.catalogue, s.kind, s.address FROM datasets d JOIN services s USING (n) ORDER BY d.n, s.kind, s.address")
+println(total, " datasets of data.europa.eu match ", theme, " and inspire in ", uppercase(country), "; of the first ", min(total, {{rows}}), ", ", length(unique(s.n)), " have a download service.")
+println("Read a WFS with WFS Download, an Atom feed with Atom Download, an OGC API with OGC API Features, and a file with the Geospatial Vector Files panel.")
+for (i, k) in enumerate(s.n)
+	(i == 1 || s.n[i - 1] != k) && println(k, ". ", s.title[i], " (", s.catalogue[i], ")")
+	println("   ", rpad(s.kind[i], 18), s.address[i])
+end
+'''
+
+[[codeBranches]]
+model = "wfs"
+code = '''
+using EzXML, DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the features are kept once downloaded, and the Next Steps save theirs
+function units(path, layer = "")  # a file's features as SQL: its columns, and its geometry as geom in longitude and latitude
+	from = isempty(layer) ? "ST_Read('$(path)')" : "ST_Read('$(path)', layer = '$(layer)')"
+	d = try
+		query("DESCRIBE SELECT * FROM $(from)")
+	catch e
+		gfs = splitext(path)[1] * ".gfs"  # GDAL's description of the layers of a GML file, written beside it
+		(occursin("duplicate column name", sprint(showerror, e)) && isfile(gfs)) || rethrow()
+		s = read(gfs, String)
+		for g in unique(m[1] for m in eachmatch(r"<GeometryName>([^<]+)</GeometryName>", s))  # a property named as the geometry, which DuckDB cannot have twice
+			s = join([i > 1 ? replace(c, "<Name>$(g)</Name>" => "<Name>$(g)_property</Name>"; count = 1) : c for (i, c) in enumerate(split(s, "<PropertyDefn>"))], "<PropertyDefn>")
+		end
+		write(gfs, s)
+		query("DESCRIBE SELECT * FROM $(from)")
+	end
+	k = findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)
+	k === nothing && error("$(path) has no geometry")
+	g, m = d.column_name[k], match(r"'([^']+)'", d.column_type[k])
+	crs = m === nothing ? "EPSG:4326" : m[1]
+	geom = crs in ("EPSG:4326", "OGC:CRS84") ? "\"$(g)\"" : "ST_Transform(\"$(g)\", '$(crs)', 'EPSG:4326')"
+	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid', '$(lowercase(g))')), $(geom) AS geom FROM $(from))"
+end
+
+service = rstrip(replace("{{wfsUrl}}", r"(?i)(service|request|version|acceptversions|typenames?|outputformat|count|maxfeatures|startindex|srsname|content-disposition)=[^&]*&?" => ""), ['?', '&'])  # the address, without a request
+ask(request) = string(service, occursin('?', service) ? "&" : "?", "service=WFS&version=2.0.0&request=", request)
+caps = root(parsexml(String(take!(Downloads.download(ask("GetCapabilities"), IOBuffer())))))  # what the service offers
+find(xpath) = nodecontent.(findall(xpath, caps, Pair{String, String}[]))  # by local names, whatever the prefixes of the namespaces
+layers = find("//*[local-name()='FeatureType']/*[local-name()='Name']")
+layer = "{{wfsLayer}}"
+layer in layers || error("The WFS has no layer $(layer): its layers are $(join(layers, ", "))")
+formats = find("//*[local-name()='Operation'][@name='GetFeature']//*[local-name()='Parameter'][@name='outputFormat']//*[local-name()='Value']")
+k = findfirst(f -> occursin(r"json"i, f), formats)
+format = k === nothing ? "GML" : formats[k]  # GeoJSON when the service offers it: GML may hold curves DuckDB cannot read
+stem = replace("inspire-wfs-$(match(r"//([^/:]+)", service)[1])-$(layer)", r"[^A-Za-z0-9.-]+" => "-")
+cache = joinpath(folder, "$(stem).parquet")  # the features, downloaded once, then read from the folder
+if !isfile(cache)
+	pages, parts = mktempdir(), String[]
+	for start in 0:{{pageSize}}:10^7  # a page at a time, until one has fewer features than asked for
+		path = joinpath(pages, "page-$(length(parts) + 1).$(format == "GML" ? "gml" : "geojson")")
+		request = "GetFeature&typeNames=$(layer)&count={{pageSize}}&startIndex=$(start)" * (format == "GML" ? "" : "&outputFormat=" * replace(format, " " => "%20", ";" => "%3B", "+" => "%2B"))
+		Downloads.download(ask(request), path)
+		m = only(query("SELECT count(*) AS n FROM $(units(path))").n)
+		m == 0 && break
+		push!(parts, path)
+		m < {{pageSize}} && break
+	end
+	isempty(parts) && error("The WFS sent no features of $(layer)")
+	DBInterface.execute(con, "COPY (SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM ($(join(["SELECT * FROM $(units(p))" for p in parts], " UNION ALL BY NAME ")))) TO '$(cache)' (FORMAT parquet)")  # areas in km² on the WGS 84 ellipsoid
+end
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT * FROM '$(cache)'")
+name, by, title, source = "{{wfsName}}", "{{wfsColour}}", layer, service
+columns = query("DESCRIBE features").column_name
+for c in (name, by)
+	c in columns || error("The features have no column $(c): their columns are $(join(columns, ", "))")
+end
+n = only(query("SELECT count(*) AS n FROM features").n)
+println(n, " features of ", layer, " (", format, "), read from ", cache)
+'''
+
+[[codeBranches]]
+model = "atom"
+code = '''
+using EzXML, ZipArchives, DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the file is kept once downloaded, and the Next Steps save theirs
+function units(path, layer = "")  # a file's features as SQL: its columns, and its geometry as geom in longitude and latitude
+	from = isempty(layer) ? "ST_Read('$(path)')" : "ST_Read('$(path)', layer = '$(layer)')"
+	d = try
+		query("DESCRIBE SELECT * FROM $(from)")
+	catch e
+		gfs = splitext(path)[1] * ".gfs"  # GDAL's description of the layers of a GML file, written beside it
+		(occursin("duplicate column name", sprint(showerror, e)) && isfile(gfs)) || rethrow()
+		s = read(gfs, String)
+		for g in unique(m[1] for m in eachmatch(r"<GeometryName>([^<]+)</GeometryName>", s))  # a property named as the geometry, which DuckDB cannot have twice
+			s = join([i > 1 ? replace(c, "<Name>$(g)</Name>" => "<Name>$(g)_property</Name>"; count = 1) : c for (i, c) in enumerate(split(s, "<PropertyDefn>"))], "<PropertyDefn>")
+		end
+		write(gfs, s)
+		query("DESCRIBE SELECT * FROM $(from)")
+	end
+	k = findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)
+	k === nothing && error("$(path) has no geometry")
+	g, m = d.column_name[k], match(r"'([^']+)'", d.column_type[k])
+	crs = m === nothing ? "EPSG:4326" : m[1]
+	geom = crs in ("EPSG:4326", "OGC:CRS84") ? "\"$(g)\"" : "ST_Transform(\"$(g)\", '$(crs)', 'EPSG:4326')"
+	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid', '$(lowercase(g))')), $(geom) AS geom FROM $(from))"
+end
+
+atom = ["a" => "http://www.w3.org/2005/Atom"]  # the namespace of Atom feeds
+feed(url) = root(parsexml(String(take!(Downloads.download(url, IOBuffer())))))
+top = feed("{{atomUrl}}")  # the feed of the download service: an entry for each dataset, linked to its own feed
+links = [l["href"] for l in findall("a:entry/a:link[@rel='alternate' and contains(@type, 'atom')]", top, atom)]
+files = []
+for f in (isempty(links) ? [top] : feed.(links))  # a feed with no dataset feeds is itself the feed of a dataset
+	for l in findall("a:entry/a:link[@rel='alternate' or @rel='section']", f, atom)  # the files of each dataset, in one part or several
+		occursin("atom", haskey(l, "type") ? l["type"] : "") && continue
+		push!(files, (href = l["href"], megabytes = haskey(l, "length") ? round(parse(Int, l["length"]) / 2^20, digits = 1) : missing))
+	end
+end
+isempty(files) && error("The feed lists no files")
+println("Files of the feed:")
+foreach(f -> println("  ", f.href, ismissing(f.megabytes) ? "" : " ($(f.megabytes) MB)"), first(files, 20))
+readable = r"\.(gpkg|gml|geojson|json|shp|fgb|kml)$"i  # what DuckDB's spatial extension reads
+k = findfirst(f -> occursin("{{atomFile}}", f.href) && occursin(readable, replace(first(split(f.href, '?')), r"\.zip$"i => ".gml")), files)
+k === nothing && error("No file of the feed matches \"{{atomFile}}\" and is one DuckDB reads, or a .zip")
+href = first(split(files[k].href, '?'))
+stem = replace("inspire-atom-$(match(r"//([^/:]+)", href)[1])-$(splitext(basename(href))[1])", r"[^A-Za-z0-9.-]+" => "-")
+download = joinpath(folder, stem * lowercase(splitext(href)[2]))
+isfile(download) || Downloads.download(files[k].href, download)  # downloaded once, then read from the folder
+path = download
+if endswith(download, ".zip")  # unpacked once, into a folder beside the .zip
+	unpacked = mkpath(joinpath(folder, stem))
+	archive = ZipReader(read(download))
+	for entry in filter(e -> !endswith(e, "/"), zip_names(archive))
+		target = normpath(joinpath(unpacked, entry))
+		startswith(target, normpath(unpacked)) || continue  # never outside the folder
+		isfile(target) || (mkpath(dirname(target)); write(target, zip_readentry(archive, entry)))
+	end
+	inside = filter(e -> occursin(readable, e), zip_names(archive))
+	isempty(inside) && error("The .zip holds no file DuckDB reads: $(join(zip_names(archive), ", "))")
+	path = normpath(joinpath(unpacked, first(inside)))
+end
+layer = "{{atomLayer}}"
+layers = query("SELECT unnest(layers).name AS name FROM ST_Read_Meta('$(path)')").name
+isempty(layer) || layer in layers || error("$(basename(path)) has no layer $(layer): its layers are $(join(layers, ", "))")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(units(path, layer))")  # areas in km² on the WGS 84 ellipsoid
+name, by, title, source = "{{atomName}}", "{{atomColour}}", isempty(layer) ? basename(path) : layer, files[k].href
+columns = query("DESCRIBE features").column_name
+for c in (name, by)
+	c in columns || error("The features have no column $(c): their columns are $(join(columns, ", "))")
+end
+n = only(query("SELECT count(*) AS n FROM features").n)
+println(n, " features of ", title, ", read from ", path)
+'''
+
+[[codeBranches]]
+model = "ogcapi"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+query(sql) = Tables.columntable(DBInterface.execute(con, sql))
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the features are kept once downloaded, and the Next Steps save theirs
+function units(path, layer = "")  # a file's features as SQL: its columns, and its geometry as geom in longitude and latitude
+	from = isempty(layer) ? "ST_Read('$(path)')" : "ST_Read('$(path)', layer = '$(layer)')"
+	d = query("DESCRIBE SELECT * FROM $(from)")
+	k = findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)
+	k === nothing && error("$(path) has no geometry")
+	g, m = d.column_name[k], match(r"'([^']+)'", d.column_type[k])
+	crs = m === nothing ? "EPSG:4326" : m[1]
+	geom = crs in ("EPSG:4326", "OGC:CRS84") ? "\"$(g)\"" : "ST_Transform(\"$(g)\", '$(crs)', 'EPSG:4326')"
+	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid', '$(lowercase(g))')), $(geom) AS geom FROM $(from))"
+end
+
+landing = rstrip(first(split("{{ogcUrl}}", '?')), '/')  # the landing page of the API
+collection = "{{ogcCollection}}"
+geojson = ["Accept" => "application/geo+json, application/json"]
+listing = joinpath(mktempdir(), "collections.json")
+Downloads.download("$(landing)/collections?f=json", listing; headers = geojson)
+collections = query("SELECT c->>'/id' AS id FROM (SELECT unnest(CAST(json_extract(content, '/collections') AS JSON[])) AS c FROM read_text('$(listing)'))").id
+collection in collections || error("The API has no collection $(collection): its collections are $(join(collections, ", "))")
+stem = replace("inspire-ogc-$(match(r"//([^/:]+)", landing)[1])-$(collection)", r"[^A-Za-z0-9.-]+" => "-")
+cache = joinpath(folder, "$(stem).parquet")  # the features, downloaded once, then read from the folder
+function pages(url)  # the pages of the collection's features, each linked to the next, until the last
+	dir, parts = mktempdir(), String[]
+	while url !== nothing
+		path = joinpath(dir, "page-$(length(parts) + 1).geojson")
+		Downloads.download(url, path; headers = geojson)
+		returned = only(query("SELECT coalesce(json_array_length(json_extract(content, '/features')), 0) AS n FROM read_text('$(path)')").n)
+		returned == 0 && break
+		push!(parts, path)
+		l = query("SELECT l->>'/href' AS href FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/links'), '[]') AS JSON[])) AS l FROM read_text('$(path)')) WHERE l->>'/rel' = 'next' ORDER BY coalesce(l->>'/type', '') ILIKE '%json%' DESC LIMIT 1").href
+		url = isempty(l) ? nothing : only(l)
+	end
+	return parts
+end
+if !isfile(cache)
+	parts = pages("$(landing)/collections/$(collection)/items?f=json&limit={{pageSize}}")
+	isempty(parts) && error("The API sent no features of $(collection)")
+	DBInterface.execute(con, "COPY (SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM ($(join(["SELECT * FROM $(units(p))" for p in parts], " UNION ALL BY NAME ")))) TO '$(cache)' (FORMAT parquet)")  # areas in km² on the WGS 84 ellipsoid
+end
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT * FROM '$(cache)'")
+name, by, title, source = "{{ogcName}}", "{{ogcColour}}", collection, landing
+columns = query("DESCRIBE features").column_name
+for c in (name, by)
+	c in columns || error("The features have no column $(c): their columns are $(join(columns, ", "))")
+end
+n = only(query("SELECT count(*) AS n FROM features").n)
+println(n, " features of ", collection, ", read from ", cache)
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-on-map"
+label = "Show on a Map"
+desc = "The units on an OpenStreetMap base map in Pollis's map view, coloured by the Colour By column; click a unit for its name and area"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+dir = mktempdir()
+colour = name == by ? "" : ", \"$(by)\""
+DBInterface.execute(con, "COPY (SELECT \"$(name)\" AS name, round(km2, 1) AS km2$(colour), geom FROM features) TO '$(joinpath(dir, "units.geojson"))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "units.geojson"); name = title, column = name == by ? "name" : by, opacity = 0.7)))
+println("Data: ", source)
+'''
+
+[[actionGroups.actions]]
+id = "areas-chart"
+label = "Largest Units by Area"
+desc = "The 25 largest units read, in km², as a bar chart drawn with ECharts"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+using ECharts
+
+d = query("SELECT coalesce(CAST(\"$(name)\" AS VARCHAR), '') AS name, round(km2, 1) AS km2 FROM features ORDER BY km2 DESC LIMIT 25")
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Largest units of $(title), km²")],
+	xAxis = [ECharts.Axis(_type = "category", data = collect(d.name), axisLabel = ECharts.AxisLabel(rotate = 45))], yAxis = [ECharts.Axis(_type = "value", name = "km²")],
+	series = [ECharts.XYSeries(name = "km²", _type = "bar", data = collect(d.km2))])
+'''
+
+[[actionGroups.actions]]
+id = "services-chart"
+label = "Services of the Datasets"
+desc = "How many of the datasets listed offer each kind of download service, as a bar chart drawn with ECharts"
+models = ["find"]
+code = '''
+using ECharts
+
+d = query("SELECT kind, count(DISTINCT n) AS datasets FROM services GROUP BY ALL ORDER BY datasets DESC")
+EChart(ec_width = 600, ec_height = 350, title = [ECharts.Title(text = "Download services of the first {{rows}} datasets of $(theme), $(uppercase(country))")],
+	xAxis = [ECharts.Axis(_type = "category", data = collect(d.kind))], yAxis = [ECharts.Axis(_type = "value", name = "datasets")],
+	series = [ECharts.XYSeries(name = "datasets", _type = "bar", data = collect(d.datasets))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "download-contents"
+label = "Download and Columns"
+desc = "Where the features came from, their columns and coordinate extent, and the values of the Colour By column"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+println("From ", source, "; ", n, " features of ", title)
+d = query("DESCRIBE features")
+println("Columns: ", join(["$(d.column_name[i]) ($(d.column_type[i]))" for i in eachindex(d.column_name) if d.column_name[i] != "geom"], ", "))
+box = query("SELECT ST_XMin(ST_Extent_Agg(geom)) AS w, ST_XMax(ST_Extent_Agg(geom)) AS e, ST_YMin(ST_Extent_Agg(geom)) AS s, ST_YMax(ST_Extent_Agg(geom)) AS n FROM features")
+println("Extent: longitude ", round(box.w[1], digits = 3), " to ", round(box.e[1], digits = 3), ", latitude ", round(box.s[1], digits = 3), " to ", round(box.n[1], digits = 3))
+v = query("SELECT coalesce(CAST(\"$(by)\" AS VARCHAR), 'none') AS value, count(*) AS units FROM features GROUP BY ALL ORDER BY units DESC LIMIT 15")
+println(by, ": ", join(["$(v.value[i]) ($(v.units[i]))" for i in eachindex(v.value)], ", "))
+'''
+
+[[actionGroups.actions]]
+id = "geometry-check"
+label = "Geometry Check"
+desc = "Invalid and empty geometries, units in several parts, the vertices of the boundaries, and the smallest units"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+g = query("SELECT count(*) FILTER (WHERE NOT ST_IsValid(geom)) AS invalid, count(*) FILTER (WHERE ST_IsEmpty(geom)) AS empty, count(*) FILTER (WHERE ST_NumGeometries(geom) > 1) AS multipart, sum(ST_NPoints(geom)) AS vertices, median(ST_NPoints(geom)) AS median_vertices, string_agg(DISTINCT ST_GeometryType(geom), ', ') AS types FROM features")
+println("Geometry types: ", g.types[1], "; invalid: ", g.invalid[1], "; empty: ", g.empty[1], "; units in several parts (islands, enclaves): ", g.multipart[1])
+println("Vertices: ", g.vertices[1], " in all, median ", g.median_vertices[1], " per unit")
+s = query("SELECT coalesce(CAST(\"$(name)\" AS VARCHAR), '') AS name, km2 FROM features ORDER BY km2 LIMIT 5")
+println("Smallest units: ", join(["$(s.name[i]) $(round(s.km2[i], digits = 3)) km²" for i in eachindex(s.name)], "; "))
+'''
+
+[[actionGroups.actions]]
+id = "catalogues"
+label = "Catalogues and Duplicates"
+desc = "The catalogues the datasets listed come from, and the titles listed more than once, a dataset that two catalogues pass on to data.europa.eu"
+models = ["find"]
+code = '''
+c = query("SELECT catalogue, count(*) AS datasets FROM datasets GROUP BY ALL ORDER BY datasets DESC")
+println("Catalogues: ", join(["$(c.catalogue[i]) ($(c.datasets[i]))" for i in eachindex(c.catalogue)], ", "))
+d = query("SELECT title, string_agg(catalogue, ', ' ORDER BY catalogue) AS catalogues, string_agg(CAST(n AS VARCHAR), ', ' ORDER BY n) AS numbers FROM datasets GROUP BY title HAVING count(*) > 1 ORDER BY min(n)")
+println("Titles listed more than once: ", length(d.title))
+for i in eachindex(d.title)
+	println("  ", d.title[i], ": numbers ", d.numbers[i], ", from ", d.catalogues[i])
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "beside-gisco"
+label = "Beside GISCO's Units"
+desc = "The units of the most frequent value of Colour By, the level with the most units, beside GISCO's local administrative units of 2024 for the Country: their numbers, total areas, and the units of the same name whose areas differ most (GISCO's file, about 78 MB, is downloaded once)"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+lau = joinpath(folder, "LAU_RG_01M_2024_4326.gpkg")  # GISCO's local administrative units of 2024, the file the Eurostat GISCO panel keeps
+isfile(lau) || Downloads.download("https://gisco-services.ec.europa.eu/distribution/v2/lau/gpkg/LAU_RG_01M_2024_4326.gpkg", lau)
+code = replace(uppercase("{{country}}"), "GR" => "EL")  # Eurostat writes EL for Greece
+DBInterface.execute(con, "CREATE OR REPLACE TABLE gisco AS SELECT LAU_NAME AS name, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(units(lau)) WHERE CNTR_CODE = '$(code)'")
+level = only(query("SELECT \"$(by)\" AS v FROM features GROUP BY ALL ORDER BY count(*) DESC LIMIT 1").v)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE national AS SELECT CAST(\"$(name)\" AS VARCHAR) AS name, km2 FROM features WHERE \"$(by)\" = '$(level)'")
+t = query("SELECT (SELECT count(*) FROM national) AS units, (SELECT round(sum(km2)) FROM national) AS km2, (SELECT count(*) FROM gisco) AS lau, (SELECT round(sum(km2)) FROM gisco) AS lau_km2, (SELECT count(*) FROM national a JOIN gisco b ON lower(a.name) = lower(b.name)) AS same")
+println(title, ", ", by, " = ", level, ": ", t.units[1], " units, ", t.km2[1], " km²; GISCO's LAU 2024 of ", code, ": ", t.lau[1], " units, ", t.lau_km2[1], " km²; ", t.same[1], " names in both")
+d = query("SELECT a.name, round(a.km2, 1) AS here, round(b.km2, 1) AS gisco, round(100 * (a.km2 / b.km2 - 1), 1) AS pct FROM national a JOIN gisco b ON lower(a.name) = lower(b.name) ORDER BY abs(a.km2 / b.km2 - 1) DESC LIMIT 10")
+println("Largest differences of area, km² here and in GISCO's: ", join(["$(d.name[i]) $(d.here[i]) and $(d.gisco[i]) ($(d.pct[i])%)" for i in eachindex(d.name)], "; "))
+for (label, a, b) in (("Names here only", "national", "gisco"), ("Names in GISCO's only", "gisco", "national"))
+	o = query("SELECT name FROM $(a) WHERE lower(name) NOT IN (SELECT lower(name) FROM $(b) WHERE name IS NOT NULL) ORDER BY name LIMIT 15").name
+	println(label, ": ", isempty(o) ? "none" : join(o, ", "))
+end
+println("© EuroGeographics for the administrative boundaries of GISCO")
+'''
+
+[[actionGroups.actions]]
+id = "countries-side-by-side"
+label = "Countries Side by Side"
+desc = "For every country of data.europa.eu, how many datasets match the theme, and how many of them offer a WFS, an Atom feed or an OGC API"
+models = ["find"]
+code = '''
+dir = mktempdir()
+function by_country(label, formats)  # the number of datasets of each country, from the country facet of one search
+	p = joinpath(dir, "$(label).json")
+	facet = isempty(formats) ? "" : "&facets={\"format\":[$(join(["\"$(f)\"" for f in formats], ","))]}"
+	Downloads.download("$(api)?q=$(words)&filter=dataset&limit=0$(facet)", p)
+	DBInterface.execute(con, "CREATE OR REPLACE TABLE \"$(label)\" AS SELECT i->>'/id' AS country, CAST(i->>'/count' AS BIGINT) AS n FROM (SELECT unnest(CAST(f->'/items' AS JSON[])) AS i FROM (SELECT unnest(CAST(json_extract(content, '/result/facets') AS JSON[])) AS f FROM read_text('$(p)')) WHERE f->>'/id' = 'country')")
+end
+by_country("all", String[]); by_country("wfs", ["WFS_SRVC"]); by_country("atom", ["ATOM"]); by_country("ogc", ["OGCFEAT", "ogcapi-features"])
+c = query("SELECT upper(a.country) AS country, a.n AS datasets, coalesce(w.n, 0) AS wfs, coalesce(t.n, 0) AS atom, coalesce(o.n, 0) AS ogc FROM \"all\" a LEFT JOIN wfs w USING (country) LEFT JOIN atom t USING (country) LEFT JOIN ogc o USING (country) ORDER BY datasets DESC")
+println("Datasets of data.europa.eu matching ", theme, " and inspire, by country, and those with a service of each kind (by the format data.europa.eu gives the service)")
+println(rpad("country", 9), rpad("datasets", 10), rpad("WFS", 8), rpad("Atom", 8), "OGC API")
+for i in eachindex(c.country)
+	println(rpad(c.country[i], 9), rpad(c.datasets[i], 10), rpad(c.wfs[i], 8), rpad(c.atom[i], 8), c.ogc[i])
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "units-by-level"
+label = "Units by Level"
+desc = "The units of each value of Colour By, the levels of the administrative hierarchy in INSPIRE's administrative units: how many, their total, median and largest areas"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+u = query("SELECT coalesce(CAST(\"$(by)\" AS VARCHAR), 'none') AS value, count(*) AS units, round(sum(km2)) AS total, round(median(km2), 1) AS median, round(max(km2), 1) AS largest FROM features GROUP BY ALL ORDER BY units")
+w = max(length(by), maximum(length, u.value; init = 5)) + 2
+println(rpad(by, w), rpad("units", 8), rpad("total km²", 12), rpad("median km²", 12), "largest km²")
+for i in eachindex(u.value)
+	println(rpad(u.value[i], w), rpad(u.units[i], 8), rpad(u.total[i], 12), rpad(u.median[i], 12), u.largest[i])
+end
+println("Levels that cover the whole country have the same total: a level whose total is smaller does not cover all of it")
+'''
+
+[[actionGroups.actions]]
+id = "licences"
+label = "Licences of the Datasets"
+desc = "The licences the download services of the datasets listed give, as data.europa.eu records them"
+models = ["find"]
+code = '''
+l = query("SELECT coalesce(licence, 'none recorded') AS licence, count(DISTINCT n) AS datasets FROM services GROUP BY ALL ORDER BY datasets DESC")
+for i in eachindex(l.licence)
+	println(rpad(l.datasets[i], 5), l.licence[i])
+end
+println("Check the terms on each publisher's own pages before re-using the data")
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-gpkg"
+label = "Save as GeoPackage"
+desc = "The units read, with every column and their area, to a GeoPackage in the folder, for the Geospatial Vector Files panel and any GIS"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+out = joinpath(folder, "$(stem)-units.gpkg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'units', SRS 'EPSG:4326')")
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "The units read, with every column and their area, to a GeoParquet file in the folder"
+models = ["wfs", "atom", "ogcapi"]
+code = '''
+out = joinpath(folder, "$(stem)-units.parquet")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY features TO '$(out)' (FORMAT parquet)")  # DuckDB writes GeoParquet metadata for the geometry column
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-list"
+label = "Save the List as CSV"
+desc = "The datasets listed and their download services, one row per service, to a CSV file in the folder"
+models = ["find"]
+code = '''
+out = joinpath(folder, "inspire-datasets-$(country)-$(replace(theme, " " => "-")).csv")
+DBInterface.execute(con, "COPY (SELECT d.n, d.title, d.catalogue, s.kind, s.address, s.licence FROM datasets d JOIN services s USING (n) ORDER BY d.n, s.kind) TO '$(out)' (HEADER)")
+println("Wrote ", out)
+'''
