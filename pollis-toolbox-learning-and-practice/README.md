@@ -13,7 +13,7 @@ Installing it adds the **Self-Study: Learn and Practise** submenu to the end of 
 
 ## Data-Driven Decisions: Computational Lab Series
 
-A submenu of graduate lab courses, each a page of numbered steps, one a lab, with the datasets they use in Manage Competition Datasets.
+A submenu of graduate lab courses, each a page of numbered steps, one a lab, with the datasets they use in Manage Challenge Datasets.
 
 | Lab course | What it covers |
 |---|---|
