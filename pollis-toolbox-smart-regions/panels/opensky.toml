@@ -1,0 +1,824 @@
+# OpenSky Network: the aircraft the receivers of the OpenSky Network see now over an area, the flights that arrived at and
+# departed from an airport on a day, and the track of one aircraft, from the OpenSky REST API
+
+[meta]
+title = "OpenSky Network"
+viewType = "pollis.opensky"
+defaultModel = "live"
+decisionFirstColumn = "Tab"
+
+[apiKey]
+label = "OpenSky Network"
+noun = "API client"
+
+[[apiKey.fields]]
+name = "clientId"
+envVar = "OPENSKY_CLIENT_ID"
+prompt = "Client id of an OpenSky API client, created on the Account page of an OpenSky Network account: needed for Flights by Airport and past tracks"
+password = false
+
+[[apiKey.fields]]
+name = "clientSecret"
+envVar = "OPENSKY_CLIENT_SECRET"
+prompt = "Client secret of the same OpenSky API client"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "opensky/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, the requests they make, the account each needs, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "opensky/overview.md"
+bundled = true
+description = "The OpenSky Network, ADS-B and its receivers, and what its REST API returns"
+
+[[wikis]]
+name = "Decision Guide"
+file = "opensky/decision-guide.md"
+bundled = true
+description = "Which tab, which Example Area, and when an API client is needed"
+
+[[wikis]]
+name = "Authentication"
+file = "opensky/authentication.md"
+bundled = true
+description = "The OpenSky API client, where Pollis keeps it, the access token, and running the code outside the REPL"
+
+[[wikis]]
+separator = true
+label = "Data"
+
+[[wikis]]
+name = "State Vectors"
+file = "opensky/state-vectors.md"
+bundled = true
+description = "The fields of a state vector, position sources, aircraft categories and the countries inferred from addresses"
+
+[[wikis]]
+name = "Flights by Airport"
+file = "opensky/flights-by-airport.md"
+bundled = true
+description = "How OpenSky derives flights, the estimated airports of departure and arrival, and the days available"
+
+[[wikis]]
+name = "Aircraft Tracks"
+file = "opensky/aircraft-tracks.md"
+bundled = true
+description = "Waypoints of a track, the rules that select them, live and past tracks"
+
+[[wikis]]
+name = "Credits and Limits"
+file = "opensky/credits-limits.md"
+bundled = true
+description = "The daily credits of each kind of request, their cost, and the time limits of anonymous and authenticated users"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "Zwi2026a"
+
+[[references]]
+separator = true
+label = "Data and Documentation"
+
+[[references]]
+key = "OSN2026a"
+
+[[references]]
+key = "Our2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "SSLMW2014a"
+
+[[references]]
+key = "SOLSL2021a"
+
+[[faq]]
+question = "Which tabs need an OpenSky account?"
+answer = '''
+Live Aircraft and the live track of Aircraft Track work without one, within the daily credits of anonymous users. Flights by Airport, and the track of a past flight, need an OpenSky API client, whose client id and secret are set with the key on the Powered by line. With the client set, every tab uses it, and draws on the larger credits of a registered user.
+'''
+wiki = "Authentication"
+
+[[faq]]
+question = "Why are yesterday's flights the latest?"
+answer = '''
+The OpenSky Network computes flights from the positions of the day by a batch process at night, so the arrivals and departures of an airport are available from the previous day back.
+'''
+wiki = "Flights by Airport"
+
+[[faq]]
+question = "What happens when the credits run out?"
+answer = '''
+The OpenSky API answers with HTTP 429 and the panel stops with a message that says when the credits of that kind of request refill. States, flights and tracks each have their own credits, so the other tabs still work.
+'''
+wiki = "Credits and Limits"
+
+[[faq]]
+question = "What is the country of an aircraft in Live Aircraft?"
+answer = '''
+The country the OpenSky Network infers from the ICAO 24-bit address of the transponder, the one to which the address belongs: it says nothing of the operator of the aircraft or of where the flight comes from or goes.
+'''
+wiki = "State Vectors"
+hidden = true
+
+[[faq]]
+question = "Why does a flight have no airport of departure or arrival?"
+answer = '''
+OpenSky estimates the airports from the first and last positions it received, and leaves the field empty when it could not identify one, for instance when the aircraft entered or left the reach of its receivers in flight.
+'''
+wiki = "Flights by Airport"
+hidden = true
+
+[[faq]]
+question = "Why are the waypoints of a track far apart?"
+answer = '''
+A track keeps only selected positions: one at least every 15 minutes in flight, and one whenever the aircraft turns by more than 2.5 degrees, climbs or descends by more than 100 metres, or lands or takes off. A gap much longer than 15 minutes means the receivers lost the aircraft.
+'''
+wiki = "Aircraft Tracks"
+hidden = true
+
+[[models]]
+id = "live"
+label = "Live Aircraft"
+
+[[models]]
+id = "airport"
+label = "Flights by Airport"
+
+[[models]]
+id = "track"
+label = "Aircraft Track"
+
+[[bullets]]
+text = "Live Aircraft"
+detail = "The state vectors of the aircraft over an area now: position, altitude, speed, heading, callsign and country"
+
+[[bullets]]
+text = "Flights by Airport"
+detail = "The arrivals and departures of an airport on a day, with the estimated airport at the other end of each flight"
+
+[[bullets]]
+text = "Aircraft Track"
+detail = "The waypoints of the flight of one aircraft, live or within the last 30 days, with altitude and heading"
+
+[[decisionRows]]
+task = "Live Aircraft"
+context = "Now, over an area"
+purpose = "Which aircraft are in the air over an area, how high and how fast, and from which countries"
+
+[[decisionRows]]
+task = "Flights by Airport"
+context = "A past day"
+purpose = "The traffic of an airport by hour, the airports it is linked to, and the airlines that fly there"
+
+[[decisionRows]]
+task = "Aircraft Track"
+context = "One flight"
+purpose = "The path and altitude profile of a flight, and how far it flew compared with the direct route"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the airports file and the flights of past days are kept, in a folder opensky, and where the Next Steps save their files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "area"
+label = "Example Area"
+kind = "select"
+default = "london"
+tooltip = "The box whose aircraft the tab reads: a city and its airports, a box around a country, which takes in aircraft over its neighbours and the sea, or the Custom Box."
+models = ["live", "track"]
+newRow = true
+
+[[inputs.options]]
+value = "london"
+label = "London"
+
+[[inputs.options]]
+value = "paris"
+label = "Paris"
+
+[[inputs.options]]
+value = "frankfurt"
+label = "Frankfurt"
+
+[[inputs.options]]
+value = "newyork"
+label = "New York"
+
+[[inputs.options]]
+value = "singapore"
+label = "Singapore"
+
+[[inputs.options]]
+value = "usa"
+label = "United States"
+
+[[inputs.options]]
+value = "canada"
+label = "Canada"
+
+[[inputs.options]]
+value = "india"
+label = "India"
+
+[[inputs.options]]
+value = "brazil"
+label = "Brazil"
+
+[[inputs.options]]
+value = "australia"
+label = "Australia"
+
+[[inputs.options]]
+value = "custom"
+label = "Custom"
+
+[[inputs]]
+id = "box"
+label = "Custom Box"
+tooltip = "With Example Area set to Custom: the west, south, east and north edges of the box in degrees of longitude and latitude, separated by commas."
+default = "11.1, 44.3, 11.6, 44.7"
+models = ["live", "track"]
+
+[[inputs]]
+id = "airport"
+label = "Airport"
+tooltip = "The ICAO code of the airport, four letters, such as EGLL for London Heathrow or KJFK for New York JFK."
+default = "EGLL"
+models = ["airport"]
+newRow = true
+
+[[inputs]]
+id = "day"
+label = "Day"
+tooltip = "The day, in UTC, as 2026-11-19, or yesterday, the latest day available: the OpenSky Network adds the flights of a day overnight."
+default = "yesterday"
+models = ["airport"]
+
+[[inputs]]
+id = "aircraft"
+label = "Aircraft"
+tooltip = "The ICAO 24-bit address of the transponder, six hexadecimal characters such as 4ca7b5, or nearest: the airborne aircraft nearest the centre of the Example Area now, for a live track."
+default = "nearest"
+models = ["track"]
+newRow = true
+
+[[inputs]]
+id = "trackTime"
+label = "Time"
+tooltip = "live, the flight the aircraft is on now; or a time in UTC as 2026-11-19 14:30, within the last 30 days, for the flight it was on then, which needs an OpenSky API client."
+default = "live"
+models = ["track"]
+
+[[codeBranches]]
+model = "live"
+code = '''
+using DuckDB, Tables, Downloads, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+execute(sql) = DBInterface.execute(con, sql)
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "opensky"))  # where the Next Steps save their files
+enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~" ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)
+has_account = haskey(ENV, "OPENSKY_CLIENT_ID") && haskey(ENV, "OPENSKY_CLIENT_SECRET")  # an OpenSky API client, set with the key on the Powered by line
+credits = Dict{String, String}()  # the credits left today for states, flights and tracks, as the API reports them
+held_token = Ref(("", 0.0))
+function token()  # an access token of the OpenSky Network for the API client, kept for 25 of its 30 minutes
+	time() < held_token[][2] && return held_token[][1]
+	out = IOBuffer()
+	r = Downloads.request("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
+		input = IOBuffer("grant_type=client_credentials&client_id=$(enc(ENV["OPENSKY_CLIENT_ID"]))&client_secret=$(enc(ENV["OPENSKY_CLIENT_SECRET"]))"),
+		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
+	answer = String(take!(out))
+	r isa Downloads.Response && r.status == 200 || error("The OpenSky Network refused the API client (HTTP $(r isa Downloads.Response ? r.status : r.message)): check the client id and secret set with the key on the Powered by line")
+	held_token[] = (match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1], time() + 25 * 60)
+	return held_token[][1]
+end
+function opensky(path, file; account = has_account, empty = "[]")  # one request to the OpenSky REST API, its answer written to file
+	account && !has_account && error("This request needs an OpenSky API client: set its client id and secret with the key on the Powered by line, or set ENV[\"OPENSKY_CLIENT_ID\"] and ENV[\"OPENSKY_CLIENT_SECRET\"]: see the Authentication wiki")
+	headers = ["User-Agent" => "Pollis (https://pollis.org)"]
+	account && push!(headers, "Authorization" => "Bearer $(token())")
+	r = open(io -> Downloads.request("https://opensky-network.org/api/" * path; output = io, headers = headers, throw = false), file * ".part", "w")
+	r isa Downloads.Response || error("The OpenSky Network could not be reached: $(r.message)")
+	answer = Dict(lowercase(k) => v for (k, v) in r.headers)
+	bucket = first(split(path, '/'))
+	haskey(answer, "x-rate-limit-remaining") && (credits[bucket] = answer["x-rate-limit-remaining"])
+	if r.status in (200, 404)
+		r.status == 404 && write(file * ".part", empty)  # nothing found: no flights in the interval, or no track
+		return mv(file * ".part", file; force = true)
+	end
+	said = first(read(file * ".part", String), 300)
+	rm(file * ".part"; force = true)
+	r.status == 429 && error("The OpenSky credits for $(bucket) are spent: they refill in about $(round(parse(Int, get(answer, "x-rate-limit-retry-after-seconds", "86400")) / 3600; digits = 1)) hours. See the Credits and Limits wiki")
+	r.status in (401, 403) && error("The OpenSky Network refused the request (HTTP $(r.status)): $(said). " * (account ? "Check the API client set with the key on the Powered by line" : "It needs an OpenSky API client: see the Authentication wiki"))
+	error("The OpenSky Network answered HTTP $(r.status) to $(path): $(said)")
+end
+
+area = "{{area}}"
+boxes = Dict("london" => (-0.7, 51.2, 0.4, 51.8), "paris" => (1.9, 48.6, 2.9, 49.2), "frankfurt" => (8.2, 49.8, 9.1, 50.4), "newyork" => (-74.4, 40.4, -73.5, 41.0), "singapore" => (103.5, 1.1, 104.2, 1.6),
+	"usa" => (-125.0, 24.5, -66.9, 49.5), "canada" => (-141.0, 41.7, -52.6, 70.0), "india" => (68.1, 6.7, 97.4, 35.7), "brazil" => (-74.0, -33.8, -34.8, 5.3), "australia" => (112.9, -43.7, 153.7, -10.6))  # west, south, east, north
+west, south, east, north = area == "custom" ? Tuple(parse.(Float64, strip.(split(raw"{{box}}", ",")))) : boxes[area]
+box_query = "lamin=$(south)&lomin=$(west)&lamax=$(north)&lomax=$(east)"
+states_sql(file) = """SELECT make_timestamp(time * 1000000) AS seen, s->>0 AS icao24, nullif(trim(s->>1), '') AS callsign, s->>2 AS country,
+	make_timestamp((s->>3)::BIGINT * 1000000) AS positioned, make_timestamp((s->>4)::BIGINT * 1000000) AS last_contact, (s->>5)::DOUBLE AS lon, (s->>6)::DOUBLE AS lat,
+	(s->>7)::DOUBLE AS altitude, (s->>8)::BOOLEAN AS on_ground, (s->>9)::DOUBLE AS velocity, (s->>10)::DOUBLE AS heading, (s->>11)::DOUBLE AS vertical_rate,
+	(s->>13)::DOUBLE AS geo_altitude, s->>14 AS squawk, (s->>16)::INTEGER AS source, (s->>17)::INTEGER AS category
+	FROM (SELECT time, unnest(states) AS s FROM read_json('$(file)', columns = {time: 'BIGINT', states: 'JSON[]'}))"""  # one row per state vector; times in UTC, altitudes in metres, speeds in m/s
+snapshot() = states_sql(opensky("states/all?$(box_query)&extended=1", joinpath(mktempdir(), "states.json"); empty = "{\"time\": 0, \"states\": null}"))
+execute("CREATE OR REPLACE TABLE aircraft AS " * snapshot())  # the state vectors of the aircraft over the box now
+tag = "$(area)-$(Dates.format(now(UTC), "yyyymmdd-HHMM"))"
+seen = query("SELECT count(*) AS n, count(*) FILTER (WHERE NOT on_ground) AS airborne, count(*) FILTER (WHERE lon IS NULL) AS unplaced, max(seen) AS seen FROM aircraft")
+println(only(seen.n), " aircraft over the box at ", only(seen.seen), " UTC: ", only(seen.airborne), " airborne, ", only(seen.n) - only(seen.airborne), " on the ground, ", only(seen.unplaced), " without a position")
+println("States credits left today: ", get(credits, "states", "not reported"), has_account ? " (API client)" : " (anonymous)")
+'''
+
+[[codeBranches]]
+model = "airport"
+code = '''
+using DuckDB, Tables, Downloads, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+execute(sql) = DBInterface.execute(con, sql)
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "opensky"))  # where the airports and the flights of past days are kept, and the Next Steps save their files
+enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~" ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)
+has_account = haskey(ENV, "OPENSKY_CLIENT_ID") && haskey(ENV, "OPENSKY_CLIENT_SECRET")  # an OpenSky API client, set with the key on the Powered by line
+credits = Dict{String, String}()  # the credits left today for states, flights and tracks, as the API reports them
+held_token = Ref(("", 0.0))
+function token()  # an access token of the OpenSky Network for the API client, kept for 25 of its 30 minutes
+	time() < held_token[][2] && return held_token[][1]
+	out = IOBuffer()
+	r = Downloads.request("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
+		input = IOBuffer("grant_type=client_credentials&client_id=$(enc(ENV["OPENSKY_CLIENT_ID"]))&client_secret=$(enc(ENV["OPENSKY_CLIENT_SECRET"]))"),
+		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
+	answer = String(take!(out))
+	r isa Downloads.Response && r.status == 200 || error("The OpenSky Network refused the API client (HTTP $(r isa Downloads.Response ? r.status : r.message)): check the client id and secret set with the key on the Powered by line")
+	held_token[] = (match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1], time() + 25 * 60)
+	return held_token[][1]
+end
+function opensky(path, file; account = has_account, empty = "[]")  # one request to the OpenSky REST API, its answer written to file
+	account && !has_account && error("This request needs an OpenSky API client: set its client id and secret with the key on the Powered by line, or set ENV[\"OPENSKY_CLIENT_ID\"] and ENV[\"OPENSKY_CLIENT_SECRET\"]: see the Authentication wiki")
+	headers = ["User-Agent" => "Pollis (https://pollis.org)"]
+	account && push!(headers, "Authorization" => "Bearer $(token())")
+	r = open(io -> Downloads.request("https://opensky-network.org/api/" * path; output = io, headers = headers, throw = false), file * ".part", "w")
+	r isa Downloads.Response || error("The OpenSky Network could not be reached: $(r.message)")
+	answer = Dict(lowercase(k) => v for (k, v) in r.headers)
+	bucket = first(split(path, '/'))
+	haskey(answer, "x-rate-limit-remaining") && (credits[bucket] = answer["x-rate-limit-remaining"])
+	if r.status in (200, 404)
+		r.status == 404 && write(file * ".part", empty)  # nothing found: no flights in the interval, or no track
+		return mv(file * ".part", file; force = true)
+	end
+	said = first(read(file * ".part", String), 300)
+	rm(file * ".part"; force = true)
+	r.status == 429 && error("The OpenSky credits for $(bucket) are spent: they refill in about $(round(parse(Int, get(answer, "x-rate-limit-retry-after-seconds", "86400")) / 3600; digits = 1)) hours. See the Credits and Limits wiki")
+	r.status in (401, 403) && error("The OpenSky Network refused the request (HTTP $(r.status)): $(said). " * (account ? "Check the API client set with the key on the Powered by line" : "It needs an OpenSky API client: see the Authentication wiki"))
+	error("The OpenSky Network answered HTTP $(r.status) to $(path): $(said)")
+end
+function fetch(url, name)  # a file downloaded once into the folder opensky: a later run reads it from there
+	path = joinpath(place, name)
+	isfile(path) || mv(Downloads.download(url, path * ".part"; headers = ["User-Agent" => "Pollis (https://pollis.org)"]), path)
+	return path
+end
+
+airport = uppercase(strip("{{airport}}"))
+day = "{{day}}" == "yesterday" ? Date(now(UTC)) - Day(1) : Date("{{day}}")
+airports_file = fetch("https://davidmegginson.github.io/ourairports-data/airports.csv", "ourairports-airports.csv")  # the airports of the world, OurAirports
+execute("CREATE OR REPLACE TABLE airports AS SELECT ident AS icao, name, iso_country AS country, municipality, longitude_deg AS lon, latitude_deg AS lat FROM read_csv('$(airports_file)')")
+here = query("SELECT name, country, lon, lat FROM airports WHERE icao = ?", [airport])
+isempty(here.name) && error("OurAirports lists no airport with the ICAO code $(airport)")
+function flights_of(airport, day)  # the SQL of the arrivals and departures of an airport on a day (UTC), each downloaded once into the folder opensky
+	first_second = round(Int, datetime2unix(DateTime(day)))
+	columns = "columns = {icao24: 'VARCHAR', callsign: 'VARCHAR', firstSeen: 'BIGINT', lastSeen: 'BIGINT', estDepartureAirport: 'VARCHAR', estArrivalAirport: 'VARCHAR', estDepartureAirportHorizDistance: 'DOUBLE', estArrivalAirportHorizDistance: 'DOUBLE', departureAirportCandidatesCount: 'INTEGER', arrivalAirportCandidatesCount: 'INTEGER'}"
+	parts = map(("arrival", "departure")) do direction
+		file = joinpath(place, "flights-$(airport)-$(day)-$(direction).json")
+		isfile(file) || opensky("flights/$(direction)?airport=$(airport)&begin=$(first_second)&end=$(first_second + 86399)", file; account = true)
+		"""SELECT '$(direction)' AS direction, icao24, nullif(trim(callsign), '') AS callsign, estDepartureAirport AS origin, estArrivalAirport AS destination,
+			$(direction == "arrival" ? "estDepartureAirport" : "estArrivalAirport") AS other, make_timestamp(firstSeen * 1000000) AS first_seen, make_timestamp(lastSeen * 1000000) AS last_seen,
+			estDepartureAirportHorizDistance AS origin_distance, estArrivalAirportHorizDistance AS destination_distance, departureAirportCandidatesCount AS origin_candidates, arrivalAirportCandidatesCount AS destination_candidates
+			FROM read_json('$(file)', $(columns))"""
+	end
+	return join(parts, " UNION ALL ")
+end
+execute("CREATE OR REPLACE TABLE flights AS " * flights_of(airport, day))  # one row per flight; other is the estimated airport at the other end, times in UTC
+tag = "$(airport)-$(day)"
+counts = query("SELECT count(*) FILTER (WHERE direction = 'arrival') AS arrivals, count(*) FILTER (WHERE direction = 'departure') AS departures FROM flights")
+println(only(here.name), " (", airport, ") on ", day, " (UTC): ", only(counts.arrivals), " arrivals and ", only(counts.departures), " departures seen by the OpenSky Network")
+haskey(credits, "flights") && println("Flights credits left today: ", credits["flights"])
+'''
+
+[[codeBranches]]
+model = "track"
+code = '''
+using DuckDB, Tables, Downloads, Dates
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+execute(sql) = DBInterface.execute(con, sql)
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "opensky"))  # where the Next Steps save their files
+enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~" ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)
+has_account = haskey(ENV, "OPENSKY_CLIENT_ID") && haskey(ENV, "OPENSKY_CLIENT_SECRET")  # an OpenSky API client, set with the key on the Powered by line
+credits = Dict{String, String}()  # the credits left today for states, flights and tracks, as the API reports them
+held_token = Ref(("", 0.0))
+function token()  # an access token of the OpenSky Network for the API client, kept for 25 of its 30 minutes
+	time() < held_token[][2] && return held_token[][1]
+	out = IOBuffer()
+	r = Downloads.request("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
+		input = IOBuffer("grant_type=client_credentials&client_id=$(enc(ENV["OPENSKY_CLIENT_ID"]))&client_secret=$(enc(ENV["OPENSKY_CLIENT_SECRET"]))"),
+		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
+	answer = String(take!(out))
+	r isa Downloads.Response && r.status == 200 || error("The OpenSky Network refused the API client (HTTP $(r isa Downloads.Response ? r.status : r.message)): check the client id and secret set with the key on the Powered by line")
+	held_token[] = (match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1], time() + 25 * 60)
+	return held_token[][1]
+end
+function opensky(path, file; account = has_account, empty = "[]")  # one request to the OpenSky REST API, its answer written to file
+	account && !has_account && error("This request needs an OpenSky API client: set its client id and secret with the key on the Powered by line, or set ENV[\"OPENSKY_CLIENT_ID\"] and ENV[\"OPENSKY_CLIENT_SECRET\"]: see the Authentication wiki")
+	headers = ["User-Agent" => "Pollis (https://pollis.org)"]
+	account && push!(headers, "Authorization" => "Bearer $(token())")
+	r = open(io -> Downloads.request("https://opensky-network.org/api/" * path; output = io, headers = headers, throw = false), file * ".part", "w")
+	r isa Downloads.Response || error("The OpenSky Network could not be reached: $(r.message)")
+	answer = Dict(lowercase(k) => v for (k, v) in r.headers)
+	bucket = first(split(path, '/'))
+	haskey(answer, "x-rate-limit-remaining") && (credits[bucket] = answer["x-rate-limit-remaining"])
+	if r.status in (200, 404)
+		r.status == 404 && write(file * ".part", empty)  # nothing found: no flights in the interval, or no track
+		return mv(file * ".part", file; force = true)
+	end
+	said = first(read(file * ".part", String), 300)
+	rm(file * ".part"; force = true)
+	r.status == 429 && error("The OpenSky credits for $(bucket) are spent: they refill in about $(round(parse(Int, get(answer, "x-rate-limit-retry-after-seconds", "86400")) / 3600; digits = 1)) hours. See the Credits and Limits wiki")
+	r.status in (401, 403) && error("The OpenSky Network refused the request (HTTP $(r.status)): $(said). " * (account ? "Check the API client set with the key on the Powered by line" : "It needs an OpenSky API client: see the Authentication wiki"))
+	error("The OpenSky Network answered HTTP $(r.status) to $(path): $(said)")
+end
+
+area = "{{area}}"
+boxes = Dict("london" => (-0.7, 51.2, 0.4, 51.8), "paris" => (1.9, 48.6, 2.9, 49.2), "frankfurt" => (8.2, 49.8, 9.1, 50.4), "newyork" => (-74.4, 40.4, -73.5, 41.0), "singapore" => (103.5, 1.1, 104.2, 1.6),
+	"usa" => (-125.0, 24.5, -66.9, 49.5), "canada" => (-141.0, 41.7, -52.6, 70.0), "india" => (68.1, 6.7, 97.4, 35.7), "brazil" => (-74.0, -33.8, -34.8, 5.3), "australia" => (112.9, -43.7, 153.7, -10.6))  # west, south, east, north
+west, south, east, north = area == "custom" ? Tuple(parse.(Float64, strip.(split(raw"{{box}}", ",")))) : boxes[area]
+aircraft = lowercase(strip("{{aircraft}}"))
+moment = strip("{{trackTime}}")
+at = moment == "live" ? 0 : round(Int, datetime2unix(DateTime(moment, dateformat"yyyy-mm-dd HH:MM")))  # 0 asks for the flight the aircraft is on now
+if aircraft == "nearest"
+	at == 0 || error("Set Aircraft to the address of a transponder for a past flight: nearest picks an aircraft in the air now")
+	states_file = opensky("states/all?lamin=$(south)&lomin=$(west)&lamax=$(north)&lomax=$(east)", joinpath(mktempdir(), "states.json"); empty = "{\"time\": 0, \"states\": null}")
+	candidates = query("""SELECT icao24 FROM (SELECT s->>0 AS icao24, (s->>5)::DOUBLE AS lon, (s->>6)::DOUBLE AS lat, (s->>8)::BOOLEAN AS on_ground
+		FROM (SELECT unnest(states) AS s FROM read_json('$(states_file)', columns = {time: 'BIGINT', states: 'JSON[]'})))
+		WHERE NOT on_ground AND lon IS NOT NULL ORDER BY (lon - ?) * (lon - ?) + (lat - ?) * (lat - ?) LIMIT 5""",
+		[(west + east) / 2, (west + east) / 2, (south + north) / 2, (south + north) / 2]).icao24  # the five airborne aircraft nearest the centre of the box
+	isempty(candidates) && error("No aircraft in the air over the Example Area now")
+else
+	candidates = [aircraft]
+end
+track_file = joinpath(mktempdir(), "track.json")
+for a in candidates  # the first of them whose track the OpenSky Network has
+	opensky("tracks/all?icao24=$(a)&time=$(at)", track_file; account = has_account || at != 0, empty = "{}")
+	read(track_file, String) == "{}" || break
+end
+read(track_file, String) == "{}" && error("The OpenSky Network has no track of $(join(candidates, ", ")) at that time")
+execute("""CREATE OR REPLACE TABLE track AS SELECT icao24, nullif(trim(callsign), '') AS callsign, make_timestamp((p->>0)::BIGINT * 1000000) AS time, (p->>1)::DOUBLE AS lat, (p->>2)::DOUBLE AS lon,
+	(p->>3)::DOUBLE AS altitude, (p->>4)::DOUBLE AS heading, (p->>5)::BOOLEAN AS on_ground
+	FROM (SELECT icao24, callsign, unnest(path) AS p FROM read_json('$(track_file)', columns = {icao24: 'VARCHAR', callsign: 'VARCHAR', startTime: 'DOUBLE', endTime: 'DOUBLE', path: 'JSON[]'}))""")  # one row per waypoint; times in UTC, altitudes in metres
+flown = query("""SELECT any_value(icao24) AS icao24, any_value(callsign) AS callsign, count(*) AS waypoints, min(time) AS first, max(time) AS last, sum(km) AS km
+	FROM (SELECT *, ST_Distance_Spheroid(ST_Point(lag(lon) OVER (ORDER BY time), lag(lat) OVER (ORDER BY time)), ST_Point(lon, lat)) / 1000 AS km FROM track)""")
+tag = only(flown.icao24)
+println("Track of ", only(flown.icao24), " (", coalesce(only(flown.callsign), "no callsign"), "): ", only(flown.waypoints), " waypoints from ", only(flown.first), " to ", only(flown.last), " UTC, ", round(coalesce(only(flown.km), 0.0); digits = 1), " km along them")
+println("Tracks credits left today: ", get(credits, "tracks", "not reported"), has_account ? " (API client)" : " (anonymous)")
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "aircraft-map"
+label = "Aircraft on a Map"
+desc = "The aircraft with a position, coloured by their barometric altitude, on an OpenStreetMap base map in Pollis's map view"
+models = ["live"]
+code = '''
+aircraft_shown = joinpath(mktempdir(), "aircraft.geojson")
+execute("COPY (SELECT icao24, callsign, country, round(coalesce(altitude, 0)) AS altitude, round(velocity * 3.6) AS km_h, round(heading) AS heading, on_ground, ST_Point(lon, lat) AS geom FROM aircraft WHERE lon IS NOT NULL) TO '$(aircraft_shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(aircraft_shown; name = "Aircraft, barometric altitude (m)", column = "altitude"); title = "Aircraft Seen by the OpenSky Network"))
+'''
+
+[[actionGroups.actions]]
+id = "altitudes-speeds"
+label = "Altitudes and Speeds"
+desc = "The barometric altitude against the speed over ground of each airborne aircraft, as a scatter chart drawn with ECharts: aircraft climbing out or on approach sit low and slow, those cruising high and fast"
+models = ["live"]
+code = '''
+using ECharts
+
+airborne = query("SELECT round(velocity * 3.6) AS km_h, round(altitude) AS altitude FROM aircraft WHERE NOT on_ground AND velocity IS NOT NULL AND altitude IS NOT NULL")
+println(length(airborne.km_h), " airborne aircraft with an altitude and a speed")
+EChart(ec_width = 680, ec_height = 420, title = [ECharts.Title(text = "Altitude and Speed of the Airborne Aircraft")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "value", name = "km/h")], yAxis = [ECharts.Axis(_type = "value", name = "m")],
+	series = [ECharts.XYSeries(name = "Aircraft", _type = "scatter", symbolSize = 5, data = [[airborne.km_h[i], airborne.altitude[i]] for i in eachindex(airborne.km_h)])])
+'''
+
+[[actionGroups.actions]]
+id = "flights-by-hour"
+label = "Flights by Hour"
+desc = "The arrivals and departures of the airport in each hour of the day, in UTC, by the time of the last and first position seen, as a bar chart drawn with ECharts"
+models = ["airport"]
+code = '''
+using ECharts
+
+by_hour = query("""SELECT h.hour, count(f.direction) FILTER (WHERE f.direction = 'arrival') AS arrivals, count(f.direction) FILTER (WHERE f.direction = 'departure') AS departures
+	FROM range(24) h(hour) LEFT JOIN flights f ON hour(CASE f.direction WHEN 'arrival' THEN f.last_seen ELSE f.first_seen END) = h.hour GROUP BY h.hour ORDER BY h.hour""")
+println("Busiest hour: ", by_hour.hour[argmax(by_hour.arrivals .+ by_hour.departures)], ":00 UTC")
+EChart(ec_width = 720, ec_height = 400, title = [ECharts.Title(text = "Arrivals and Departures by Hour, $(airport), $(day)")], tooltip = ECharts.Tooltip(trigger = "axis"), legend = ECharts.Legend(data = ["Arrivals", "Departures"]),
+	xAxis = [ECharts.Axis(_type = "category", name = "UTC", data = string.(by_hour.hour))], yAxis = [ECharts.Axis(_type = "value", name = "Flights")],
+	series = [ECharts.XYSeries(name = "Arrivals", _type = "bar", data = collect(by_hour.arrivals)), ECharts.XYSeries(name = "Departures", _type = "bar", data = collect(by_hour.departures))])
+'''
+
+[[actionGroups.actions]]
+id = "airport-routes-map"
+label = "Routes on a Map"
+desc = "The airports the flights came from or went to, with their number of flights, linked to the airport by straight lines, on an OpenStreetMap base map in Pollis's map view"
+models = ["airport"]
+code = '''
+ends_shown, links_shown = joinpath(mktempdir(), "airports.geojson"), joinpath(mktempdir(), "links.geojson")
+linked = "SELECT f.other AS icao, a.name, a.country, count(*) AS flights, a.lon, a.lat FROM flights f JOIN airports a ON a.icao = f.other WHERE f.other <> '$(airport)' GROUP BY ALL"
+execute("COPY (SELECT icao, name, country, flights, ST_Point(lon, lat) AS geom FROM ($(linked))) TO '$(ends_shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+execute("COPY (SELECT icao, name, flights, ST_MakeLine(ST_Point($(only(here.lon)), $(only(here.lat))), ST_Point(lon, lat)) AS geom FROM ($(linked))) TO '$(links_shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(links_shown; name = "Routes, flights on the day", column = "flights", opacity = 0.5), Pollis.layer(ends_shown; name = "Airports, flights on the day", column = "flights"); title = "Routes of $(airport), $(day)"))
+'''
+
+[[actionGroups.actions]]
+id = "track-map"
+label = "Track on a Map"
+desc = "The track as a line through its waypoints, and the waypoints coloured by their barometric altitude, on an OpenStreetMap base map in Pollis's map view"
+models = ["track"]
+code = '''
+line_shown, points_shown = joinpath(mktempdir(), "track.geojson"), joinpath(mktempdir(), "waypoints.geojson")
+execute("COPY (SELECT any_value(icao24) AS icao24, any_value(callsign) AS callsign, ST_MakeLine(list(ST_Point(lon, lat) ORDER BY time)) AS geom FROM track WHERE lon IS NOT NULL) TO '$(line_shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+execute("COPY (SELECT strftime(time, '%H:%M:%S') AS time, round(coalesce(altitude, 0)) AS altitude, round(heading) AS heading, on_ground, ST_Point(lon, lat) AS geom FROM track WHERE lon IS NOT NULL) TO '$(points_shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(line_shown; name = "Track", color = "#3b82f6"), Pollis.layer(points_shown; name = "Waypoints, barometric altitude (m)", column = "altitude"); title = "Track of $(tag)"))
+'''
+
+[[actionGroups.actions]]
+id = "altitude-profile"
+label = "Altitude Profile"
+desc = "The barometric altitude of each waypoint against the minutes since the first, as a line chart drawn with ECharts"
+models = ["track"]
+code = '''
+using ECharts
+
+profile = query("SELECT round((epoch(time) - min(epoch(time)) OVER ()) / 60, 1) AS minutes, round(altitude) AS altitude FROM track WHERE altitude IS NOT NULL ORDER BY time")
+println("Highest waypoint: ", isempty(profile.altitude) ? "none" : string(maximum(profile.altitude), " m"))
+EChart(ec_width = 720, ec_height = 380, title = [ECharts.Title(text = "Altitude Profile of $(tag)")], tooltip = ECharts.Tooltip(trigger = "axis"),
+	xAxis = [ECharts.Axis(_type = "value", name = "Minutes")], yAxis = [ECharts.Axis(_type = "value", name = "m")],
+	series = [ECharts.XYSeries(name = "Barometric altitude", _type = "line", data = [[profile.minutes[i], profile.altitude[i]] for i in eachindex(profile.minutes)])])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "position-sources"
+label = "Position Sources"
+desc = "How the position of each aircraft was obtained, from ADS-B, ASTERIX, multilateration (MLAT) or FLARM, the aircraft without a position, and how old the positions and last contacts are"
+models = ["live"]
+code = '''
+sources = query("SELECT coalesce(['ADS-B', 'ASTERIX', 'MLAT', 'FLARM'][source + 1], 'unknown') AS source, count(*) AS aircraft FROM aircraft GROUP BY ALL ORDER BY aircraft DESC")
+for (s, n) in zip(sources.source, sources.aircraft)
+	println(rpad(s, 10), lpad(n, 6), " aircraft")
+end
+ages = query("SELECT count(*) FILTER (WHERE positioned IS NULL) AS unplaced, median(epoch(seen) - epoch(positioned)) AS position_age, max(epoch(seen) - epoch(last_contact)) AS contact_age FROM aircraft")
+println(only(ages.unplaced), " aircraft without a position report in the last 15 seconds; median age of the positions ", coalesce(only(ages.position_age), 0), " s; oldest last contact ", coalesce(only(ages.contact_age), 0), " s")
+'''
+
+[[actionGroups.actions]]
+id = "airport-estimates"
+label = "Airport Estimates"
+desc = "For the arrivals and the departures: the share of flights whose airport at the other end is unknown, the median distance of the first or last airborne position to the airport, and the share of flights with other candidate airports nearby"
+models = ["airport"]
+code = '''
+estimates = query("""SELECT direction, count(*) AS flights, count(*) FILTER (WHERE other IS NULL) AS unknown,
+	median(CASE direction WHEN 'arrival' THEN destination_distance ELSE origin_distance END) AS distance,
+	count(*) FILTER (WHERE (CASE direction WHEN 'arrival' THEN destination_candidates ELSE origin_candidates END) > 0) AS ambiguous
+	FROM flights GROUP BY direction ORDER BY direction""")
+for r in Tables.rows(estimates)
+	println(rpad(r.direction == "arrival" ? "Arrivals" : "Departures", 12), r.flights, " flights; other airport unknown for ", round(100 * r.unknown / max(r.flights, 1); digits = 1), "%; median distance of the ",
+		r.direction == "arrival" ? "last" : "first", " airborne position to ", airport, ": ", coalesce(round(r.distance), "none"), " m; other candidate airports for ", round(100 * r.ambiguous / max(r.flights, 1); digits = 1), "%")
+end
+'''
+
+[[actionGroups.actions]]
+id = "track-gaps"
+label = "Gaps in the Track"
+desc = "The longest intervals between successive waypoints, how many exceed the 15 minutes within which the OpenSky Network places a waypoint in flight, and the waypoints without a position"
+models = ["track"]
+code = '''
+gaps = query("SELECT lag(time) OVER (ORDER BY time) AS after, time AS before, epoch(time) - epoch(lag(time) OVER (ORDER BY time)) AS seconds FROM track QUALIFY seconds IS NOT NULL ORDER BY seconds DESC")
+println(count(>(900), gaps.seconds), " gaps longer than 15 minutes; ", only(query("SELECT count(*) AS n FROM track WHERE lon IS NULL").n), " waypoints without a position")
+for i in 1:min(5, length(gaps.seconds))
+	println(gaps.after[i], " to ", gaps.before[i], " UTC: ", round(gaps.seconds[i] / 60; digits = 1), " minutes")
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "snapshots"
+label = "Snapshots over Time"
+desc = "Four more snapshots of the area a minute apart, compared with the first: the aircraft, those airborne, their mean altitude, and how many aircraft appear in every snapshot; uses four more states requests"
+models = ["live"]
+code = '''
+execute("CREATE OR REPLACE TABLE snapshots AS SELECT 1 AS k, * FROM aircraft")
+for k in 2:5
+	sleep(60)
+	execute("INSERT INTO snapshots SELECT $(k) AS k, * FROM ($(snapshot()))")
+end
+compared = query("SELECT k, min(seen) AS seen, count(*) AS aircraft, count(*) FILTER (WHERE NOT on_ground) AS airborne, round(avg(altitude) FILTER (WHERE NOT on_ground)) AS altitude FROM snapshots GROUP BY k ORDER BY k")
+println(rpad("UTC", 22), lpad("aircraft", 9), lpad("airborne", 9), lpad("mean m", 8))
+for r in Tables.rows(compared)
+	println(rpad(string(r.seen), 22), lpad(r.aircraft, 9), lpad(r.airborne, 9), lpad(coalesce(r.altitude, 0), 8))
+end
+println(only(query("SELECT count(*) AS n FROM (SELECT icao24 FROM snapshots GROUP BY icao24 HAVING count(DISTINCT k) = 5)").n), " aircraft in all five snapshots, of ", only(query("SELECT count(DISTINCT icao24) AS n FROM snapshots").n), " seen; states credits left today: ", get(credits, "states", "not reported"))
+'''
+
+[[actionGroups.actions]]
+id = "week-before"
+label = "A Week Before"
+desc = "The same airport on the same day of the week a week earlier: arrivals, departures and airports linked on each day, and the ten airports with the most flights on either; uses two more flights requests"
+models = ["airport"]
+code = '''
+execute("CREATE OR REPLACE TABLE flights_before AS " * flights_of(airport, day - Day(7)))
+both_days = "SELECT '$(day)' AS day, * FROM flights UNION ALL SELECT '$(day - Day(7))' AS day, * FROM flights_before"
+totals = query("SELECT day, count(*) FILTER (WHERE direction = 'arrival') AS arrivals, count(*) FILTER (WHERE direction = 'departure') AS departures, count(DISTINCT other) AS airports FROM ($(both_days)) GROUP BY day ORDER BY day")
+for r in Tables.rows(totals)
+	println(r.day, ": ", r.arrivals, " arrivals, ", r.departures, " departures, ", r.airports, " airports linked")
+end
+top = query("""SELECT other, count(*) FILTER (WHERE day = '$(day - Day(7))') AS before, count(*) FILTER (WHERE day = '$(day)') AS now FROM ($(both_days)) WHERE other IS NOT NULL AND other <> '$(airport)'
+	GROUP BY other ORDER BY greatest(before, now) DESC LIMIT 10""")
+println("\n", rpad("Airport", 9), lpad(string(day - Day(7)), 12), lpad(string(day), 12))
+for r in Tables.rows(top)
+	println(rpad(r.other, 9), lpad(r.before, 12), lpad(r.now, 12))
+end
+'''
+
+[[actionGroups.actions]]
+id = "flown-direct"
+label = "Flown and Direct"
+desc = "The distance along the waypoints of the track against the great-circle distance between its first and last positions, their ratio, the time between them and the mean speed"
+models = ["track"]
+code = '''
+ends = query("""SELECT ST_Distance_Spheroid(ST_Point(first(lon ORDER BY time), first(lat ORDER BY time)), ST_Point(last(lon ORDER BY time), last(lat ORDER BY time))) / 1000 AS direct,
+	(max(epoch(time)) - min(epoch(time))) / 3600 AS hours FROM track WHERE lon IS NOT NULL""")
+along, direct, hours = coalesce(only(flown.km), 0.0), only(ends.direct), only(ends.hours)
+println("Along the waypoints: ", round(along; digits = 1), " km; direct between the first and last positions: ", round(direct; digits = 1), " km; ratio ", round(along / max(direct, 1e-9); digits = 3))
+println("Time between them: ", round(hours; digits = 2), " h; mean speed along the waypoints: ", round(along / max(hours, 1e-9)), " km/h")
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "countries"
+label = "Countries of Registration"
+desc = "The aircraft by the country the OpenSky Network infers from their ICAO 24-bit address, the fifteen most frequent"
+models = ["live"]
+code = '''
+registered = query("SELECT coalesce(country, 'unknown') AS country, count(*) AS aircraft FROM aircraft GROUP BY ALL ORDER BY aircraft DESC LIMIT 15")
+total = only(query("SELECT count(*) AS n FROM aircraft").n)
+for (c, n) in zip(registered.country, registered.aircraft)
+	println(rpad(c, 28), lpad(n, 6), lpad(round(100 * n / total; digits = 1), 7), "%")
+end
+'''
+
+[[actionGroups.actions]]
+id = "callsign-prefixes"
+label = "Callsign Prefixes"
+desc = "The callsigns written as three letters and a number, the form airlines use, grouped by their three letters, the fifteen most frequent, and the share of the other callsigns"
+models = ["live", "airport"]
+code = '''
+{{?model=live}}listed_table = "aircraft"
+{{?model=airport}}listed_table = "flights"
+prefixes = query("SELECT left(callsign, 3) AS prefix, count(*) AS n FROM $(listed_table) WHERE regexp_matches(callsign, '^[A-Z]{3}[0-9]') GROUP BY ALL ORDER BY n DESC LIMIT 15")
+shares = query("SELECT count(*) AS n, count(*) FILTER (WHERE regexp_matches(callsign, '^[A-Z]{3}[0-9]')) AS airline, count(*) FILTER (WHERE callsign IS NULL) AS none FROM $(listed_table)")
+for (p, n) in zip(prefixes.prefix, prefixes.n)
+	println(rpad(p, 6), lpad(n, 6))
+end
+println("Callsigns of three letters and a number: ", round(100 * only(shares.airline) / max(only(shares.n), 1); digits = 1), "%; other callsigns: ", round(100 * (only(shares.n) - only(shares.airline) - only(shares.none)) / max(only(shares.n), 1); digits = 1), "%; no callsign: ", round(100 * only(shares.none) / max(only(shares.n), 1); digits = 1), "%")
+'''
+
+[[actionGroups.actions]]
+id = "categories"
+label = "Aircraft Categories"
+desc = "The aircraft by the emitter category their transponder broadcasts, from light aircraft to heavy jets, rotorcraft and gliders, with the share that broadcasts none"
+models = ["live"]
+code = '''
+names = ["No information", "No ADS-B emitter category", "Light", "Small", "Large", "High vortex large", "Heavy", "High performance", "Rotorcraft", "Glider or sailplane", "Lighter than air",
+	"Parachutist or skydiver", "Ultralight, hang-glider or paraglider", "Reserved", "Unmanned aerial vehicle", "Space vehicle", "Emergency surface vehicle", "Service surface vehicle", "Point obstacle", "Cluster obstacle", "Line obstacle"]
+by_category = query("SELECT coalesce(category, 0) AS category, count(*) AS aircraft FROM aircraft GROUP BY ALL ORDER BY aircraft DESC")
+for (c, n) in zip(by_category.category, by_category.aircraft)
+	println(rpad(c + 1 <= length(names) ? names[c + 1] : "Category $(c)", 38), lpad(n, 6))
+end
+'''
+
+[[actionGroups.actions]]
+id = "busiest-routes"
+label = "Busiest Routes"
+desc = "The fifteen airports with the most flights from or to the airport on the day, with their arrivals from and departures to each, the distance, and the share of flights within the airport's country"
+models = ["airport"]
+code = '''
+routes = query("""SELECT f.other, a.name, a.country, count(*) FILTER (WHERE f.direction = 'arrival') AS arrivals, count(*) FILTER (WHERE f.direction = 'departure') AS departures,
+	ST_Distance_Spheroid(ST_Point(?, ?), ST_Point(a.lon, a.lat)) / 1000 AS km FROM flights f JOIN airports a ON a.icao = f.other WHERE f.other <> ? GROUP BY ALL ORDER BY arrivals + departures DESC""", [only(here.lon), only(here.lat), airport])
+println(rpad("Airport", 8), rpad("Name", 40), rpad("", 4), lpad("from", 6), lpad("to", 6), lpad("km", 8))
+for i in 1:min(15, length(routes.other))
+	println(rpad(routes.other[i], 8), rpad(first(routes.name[i], 38), 40), rpad(routes.country[i], 4), lpad(routes.arrivals[i], 6), lpad(routes.departures[i], 6), lpad(round(Int, routes.km[i]), 8))
+end
+within = sum(routes.arrivals[routes.country .== only(here.country)]) + sum(routes.departures[routes.country .== only(here.country)])
+println("Flights with a known airport at the other end within ", only(here.country), ": ", round(100 * within / max(sum(routes.arrivals) + sum(routes.departures), 1); digits = 1), "%")
+'''
+
+[[actionGroups.actions]]
+id = "flight-phases"
+label = "Phases of Flight"
+desc = "The time between successive airborne waypoints, split into climbing, level and descending by whether the altitude rose or fell by more than 100 metres between them, and the time on the ground"
+models = ["track"]
+code = '''
+phases = query("""SELECT CASE WHEN on_ground THEN 'on the ground' WHEN rise > 100 THEN 'climbing' WHEN rise < -100 THEN 'descending' ELSE 'level' END AS phase, sum(seconds) / 60 AS minutes
+	FROM (SELECT on_ground, altitude - lag(altitude) OVER (ORDER BY time) AS rise, epoch(time) - epoch(lag(time) OVER (ORDER BY time)) AS seconds FROM track) WHERE seconds IS NOT NULL GROUP BY ALL ORDER BY minutes DESC""")
+for (p, m) in zip(phases.phase, phases.minutes)
+	println(rpad(p, 15), lpad(round(m; digits = 1), 8), " minutes")
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the table of the tab as a GeoParquet file in the folder opensky: the aircraft as points, the flights as lines to the airport at the other end, or the waypoints of the track as points"
+code = '''
+{{?model=live}}saved = "aircraft" => "SELECT *, CASE WHEN lon IS NOT NULL THEN ST_Point(lon, lat) END AS geom FROM aircraft"
+{{?model=airport}}saved = "flights" => "SELECT f.*, CASE WHEN a.lon IS NOT NULL THEN ST_MakeLine(ST_Point($(only(here.lon)), $(only(here.lat))), ST_Point(a.lon, a.lat)) END AS geom FROM flights f LEFT JOIN airports a ON a.icao = f.other"
+{{?model=track}}saved = "track" => "SELECT *, CASE WHEN lon IS NOT NULL THEN ST_Point(lon, lat) END AS geom FROM track"
+parquet_file = joinpath(place, "$(first(saved))-$(tag).parquet")
+execute("COPY ($(last(saved))) TO '$(parquet_file)' (FORMAT parquet)")
+println("Wrote ", only(query("SELECT count(*) AS n FROM read_parquet('$(parquet_file)')").n), " rows to ", parquet_file)
+'''
+
+[[actionGroups.actions]]
+id = "save-csv"
+label = "Save as CSV"
+desc = "Write the table of the tab as a CSV file in the folder opensky: the aircraft, the flights or the waypoints"
+code = '''
+{{?model=live}}listed = "aircraft"
+{{?model=airport}}listed = "flights"
+{{?model=track}}listed = "track"
+csv_file = joinpath(place, "$(listed)-$(tag).csv")
+execute("COPY $(listed) TO '$(csv_file)' (HEADER, DELIMITER ',')")
+println("Wrote ", only(query("SELECT count(*) AS n FROM read_csv('$(csv_file)')").n), " rows to ", csv_file)
+'''
