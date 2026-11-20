@@ -339,14 +339,14 @@ chooseFolder = false
 [[inputs]]
 id = "geojsonFile"
 label = "File"
-tooltip = "The GeoJSON file (.geojson or .json), in the folder above, or an absolute path. With the default, places.geojson, the example first writes six Portuguese cities to it, unless the folder has a places.geojson already."
+tooltip = "The GeoJSON file (.geojson or .json), in the folder above, or an absolute path. With the default, places.geojson, the example first writes six European cities to it, unless the folder has a places.geojson already."
 default = "places.geojson"
 models = ["geojson"]
 
 [[inputs]]
 id = "gpkgFile"
 label = "File"
-tooltip = "The GeoPackage file (.gpkg), in the folder above, or an absolute path. With the default, areas.gpkg, the example first writes the areas within 20 km of six Portuguese cities to it, unless the folder has an areas.gpkg already."
+tooltip = "The GeoPackage file (.gpkg), in the folder above, or an absolute path. With the default, areas.gpkg, the example first writes the areas within 20 km of six European cities to it, unless the folder has an areas.gpkg already."
 default = "areas.gpkg"
 models = ["gpkg"]
 
@@ -360,7 +360,7 @@ models = ["gpkg"]
 [[inputs]]
 id = "shapefileFile"
 label = "File"
-tooltip = "The .shp file, in the folder above, or an absolute path: its .shx, .dbf and .prj files must be beside it. With the default, places.shp, the example first writes six Portuguese cities to it, unless the folder has a places.shp already."
+tooltip = "The .shp file, in the folder above, or an absolute path: its .shx, .dbf and .prj files must be beside it. With the default, places.shp, the example first writes six European cities to it, unless the folder has a places.shp already."
 default = "places.shp"
 models = ["shapefile"]
 
@@ -383,7 +383,7 @@ label = "FlatGeobuf"
 [[inputs]]
 id = "geoparquetFile"
 label = "File"
-tooltip = "The GeoParquet file (.parquet), in the folder above, or an absolute path. With the default, places.parquet, the example first writes six Portuguese cities to it, unless the folder has a places.parquet already."
+tooltip = "The GeoParquet file (.parquet), in the folder above, or an absolute path. With the default, places.parquet, the example first writes six European cities to it, unless the folder has a places.parquet already."
 default = "places.parquet"
 models = ["geoparquet"]
 when = "format=geoparquet"
@@ -399,7 +399,7 @@ when = "format=geoparquet"
 [[inputs]]
 id = "fgbFile"
 label = "File"
-tooltip = "The FlatGeobuf file (.fgb), in the folder above, or an absolute path. With the default, places.fgb, the example first writes six Portuguese cities to it, unless the folder has a places.fgb already."
+tooltip = "The FlatGeobuf file (.fgb), in the folder above, or an absolute path. With the default, places.fgb, the example first writes six European cities to it, unless the folder has a places.fgb already."
 default = "places.fgb"
 models = ["geoparquet"]
 when = "format=flatgeobuf"
@@ -407,7 +407,7 @@ when = "format=flatgeobuf"
 [[inputs]]
 id = "kmlFile"
 label = "File"
-tooltip = "The KML file (.kml), or a KMZ file (.kmz), a zipped KML whose main file is doc.kml, in the folder above, or an absolute path. With the default, places.kml, the example first writes six Portuguese cities to it, unless the folder has a places.kml already."
+tooltip = "The KML file (.kml), or a KMZ file (.kmz), a zipped KML whose main file is doc.kml, in the folder above, or an absolute path. With the default, places.kml, the example first writes six European cities to it, unless the folder has a places.kml already."
 default = "places.kml"
 models = ["kml"]
 
@@ -449,7 +449,7 @@ label = "Route Points"
 [[inputs]]
 id = "filter"
 label = "Filter"
-tooltip = "SQL condition on the features, e.g. name = 'Porto', ST_YMin(geom) > 40 (north of 40 degrees on WGS 84) or ST_Intersects(geom, ST_MakeEnvelope(-9.5, 38.5, -8.5, 39.5)). true keeps them all."
+tooltip = "SQL condition on the features, e.g. name = 'Paris', ST_YMin(geom) > 50 (north of 50 degrees on WGS 84) or ST_Intersects(geom, ST_MakeEnvelope(2.0, 48.6, 2.7, 49.1)). true keeps them all."
 default = "true"
 newRow = true
 
@@ -462,7 +462,7 @@ default = "EPSG:4326"
 [[inputs]]
 id = "projectedCrs"
 label = "Projected Coordinate System"
-tooltip = "The system areas and lengths are measured in, in metres. EPSG:3035 (ETRS89 / LAEA Europe) keeps areas exact across Europe; EPSG:3763 (ETRS89 / Portugal TM06) suits Portugal; a UTM zone (e.g. EPSG:32629) suits a region of a few hundred kilometres."
+tooltip = "The system areas and lengths are measured in, in metres. EPSG:3035 (ETRS89 / LAEA Europe) keeps areas exact across Europe; EPSG:28992 (Amersfoort / RD New) suits the Netherlands; a UTM zone (e.g. EPSG:32631) suits a region of a few hundred kilometres."
 default = "EPSG:3035"
 
 [[codeBranches]]
@@ -482,13 +482,13 @@ folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 {{?model=geoparquet}}{{?format=flatgeobuf}} path = joinpath(folder, "{{fgbFile}}")  # an absolute path is kept as it is
 {{?model=kml}} path = joinpath(folder, "{{kmlFile}}")  # an absolute path is kept as it is
 {{?model=gpx}} path = joinpath(folder, "{{gpxFile}}")  # an absolute path is kept as it is
-{{?model=geojson}}{{?geojsonFile=places.geojson}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.geojson unless the folder has one already. Replace "places.geojson" with your own file.
-{{?model=shapefile}}{{?shapefileFile=places.shp}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.shp unless the folder has one already. Replace "places.shp" with your own file.
-{{?model=geoparquet}}{{?format=geoparquet}}{{?geoparquetFile=places.parquet}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.parquet unless the folder has one already. Replace "places.parquet" with your own file.
-{{?model=geoparquet}}{{?format=flatgeobuf}}{{?fgbFile=places.fgb}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.fgb unless the folder has one already. Replace "places.fgb" with your own file.
-{{?model=kml}}{{?kmlFile=places.kml}} # Example file: six Portuguese cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.kml unless the folder has one already. Replace "places.kml" with your own file.
-{{?model=gpkg}}{{?gpkgFile=areas.gpkg}} # Example file: the areas within 20 km of six Portuguese cities, as polygons in longitude and latitude (WGS 84), in the layer areas of areas.gpkg, written unless the folder has an areas.gpkg already. Replace "areas.gpkg" with your own file.
-{{?model!=gpx}} cities = "SELECT name, ST_Point(lon, lat) AS geom FROM (VALUES ('Lisboa', -9.1393, 38.7223), ('Porto', -8.6291, 41.1579), ('Braga', -8.4265, 41.5454), ('Coimbra', -8.4103, 40.2033), ('Aveiro', -8.6538, 40.6405), ('Faro', -7.9304, 37.0194)) t(name, lon, lat)"
+{{?model=geojson}}{{?geojsonFile=places.geojson}} # Example file: six European cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.geojson unless the folder has one already. Replace "places.geojson" with your own file.
+{{?model=shapefile}}{{?shapefileFile=places.shp}} # Example file: six European cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.shp unless the folder has one already. Replace "places.shp" with your own file.
+{{?model=geoparquet}}{{?format=geoparquet}}{{?geoparquetFile=places.parquet}} # Example file: six European cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.parquet unless the folder has one already. Replace "places.parquet" with your own file.
+{{?model=geoparquet}}{{?format=flatgeobuf}}{{?fgbFile=places.fgb}} # Example file: six European cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.fgb unless the folder has one already. Replace "places.fgb" with your own file.
+{{?model=kml}}{{?kmlFile=places.kml}} # Example file: six European cities, as points at their approximate centres in longitude and latitude (WGS 84), written to places.kml unless the folder has one already. Replace "places.kml" with your own file.
+{{?model=gpkg}}{{?gpkgFile=areas.gpkg}} # Example file: the areas within 20 km of six European cities, as polygons in longitude and latitude (WGS 84), in the layer areas of areas.gpkg, written unless the folder has an areas.gpkg already. Replace "areas.gpkg" with your own file.
+{{?model!=gpx}} cities = "SELECT name, ST_Point(lon, lat) AS geom FROM (VALUES ('Rome', 12.4964, 41.9028), ('Paris', 2.3522, 48.8566), ('London', -0.1276, 51.5072), ('Amsterdam', 4.9041, 52.3676), ('Munich', 11.582, 48.1351), ('Prague', 14.4378, 50.0755)) t(name, lon, lat)"
 {{?model=geojson}}{{?geojsonFile=places.geojson}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'GeoJSON')")
 {{?model=shapefile}}{{?shapefileFile=places.shp}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT GDAL, DRIVER 'ESRI Shapefile', SRS 'EPSG:4326')")
 {{?model=geoparquet}}{{?format=geoparquet}}{{?geoparquetFile=places.parquet}} isfile(path) || DBInterface.execute(con, "COPY ($cities) TO '$(path)' (FORMAT parquet)")
