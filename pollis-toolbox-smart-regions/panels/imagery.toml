@@ -1,0 +1,789 @@
+# Copernicus Imagery Layers: Sentinel-2 cloudless mosaics, CORINE Land Cover and the High-Resolution Layers of the
+# Copernicus Land Monitoring Service, drawn as raster tiles by their services on an OpenStreetMap base map in the plot pane
+
+[meta]
+title = "Copernicus Imagery Layers"
+viewType = "pollis.imagery"
+defaultModel = "sentinel2"
+decisionFirstColumn = "Layer"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[wikis]]
+name = "Factsheet"
+file = "imagery/factsheet.md"
+bundled = true
+description = "One-page reference: the three tabs, their services, the inputs and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "imagery/overview.md"
+bundled = true
+description = "Copernicus land data as map layers: what each tab shows, who makes it, and how Pollis draws it"
+
+[[wikis]]
+name = "Map Services"
+file = "imagery/map-services.md"
+bundled = true
+description = "WMTS, WMS and the ArcGIS REST API: how a map service draws a tile, a legend, and the value at a point"
+
+[[wikis]]
+name = "CORINE Nomenclature"
+file = "imagery/corine-nomenclature.md"
+bundled = true
+description = "The 44 classes of CORINE Land Cover in three levels, the minimum mapping unit, and the change layers"
+
+[[wikis]]
+name = "Decision Guide"
+file = "imagery/decision-guide.md"
+bundled = true
+description = "Which layer for which question, and when to download the data instead of drawing it"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Sentinel-2 Mosaic"
+file = "imagery/sentinel2.md"
+bundled = true
+
+[[wikis]]
+name = "CORINE Land Cover"
+file = "imagery/corine.md"
+bundled = true
+
+[[wikis]]
+name = "High-Resolution Layers"
+file = "imagery/hrl.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "EOX2026a"
+
+[[references]]
+key = "EEA2019a"
+
+[[references]]
+key = "EEA2020a"
+
+[[references]]
+key = "EEA2020b"
+
+[[references]]
+key = "EEA2020c"
+
+[[references]]
+key = "EEA2020d"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "DDCCF...2012a"
+
+[[references]]
+key = "FSHJ2016a"
+
+[[references]]
+key = "LSC2016a"
+
+[[references]]
+separator = true
+label = "Standards"
+
+[[references]]
+key = "OGC2006a"
+
+[[references]]
+key = "OGC2010a"
+
+[[references]]
+key = "Esr2026a"
+
+[[faq]]
+question = "Do I need an account or an API key to show these layers?"
+answer = '''
+No. The Sentinel-2 cloudless mosaics come from EOX IT Services' public tile service, and CORINE Land Cover and the High-Resolution Layers from the European Environment Agency's map services, which all answer without registration or a key.
+
+Each map shows the attribution the service asks for at its bottom right.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Why is the CORINE layer blank where I look?"
+answer = '''
+CORINE Land Cover covers the member and cooperating countries of the European Environment Agency, and the early years cover fewer of them: 1990 leaves out several countries that 2000 and later years map. Outside the area mapped in the year chosen the service draws nothing.
+
+Tile at the Centre fetches the tile under the place and prints its size: a transparent tile of a few hundred bytes has nothing in it.
+'''
+wiki = "CORINE Land Cover"
+
+[[faq]]
+question = "Which year should I choose for the Sentinel-2 mosaic?"
+answer = '''
+Each year from 2016 has its own mosaic, made from the images of that year. The latest year shows the place as it is now; an earlier year shows what was built, cleared or flooded since.
+
+Two Years shows the year chosen beside the first or the last, at the same place and zoom.
+'''
+wiki = "Sentinel-2 Mosaic"
+
+[[faq]]
+question = "What do the values of the High-Resolution Layers mean?"
+answer = '''
+Imperviousness Density gives the share of each 10 m pixel sealed by buildings, roads and other artificial surfaces, and Tree Cover Density the share covered by tree crowns, both from 0 to 100 %. Grassland marks grassland pixels. Water and Wetness has four classes: permanent water, temporary water, permanent wetness and temporary wetness.
+
+Values at Points reads the value of the layer at the place and around it, with the class name the service gives.
+'''
+wiki = "High-Resolution Layers"
+
+[[faq]]
+question = "Can I measure areas on these maps?"
+answer = '''
+Not on the screen: web maps use Web Mercator, which enlarges areas away from the equator. Land Cover Shares downloads the CORINE polygons in the box, cuts them to it and measures their areas in EPSG:3035, the equal-area projection of Europe.
+
+Summary of the Box does the same for the 10 m pixels of a High-Resolution Layer.
+'''
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "Why does the CORINE map change when I zoom in?"
+answer = '''
+The European Environment Agency's map service draws the 100 m raster when the map is zoomed out and the polygons when it is zoomed in past a scale of about 1:250,000, near zoom 11. The classes and colours are the same in both.
+
+Service Description prints the scales at which each layer of the service draws.
+'''
+wiki = "Map Services"
+hidden = true
+
+[[faq]]
+question = "How do I get the data itself, rather than a picture of it?"
+answer = '''
+The tiles are pictures that the service draws. Save the Polygons writes the CORINE polygons of the box to a GeoPackage, and Save the Values writes the 10 m values of a High-Resolution Layer to a GeoTIFF in EPSG:3035, which the Geospatial Raster Files panel reads.
+
+Save as GeoTIFF writes the Sentinel-2 mosaic of the box as a colour picture with its coordinates.
+'''
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "What is the smallest area CORINE Land Cover maps?"
+answer = '''
+The status layers map areas of 25 hectares or more, and linear elements, such as rivers and roads, at least 100 metres wide. The change layers map changes of 5 hectares or more.
+
+A smaller park, field or building group is part of the polygon around it, under that polygon's class.
+'''
+wiki = "CORINE Nomenclature"
+hidden = true
+
+[[models]]
+id = "sentinel2"
+label = "Sentinel-2 Mosaic"
+
+[[models]]
+id = "corine"
+label = "CORINE Land Cover"
+
+[[models]]
+id = "hrl"
+label = "High-Resolution"
+
+[[bullets]]
+text = "Sentinel-2 Mosaic"
+detail = "EOX's yearly mosaic of Sentinel-2 images without clouds, in natural colour at 10 m, from 2016 on"
+
+[[bullets]]
+text = "CORINE Land Cover"
+detail = "The 44 classes of land cover of the European Environment Agency, in polygons of 25 ha or more, for 1990, 2000, 2006, 2012 and 2018"
+
+[[bullets]]
+text = "High-Resolution"
+detail = "The High-Resolution Layers of 2018 at 10 m: Imperviousness Density, Tree Cover Density, Grassland, and Water and Wetness"
+
+[[decisionRows]]
+task = "Sentinel-2 Mosaic"
+context = "What the ground looks like"
+purpose = "See a place from above, in one year or another, under the features of a file or a land cover layer"
+
+[[decisionRows]]
+task = "CORINE Land Cover"
+context = "What the land is used for"
+purpose = "Tell urban, agricultural, forest, wetland and water areas apart, and follow them from 1990 to 2018"
+
+[[decisionRows]]
+task = "High-Resolution"
+context = "How much of it, at 10 m"
+purpose = "Measure sealed soil, tree cover, grassland or water in a place, at a finer scale than CORINE"
+
+[[inputs]]
+id = "style"
+label = "Style"
+tooltip = "The base map's style, from OpenFreeMap, whose labels are drawn over the layer: Positron is light grey; Bright and Liberty show roads, water, parks and buildings in colour; Dark and Fiord are dark."
+kind = "select"
+default = "positron"
+
+[[inputs.options]]
+value = "positron"
+label = "Positron"
+
+[[inputs.options]]
+value = "bright"
+label = "Bright"
+
+[[inputs.options]]
+value = "liberty"
+label = "Liberty"
+
+[[inputs.options]]
+value = "dark"
+label = "Dark"
+
+[[inputs.options]]
+value = "fiord"
+label = "Fiord"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder the Export steps write to: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. Choose... picks another."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+
+[[inputs]]
+id = "s2Year"
+label = "Year"
+tooltip = "The year of the mosaic: each is made from the Sentinel-2 images of that year, with the clouds left out."
+kind = "select"
+default = "2025"
+models = ["sentinel2"]
+
+[[inputs.options]]
+value = "2016"
+label = "2016"
+
+[[inputs.options]]
+value = "2017"
+label = "2017"
+
+[[inputs.options]]
+value = "2018"
+label = "2018"
+
+[[inputs.options]]
+value = "2019"
+label = "2019"
+
+[[inputs.options]]
+value = "2020"
+label = "2020"
+
+[[inputs.options]]
+value = "2021"
+label = "2021"
+
+[[inputs.options]]
+value = "2022"
+label = "2022"
+
+[[inputs.options]]
+value = "2023"
+label = "2023"
+
+[[inputs.options]]
+value = "2024"
+label = "2024"
+
+[[inputs.options]]
+value = "2025"
+label = "2025"
+
+[[inputs]]
+id = "clcYear"
+label = "Year"
+tooltip = "The reference year of CORINE Land Cover. 1990 covers fewer countries than the later years."
+kind = "select"
+default = "2018"
+models = ["corine"]
+
+[[inputs.options]]
+value = "1990"
+label = "1990"
+
+[[inputs.options]]
+value = "2000"
+label = "2000"
+
+[[inputs.options]]
+value = "2006"
+label = "2006"
+
+[[inputs.options]]
+value = "2012"
+label = "2012"
+
+[[inputs.options]]
+value = "2018"
+label = "2018"
+
+[[inputs]]
+id = "hrlLayer"
+label = "Layer"
+tooltip = "The High-Resolution Layer of 2018: the share of sealed soil or of tree cover in each 10 m pixel, from 0 to 100 %, grassland, or four classes of water and wetness."
+kind = "select"
+default = "ImperviousnessDensity"
+models = ["hrl"]
+
+[[inputs.options]]
+value = "ImperviousnessDensity"
+label = "Imperviousness Density"
+
+[[inputs.options]]
+value = "TreeCoverDensity"
+label = "Tree Cover Density"
+
+[[inputs.options]]
+value = "Grassland"
+label = "Grassland"
+
+[[inputs.options]]
+value = "WaterWetness"
+label = "Water and Wetness"
+
+[[inputs]]
+id = "opacity"
+label = "Opacity"
+tooltip = "Opacity of the layer, from 0 (transparent) to 1 (opaque): below 1, the streets and places of the base map show through."
+default = "0.7"
+models = ["corine", "hrl"]
+
+[[inputs]]
+id = "placeName"
+label = "Place Name"
+tooltip = "The name of the place, used in the titles of the Next Steps."
+default = "Bologna"
+newRow = true
+
+[[inputs]]
+id = "lon"
+label = "Longitude"
+tooltip = "Longitude of the centre of the map, in degrees on WGS 84: negative west of Greenwich."
+default = "11.3426"
+
+[[inputs]]
+id = "lat"
+label = "Latitude"
+tooltip = "Latitude of the centre of the map, in degrees on WGS 84: negative south of the equator."
+default = "44.4939"
+
+[[inputs]]
+id = "zoom"
+label = "Zoom"
+tooltip = "A whole number from 0, the whole world, to about 18, a few streets: each level up shows half the width. 9 shows a region, 12 a city, 15 a neighbourhood."
+default = "12"
+
+[[inputs]]
+id = "boxKm"
+label = "Box Side (km)"
+tooltip = "The side, in km, of the square around the place that the Next Steps measure and save. A large box makes large downloads: the services cap the polygons and pixels of one request."
+default = "10"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using Downloads  # the standard library that fetches from the services, in the Next Steps
+
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the Export steps write: Choose... picks another
+center, zoom = ({{lon}}, {{lat}}), {{zoom}}  # the map opens on {{placeName}}: replace the centre with your own place
+half = {{boxKm}} / 2  # km: half the side of the square around the place that the Next Steps measure and save
+box = ({{lon}} - half / (111.32 * cosd({{lat}})), {{lat}} - half / 111.32, {{lon}} + half / (111.32 * cosd({{lat}})), {{lat}} + half / 111.32)  # west, south, east, north in degrees
+headers = ["User-Agent" => "Pollis (https://pollis.org)"]  # how the Next Steps name themselves to the services
+{{?model=sentinel2}} # Sentinel-2 cloudless: EOX IT Services' mosaic of a year's Sentinel-2 images with the clouds left out, in natural colour at 10 m
+{{?model=sentinel2}} year = {{s2Year}}
+{{?model=sentinel2}} mosaic = year == 2016 ? "s2cloudless_3857" : "s2cloudless-$(year)_3857"  # the layer of the year, in Web Mercator
+{{?model=sentinel2}} url = "https://tiles.maps.eox.at/wmts/1.0.0/$(mosaic)/default/g/{z}/{y}/{x}.jpg"  # WMTS in its REST form: the row {y} comes before the column {x}
+{{?model=sentinel2}} attribution = "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data $(year))"  # as the service asks
+{{?model=sentinel2}} shown = Pollis.tiles(url; name = "Sentinel-2 Cloudless $(year)", attribution = attribution, maxzoom = 17)  # tiles to zoom 17; the map enlarges them beyond
+{{?model=corine}} # CORINE Land Cover: 44 classes of land cover in polygons of 25 ha or more, from the European Environment Agency (EEA)
+{{?model=corine}} year = {{clcYear}}
+{{?model=corine}} service = "https://image.discomap.eea.europa.eu/arcgis/rest/services/Corine/CLC$(year)_WM/MapServer"  # the EEA's ArcGIS map service of the year
+{{?model=corine}} url = "$(service)/export?bbox={bbox-epsg-3857}&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&layers=show:0,1&f=image"  # each tile drawn by the service: the 100 m raster zoomed out, the polygons zoomed in
+{{?model=corine}} legend = "https://image.discomap.eea.europa.eu/arcgis/services/Corine/CLC2018_WM/MapServer/WMSServer?request=GetLegendGraphic&version=1.3.0&format=image/png&layer=12"  # the 44 classes, in the same colours every year
+{{?model=corine}} attribution = "CORINE Land Cover $(year), European Environment Agency, Copernicus Land Monitoring Service"
+{{?model=corine}} shown = Pollis.tiles(url; name = "CORINE Land Cover $(year)", opacity = {{opacity}}, legend = legend, attribution = attribution)
+{{?model=hrl}} # High-Resolution Layers of 2018: imperviousness, tree cover, grassland, and water and wetness at 10 m, from the EEA
+{{?model=hrl}} product = "{{hrlLayer}}"
+{{?model=hrl}} layer_names = Dict("ImperviousnessDensity" => "Imperviousness Density", "TreeCoverDensity" => "Tree Cover Density", "Grassland" => "Grassland", "WaterWetness" => "Water and Wetness")
+{{?model=hrl}} wms = "https://image.discomap.eea.europa.eu/arcgis/services/GioLandPublic/HRL_$(product)_2018/ImageServer/WMSServer"  # the EEA's WMS of the layer
+{{?model=hrl}} url = "$(wms)?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=0&STYLES=&CRS=EPSG:3857&BBOX={bbox-epsg-3857}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true"  # a GetMap request for each tile, its box in Web Mercator
+{{?model=hrl}} legend = product in ("Grassland", "WaterWetness") ? "$(wms)?request=GetLegendGraphic&version=1.3.0&format=image/png&layer=0" : nothing  # the classes; the two densities run from 0 to 100 %
+{{?model=hrl}} attribution = "$(layer_names[product]) 2018, European Environment Agency, Copernicus Land Monitoring Service"
+{{?model=hrl}} shown = Pollis.tiles(url; name = layer_names[product] * (legend === nothing ? " 2018, 0 to 100 %" : " 2018"), opacity = {{opacity}}, legend = legend, attribution = attribution)
+display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = zoom))  # the layer under the base map's labels, in the plot pane
+'''
+
+# Next Steps action groups
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "three-zooms"
+label = "Three Zoom Levels"
+desc = "The layer three zoom levels out, at the zoom given, and three levels in: each level shows half the width of the one before"
+code = '''
+for z in (max(zoom - 3, 0), zoom, zoom + 3)
+	display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = z, title = "{{placeName}}, zoom $(z)"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "over-imagery"
+label = "Over the Imagery"
+desc = "The layer over the Sentinel-2 cloudless mosaic of 2018, so that the land cover can be checked against the ground"
+models = ["corine", "hrl"]
+code = '''
+imagery = Pollis.tiles("https://tiles.maps.eox.at/wmts/1.0.0/s2cloudless-2018_3857/default/g/{z}/{y}/{x}.jpg"; name = "Sentinel-2 Cloudless 2018", maxzoom = 17,
+	attribution = "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2018)")
+display(Pollis.webmap(imagery, shown; style = "{{style}}", center = center, zoom = zoom, title = "{{placeName}} over the Sentinel-2 mosaic of 2018"))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "tile-at-centre"
+label = "Tile at the Centre"
+desc = "Fetch the tile under the place at the zoom given, as the map does, and print the service's answer: status, type and size"
+code = '''
+n = 2^zoom  # tiles across the world at this zoom
+col = floor(Int, ({{lon}} + 180) / 360 * n)
+row = floor(Int, (1 - log(tand({{lat}}) + secd({{lat}})) / pi) / 2 * n)  # counted from the north-west corner of Web Mercator
+side = 2 * pi * 6378137 / n  # metres a tile spans in Web Mercator
+west, north = -pi * 6378137 + col * side, pi * 6378137 - row * side
+address = replace(url, "{z}" => string(zoom), "{x}" => string(col), "{y}" => string(row),
+	"{bbox-epsg-3857}" => join(round.((west, north - side, west + side, north), digits = 2), ","))
+body = IOBuffer()
+answer = Downloads.request(address; output = body, headers = headers, throw = false)
+if answer isa Downloads.Response
+	type = something(get(Dict(lowercase(k) => v for (k, v) in answer.headers), "content-type", nothing), "no type")
+	bytes = take!(body)
+	println("Tile ", zoom, "/", col, "/", row, ": HTTP ", answer.status, ", ", type, ", ", length(bytes), " bytes")
+	occursin("xml", type) || occursin("json", type) || occursin("text", type) ? println(first(String(bytes), 400)) :
+		length(bytes) < 1000 && println("A tile this small is usually empty: the layer has nothing there, or nothing at this zoom")
+else
+	println("No answer from the service: ", answer.message)
+end
+'''
+
+[[actionGroups.actions]]
+id = "service-description"
+label = "Service Description"
+desc = "What the service says of itself: the years of the mosaic, the scales at which each CORINE layer draws, or the pixel size and type of a High-Resolution Layer"
+code = '''
+{{?model=sentinel2}} capabilities = String(take!(Downloads.download("https://tiles.maps.eox.at/wmts/1.0.0/WMTSCapabilities.xml", IOBuffer(); headers = headers)))
+{{?model=sentinel2}} layers = sort(unique([m[1] for m in eachmatch(r"<ows:Identifier>(s2cloudless[^<]*_3857)</ows:Identifier>", capabilities)]))
+{{?model=sentinel2}} println("Mosaics in Web Mercator: ", join(layers, ", "))
+{{?model=sentinel2}} before = capabilities[1:first(findfirst("<ows:Identifier>$(mosaic)</ows:Identifier>", capabilities))]  # a layer's abstract comes before its identifier
+{{?model=sentinel2}} abstracts = collect(eachmatch(r"<ows:Abstract>([^<]*)</ows:Abstract>", before))
+{{?model=sentinel2}} isempty(abstracts) || println("\n", mosaic, ": ", replace(last(abstracts)[1], r"&lt;.*?&gt;" => ""))
+{{?model=corine}} using DuckDB, Tables
+{{?model=corine}} description = Downloads.download("$(service)?f=json", tempname() * ".json"; headers = headers)
+{{?model=hrl}} using DuckDB, Tables
+{{?model=hrl}} description = Downloads.download(replace(wms, "/services/" => "/rest/services/", "/WMSServer" => "") * "?f=json", tempname() * ".json"; headers = headers)
+{{?model!=sentinel2}} con = DBInterface.connect(DuckDB.DB)
+{{?model=corine}} layers = Tables.columntable(DBInterface.execute(con, "SELECT l.id, l.name, l.minScale, l.maxScale FROM (SELECT unnest(layers) AS l FROM read_json('$(description)')) WHERE NOT contains(l.name, 'DOM') AND NOT contains(l.name, '_FR_')"))  # the layers of Europe, not those of the French overseas departments
+{{?model=corine}} scale(s) = s == 0 ? "no limit" : "1:" * string(round(Int, s))
+{{?model=corine}} println(rpad("layer", 7), rpad("name", 34), rpad("drawn from", 16), "to")
+{{?model=corine}} for i in eachindex(layers.id)
+{{?model=corine}} 	println(rpad(layers.id[i], 7), rpad(layers.name[i], 34), rpad(scale(layers.minScale[i]), 16), scale(layers.maxScale[i]))
+{{?model=corine}} end
+{{?model=corine}} println("Zoom 11 is about 1:270,000 at the equator, and larger scales further from it: the polygons draw from about zoom 11 in")
+{{?model=hrl}} info = Tables.columntable(DBInterface.execute(con, "SELECT name, pixelType, pixelSizeX, pixelSizeY, spatialReference.latestWkid AS epsg, maxImageWidth, maxImageHeight, hasRasterAttributeTable FROM read_json('$(description)')"))
+{{?model=hrl}} for k in keys(info)
+{{?model=hrl}} 	println(rpad(string(k), 26), info[k][1])
+{{?model=hrl}} end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "two-years"
+label = "Two Years"
+desc = "The year chosen and the first year of the series, or the last when the first is chosen, one after the other at the same place and zoom"
+models = ["sentinel2", "corine"]
+code = '''
+{{?model=sentinel2}} other = year == 2016 ? 2025 : 2016
+{{?model=sentinel2}} then = Pollis.tiles(replace(url, mosaic => other == 2016 ? "s2cloudless_3857" : "s2cloudless-$(other)_3857"); name = "Sentinel-2 Cloudless $(other)", maxzoom = 17,
+{{?model=sentinel2}} 	attribution = replace(attribution, string(year) => string(other)))
+{{?model=corine}} other = year == 2000 ? 2018 : 2000  # 2000 maps more countries than 1990
+{{?model=corine}} then = Pollis.tiles(replace(url, "CLC$(year)" => "CLC$(other)"); name = "CORINE Land Cover $(other)", opacity = {{opacity}}, legend = legend,
+{{?model=corine}} 	attribution = replace(attribution, string(year) => string(other)))
+for (layer, y) in sort([(shown, year), (then, other)], by = last)
+	display(Pollis.webmap(layer; style = "{{style}}", center = center, zoom = zoom, title = "{{placeName}}, $(y)"))
+end
+'''
+
+[[actionGroups.actions]]
+id = "changes"
+label = "Changes 2012 to 2018"
+desc = "The CORINE change polygons of 2012 to 2018 in the box, each coloured by its change of class, with the area of each change in hectares"
+models = ["corine"]
+code = '''
+using DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+labels_file = Downloads.download("https://image.discomap.eea.europa.eu/arcgis/rest/services/Corine/CLC2018_WM/MapServer/0?f=json", tempname() * ".json"; headers = headers)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE classes AS SELECT u.value AS code, u.label AS class FROM (SELECT unnest(drawingInfo.renderer.uniqueValueInfos) AS u FROM read_json('$(labels_file)'))")
+changes_file = Downloads.download("https://image.discomap.eea.europa.eu/arcgis/rest/services/Corine/CHA2012_2018_WM/MapServer/0/query?geometry=$(join(box, ","))&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=Code_12,Code_18&outSR=4326&f=geojson",
+	tempname() * ".geojson"; headers = headers)
+found = occursin("\"Feature\"", read(changes_file, String))  # an empty collection has no columns to join on
+found || println("No change of 5 ha or more between 2012 and 2018 in the box: make the box larger")
+found && DBInterface.execute(con, """CREATE OR REPLACE TABLE changes AS
+	SELECT c.class || ' to ' || d.class AS change, Code_12, Code_18,
+		round(ST_Area(ST_Transform(ST_Intersection(geom, ST_MakeEnvelope($(join(box, ", ")))), 'EPSG:4326', 'EPSG:3035')) / 10000, 1) AS hectares,
+		ST_Intersection(geom, ST_MakeEnvelope($(join(box, ", ")))) AS geom
+	FROM ST_Read('$(changes_file)') JOIN classes c ON c.code = Code_12 JOIN classes d ON d.code = Code_18""")
+if found
+	summary = Tables.columntable(DBInterface.execute(con, "SELECT change, count(*) AS n, sum(hectares) AS hectares FROM changes GROUP BY change ORDER BY hectares DESC"))
+	println("Changes of class from 2012 to 2018 in the box: hectares, polygons, change")
+	for i in eachindex(summary.change)
+		println(rpad(summary.hectares[i], 10), rpad(summary.n[i], 4), summary.change[i])
+	end
+	layer = joinpath(mktempdir(), "changes.geojson")
+	DBInterface.execute(con, "COPY (SELECT change, hectares, geom FROM changes) TO '$(layer)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+	display(Pollis.webmap(Pollis.layer(layer; name = "Changes 2012 to 2018", column = "change", opacity = 0.8); style = "{{style}}", center = center, zoom = zoom))
+end
+'''
+
+[[actionGroups.actions]]
+id = "four-layers"
+label = "The Four Layers"
+desc = "Imperviousness Density, Tree Cover Density, Grassland, and Water and Wetness at the same place and zoom, one after the other"
+models = ["hrl"]
+code = '''
+for p in ("ImperviousnessDensity", "TreeCoverDensity", "Grassland", "WaterWetness")
+	other = Pollis.tiles(replace(url, "HRL_$(product)_2018" => "HRL_$(p)_2018"); name = layer_names[p] * " 2018", opacity = {{opacity}},
+		attribution = "$(layer_names[p]) 2018, European Environment Agency, Copernicus Land Monitoring Service")
+	display(Pollis.webmap(other; style = "{{style}}", center = center, zoom = zoom, title = layer_names[p]))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "pixel-size"
+label = "Pixel Size and Zoom"
+desc = "The ground a screen pixel covers at the place's latitude and zoom, beside the 10 m of a Sentinel-2 pixel, and the zoom at which the two match"
+models = ["sentinel2"]
+code = '''
+metres_per_pixel = 2 * pi * 6378137 * cosd({{lat}}) / (512 * 2^zoom)  # MapLibre draws the world 512 pixels wide at zoom 0
+matching = log2(2 * pi * 6378137 * cosd({{lat}}) / (512 * 10))
+println("At latitude {{lat}} and zoom ", zoom, ": ", round(metres_per_pixel, sigdigits = 3), " metres a screen pixel")
+println("A Sentinel-2 pixel is 10 m: one to one at zoom ", round(matching, digits = 1), "; beyond it the map enlarges the pixels")
+'''
+
+[[actionGroups.actions]]
+id = "values-at-points"
+label = "Values at Points"
+desc = "The value of the layer at the place and at four points half the box side north, east, south and west of it, with the class name the service gives"
+models = ["corine", "hrl"]
+code = '''
+using DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+step_lon, step_lat = half / (111.32 * cosd({{lat}})), half / 111.32
+points = [("centre", {{lon}}, {{lat}}), ("north", {{lon}}, {{lat}} + step_lat), ("east", {{lon}} + step_lon, {{lat}}),
+	("south", {{lon}}, {{lat}} - step_lat), ("west", {{lon}} - step_lon, {{lat}})]
+{{?model=corine}} labels_file = Downloads.download("$(service)/0?f=json", tempname() * ".json"; headers = headers)
+{{?model=corine}} classes = Tables.columntable(DBInterface.execute(con, "SELECT u.value AS value, u.label AS class FROM (SELECT unnest(drawingInfo.renderer.uniqueValueInfos) AS u FROM read_json('$(labels_file)'))"))
+{{?model=hrl}} rest = replace(wms, "/services/" => "/rest/services/", "/WMSServer" => "")
+{{?model=hrl}} table_file = Downloads.download("$(rest)/rasterAttributeTable?f=json", tempname() * ".json"; headers = headers)
+{{?model=hrl}} rat = Tables.columntable(DBInterface.execute(con, "SELECT unnest(features, recursive := true) FROM read_json('$(table_file)')"))
+{{?model=hrl}} name_column = first(k for k in keys(rat) if occursin(r"(?i)^class_?name$", string(k)))  # its name differs from layer to layer
+{{?model=hrl}} classes = (value = string.(rat.Value), class = string.(getproperty(rat, name_column)))
+lookup = Dict(zip(classes.value, classes.class))
+{{?model=hrl}} product == "Grassland" && (lookup["0"] = "Not grassland")  # the service's table names only the grassland class
+println(rpad("point", 9), rpad("longitude", 11), rpad("latitude", 10), "value")
+for (name, x, y) in points
+{{?model=corine}} 	text = String(take!(Downloads.download("$(service)/0/query?geometry=$(x),$(y)&geometryType=esriGeometryPoint&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&returnGeometry=false&f=json", IOBuffer(); headers = headers)))
+{{?model=corine}} 	m = match(r"\"[Cc]ode_\d\d\"\s*:\s*\"(\d+)\"", text)  # the code column is Code_18, Code_12, code_00 and so on
+{{?model=hrl}} 	geometry = "%7B%22x%22:$(x),%22y%22:$(y),%22spatialReference%22:%7B%22wkid%22:4326%7D%7D"
+{{?model=hrl}} 	text = String(take!(Downloads.download("$(rest)/identify?geometry=$(geometry)&geometryType=esriGeometryPoint&returnGeometry=false&returnCatalogItems=false&f=json", IOBuffer(); headers = headers)))
+{{?model=hrl}} 	m = match(r"\"value\"\s*:\s*\"([^\"]*)\"", text)
+	value = m === nothing ? "none: outside the area mapped" : get(lookup, m[1], m[1])
+	println(rpad(name, 9), rpad(round(x, digits = 4), 11), rpad(round(y, digits = 4), 10), value)
+end
+'''
+
+[[actionGroups.actions]]
+id = "land-cover-shares"
+label = "Land Cover Shares"
+desc = "The CORINE polygons in the box, cut to it, with the area and share of each class, measured in the equal-area projection EPSG:3035, and on a map"
+models = ["corine"]
+code = '''
+using DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+labels_file = Downloads.download("$(service)/0?f=json", tempname() * ".json"; headers = headers)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE classes AS SELECT u.value AS code, u.label AS class FROM (SELECT unnest(drawingInfo.renderer.uniqueValueInfos) AS u FROM read_json('$(labels_file)'))")
+polygons_file = Downloads.download("$(service)/0/query?geometry=$(join(box, ","))&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=4326&f=geojson",
+	tempname() * ".geojson"; headers = headers)
+occursin("exceededTransferLimit\":true", read(polygons_file, String)) && println("The service capped the polygons it sent: make the box smaller")
+code_column = first(c for c in Tables.columntable(DBInterface.execute(con, "DESCRIBE SELECT * FROM ST_Read('$(polygons_file)')")).column_name if occursin(r"(?i)^code_\d\d$", c))
+DBInterface.execute(con, """CREATE OR REPLACE TABLE cover AS
+	SELECT class, ST_Intersection(geom, ST_MakeEnvelope($(join(box, ", ")))) AS geom
+	FROM ST_Read('$(polygons_file)') JOIN classes ON code = "$(code_column)" """)
+shares = Tables.columntable(DBInterface.execute(con, """
+	SELECT class, round(sum(ST_Area(ST_Transform(geom, 'EPSG:4326', 'EPSG:3035'))) / 10000, 1) AS hectares
+	FROM cover GROUP BY class ORDER BY hectares DESC"""))
+total = sum(shares.hectares)
+println("CORINE Land Cover ", year, " in the ", {{boxKm}}, " km box around {{placeName}}: ", round(total, digits = 1), " ha")
+for i in eachindex(shares.class)
+	println(rpad(round(100 * shares.hectares[i] / total, digits = 1), 7), rpad(shares.hectares[i], 10), shares.class[i])
+end
+layer = joinpath(mktempdir(), "cover.geojson")
+DBInterface.execute(con, "COPY (SELECT class, geom FROM cover) TO '$(layer)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(layer; name = "CORINE Land Cover $(year)", column = "class", opacity = {{opacity}}); style = "{{style}}"))
+'''
+
+[[actionGroups.actions]]
+id = "box-summary"
+label = "Summary of the Box"
+desc = "The 10 m values of the layer in the box, fetched from the service in EPSG:3035: the mean density and the share of pixels above 0, or the share of each class"
+models = ["hrl"]
+code = '''
+import ArchGDAL
+using DuckDB, Tables
+rest = replace(wms, "/services/" => "/rest/services/", "/WMSServer" => "")
+side = round(Int, {{boxKm}} * 100)  # pixels of 10 m along a side of the box
+values_file = Downloads.download("$(rest)/exportImage?bbox=$(join(box, ","))&bboxSR=4326&imageSR=3035&size=$(side),$(side)&format=tiff&f=image", tempname() * ".tif"; headers = headers)
+pixels = ArchGDAL.read(values_file) do dataset
+	vec(ArchGDAL.read(dataset, 1))
+end
+mapped = filter(v -> v <= 253, pixels)  # 254 is unclassifiable, 255 outside the area mapped
+println(layer_names[product], " 2018 in the ", {{boxKm}}, " km box around {{placeName}}: ", length(mapped), " of ", length(pixels), " pixels mapped")
+if product in ("ImperviousnessDensity", "TreeCoverDensity")
+	println("Mean density ", round(sum(Int.(mapped)) / max(length(mapped), 1), digits = 1), " %; pixels above 0: ", round(100 * count(>(0), mapped) / max(length(mapped), 1), digits = 1), " %; at 80 % or more: ", round(100 * count(>=(80), mapped) / max(length(mapped), 1), digits = 1), " %")
+else
+	table_file = Downloads.download("$(rest)/rasterAttributeTable?f=json", tempname() * ".json"; headers = headers)
+	rat = Tables.columntable(DBInterface.execute(DBInterface.connect(DuckDB.DB), "SELECT unnest(features, recursive := true) FROM read_json('$(table_file)')"))
+	name_column = first(k for k in keys(rat) if occursin(r"(?i)^class_?name$", string(k)))  # its name differs from layer to layer
+	lookup = Dict(Int(v) => string(c) for (v, c) in zip(rat.Value, getproperty(rat, name_column)))
+	product == "Grassland" && (lookup[0] = "Not grassland")  # the service's table names only the grassland class
+	for v in sort(unique(mapped))
+		println(rpad(round(100 * count(==(v), mapped) / length(mapped), digits = 1), 7), "% ", get(lookup, Int(v), string(v)))
+	end
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geotiff"
+label = "Save as GeoTIFF"
+desc = "Write the mosaic of the box, in longitude and latitude at about 10 m, to a GeoTIFF in the folder above, through GDAL's WMS driver"
+models = ["sentinel2"]
+code = '''
+import ArchGDAL
+ArchGDAL.setconfigoption("GDAL_HTTP_USERAGENT", "Pollis (https://pollis.org)")
+out = joinpath(folder, "sentinel2-cloudless-$(year).tif")
+source = "WMS:https://tiles.maps.eox.at/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=$(replace(mosaic, "_3857" => ""))&SRS=EPSG:4326&BBOX=-180,-90,180,90&FORMAT=image/jpeg"
+side = round(Int, {{boxKm}} * 100)  # pixels along a side of the box: about 10 m each
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	ArchGDAL.read(source) do wms
+		ArchGDAL.gdaltranslate(wms, ["-of", "GTiff", "-projwin", string.([box[1], box[4], box[3], box[2]])..., "-outsize", string(side), string(side), "-co", "COMPRESS=DEFLATE"]; dest = out) do saved
+			println("Wrote ", out, ": ", ArchGDAL.width(saved), " by ", ArchGDAL.height(saved), " pixels, ", ArchGDAL.nraster(saved), " bands")
+		end
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-polygons"
+label = "Save the Polygons"
+desc = "Write the CORINE polygons in the box, cut to it, with their code and class, to a GeoPackage in the folder above"
+models = ["corine"]
+code = '''
+using DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude, as GDAL writes them
+labels_file = Downloads.download("$(service)/0?f=json", tempname() * ".json"; headers = headers)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE classes AS SELECT u.value AS code, u.label AS class FROM (SELECT unnest(drawingInfo.renderer.uniqueValueInfos) AS u FROM read_json('$(labels_file)'))")
+polygons_file = Downloads.download("$(service)/0/query?geometry=$(join(box, ","))&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=*&outSR=4326&f=geojson",
+	tempname() * ".geojson"; headers = headers)
+code_column = first(c for c in Tables.columntable(DBInterface.execute(con, "DESCRIBE SELECT * FROM ST_Read('$(polygons_file)')")).column_name if occursin(r"(?i)^code_\d\d$", c))
+out = joinpath(folder, "corine-$(year).gpkg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, """COPY (SELECT code, class, ST_Intersection(geom, ST_MakeEnvelope($(join(box, ", ")))) AS geom
+		FROM ST_Read('$(polygons_file)') JOIN classes ON code = "$(code_column)") TO '$(out)' (FORMAT GDAL, DRIVER 'GPKG', SRS 'EPSG:4326')""")
+	println("Wrote ", out, ": ", only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM ST_Read('$(out)')")).n), " polygons")
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-values"
+label = "Save the Values"
+desc = "Write the 10 m values of the layer in the box, in EPSG:3035, to a GeoTIFF in the folder above, which the Geospatial Raster Files panel reads"
+models = ["hrl"]
+code = '''
+rest = replace(wms, "/services/" => "/rest/services/", "/WMSServer" => "")
+side = round(Int, {{boxKm}} * 100)  # pixels of 10 m along a side of the box
+out = joinpath(folder, "hrl-$(lowercase(product))-2018.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	Downloads.download("$(rest)/exportImage?bbox=$(join(box, ","))&bboxSR=4326&imageSR=3035&size=$(side),$(side)&format=tiff&f=image", out; headers = headers)
+	println("Wrote ", out, ": ", round(filesize(out) / 1024, digits = 1), " KB, one band of values from 0 to 255 in EPSG:3035")
+end
+'''
