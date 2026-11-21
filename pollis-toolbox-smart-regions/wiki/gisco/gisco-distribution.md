@@ -18,7 +18,7 @@ GISCO creates its NUTS datasets mainly from EuroBoundaryMap of EuroGeographics, 
 
 ## Columns of the Files
 
-Each theme has its own columns, which File and Columns in the Eurostat GISCO panel lists ([Eurostat (2026)](#ref-Eur2026a)). The NUTS files have NUTS_ID, LEVL_CODE, CNTR_CODE, NAME_LATN and NUTS_NAME, and typology columns; the LAU files GISCO_ID, CNTR_CODE, LAU_NAME and, in recent years, the population, density and area of the year; the countries CNTR_ID, NAME_ENGL, ISO3_CODE and the status columns EU_STAT, EFTA_STAT and CC_STAT; the Urban Audit URAU_CODE, URAU_NAME, CITY_CPTL and FUA_CODE, the code of a city's functional urban area. The panel adds km2, the area of each unit on the WGS 84 ellipsoid, computed with DuckDB's spatial extension ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
+Each theme has its own columns, which File and Columns in the Eurostat GISCO panel lists ([Eurostat (2026)](#ref-Eur2026a)). The NUTS files have NUTS_ID, LEVL_CODE, CNTR_CODE, NAME_LATN and NUTS_NAME, and typology columns; the LAU files GISCO_ID, CNTR_CODE, LAU_NAME and, in recent years, the population, density and area of the year; the countries CNTR_ID, NAME_ENGL, ISO3_CODE and the status columns EU_STAT, EFTA_STAT and CC_STAT; the Urban Audit `URAU_CODE`, URAU_NAME, CITY_CPTL and FUA_CODE, the code of a city's functional urban area. The panel adds km2, the area of each unit on the WGS 84 ellipsoid, computed with DuckDB's spatial extension ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
 
 ## Terms of Use and Copyright Notice
 

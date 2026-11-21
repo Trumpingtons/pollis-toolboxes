@@ -2,15 +2,15 @@
 
 ## Eurostat's SDMX 2.1 API
 
-Eurostat disseminates its datasets through an SDMX 2.1 REST API: a request names a dataset by its code, as https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/demo_r_d3dens, optionally followed by a key, and the parameter format=SDMX-CSV returns the data as CSV ([Eurostat (2026)](#ref-Eur2026b)). Each dataset has a data structure definition that lists its dimensions in order, with the codes each can take. The Eurostat GISCO panel reads such a URL with DuckDB's read_csv over HTTPS ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)).
+Eurostat disseminates its datasets through an SDMX 2.1 REST API: a request names a dataset by its code, as https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/demo_r_d3dens, optionally followed by a key, and the parameter `format=SDMX-CSV` returns the data as CSV ([Eurostat (2026)](#ref-Eur2026b)). Each dataset has a data structure definition that lists its dimensions in order, with the codes each can take. The Eurostat GISCO panel reads such a URL with DuckDB's `read_csv` over HTTPS ([Raasveldt and Mühleisen (2026)](#ref-RM2026a)).
 
 ## Series Keys
 
-A key filters the series of a dataset: one value for each dimension, in the order of the data structure definition, separated by dots ([Eurostat (2026)](#ref-Eur2026b)). Several values of one dimension are separated by a + sign, and a dimension left blank selects all its values. For demo_r_d3dens, whose dimensions are frequency, unit and region, the key A.PER_KM2. selects the annual values in persons per km² of every region. The Key input of the Eurostat GISCO panel takes such a key.
+A key filters the series of a dataset: one value for each dimension, in the order of the data structure definition, separated by dots ([Eurostat (2026)](#ref-Eur2026b)). Several values of one dimension are separated by a + sign, and a dimension left blank selects all its values. For `demo_r_d3dens`, whose dimensions are frequency, unit and region, the key `A.PER_KM2.` selects the annual values in persons per km² of every region. The Key input of the Eurostat GISCO panel takes such a key.
 
 ## Columns of SDMX-CSV
 
-An SDMX-CSV file of Eurostat has one row per observation, with a column for each dimension, the column TIME_PERIOD with the period, OBS_VALUE with the value and OBS_FLAG with a flag of the observation where there is one ([Eurostat (2026)](#ref-Eur2026b)). The column of the regions or countries is named geo in demo_r_d3dens, and that of the cities is named cities in urb_cpop1; the panel looks for either. The Eurostat GISCO panel joins that column with the code of the units read.
+An SDMX-CSV file of Eurostat has one row per observation, with a column for each dimension, the column `TIME_PERIOD` with the period, `OBS_VALUE` with the value and `OBS_FLAG` with a flag of the observation where there is one ([Eurostat (2026)](#ref-Eur2026b)). The column of the regions or countries is named `geo` in `demo_r_d3dens`, and that of the cities is named `cities` in `urb_cpop1`; the panel looks for either. The Eurostat GISCO panel joins that column with the code of the units read.
 
 ## Joining Statistics and Boundaries
 
@@ -18,7 +18,7 @@ A Eurostat table by region and GISCO's boundaries share the NUTS codes, so the j
 
 ## Tables of Cities
 
-Eurostat's urban statistics, such as urb_cpop1, the population of cities on 1 January, use the codes of the Urban Audit, which GISCO's URAU files share in their column URAU_CODE ([Eurostat (2026)](#ref-Eur2026a)). The Cities and Functional Urban Areas tab of the Eurostat GISCO panel takes such a table in its Eurostat Table input, with a key such as A.DE1001V. for the total population.
+Eurostat's urban statistics, such as `urb_cpop1`, the population of cities on 1 January, use the codes of the Urban Audit, which GISCO's URAU files share in their column `URAU_CODE` ([Eurostat (2026)](#ref-Eur2026a)). The Cities and Functional Urban Areas tab of the Eurostat GISCO panel takes such a table in its Eurostat Table input, with a key such as `A.DE1001V.` for the total population.
 
 ## Eurostat From R
 

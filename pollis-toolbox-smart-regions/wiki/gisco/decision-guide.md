@@ -25,7 +25,7 @@ The Year input of the Eurostat GISCO panel chooses the version of the units: for
 
 ## Which Eurostat Table and Key
 
-A Eurostat table is named by its code, and its key selects one value for each of its dimensions, in order, separated by dots, an empty position selecting every value ([Eurostat (2026)](#ref-Eur2026b)). Map a Eurostat Table needs one series per unit, so every dimension but the regions must have one value: the key A.PER_KM2. of demo_r_d3dens, for instance, selects the annual values in persons per km² of every region. When the key selects several series per unit, the panel names the dimensions that still vary.
+A Eurostat table is named by its code, and its key selects one value for each of its dimensions, in order, separated by dots, an empty position selecting every value ([Eurostat (2026)](#ref-Eur2026b)). Map a Eurostat Table needs one series per unit, so every dimension but the regions must have one value: the key `A.PER_KM2.` of `demo_r_d3dens`, for instance, selects the annual values in persons per km² of every region. When the key selects several series per unit, the panel names the dimensions that still vary.
 
 ## References
 

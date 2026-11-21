@@ -17,7 +17,7 @@ GISCO's distribution lists, for each theme and year, the files it has, in GeoPac
 
 ## How Does the Eurostat GISCO Panel Join Eurostat's Statistics?
 
-Eurostat's SDMX 2.1 API returns the series of a dataset selected by a key, one value for each dimension of the dataset in order, in formats that include SDMX-CSV ([Eurostat (2026)](#ref-Eur2026b)). The panel's Map a Eurostat Table and Codes and Eurostat read the table and key chosen with DuckDB over HTTPS, and join its column of regions, countries or cities with the code of the units read: NUTS_ID for NUTS regions, CNTR_ID for countries and URAU_CODE for cities and functional urban areas.
+Eurostat's SDMX 2.1 API returns the series of a dataset selected by a key, one value for each dimension of the dataset in order, in formats that include SDMX-CSV ([Eurostat (2026)](#ref-Eur2026b)). The panel's Map a Eurostat Table and Codes and Eurostat read the table and key chosen with DuckDB over HTTPS, and join its column of regions, countries or cities with the code of the units read: NUTS_ID for NUTS regions, CNTR_ID for countries and `URAU_CODE` for cities and functional urban areas.
 
 ## What the Next Steps of the Eurostat GISCO Panel Do
 
