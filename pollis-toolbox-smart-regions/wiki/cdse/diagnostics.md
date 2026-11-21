@@ -6,7 +6,7 @@ Find Scenes, Sentinel-2 Bands and Sentinel-1 Radar stop with a message when the 
 
 ## The Copernicus Data Space Refuses the Account
 
-Sentinel-2 Bands and Sentinel-1 Radar stop with the answer of the identity service when it refuses the credentials: invalid_grant for a wrong username or password, which the key on the Powered by line can set again. An account with two-factor authentication needs a one-time code with each request for a token ([Copernicus Data Space Ecosystem (2026)](#ref-CDSE2026b)), which the code does not send. An answer of HTTP 401 from the download service means a token it does not accept, such as one that expired during a long download; the code asks for a new token for each file.
+Sentinel-2 Bands and Sentinel-1 Radar stop with the answer of the identity service when it refuses the credentials: `invalid_grant` for a wrong username or password, which the key on the Powered by line can set again. An account with two-factor authentication needs a one-time code with each request for a token ([Copernicus Data Space Ecosystem (2026)](#ref-CDSE2026b)), which the code does not send. An answer of HTTP 401 from the download service means a token it does not accept, such as one that expired during a long download; the code asks for a new token for each file.
 
 ## A Download From the Copernicus Data Space That Stops
 
