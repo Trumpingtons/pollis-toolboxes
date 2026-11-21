@@ -1,6 +1,6 @@
 # Copernicus Imagery Layers — Factsheet
 
-**Copernicus imagery layers** are maps made from the satellite images of the European Union's Copernicus programme, served by map services as tiles that any web map can draw. The Copernicus Imagery Layers panel of the Smart Regions Toolbox shows three of them on an OpenStreetMap base map in the plot pane, drawn by MapLibre GL JS: the yearly Sentinel-2 cloudless mosaics of EOX IT Services, CORINE Land Cover, and the High-Resolution Layers of the Copernicus Land Monitoring Service ([EOX IT Services GmbH (2026)](#ref-EOX2026a); [European Environment Agency (2019)](#ref-EEA2019a); [MapLibre Contributors (2026)](#ref-MLC2026a)).
+**Copernicus imagery layers** are maps made from the satellite images of the European Union's Copernicus programme, served by map services as tiles that any web map can draw. The Copernicus Imagery Layers panel of the Smart Regions Toolbox shows three of them on an OpenStreetMap base map in Pollis's browser, drawn by MapLibre GL JS: the yearly Sentinel-2 cloudless mosaics of EOX IT Services, CORINE Land Cover, and the High-Resolution Layers of the Copernicus Land Monitoring Service ([EOX IT Services GmbH (2026)](#ref-EOX2026a); [European Environment Agency (2019)](#ref-EEA2019a); [MapLibre Contributors (2026)](#ref-MLC2026a)).
 
 | Item | Copernicus Imagery Layers panel |
 |---|---|
@@ -9,12 +9,12 @@
 | **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
 | **Tabs** | Sentinel-2 Mosaic, CORINE Land Cover, High-Resolution |
 | **Services** | EOX's WMTS for the mosaics; the European Environment Agency's ArcGIS map and image services, and WMS, for the rest |
-| **Output** | An interactive map in the plot pane, with the layer's legend and attribution |
+| **Output** | An interactive map on a page in Pollis's browser, or in a notebook output, with the layer's legend and attribution |
 | **Key choices** | The year or layer, the opacity, the base map's style, and the side of the box the Next Steps measure |
 
 ## How Does the Copernicus Imagery Layers Panel Draw a Layer?
 
-The Example Code of the Copernicus Imagery Layers panel builds the address of one tile of the layer, with placeholders the map fills in: `{z}`, `{x}` and `{y}` for the zoom, column and row of a tile, or `{bbox-epsg-3857}` for the box of a tile in Web Mercator metres ([MapLibre Contributors (2026)](#ref-MLC2026a)). `Pollis.tiles` makes a layer of raster tiles from that address, with its name, opacity, legend image and attribution. `Pollis.webmap` sends the layer to the plot pane, where MapLibre GL JS draws the base map, fetches the tiles of the area on screen from the service, and puts them under the base map's labels. The tiles are pictures the service draws: the values behind them come from the Next Steps.
+The Example Code of the Copernicus Imagery Layers panel builds the address of one tile of the layer, with placeholders the map fills in: `{z}`, `{x}` and `{y}` for the zoom, column and row of a tile, or `{bbox-epsg-3857}` for the box of a tile in Web Mercator metres ([MapLibre Contributors (2026)](#ref-MLC2026a)). `Pollis.tiles` makes a layer of raster tiles from that address, with its name, opacity, legend image and attribution. `Pollis.webmap` puts the layer on a page in Pollis's browser, where MapLibre GL JS draws the base map, fetches the tiles of the area on screen from the service, and puts them under the base map's labels. The tiles are pictures the service draws: the values behind them come from the Next Steps.
 
 ## Pollis.tiles
 

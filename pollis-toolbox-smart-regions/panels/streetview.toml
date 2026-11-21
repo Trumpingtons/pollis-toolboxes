@@ -1,5 +1,5 @@
 # Mapillary Street-Level Viewer: a street-level image of Mapillary near a place, or one given by its id, opened in an
-# interactive viewer in the plot pane (MapillaryJS), alone or beside a map of Mapillary's coverage kept in step with it
+# interactive viewer on a page in Pollis's browser (MapillaryJS), alone or beside a map of Mapillary's coverage kept in step with it
 
 [meta]
 title = "Mapillary Street-Level Viewer"

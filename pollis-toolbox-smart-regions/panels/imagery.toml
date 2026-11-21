@@ -1,5 +1,5 @@
 # Copernicus Imagery Layers: Sentinel-2 cloudless mosaics, CORINE Land Cover and the High-Resolution Layers of the
-# Copernicus Land Monitoring Service, drawn as raster tiles by their services on an OpenStreetMap base map in the plot pane
+# Copernicus Land Monitoring Service, drawn as raster tiles by their services on an OpenStreetMap base map, on a page in Pollis's browser
 
 [meta]
 title = "Copernicus Imagery Layers"
@@ -456,7 +456,7 @@ headers = ["User-Agent" => "Pollis (https://pollis.org)"]  # how the Next Steps 
 {{?model=hrl}} legend = product in ("Grassland", "WaterWetness") ? "$(wms)?request=GetLegendGraphic&version=1.3.0&format=image/png&layer=0" : nothing  # the classes; the two densities run from 0 to 100 %
 {{?model=hrl}} attribution = "$(layer_names[product]) 2018, European Environment Agency, Copernicus Land Monitoring Service"
 {{?model=hrl}} shown = Pollis.tiles(url; name = layer_names[product] * (legend === nothing ? " 2018, 0 to 100 %" : " 2018"), opacity = {{opacity}}, legend = legend, attribution = attribution)
-display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = zoom))  # the layer under the base map's labels, in the plot pane
+display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = zoom))  # the layer under the base map's labels, on a page in Pollis's browser
 '''
 
 # Next Steps action groups

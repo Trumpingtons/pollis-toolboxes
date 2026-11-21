@@ -10,7 +10,7 @@ A base map is the background of a map: streets, place names, water, parks, borde
 
 ## How Pollis Draws Base Maps With MapLibre GL JS
 
-MapLibre GL JS is an open-source JavaScript library that draws interactive maps in web pages and webviews from vector tiles, using the graphics processor ([MapLibre Contributors (2026)](#ref-MLC2026a)). Pollis bundles it in the plot pane of the REPL: `Pollis.webmap` sends a map's layers and style there, as JSON, and MapLibre GL JS fetches the tiles of the base map, draws them following the style, and draws the layers on top. The map can be zoomed with the mouse wheel or the buttons, panned by dragging, and turned with the right mouse button; a click on a feature shows its attributes. Polygon fills sit under the names of the base map, so places stay readable.
+MapLibre GL JS is an open-source JavaScript library that draws interactive maps in web pages and webviews from vector tiles, using the graphics processor ([MapLibre Contributors (2026)](#ref-MLC2026a)). Pollis bundles it: `Pollis.webmap` writes a map's layers and style, as JSON, into a page that opens in Pollis's browser, or into the output of a notebook cell, and MapLibre GL JS fetches the tiles of the base map, draws them following the style, and draws the layers on top. The map can be zoomed with the mouse wheel or the buttons, panned by dragging, and turned with the right mouse button; a click on a feature shows its attributes. Polygon fills sit under the names of the base map, so places stay readable.
 
 ## Where the Tiles Come From: OpenFreeMap and OpenMapTiles
 

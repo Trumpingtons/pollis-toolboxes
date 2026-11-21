@@ -1,6 +1,6 @@
 # Mapillary Street-Level Viewer — Factsheet
 
-The **Mapillary Street-Level Viewer** panel of the Smart Regions Toolbox finds a street-level image of Mapillary near a point, or one given by its id, and opens it in an interactive viewer in the plot pane of the Julia REPL or in a notebook output. The viewer is MapillaryJS, the library Mapillary publishes for showing street imagery on the web, which renders the images with WebGL ([Mapillary (2023)](#ref-Map2023a)); beside it, Map and Viewer draws a map of Mapillary's coverage with MapLibre GL JS ([MapLibre Contributors (2026)](#ref-MLC2026a)).
+The **Mapillary Street-Level Viewer** panel of the Smart Regions Toolbox finds a street-level image of Mapillary near a point, or one given by its id, and opens it in an interactive viewer, on a page in Pollis's browser from the Julia REPL or in a notebook output. The viewer is MapillaryJS, the library Mapillary publishes for showing street imagery on the web, which renders the images with WebGL ([Mapillary (2023)](#ref-Map2023a)); beside it, Map and Viewer draws a map of Mapillary's coverage with MapLibre GL JS ([MapLibre Contributors (2026)](#ref-MLC2026a)).
 
 | Item | Mapillary Street-Level Viewer panel |
 |---|---|
@@ -25,7 +25,7 @@ Every tab keeps what it found in the table `images` of an in-memory DuckDB datab
 
 ## Pollis.streetview
 
-`Pollis.streetview(image, layers...; token, map, style, center, zoom, title)` shows the image whose id is `image` in the street-level viewer of the plot pane or of a notebook output. `token` is the Mapillary access token, by default the variable `MAPILLARY_ACCESS_TOKEN` of the Julia session. With `map = true`, a map of the coverage stands to the right of the viewer; `layers`, `style`, `center` and `zoom` are those of `Pollis.webmap`, and the zoom is 17 unless given. `title` is shown over the map, or over the viewer when it stands alone. The id and the token go into the output, which the page of the plot pane or of the notebook reads to ask Mapillary for the images.
+`Pollis.streetview(image, layers...; token, map, style, center, zoom, title)` shows the image whose id is `image` in the street-level viewer, on a page in Pollis's browser or in a notebook output. `token` is the Mapillary access token, by default the variable `MAPILLARY_ACCESS_TOKEN` of the Julia session. With `map = true`, a map of the coverage stands to the right of the viewer; `layers`, `style`, `center` and `zoom` are those of `Pollis.webmap`, and the zoom is 17 unless given. `title` is shown over the map, or over the viewer when it stands alone. The id and the token go into the output, which the page or the notebook output reads to ask Mapillary for the images.
 
 ## Next Steps That Show and Check a Mapillary Image
 

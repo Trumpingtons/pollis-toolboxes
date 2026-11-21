@@ -14,7 +14,7 @@ When Mapillary cannot load the image the viewer asks for, a message over the vie
 
 ## A Blank Viewer or a Map Without Coverage
 
-A viewer that stays blank, with a message about the token, was given none: set the token with the key on the Powered by line and run the tab again. MapillaryJS renders the images with WebGL ([Mapillary (2023)](#ref-Map2023a)), which the plot pane and notebook outputs of Pollis provide. On the coverage map, the lines of the sequences appear from zoom 6 and the dots of the images from zoom 14 ([Mapillary (2026)](#ref-Map2026a)), so a map zoomed out further than that shows only the base map. A token that Mapillary refuses leaves the map without lines, and the viewer with a message.
+A viewer that stays blank, with a message about the token, was given none: set the token with the key on the Powered by line and run the tab again. MapillaryJS renders the images with WebGL ([Mapillary (2023)](#ref-Map2023a)), which Pollis's browser and notebook outputs provide. On the coverage map, the lines of the sequences appear from zoom 6 and the dots of the images from zoom 14 ([Mapillary (2026)](#ref-Map2026a)), so a map zoomed out further than that shows only the base map. A token that Mapillary refuses leaves the map without lines, and the viewer with a message.
 
 ## Mapillary Refuses the Token or the Request
 

@@ -20,9 +20,9 @@ A panorama is an image captured all round; the Mapillary API marks it with the f
 
 Map and Viewer, and Viewer and Map among the Next Steps, put a map to the right of the viewer. It draws the computed coverage tiles of Mapillary on an OpenStreetMap base map: the sequences as green lines from zoom 6, and the images as dots from zoom 14, the only zoom of the image layer of the tiles ([Mapillary (2026)](#ref-Map2026a); [MapLibre Contributors (2026)](#ref-MLC2026a)). A click on a dot opens that image in the viewer, and a click on a line opens the image the tiles give for that sequence. A red arrow marks where the viewer stands and points where it looks, and the map follows it as the viewer walks and turns.
 
-## The Viewer in the Plot Pane and in a Notebook
+## The Viewer on a Page and in a Notebook
 
-`Pollis.streetview` makes an output that the plot pane of the Julia REPL and the outputs of a Julia notebook draw alike. The plot pane keeps each viewer among its plots, so its arrows go back to an earlier image, as after Oldest and Newest; a notebook keeps a viewer under each cell that shows one. MapillaryJS resizes the viewer when the window is resized ([Mapillary (2023)](#ref-Map2023a)). The page of the output loads the images from Mapillary while the viewer is open; nothing of them is saved in the Folder unless Look at the Image or Save the Image downloads it.
+From the Julia REPL, `Pollis.streetview` writes a page and opens it in Pollis's browser; in a Julia notebook, the viewer is drawn in the output of the cell. The page is named after the title, so a viewer with the same title opens again in its tab, and one with another title, as after Oldest and Newest, in a tab of its own; a notebook keeps a viewer under each cell that shows one. The page also says in text which image the viewer opens and whether a map stands beside it, for screen readers. MapillaryJS resizes the viewer when the window is resized ([Mapillary (2023)](#ref-Map2023a)). The page loads the images from Mapillary while the viewer is open; nothing of them is saved in the Folder unless Look at the Image or Save the Image downloads it.
 
 ## References
 

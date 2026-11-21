@@ -370,7 +370,7 @@ W = weights("{{neighbours}}")
 {{?model=local}} 	push!(layers, Pollis.layer(file; name = name, color = colour, opacity = 0.75))
 {{?model=local}} end
 {{?model=local}} println(join(("$(name): $(count(==(name), (labels[c] for c in cluster)))" for (name, _) in colours), ", "))
-{{?model=local}} display(Pollis.webmap(layers...; title = "LISA Clusters of {{column}}"))  # drawn in the plot pane, on OpenFreeMap's tiles
+{{?model=local}} display(Pollis.webmap(layers...; title = "LISA Clusters of {{column}}"))  # drawn on a page in Pollis's browser, on OpenFreeMap's tiles
 '''
 
 # Next Steps action groups

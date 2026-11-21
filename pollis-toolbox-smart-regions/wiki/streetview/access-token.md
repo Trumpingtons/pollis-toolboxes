@@ -6,7 +6,7 @@ Both halves of the Mapillary Street-Level Viewer need a Mapillary client access 
 
 ## The Token Goes into the Output of the Viewer
 
-`Pollis.streetview` writes the token into its output beside the id of the image, since the viewer runs in the page of the plot pane or of the notebook and asks Mapillary for the images itself. The documentation of the Mapillary API warns that whoever obtains a client token can make requests on behalf of its application ([Mapillary (2026)](#ref-Map2026a)). A notebook saved with a viewer among its outputs therefore keeps the token in its file: clear the outputs, or that of the cell, before sharing or committing the notebook.
+`Pollis.streetview` writes the token into its output beside the id of the image, since the viewer runs in its page in Pollis's browser or in the notebook output and asks Mapillary for the images itself. From the REPL, the page is written in a temporary folder that Julia removes when it exits. The documentation of the Mapillary API warns that whoever obtains a client token can make requests on behalf of its application ([Mapillary (2026)](#ref-Map2026a)). A notebook saved with a viewer among its outputs therefore keeps the token in its file: clear the outputs, or that of the cell, before sharing or committing the notebook.
 
 ## How the Panel Sends the Token
 

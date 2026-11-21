@@ -2,7 +2,7 @@
 
 ## Looking at a Place from the Street in Pollis
 
-The Mapillary Street-Level Viewer panel brings the street-level images of Mapillary into the plot pane of Pollis. Mapillary's images are photographs taken by its contributors, each with the time it was captured, its position and the direction of its camera; images captured one after another form a sequence ([Mapillary (2026)](#ref-Map2026a)). The panel looks for them around a point with the image search of the Mapillary API, keeps them in a table, and opens one in a viewer in which the user looks around, steps along the street and turns at crossings. Map and Viewer adds a map of where the images are, so that the walk can be followed street by street.
+The Mapillary Street-Level Viewer panel brings the street-level images of Mapillary into Pollis's browser. Mapillary's images are photographs taken by its contributors, each with the time it was captured, its position and the direction of its camera; images captured one after another form a sequence ([Mapillary (2026)](#ref-Map2026a)). The panel looks for them around a point with the image search of the Mapillary API, keeps them in a table, and opens one in a viewer in which the user looks around, steps along the street and turns at crossings. Map and Viewer adds a map of where the images are, so that the walk can be followed street by street.
 
 ## MapillaryJS
 

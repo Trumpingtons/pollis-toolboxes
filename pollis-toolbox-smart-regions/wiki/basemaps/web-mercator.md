@@ -10,7 +10,7 @@ Web Mercator suits the way web maps are made and used ([Battersby, Finn, Usery a
 
 ## How Web Mercator Distorts Areas and Distances
 
-Web Mercator enlarges areas more and more away from the equator, so a region far north or south looks much larger than a region of the same area near the equator ([Battersby, Finn, Usery and Yamamoto (2014)](#ref-BFUY2014a)). The scale of the map changes with latitude in the same way: the scale bar of a map in the plot pane gives the scale at the latitude of the centre, which differs from the scale at the top and the bottom of a map of a large region. Comparing the sizes of countries or regions by eye on a web map therefore misleads, and so do patterns of colour on large polygons far from the equator. Areas and lengths should be measured in a projected coordinate system chosen for the region.
+Web Mercator enlarges areas more and more away from the equator, so a region far north or south looks much larger than a region of the same area near the equator ([Battersby, Finn, Usery and Yamamoto (2014)](#ref-BFUY2014a)). The scale of the map changes with latitude in the same way: the scale bar of a map of `Pollis.webmap` gives the scale at the latitude of the centre, which differs from the scale at the top and the bottom of a map of a large region. Comparing the sizes of countries or regions by eye on a web map therefore misleads, and so do patterns of colour on large polygons far from the equator. Areas and lengths should be measured in a projected coordinate system chosen for the region.
 
 ## Measuring Areas and Distances Rather Than Reading Them From a Web Map
 

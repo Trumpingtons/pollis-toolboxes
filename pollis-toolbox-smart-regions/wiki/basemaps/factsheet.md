@@ -1,6 +1,6 @@
 # OpenStreetMap Base Maps — Factsheet
 
-**OpenStreetMap base maps** put data on a map of streets, places, water and land made from OpenStreetMap, the map of the world that volunteers edit together ([Haklay and Weber (2008)](#ref-HW2008a)). The OpenStreetMap Base Maps panel of the Smart Regions Toolbox shows a place, or the features of a file read with DuckDB, on such a map in the plot pane of the REPL, drawn by MapLibre GL JS from the vector tiles of OpenFreeMap ([MapLibre Contributors (2026)](#ref-MLC2026a); [Ero (2026)](#ref-Ero2026a)).
+**OpenStreetMap base maps** put data on a map of streets, places, water and land made from OpenStreetMap, the map of the world that volunteers edit together ([Haklay and Weber (2008)](#ref-HW2008a)). The OpenStreetMap Base Maps panel of the Smart Regions Toolbox shows a place, or the features of a file read with DuckDB, on such a map in Pollis's browser, drawn by MapLibre GL JS from the vector tiles of OpenFreeMap ([MapLibre Contributors (2026)](#ref-MLC2026a); [Ero (2026)](#ref-Ero2026a)).
 
 | Item | OpenStreetMap Base Maps panel |
 |---|---|
@@ -9,16 +9,16 @@
 | **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
 | **Tabs** | Place, Features, Colour by Column |
 | **Styles** | Positron, Bright, Liberty, Dark, Fiord |
-| **Output** | An interactive map in the plot pane: zoom, pan, and a click on a feature for its attributes |
+| **Output** | An interactive map on a page in Pollis's browser, or in a notebook output: zoom, pan, and a click on a feature for its attributes |
 | **Key choices** | The style, the file's coordinate system, a SQL filter, and the column that colours the features |
 
 ## How Does the OpenStreetMap Base Maps Panel Draw a Map?
 
-The Example Code of the OpenStreetMap Base Maps panel puts the features in a DuckDB table named `features`: the place as a point on the Place tab, or the features of a file read with `ST_Read` of DuckDB's spatial extension on the other two tabs ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)). `ST_Transform` moves them from the File Coordinate System input into longitude and latitude on WGS 84, which GeoJSON and web maps use ([Butler, Daly, Doyle, Gillies, Hagen and Schaub (2016)](#ref-BDDGH...2016a)). The table is written as a GeoJSON layer, and `Pollis.webmap` sends the layer and the style to the plot pane, where MapLibre GL JS draws the base map and the layer on it ([MapLibre Contributors (2026)](#ref-MLC2026a)).
+The Example Code of the OpenStreetMap Base Maps panel puts the features in a DuckDB table named `features`: the place as a point on the Place tab, or the features of a file read with `ST_Read` of DuckDB's spatial extension on the other two tabs ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)). `ST_Transform` moves them from the File Coordinate System input into longitude and latitude on WGS 84, which GeoJSON and web maps use ([Butler, Daly, Doyle, Gillies, Hagen and Schaub (2016)](#ref-BDDGH...2016a)). The table is written as a GeoJSON layer, and `Pollis.webmap` puts the layer and the style on a page in Pollis's browser, where MapLibre GL JS draws the base map and the layer on it ([MapLibre Contributors (2026)](#ref-MLC2026a)).
 
 ## Pollis.webmap and Pollis.layer
 
-`Pollis.webmap(layers...; style, center, zoom, title)` makes a map that the plot pane of the REPL draws. Each layer is a `Pollis.layer(geojson; name, color, column, opacity)`, where `geojson` is a GeoJSON text or the path of a GeoJSON file in longitude and latitude. Without `color` a layer takes a colour of the map's palette; with `column` its features are coloured by that property. `style` names one of the five styles, or the address of any MapLibre style. Without `center`, the map fits every layer; `zoom` runs from 0, the whole world, to about 18, a few streets. Several layers are drawn in the order given, the first at the bottom, with a legend for each.
+`Pollis.webmap(layers...; style, center, zoom, title)` makes a map, which opens on a page in Pollis's browser from the REPL, named after its title so that a map with the same title opens again in its tab, and is drawn in the output of a cell in a notebook. Each layer is a `Pollis.layer(geojson; name, color, column, opacity)`, where `geojson` is a GeoJSON text or the path of a GeoJSON file in longitude and latitude. Without `color` a layer takes a colour of the map's palette; with `column` its features are coloured by that property. `style` names one of the five styles, or the address of any MapLibre style. Without `center`, the map fits every layer; `zoom` runs from 0, the whole world, to about 18, a few streets. Several layers are drawn in the order given, the first at the bottom, with a legend for each.
 
 ## What the Next Steps of the OpenStreetMap Base Maps Panel Do
 

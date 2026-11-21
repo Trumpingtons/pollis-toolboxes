@@ -16,7 +16,7 @@ The Style input of the OpenStreetMap Base Maps panel picks one of five styles fr
 | Dark | Near-black land and water, grey roads and labels | Bright data on top, dark screens |
 | Fiord | Dark blue-grey land and water, lighter streets, blue labels | A dark map in blue tones |
 
-`Pollis.webmap` also takes the address of any MapLibre style in place of a name. Every Style shows the same map in all five, one after another in the plot pane.
+`Pollis.webmap` also takes the address of any MapLibre style in place of a name. Every Style shows the same map in all five, each on a page of its own in Pollis's browser.
 
 ## Choosing a Base Map Style for Data
 

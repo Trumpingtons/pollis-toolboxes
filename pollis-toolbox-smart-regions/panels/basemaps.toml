@@ -1,5 +1,5 @@
 # OpenStreetMap Base Maps: a place, or the features of a file, on an OpenStreetMap base map drawn by MapLibre GL JS
-# in the plot pane, from OpenFreeMap's vector tiles; the features are read through DuckDB's spatial extension
+# on a page in Pollis's browser, from OpenFreeMap's vector tiles; the features are read through DuckDB's spatial extension
 
 [meta]
 title = "OpenStreetMap Base Maps"
@@ -156,7 +156,7 @@ question = "Which base map style should I choose?"
 answer = '''
 Positron, light grey with few colours, keeps the eye on the features drawn on it, and suits colour scales. Dark does the same on a dark ground. Bright and Liberty show roads, parks, water and buildings in their usual colours, for a map read as a map. Fiord is a dark blue-grey style.
 
-Every Style shows the same map in all five, one after another.
+Every Style shows the same map in all five, each on its own page.
 '''
 wiki = "Base Map Styles"
 
@@ -394,7 +394,7 @@ DBInterface.execute(con, "COPY (SELECT * FROM features WHERE geom IS NOT NULL) T
 {{?model=place}} shown = Pollis.layer(layer; name = "{{placeName}}")
 {{?model=features}} shown = Pollis.layer(layer; name = "Features")
 {{?model=column}} shown = Pollis.layer(layer; name = "{{column}}", column = "{{column}}", opacity = {{opacity}})  # a colour scale for a number, a colour per value for text
-display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = zoom))  # drawn in the plot pane by MapLibre GL JS, on OpenFreeMap's tiles
+display(Pollis.webmap(shown; style = "{{style}}", center = center, zoom = zoom))  # drawn on a page in Pollis's browser by MapLibre GL JS, on OpenFreeMap's tiles
 '''
 
 # Next Steps action groups
@@ -405,7 +405,7 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "every-style"
 label = "Every Style"
-desc = "The same map in the five styles, one after another in the plot pane: its arrows go from one to the next"
+desc = "The same map in the five styles, each on its own page in Pollis's browser, named after the style"
 code = '''
 for style in ["positron", "bright", "liberty", "dark", "fiord"]
 	display(Pollis.webmap(shown; style = style, center = center, zoom = zoom, title = titlecase(style)))

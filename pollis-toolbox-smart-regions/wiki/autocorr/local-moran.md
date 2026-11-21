@@ -22,7 +22,7 @@ The Significance Level input sets the pseudo p-value below which an area gets on
 
 ## The LISA Cluster Map
 
-The Local Moran (LISA) tab draws the LISA cluster map on an OpenStreetMap base map in the plot pane: High-High areas in red, Low-Low in blue, High-Low in orange, Low-High in light blue, and Not Significant areas in grey, each label a layer of its own with its entry in the legend. Clicking an area shows its attributes, its label, its local Moran's I and its pseudo p-value. The counts of areas with each label are printed in the REPL. Clusters in a Table gives, for each label, the number of areas and the mean, smallest and largest value of the column, and Save the Results as GeoParquet writes the labels, local statistics and pseudo p-values beside the areas.
+The Local Moran (LISA) tab draws the LISA cluster map on an OpenStreetMap base map in Pollis's browser: High-High areas in red, Low-Low in blue, High-Low in orange, Low-High in light blue, and Not Significant areas in grey, each label a layer of its own with its entry in the legend. Clicking an area shows its attributes, its label, its local Moran's I and its pseudo p-value. The counts of areas with each label are printed in the REPL. Clusters in a Table gives, for each label, the number of areas and the mean, smallest and largest value of the column, and Save the Results as GeoParquet writes the labels, local statistics and pseudo p-values beside the areas.
 
 ## References
 

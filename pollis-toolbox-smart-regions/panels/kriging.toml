@@ -486,7 +486,7 @@ end
 {{?model=ordinary|universal|idw}} println("Estimates of {{column}} in ", nelements(grid), " cells of {{cell}} m: from ", round(minimum(estimate), digits = 2), " to ", round(maximum(estimate), digits = 2))
 {{?model=ordinary|universal}} layer = Pollis.layer(cells_geojson("estimate" => estimate, "sd" => sd); name = "Estimate of {{column}}", column = "estimate", opacity = 0.7)
 {{?model=idw}} layer = Pollis.layer(cells_geojson("estimate" => estimate); name = "Estimate of {{column}}", column = "estimate", opacity = 0.7)
-{{?model=ordinary|universal|idw}} display(Pollis.webmap(layer, stations_layer(); title = "{{column}}: Estimates"))  # drawn in the plot pane, on OpenFreeMap's tiles
+{{?model=ordinary|universal|idw}} display(Pollis.webmap(layer, stations_layer(); title = "{{column}}: Estimates"))  # drawn on a page in Pollis's browser, on OpenFreeMap's tiles
 {{?model=simulation}} sims = rand(Xoshiro(2026), GaussianProcess(vario, sum(s.z) / n), grid, {{realisations}}; data, showprogress = false)  # conditional: every realisation honours the stations' values
 {{?model=simulation}} realisations = reduce(hcat, [sims[r].z for r in 1:{{realisations}}])  # one row per cell, one column per realisation
 {{?model=simulation}} println({{realisations}}, " realisations of {{column}} in ", nelements(grid), " cells of {{cell}} m: from ", round(minimum(realisations), digits = 2), " to ", round(maximum(realisations), digits = 2))

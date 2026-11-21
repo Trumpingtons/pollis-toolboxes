@@ -2,7 +2,7 @@
 
 ## What Nearest Image Does
 
-Nearest Image looks for the images of Mapillary within the Search Radius of a point and opens one of them in the street-level viewer of the plot pane. It asks the image search of the Mapillary API for the images in a square around the point, with their dates, cameras, compass angles and positions, and keeps those within the Search Radius in the table `images` ([Mapillary (2026)](#ref-Map2026a)). Image to Open then picks the nearest image or the newest, and `Pollis.streetview` opens it, titled with the Place Name. The line the tab prints gives the id of the image, when it was captured, how far it lies from the point and which way its camera faced.
+Nearest Image looks for the images of Mapillary within the Search Radius of a point and opens one of them in the street-level viewer. It asks the image search of the Mapillary API for the images in a square around the point, with their dates, cameras, compass angles and positions, and keeps those within the Search Radius in the table `images` ([Mapillary (2026)](#ref-Map2026a)). Image to Open then picks the nearest image or the newest, and `Pollis.streetview` opens it, titled with the Place Name. The line the tab prints gives the id of the image, when it was captured, how far it lies from the point and which way its camera faced.
 
 ## The Inputs of Nearest Image
 
