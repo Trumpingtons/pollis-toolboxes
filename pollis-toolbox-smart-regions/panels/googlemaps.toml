@@ -1,0 +1,533 @@
+# Google Maps: Google's road, satellite, terrain and 3D maps of a place, drawn by the Maps JavaScript API on a page of
+# their own in Pollis's browser, with a Maps Demo Key; Sydney Harbour and Midtown Manhattan as example places
+
+[meta]
+title = "Google Maps"
+viewType = "pollis.googlemaps"
+defaultModel = "roadmap"
+decisionFirstColumn = "Map"
+
+# The user's Maps Demo Key, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "Google Maps"
+noun = "Maps Demo Key"
+
+[[apiKey.fields]]
+name = "googleMapsKey"
+envVar = "GOOGLE_MAPS_API_KEY"
+prompt = "Maps Demo Key, from developers.google.com/maps/demo-key with a personal Google Account"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[wikis]]
+name = "Factsheet"
+file = "googlemaps/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the inputs, the pages the code writes and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "googlemaps/overview.md"
+bundled = true
+description = "Google's maps of a place in Pollis, what the Maps Demo Key allows, and where they stand beside the other base maps"
+
+[[wikis]]
+name = "The Demo Key"
+file = "googlemaps/demo-key.md"
+bundled = true
+description = "Getting a Maps Demo Key, who can, what it is meant for, its daily limit, and where Pollis keeps it"
+
+[[wikis]]
+name = "Terms of Use"
+file = "googlemaps/terms.md"
+bundled = true
+description = "What the Google Maps Platform Terms allow and forbid: no other maps beside, no caching, no content made from the maps"
+
+[[wikis]]
+name = "Map Types"
+file = "googlemaps/map-types.md"
+bundled = true
+description = "Roadmap, satellite, satellite with labels and terrain, and the Data layer that draws features on them"
+
+[[wikis]]
+name = "3D Maps and the Camera"
+file = "googlemaps/map3d.md"
+bundled = true
+description = "The 3D map's centre, range, tilt and heading, its modes, and the orbit of the camera"
+
+[[wikis]]
+name = "Diagnostics"
+file = "googlemaps/diagnostics.md"
+bundled = true
+description = "A refused key, the daily limit reached, a blank 3D map, features that do not show"
+
+[[wikis]]
+name = "Decision Guide"
+file = "googlemaps/decision-guide.md"
+bundled = true
+description = "Which tab, and when to use Google Maps, OpenStreetMap Base Maps or Copernicus Imagery Layers"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Goo2026a"
+
+[[references]]
+key = "Goo2026b"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Keys, Terms and Usage"
+
+[[references]]
+key = "Goo2026c"
+
+[[references]]
+key = "Goo2026d"
+
+[[references]]
+key = "Goo2026e"
+
+[[references]]
+key = "Goo2026f"
+
+[[references]]
+key = "Goo2026g"
+
+[[references]]
+separator = true
+label = "Standards"
+
+[[references]]
+key = "BDDGH...2016a"
+
+[[faq]]
+question = "What do I need to use the panel?"
+answer = '''
+A Maps Demo Key, which Google gives at no cost to a personal Google Account, without billing information. It is meant for evaluation and testing only, and allows 100 calls a day to each API. It is set with the key on the Powered by line.
+'''
+wiki = "The Demo Key"
+
+[[faq]]
+question = "Which tab should I use?"
+answer = '''
+Roadmap for streets and places, Satellite for what the ground looks like from above, Terrain for relief, and 3D Map for buildings and landscape seen at an angle, which the camera can turn around.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Can I put a Google map beside an OpenStreetMap map?"
+answer = '''
+No. The Google Maps Platform Terms forbid using Google's maps with or near a non-Google map, so the panel opens each Google map on a page of its own, with nothing but Google's maps and the user's own features on it.
+'''
+wiki = "Terms of Use"
+
+[[faq]]
+question = "Can I save the map as an image, or measure things on the satellite view?"
+answer = '''
+No. The terms forbid caching, scraping or downloading Google's maps, and creating content from them, such as tracing roads or buildings from the satellite images. The panel saves nothing of Google's maps: for images and measurements, use Copernicus Imagery Layers or the files of the toolbox.
+'''
+wiki = "Terms of Use"
+hidden = true
+
+[[faq]]
+question = "How many maps can I open in a day?"
+answer = '''
+The Maps Demo Key allows 100 calls a day to each API, and the Maps JavaScript API counts its use in map loads, one for each map a page opens. When the limit is reached, the maps stop until the next day, with no charge.
+'''
+wiki = "The Demo Key"
+hidden = true
+
+[[faq]]
+question = "Why does the 3D map stay blank?"
+answer = '''
+Google refused the Maps Demo Key, and the title over the map says so, or the day's limit has been reached. The photorealistic imagery of the satellite and hybrid modes covers some places only, so a place without it shows less.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "How do I turn the 3D map?"
+answer = '''
+With the controls on the map: the arrows move the centre, the plus and minus buttons zoom, the rotate and tilt controls turn and tilt the camera, and the compass turns it back to north. Range, Tilt and Heading set the view the map opens on, and Orbit the Place turns the camera once around the centre.
+'''
+wiki = "3D Maps and the Camera"
+hidden = true
+
+[[models]]
+id = "roadmap"
+label = "Roadmap"
+
+[[models]]
+id = "satellite"
+label = "Satellite"
+
+[[models]]
+id = "terrain"
+label = "Terrain"
+
+[[models]]
+id = "map3d"
+label = "3D Map"
+
+[[bullets]]
+text = "Roadmap"
+detail = "Google's street map of the place: roads, buildings, transit, parks and the names of places"
+
+[[bullets]]
+text = "Satellite"
+detail = "Aerial and satellite images of the place, with or without Google's labels of roads and places"
+
+[[bullets]]
+text = "Terrain"
+detail = "Relief shading and contours under roads, water and names, for the lie of the land"
+
+[[bullets]]
+text = "3D Map"
+detail = "Google's 3D imagery of buildings and landscape, seen at an angle from a camera that turns, tilts and orbits"
+
+[[decisionRows]]
+task = "Roadmap"
+context = "Streets and places"
+purpose = "Find a place, see its streets, transit and neighbourhood, and the features of a file on them"
+
+[[decisionRows]]
+task = "Satellite"
+context = "The ground from above"
+purpose = "See buildings, green space and water as they look from the air"
+
+[[decisionRows]]
+task = "Terrain"
+context = "Relief"
+purpose = "See hills and valleys under the roads and places"
+
+[[decisionRows]]
+task = "3D Map"
+context = "Buildings and skyline"
+purpose = "See the heights of buildings and the shape of the land, from any side"
+
+[[inputs]]
+id = "place"
+label = "Place"
+tooltip = "Sydney Harbour and Midtown Manhattan come with eight places each for the Next Steps; Your Own Place takes the name, longitude and latitude below."
+kind = "select"
+default = "sydney"
+
+[[inputs.options]]
+value = "sydney"
+label = "Sydney Harbour"
+
+[[inputs.options]]
+value = "manhattan"
+label = "Midtown Manhattan"
+
+[[inputs.options]]
+value = "own"
+label = "Your Own Place"
+
+[[inputs]]
+id = "placeName"
+label = "Place Name"
+tooltip = "The name of the place, used in the titles of the pages."
+default = "Colosseum, Rome"
+when = "place=own"
+newRow = true
+
+[[inputs]]
+id = "lon"
+label = "Longitude"
+tooltip = "Longitude of the centre of the map, in degrees on WGS 84: negative west of Greenwich."
+default = "12.4922"
+when = "place=own"
+
+[[inputs]]
+id = "lat"
+label = "Latitude"
+tooltip = "Latitude of the centre of the map, in degrees on WGS 84: negative south of the equator."
+default = "41.8902"
+when = "place=own"
+
+[[inputs]]
+id = "zoom"
+label = "Zoom"
+tooltip = "From 0, the whole world as one tile: each level up shows half the width and height of the one before. 12 shows a city, 15 a neighbourhood."
+default = "15"
+models = ["roadmap", "satellite", "terrain"]
+newRow = true
+
+[[inputs]]
+id = "labels"
+label = "Labels"
+tooltip = "Whether Google's names of roads and places are drawn over the imagery: Satellite with labels is Google's hybrid map, and the 3D Map's hybrid mode."
+kind = "select"
+default = "no"
+models = ["satellite", "map3d"]
+
+[[inputs.options]]
+value = "no"
+label = "Without Labels"
+
+[[inputs.options]]
+value = "yes"
+label = "With Labels"
+
+[[inputs]]
+id = "range"
+label = "Range (m)"
+tooltip = "The distance from the camera to the centre, in metres: 1,500 shows a few blocks, 10,000 a city."
+default = "1500"
+models = ["map3d"]
+newRow = true
+
+[[inputs]]
+id = "tilt"
+label = "Tilt (degrees)"
+tooltip = "The angle of the camera from straight down: 0 looks down on the map, 60 at the skyline, 90 at the horizon."
+default = "60"
+models = ["map3d"]
+
+[[inputs]]
+id = "heading"
+label = "Heading (degrees)"
+tooltip = "The compass direction the camera looks in: 0 north, 90 east, 180 south, 270 west."
+default = "0"
+models = ["map3d"]
+
+[[inputs]]
+id = "column"
+label = "Colour By"
+tooltip = "The column that colours the features in Coloured by a Column: a colour scale for numbers, a colour per value for text. The example places have name, kind and distance_m, their distance from the centre in metres."
+default = "distance_m"
+models = ["roadmap", "satellite", "terrain"]
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables
+
+haskey(ENV, "GOOGLE_MAPS_API_KEY") || error("Set your Maps Demo Key with the key on the Powered by line, or set ENV[\"GOOGLE_MAPS_API_KEY\"]: see The Demo Key wiki")
+key = ENV["GOOGLE_MAPS_API_KEY"]
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database, for the places of the Next Steps
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+{{?place=sydney}} name, lon, lat = "Sydney Harbour", 151.2125, -33.858  # between the Opera House and the Harbour Bridge
+{{?place=manhattan}} name, lon, lat = "Midtown Manhattan", -73.98, 40.756  # around Fifth Avenue and 42nd Street
+{{?place=own}} name, lon, lat = "{{placeName}}", {{lon}}, {{lat}}  # the centre, in degrees of longitude and latitude
+# The places of the Next Steps, as points in longitude and latitude (WGS 84) at their approximate centres. Replace them with your own features, e.g. SELECT * FROM ST_Read('file.gpkg')
+{{?place=sydney}} points = "VALUES ('Sydney Opera House', 'Landmark', 151.2153, -33.8568), ('Sydney Harbour Bridge', 'Landmark', 151.2108, -33.8523), ('Circular Quay', 'Station', 151.2111, -33.8612), ('Royal Botanic Garden', 'Park', 151.2166, -33.8642), ('Barangaroo Reserve', 'Park', 151.2026, -33.8577), ('Darling Harbour', 'Waterfront', 151.1993, -33.8737), ('Art Gallery of New South Wales', 'Museum', 151.2173, -33.8688), ('Australian Museum', 'Museum', 151.2132, -33.8743)"
+{{?place=manhattan}} points = "VALUES ('Empire State Building', 'Landmark', -73.9857, 40.7484), ('Chrysler Building', 'Landmark', -73.9755, 40.7516), ('Grand Central Terminal', 'Station', -73.9772, 40.7527), ('Rockefeller Center', 'Landmark', -73.9787, 40.7587), ('Times Square', 'Square', -73.9855, 40.758), ('Bryant Park', 'Park', -73.9837, 40.7536), ('Museum of Modern Art', 'Museum', -73.9776, 40.7614), ('American Museum of Natural History', 'Museum', -73.974, 40.7813)"
+{{?place=own}} points = "VALUES ('$(name)', 'Place', $(lon), $(lat))"
+places = "SELECT name, kind, round(ST_Distance_Sphere(ST_Point(x, y), ST_Point($(lon), $(lat)))) AS distance_m, ST_Point(x, y) AS geom FROM ($(points)) t(name, kind, x, y)"
+pages = mktempdir()  # the pages hold the key, so they stay in a folder Julia removes when it exits
+slug(s) = lowercase(join((m.match for m in eachmatch(r"[A-Za-z0-9]+", s)), "-"))
+html(s) = replace(string(s), "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
+labels = Dict("roadmap" => "Roadmap", "satellite" => "Satellite", "hybrid" => "Satellite with Labels", "terrain" => "Terrain")
+# A page with a map of Google's and nothing else, opened in Pollis's browser: the same title opens again in its tab.
+# Its text says what the map shows, from the inputs only, for screen readers.
+function page(title, about, body)
+	file = joinpath(pages, slug(title) * ".html")
+	write(file, """<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>$(html(title))</title>
+<style>
+html, body { height: 100%; margin: 0; font: 13px sans-serif; }
+.maps { display: flex; height: 100%; } .maps > div { flex: 1; height: 100%; } gmp-map-3d { display: block; height: 100%; }
+.about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.box { position: absolute; z-index: 1; top: 10px; left: 10px; max-width: 60%; padding: 6px 10px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); font-weight: 600; }
+.legend { margin: 0 0 10px 10px; padding: 6px 10px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
+.swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; }
+</style>
+<script>function gm_authFailure() { document.getElementById("title").textContent = "Google refused the Maps Demo Key: check it with the key on the Powered by line, and see the Diagnostics wiki." }</script>
+</head><body>
+<section class="about" aria-label="What the map shows"><h1>$(html(title))</h1><ul>$(join("<li>" .* html.(about) .* "</li>"))</ul></section>
+<div class="box" id="title">$(html(title))</div>
+$(body)
+</body></html>""")
+	Pollis.browse(file)
+	return file
+end
+# Google's 2D maps of the types given, side by side and moving together, with the features of a GeoJSON file
+# on Google's Data layer, coloured by a column; a click on a feature shows its columns
+function map2d(title, types; features = "", column = "", note = "")
+	geojson = isempty(features) ? "null" : replace(read(features, String), "</" => "<\\/")
+	about = ["Google Maps, $(join([labels[t] for t in types], " and ")), centred on $(name): longitude $(lon), latitude $(lat), zoom $(zoom)."]
+	isempty(note) || push!(about, note)
+	page(title, about, """<div class="maps">$(join(["<div id=\"map$(i - 1)\"></div>" for i in eachindex(types)]))</div>
+<script>
+const TYPES = [$(join(repr.(types), ", "))], GEOJSON = $(geojson), COLUMN = $(repr(column));
+const RAMP = ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"], PALETTE = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
+async function start() {
+	const { Map, InfoWindow } = await google.maps.importLibrary("maps");
+	const maps = TYPES.map((type, i) => new Map(document.getElementById("map" + i), { center: { lat: $(lat), lng: $(lon) }, zoom: $(zoom), mapTypeId: type, mapTypeControl: false, streetViewControl: false }));
+	if (maps.length > 1) {
+		let moving = false;
+		const follow = (a, b) => a.addListener("bounds_changed", () => { if (!moving) { moving = true; b.setCenter(a.getCenter()); b.setZoom(a.getZoom()); moving = false; } });
+		follow(maps[0], maps[1]);
+		follow(maps[1], maps[0]);
+	}
+	if (!GEOJSON) {
+		return;
+	}
+	const values = GEOJSON.features.map(f => f.properties ? f.properties[COLUMN] : undefined).filter(v => v !== null && v !== undefined);
+	const numeric = values.length > 0 && values.every(v => typeof v === "number");
+	const lo = numeric ? Math.min(...values) : 0, hi = numeric ? Math.max(...values) : 0;
+	const kinds = [...new Set(values.map(String))];
+	const step = v => hi > lo ? Math.min(4, Math.floor((v - lo) / (hi - lo) * 5)) : 2;
+	const colour = v => !COLUMN ? PALETTE[0] : v === null || v === undefined ? "#999999" : numeric ? RAMP[step(v)] : PALETTE[kinds.indexOf(String(v)) % PALETTE.length];
+	const info = new InfoWindow();
+	const bounds = new google.maps.LatLngBounds();
+	maps.forEach(map => {
+		map.data.addGeoJson(GEOJSON);
+		map.data.setStyle(f => {
+			const c = colour(f.getProperty(COLUMN));
+			return { icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: c, fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 2 }, fillColor: c, fillOpacity: 0.5, strokeColor: c, strokeWeight: 1 };
+		});
+		map.data.addListener("click", e => {
+			const lines = document.createElement("div");
+			e.feature.forEachProperty((v, k) => { const line = document.createElement("div"); line.textContent = k + ": " + v; lines.append(line); });
+			info.setContent(lines);
+			info.setPosition(e.latLng);
+			info.open({ map });
+		});
+		map.data.forEach(f => f.getGeometry().forEachLatLng(p => bounds.extend(p)));
+	});
+	if (!bounds.getNorthEast().equals(bounds.getSouthWest())) {
+		maps[0].fitBounds(bounds, 40);
+	}
+	if (COLUMN && values.length) {
+		const legend = document.createElement("div");
+		legend.className = "legend";
+		const row = (c, text) => { const line = document.createElement("div"); const swatch = document.createElement("span"); swatch.className = "swatch"; swatch.style.background = c; line.append(swatch, text); legend.append(line); };
+		const title = document.createElement("div");
+		title.textContent = COLUMN;
+		title.style.fontWeight = "600";
+		legend.append(title);
+		const format = v => Number(v.toPrecision(4)).toLocaleString();
+		if (numeric) {
+			RAMP.forEach((c, i) => row(c, format(lo + (hi - lo) * i / 5) + " to " + format(lo + (hi - lo) * (i + 1) / 5)));
+		} else {
+			kinds.slice(0, PALETTE.length).forEach((k, i) => row(PALETTE[i], k));
+		}
+		maps[maps.length - 1].controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
+	}
+}
+</script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=$(key)&v=weekly&loading=async&callback=start"></script>""")
+end
+# Google's 3D map, from a camera at the range, tilt and heading given; with orbit = true, the camera turns once around the centre
+function map3d(title; orbit = false)
+	camera = "range $(range_m) m, tilt $(tilt) degrees, heading $(heading) degrees"
+	about = ["Google's 3D map, mode $(mode), centred on $(name): longitude $(lon), latitude $(lat); camera at $(camera)." * (orbit ? " The camera turns once around the centre." : "")]
+	turn = orbit ? """<script>customElements.whenDefined("gmp-map-3d").then(() => document.getElementById("map").flyCameraAround({ camera: { center: { lat: $(lat), lng: $(lon), altitude: 0 }, range: $(range_m), tilt: $(tilt), heading: $(heading) }, durationMillis: 60000, repeatCount: 1 }));</script>""" : ""
+	page(title, about, """<gmp-map-3d id="map" center="$(lat),$(lon),0" range="$(range_m)" tilt="$(tilt)" heading="$(heading)" mode="$(mode)"></gmp-map-3d>
+<script>document.getElementById("map").addEventListener("gmp-error", () => { document.getElementById("title").textContent = "Google could not open the 3D map: check the Maps Demo Key with the key on the Powered by line, and see the Diagnostics wiki." });</script>
+<script async src="https://maps.googleapis.com/maps/api/js?key=$(key)&v=weekly&loading=async&libraries=maps3d"></script>
+$(turn)""")
+end
+{{?model!=map3d}} zoom = {{zoom}}  # from 0, the whole world: each level up shows half the width
+{{?model=roadmap}} maptype = "roadmap"
+{{?model=satellite}} maptype = "{{labels}}" == "yes" ? "hybrid" : "satellite"  # hybrid: the satellite map with Google's labels
+{{?model=terrain}} maptype = "terrain"
+{{?model!=map3d}} map2d("$(name), $(labels[maptype])", [maptype])
+{{?model=map3d}} range_m, tilt, heading = {{range}}, {{tilt}}, {{heading}}  # the camera: metres from the centre, degrees from straight down, degrees from north
+{{?model=map3d}} mode = "{{labels}}" == "yes" ? "hybrid" : "satellite"
+{{?model=map3d}} map3d("$(name), 3D Map")  # the controls on the map move, zoom, turn and tilt the camera
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "every-map-type"
+label = "Every Map Type"
+desc = "The place as a roadmap, a satellite map, a satellite map with labels and a terrain map, each on its own page: four map loads, each counted against the Demo Key's daily limit"
+models = ["roadmap", "satellite", "terrain"]
+code = '''
+for t in ["roadmap", "satellite", "hybrid", "terrain"]
+	map2d("$(name), $(labels[t])", [t])
+end
+'''
+
+[[actionGroups.actions]]
+id = "features-on-map"
+label = "Features on the Map"
+desc = "The places of the example, or the features of your own query, on Google's Data layer over the map: the map fits them, and a click on one shows its name, kind and distance from the centre"
+models = ["roadmap", "satellite", "terrain"]
+code = '''
+shown = joinpath(mktempdir(), "places.geojson")
+DBInterface.execute(con, "COPY ($(places)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+n = only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM ($(places))")).n)
+map2d("$(name), Places", [maptype]; features = shown, note = "$(n) places of the example, as points, in one colour.")
+'''
+
+[[actionGroups.actions]]
+id = "coloured-by-column"
+label = "Coloured by a Column"
+desc = "The area within 300 m of each place, coloured by the Colour By column, with a legend: a colour scale for numbers, a colour per value for text"
+models = ["roadmap", "satellite", "terrain"]
+code = '''
+utm = "EPSG:$((lat >= 0 ? 32600 : 32700) + floor(Int, (lon + 180) / 6) + 1)"  # the UTM zone of the place, in metres
+areas = joinpath(mktempdir(), "areas.geojson")
+DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(ST_Buffer(ST_Transform(geom, 'EPSG:4326', '$(utm)'), 300), '$(utm)', 'EPSG:4326') AS geom FROM ($(places))) TO '$(areas)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+map2d("$(name), {{column}}", [maptype]; features = areas, column = "{{column}}", note = "The areas within 300 m of the places of the example, coloured by {{column}}.")
+'''
+
+[[actionGroups.actions]]
+id = "orbit"
+label = "Orbit the Place"
+desc = "The 3D map, its camera turning once around the centre in a minute at the Range and Tilt given, clockwise"
+models = ["map3d"]
+code = '''
+map3d("$(name), Orbit"; orbit = true)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "layer-size"
+label = "Layer Size"
+desc = "The features of the places query by geometry type, their vertices and the kilobytes of GeoJSON the page would hold: a large layer makes the Data layer slow to draw"
+models = ["roadmap", "satellite", "terrain"]
+code = '''
+file = joinpath(mktempdir(), "places.geojson")
+DBInterface.execute(con, "COPY ($(places)) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+s = Tables.columntable(DBInterface.execute(con, "SELECT ST_GeometryType(geom)::VARCHAR AS type, count(*) AS n, sum(ST_NPoints(geom))::BIGINT AS vertices FROM ($(places)) WHERE geom IS NOT NULL GROUP BY ALL ORDER BY n DESC"))
+println("The layer the page would hold: ", round(filesize(file) / 1024, digits = 1), " KB of GeoJSON")
+println(rpad("geometry type", 22), rpad("features", 10), "vertices")
+for i in eachindex(s.type)
+	println(rpad(s.type[i], 22), rpad(s.n[i], 10), s.vertices[i])
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "side-by-side"
+label = "Two Map Types Side by Side"
+desc = "The roadmap beside the satellite map, or beside the map of the tab, on one page: panning or zooming either moves both. Two map loads"
+models = ["roadmap", "satellite", "terrain"]
+code = '''
+pair = maptype == "roadmap" ? ["roadmap", "satellite"] : ["roadmap", maptype]
+map2d("$(name), $(labels[pair[1]]) and $(labels[pair[2]])", pair)
+'''
