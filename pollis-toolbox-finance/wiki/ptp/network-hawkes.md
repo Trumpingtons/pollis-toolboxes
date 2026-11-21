@@ -24,7 +24,7 @@ where m_i is the node of event i. A[m, n] is 1 when a link runs from m to n, W[m
 
 ## Where a Network Hawkes Fit Is Strong and Where It Misleads
 
-The model turns timing into a directed graph, and gives a probability for each link. It misleads when a common outside driver moves several nodes, as this appears as links between them. A strict lead and lag may also come from the recording delay of one stream. With few events on a pair, a P(link) near the prior says the data are silent, and not that a link is unlikely. **Future Events** and **Expected Count** have no simulator for this tab. Exponential kernels are the only choice offered, and there are no inhibitory links.
+The model turns timing into a directed graph, and gives a probability for each link. It misleads when a common outside driver moves several nodes, as this appears as links between them. A strict lead and lag may also come from the recording delay of one stream. With few events on a pair, a P(link) near the prior says the data are silent, and not that a link is unlikely. **Next Event Time** gives the wait to the next event on any node, while **Future Events** and **Expected Count** simulate forward on the **Poisson** and **Hawkes** tabs. The kernels are exponential, and the links excite.
 
 ## What to Compare a Network Hawkes Fit With
 

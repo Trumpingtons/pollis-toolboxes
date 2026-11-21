@@ -28,7 +28,7 @@ Here f(t) is a Gaussian kernel density of the events, with **Bandwidth (h)** as 
 
 ## Where Poisson Process Models Are Strong and Where They Mislead
 
-The homogeneous model gives closed-form results and exact forecasts: **Next Event Time** is an exponential, and **Expected Count** draws the rate from a Gamma(n + 1, 1/T) posterior under a flat prior before drawing a count. Clusters break it, as does a trend. The inhomogeneous fit can absorb clusters as bumps in the rate and so look good on them, particularly with a small **Bandwidth (h)**. It has no forecast past T, and it cannot say why the rate moved.
+The homogeneous model gives closed-form results and exact forecasts: **Next Event Time** is an exponential, and **Expected Count** draws the rate from a Gamma(n + 1, 1/T) posterior under a flat prior before drawing a count. Clusters break it, as does a trend. The inhomogeneous fit can absorb clusters as bumps in the rate and so look good on them, particularly with a small **Bandwidth (h)**. It describes the rate on [0, T], and says nothing of why the rate moved.
 
 ## What to Compare a Poisson Process With
 

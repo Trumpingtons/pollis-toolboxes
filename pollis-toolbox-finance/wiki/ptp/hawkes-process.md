@@ -24,7 +24,7 @@ where mu is the baseline, alpha the jump after each event and beta the decay rat
 
 ## Where a Hawkes Fit Is Strong and Where It Misleads
 
-The model gives a short, readable account of bursts, and it has a forecast that depends on recent history. It misleads when the baseline moves: a trend or a seasonal rate reads as excitation and pushes kappa upward, sometimes towards 1. An exponential kernel cannot express slow power-law decay, as in the aftershock models of [Ogata (1998)](#ref-Oga1998a). The model in the tab has no inhibition, marks or covariates. Its Gamma prior on kappa is not limited to values under 1, so **Expected Count** and **Branching Structure** can receive draws from outside the stationary range.
+The model gives a short, readable account of bursts, and it has a forecast that depends on recent history. It misleads when the baseline moves: a trend or a seasonal rate reads as excitation and pushes kappa upward, sometimes towards 1. An exponential kernel cannot express slow power-law decay, as in the aftershock models of [Ogata (1998)](#ref-Oga1998a). Inhibition, marks and covariates extend the model beyond the form of the tab. The Gamma prior on kappa covers values at or above 1, outside the stationary range, and **Branching Ratio** prints the posterior probability that kappa is under 1.
 
 ## What to Compare a Hawkes Fit With
 

@@ -12,7 +12,7 @@ Each event needs an exact time inside [0, **Time Horizon (T)**], and T should be
 
 ## What the Inhomogeneous Tab of a Point Process Assumes
 
-**Inhomogeneous** assumes that rate varies with time only, and that events are independent once the rate is given. Clusters caused by triggering are read as a rise in the rate, so the tab cannot tell the two causes apart. **Bandwidth (h)** is a choice of smoothness that the tab does not estimate, and the fitted rate describes only [0, T].
+**Inhomogeneous** assumes that rate varies with time only, and that events are independent once the rate is given. Clusters caused by triggering are read as a rise in the rate, and the **Hawkes** and **Cox** tabs model triggering beside the rate. **Bandwidth (h)** is a choice of smoothness that the user sets, and the fitted rate describes the window [0, T] of the events.
 
 ## What the Cox Tab of a Point Process Assumes
 

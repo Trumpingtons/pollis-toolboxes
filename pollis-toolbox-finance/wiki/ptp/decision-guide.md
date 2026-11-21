@@ -19,11 +19,11 @@ The choice of model starts with one question about the events: whether they arri
 
 ## How to Choose the Bandwidth of the Inhomogeneous Tab
 
-**Bandwidth (h)** is the standard deviation of the Gaussian kernel, in the units of T. Small values chase each event, and large values flatten real changes. The panel has no automatic choice, and **Log-Likelihood** always favours the smaller h on the same events. Start at a value several times the mean gap, try a range, read **Q-Q Plot**, and trust only the features that stay across that range. A cycle of known length calls for h well under that length.
+**Bandwidth (h)** is the standard deviation of the Gaussian kernel, in the units of T. Small values chase each event, and large values flatten real changes. **Log-Likelihood** always favours the smaller h on the same events, so it cannot choose h. Start at a value several times the mean gap, try a range, read **Q-Q Plot**, and trust only the features that stay across that range. A cycle of known length calls for h well under that length.
 
 ## How to Set the Gaussian Process Prior of the Cox Tab
 
-**Length Scale (l)** says how long the rate holds its level, and **GP Variance (sigma2)** says how far the log rate moves. The tab does not estimate them, so run a few values and see which conclusions change. **Squared Exp.** gives a smooth path, and **Ornstein-Uhlenbeck** a rough one that can change sharply from one grid point to the next. Results that depend strongly on these inputs mean that the data do not pin down the rate.
+**Length Scale (l)** says how long the rate holds its level, and **GP Variance (sigma2)** says how far the log rate moves. Both are set by the user, so a few values show which conclusions change. **Squared Exp.** gives a smooth path, and **Ornstein-Uhlenbeck** a rough one that can change sharply from one grid point to the next. Results that depend strongly on these inputs mean that the data do not pin down the rate.
 
 ## How to Set the Gibbs Iterations of a Point Process Fit
 

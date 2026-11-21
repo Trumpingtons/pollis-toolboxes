@@ -22,9 +22,9 @@ A fitted intensity always looks plausible on a plot of the same events. These ch
 
 **Log-Likelihood** gives the fit at the plug-in estimate, with its value per event. On **Inhomogeneous**, smaller bandwidths always raise it, so it cannot choose h. **Poisson vs Hawkes** prints AIC and BIC for the two maximum likelihood fits, with lower being better. A wide gap in favour of **Hawkes** supports self-excitation, under the caution that a trend can produce the same gap.
 
-## How to Check a Point Process Sampler Without a Built-In Trace Plot
+## How to Check the Gibbs Samplers of a Point Process Fit
 
-The panel has no trace plot, R-hat or effective sample size for its Gibbs samplers. Run again with twice the **Gibbs Iterations**, and treat summaries that move by more than their posterior spread as a call for a longer run. The draws remain in variables such as `mu_draws`, `kappa_draws`, `W_draws` and `A_draws`, so `plot(mu_draws)` in a new cell shows the chain. The seed is fixed by `Random.seed!(1)` in the code, so a different one means editing that line.
+A second run with twice the **Gibbs Iterations** shows whether the summaries have settled, and summaries that move by more than their posterior spread call for a longer run. The draws remain in variables such as `mu_draws`, `kappa_draws`, `W_draws` and `A_draws`, so `plot(mu_draws)` in a new cell shows the chain. The seed is fixed by `Random.seed!(1)` in the code, so a different one means editing that line.
 
 ## See Also
 

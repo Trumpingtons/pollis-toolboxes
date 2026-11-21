@@ -28,9 +28,9 @@ The path sits on 51 points, one for each end of the 50 grid intervals, with line
 | **Log Baseline (mu0)** | Simulation only |
 | **Gibbs Iterations** | Sweeps, with the first quarter discarded |
 
-## Where a Cox Process Is Strong and Where It Misleads
+## What a Cox Process Fit Shows and What Limits It
 
-The tab separates an unseen driver from triggering and gives an uncertainty band over the rate. It misleads in several ways. The fixed hyperparameters shape the result, and the panel has no way to learn them from the events. A short **Length Scale (l)** can absorb real triggering into the path, and a long one can push slow waves into W. Features under T/50 cannot appear. The fit describes only [0, T], and **Next Event Time**, **Future Events** and **Expected Count** print a message and no forecast.
+The tab separates an unseen driver from triggering and gives an uncertainty band over the rate. The hyperparameters of the Gaussian process, **Length Scale (l)** and **GP Variance (sigma2)**, are set by the user and shape the result. A short **Length Scale (l)** can absorb real triggering into the path, and a long one can push slow waves into W. Features under T/50 cannot appear. The fit describes [0, T], so forecasts past T come from the **Poisson** and **Hawkes** tabs, whose models extend beyond it.
 
 ## What to Compare a Cox Process With
 
