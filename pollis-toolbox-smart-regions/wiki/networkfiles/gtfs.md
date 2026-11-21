@@ -14,7 +14,7 @@ GTFS writes times as HH:MM:SS, measured from noon minus 12 hours of the service 
 
 ## Service Calendars
 
-calendar.txt gives each service, by its service_id, the weekdays it runs between a start_date and an end_date; calendar_dates.txt lists exceptions, with exception_type 1 when service is added on a date and 2 when it is removed ([MobilityData (2026)](#ref-Mob2026a)). A holiday is typically handled by adding the date to a holiday service and removing it from the regular one. The GTFS tab expands calendar.txt into one row per date and service, adds the dates calendar_dates.txt adds and removes those it removes, which gives the table `service_dates`; the trips of the services that run on the Service Date become `day_trips`.
+calendar.txt gives each service, by its `service_id`, the weekdays it runs between a `start_date` and an `end_date`; calendar_dates.txt lists exceptions, with `exception_type` 1 when service is added on a date and 2 when it is removed ([MobilityData (2026)](#ref-Mob2026a)). A holiday is typically handled by adding the date to a holiday service and removing it from the regular one. The GTFS tab expands calendar.txt into one row per date and service, adds the dates calendar_dates.txt adds and removes those it removes, which gives the table `service_dates`; the trips of the services that run on the Service Date become `day_trips`.
 
 ## Stops, Shapes and Route Lines
 

@@ -14,7 +14,7 @@ The headway is the time between two departures of the same route, in the same di
 
 ## Trips Defined by Frequencies
 
-frequencies.txt represents trips that run at regular headways: each row gives a trip, a start and an end time, and the headway in seconds at which the trip runs between them ([MobilityData (2026)](#ref-Mob2026a)). With exact_times 0 the service keeps headways rather than a fixed schedule; with exact_times 1 it is a compressed form of a fixed schedule. A feed with frequencies.txt runs more trips than stop_times.txt lists, so departures and headways counted from stop_times.txt understate its service. Feed Check reports when a feed has frequencies.txt.
+frequencies.txt represents trips that run at regular headways: each row gives a trip, a start and an end time, and the headway in seconds at which the trip runs between them ([MobilityData (2026)](#ref-Mob2026a)). With `exact_times` 0 the service keeps headways rather than a fixed schedule; with `exact_times` 1 it is a compressed form of a fixed schedule. A feed with frequencies.txt runs more trips than stop_times.txt lists, so departures and headways counted from stop_times.txt understate its service. Feed Check reports when a feed has frequencies.txt.
 
 ## References
 
