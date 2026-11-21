@@ -1,0 +1,524 @@
+# Mapillary Street-Level Viewer: a street-level image of Mapillary near a place, or one given by its id, opened in an
+# interactive viewer in the plot pane (MapillaryJS), alone or beside a map of Mapillary's coverage kept in step with it
+
+[meta]
+title = "Mapillary Street-Level Viewer"
+viewType = "pollis.streetview"
+defaultModel = "nearest"
+decisionFirstColumn = "Tab"
+
+# The user's Mapillary client access token, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "Mapillary"
+noun = "access token"
+
+[[apiKey.fields]]
+name = "mapillaryToken"
+envVar = "MAPILLARY_ACCESS_TOKEN"
+prompt = "Mapillary client access token, from the developer dashboard of Mapillary"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[wikis]]
+name = "Factsheet"
+file = "streetview/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the inputs, the viewer's controls and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "streetview/overview.md"
+bundled = true
+description = "Looking at Mapillary's street-level images in Pollis, and what they are used for"
+
+[[wikis]]
+name = "Using the Viewer"
+file = "streetview/viewer.md"
+bundled = true
+description = "Looking around, walking along a sequence, panoramas, and the coverage map beside the viewer"
+
+[[wikis]]
+name = "Finding an Image"
+file = "streetview/finding-an-image.md"
+bundled = true
+description = "The image search around a point, the radius, the nearest and the newest image, ids and links"
+
+[[wikis]]
+name = "Access Token"
+file = "streetview/access-token.md"
+bundled = true
+description = "The Mapillary token the tabs and the viewer need, and why a saved notebook keeps it"
+
+[[wikis]]
+name = "Diagnostics"
+file = "streetview/diagnostics.md"
+bundled = true
+description = "No image near the point, an image that does not open, a blank viewer, a map without coverage"
+
+[[wikis]]
+name = "Decision Guide"
+file = "streetview/decision-guide.md"
+bundled = true
+description = "Which tab, which radius, the nearest or the newest image"
+
+[[wikis]]
+separator = true
+label = "Tabs"
+
+[[wikis]]
+name = "Nearest Image"
+file = "streetview/nearest.md"
+bundled = true
+
+[[wikis]]
+name = "Image by ID"
+file = "streetview/byid.md"
+bundled = true
+
+[[wikis]]
+name = "Nearest Panorama"
+file = "streetview/pano.md"
+bundled = true
+
+[[wikis]]
+name = "Map and Viewer"
+file = "streetview/mapview.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Map2023a"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+separator = true
+label = "Documentation and Data"
+
+[[references]]
+key = "Map2026a"
+
+[[references]]
+key = "NORK2017a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "BI2021a"
+
+[[references]]
+key = "JH2016a"
+
+[[references]]
+key = "MSCCS2020a"
+
+[[faq]]
+question = "What do I need to use the panel?"
+answer = '''
+A Mapillary client access token, free from the developer dashboard of Mapillary once an application is registered there. The tabs need it to search the images, and the viewer to load them; it is set with the key on the Powered by line.
+'''
+wiki = "Access Token"
+
+[[faq]]
+question = "How do I move around in the viewer?"
+answer = '''
+Drag the image to look around, and use the arrows on the image to step to the next or the previous image of the sequence, or to a nearby image of another sequence. A panorama turns all the way round. With Map and Viewer, a click on a line or a dot of the map opens the image there.
+'''
+wiki = "Using the Viewer"
+
+[[faq]]
+question = "Which tab should I use?"
+answer = '''
+Nearest Image opens the image closest to a point, or the newest one near it; Nearest Panorama does the same with panoramas only; Image by ID opens an image whose id or link is known; and Map and Viewer opens the nearest image beside a map of the coverage, to walk the streets around the point.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Why does a notebook keep my token?"
+answer = '''
+The viewer runs in the page of the output and asks Mapillary for the images itself, so the token goes into the output with the image's id. A notebook saved with that output keeps the token: clear the outputs before sharing the notebook.
+'''
+wiki = "Access Token"
+hidden = true
+
+[[faq]]
+question = "What if there is no image near the point?"
+answer = '''
+The tab stops and says so: make the Search Radius larger, or move the point onto a street. Nearest Panorama finds fewer images than Nearest Image, as panoramas are a part of Mapillary's images.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Where do I find the id of an image?"
+answer = '''
+In a link of mapillary.com, as the number after pKey=, and in the column id of the tables of Mapillary Street-Level Imagery and of this panel. Image by ID takes the number or the whole link.
+'''
+wiki = "Finding an Image"
+hidden = true
+
+[[models]]
+id = "nearest"
+label = "Nearest Image"
+
+[[models]]
+id = "byid"
+label = "Image by ID"
+
+[[models]]
+id = "pano"
+label = "Nearest Panorama"
+
+[[models]]
+id = "mapview"
+label = "Map and Viewer"
+
+[[bullets]]
+text = "Nearest Image"
+detail = "Searches Mapillary's images within a radius of a point and opens the nearest, or the newest, in the street-level viewer"
+
+[[bullets]]
+text = "Image by ID"
+detail = "Opens an image given by its id or by its link on mapillary.com, with its date, camera and position"
+
+[[bullets]]
+text = "Nearest Panorama"
+detail = "Searches the panoramas only, and opens the nearest or the newest, to turn all the way round"
+
+[[bullets]]
+text = "Map and Viewer"
+detail = "Opens the nearest image beside a map of Mapillary's sequences and images: a click on the map moves the viewer, and the map follows the walk"
+
+[[decisionRows]]
+task = "Nearest Image"
+context = "A point"
+purpose = "What a place looks like from the street, in the image closest to it or the newest near it"
+
+[[decisionRows]]
+task = "Image by ID"
+context = "A known image"
+purpose = "An image found elsewhere, in a link of mapillary.com or a table of images"
+
+[[decisionRows]]
+task = "Nearest Panorama"
+context = "All round"
+purpose = "The whole view around a point, in a 360-degree panorama"
+
+[[decisionRows]]
+task = "Map and Viewer"
+context = "The streets around"
+purpose = "Walking the streets around a point, with a map that shows where the images are and where the viewer stands"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the Next Steps save their files, in a folder mapillary: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "placeName"
+label = "Place Name"
+tooltip = "The name of the place, used in the titles of the viewer and the Next Steps."
+default = "Dam Square, Amsterdam"
+newRow = true
+
+[[inputs]]
+id = "lon"
+label = "Longitude"
+tooltip = "Longitude of the point, in degrees on WGS 84: negative west of Greenwich."
+default = "4.8932"
+
+[[inputs]]
+id = "lat"
+label = "Latitude"
+tooltip = "Latitude of the point, in degrees on WGS 84: negative south of the equator."
+default = "52.3731"
+
+[[inputs]]
+id = "radius"
+label = "Search Radius (m)"
+tooltip = "How far from the point to look for images, in metres, at most 500; Image by ID uses it only when its Image ID or Link is nearest."
+default = "100"
+newRow = true
+
+[[inputs]]
+id = "pick"
+label = "Image to Open"
+kind = "select"
+default = "nearest"
+models = ["nearest", "pano", "mapview"]
+
+[[inputs.options]]
+value = "nearest"
+label = "The Nearest"
+
+[[inputs.options]]
+value = "newest"
+label = "The Newest"
+
+[[inputs]]
+id = "imageId"
+label = "Image ID or Link"
+tooltip = "The id of a Mapillary image, the number after pKey= in a link of mapillary.com, or the whole link; nearest opens the image nearest the point, and prints its id."
+default = "nearest"
+models = ["byid"]
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
+folder = mkpath(expanduser(raw"{{folder}}"))
+place = mkpath(joinpath(folder, "mapillary"))  # where the Next Steps save their files
+haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Access Token wiki")
+function mly_get(url, path)  # one request of the Mapillary API, written to path; stops with the API's message
+	part = path * ".part"
+	r = open(io -> Downloads.request(url; output = io, headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]], throw = false), part, "w")
+	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
+	if r.status != 200
+		answer = read(part, String)
+		rm(part; force = true)
+		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
+		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
+	end
+	return mv(part, path; force = true)
+end
+name, lon, lat = "{{placeName}}", {{lon}}, {{lat}}  # the point, in degrees of longitude and latitude: replace it with your own place
+radius = {{radius}}  # how far from the point to look for images, in metres
+0 < radius <= 500 || error("The Search Radius is $(radius) m: give one above 0 and at most 500")
+fields = "id,captured_at,compass_angle,computed_compass_angle,geometry,computed_geometry,is_pano,camera_type,make,model,sequence,creator,width,height,thumb_1024_url,thumb_2048_url"
+function read_images(answer; list = true)  # the images of an answer of the API, as the table images, with their distance from the point
+	rows = list ? "unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[]))" : "CAST(content AS JSON)"
+	DBInterface.execute(con, """
+	CREATE OR REPLACE TABLE images AS
+	SELECT *, ST_Distance_Sphere(geom, ST_Point($(lon), $(lat))) AS metres FROM (
+		SELECT DISTINCT ON (id) x->>'id' AS id, x->>'sequence' AS sequence_id, epoch_ms(CAST(x->>'captured_at' AS BIGINT)) AS captured_at,
+			TRY_CAST(coalesce(x->>'computed_compass_angle', x->>'compass_angle') AS DOUBLE) AS compass_angle, coalesce(TRY_CAST(x->>'is_pano' AS BOOLEAN), false) AS is_pano,
+			x->>'camera_type' AS camera_type, x->>'make' AS make, x->>'model' AS camera_model, TRY_CAST(x->>'width' AS INTEGER) AS width, TRY_CAST(x->>'height' AS INTEGER) AS height,
+			x->'creator'->>'username' AS creator, x->>'thumb_1024_url' AS thumb_url, x->>'thumb_2048_url' AS large_url,
+			ST_GeomFromGeoJSON(coalesce(x->'computed_geometry', x->'geometry')) AS geom, ST_GeomFromGeoJSON(x->'geometry') AS camera_geom
+		FROM (SELECT $(rows) AS x FROM read_text(?)))
+	""", [answer])  # one row per image: its sequence, date, heading, panorama, camera, creator, thumbnails, and its computed and camera positions
+	rm(answer)
+end
+function nearby(filters = String[])  # the images within the radius of the point, from the image search over a box around it
+	dlon, dlat = radius / (111320 * cosd(lat)), radius / 110574  # the radius in degrees of longitude and latitude
+	read_images(mly_get("https://graph.mapillary.com/images?" * join(["fields=$(fields)"; "bbox=$(lon - dlon),$(lat - dlat),$(lon + dlon),$(lat + dlat)"; "limit=2000"; filters], "&"), tempname() * ".json"))
+	only(query("SELECT count(*) AS n FROM images").n) >= 2000 && println("The search returned 2,000 images, as many as Mapillary gives to one request: some within the radius may be missing, so make the Search Radius smaller")
+	DBInterface.execute(con, "DELETE FROM images WHERE metres > $(radius)")  # the corners of the box are farther than the radius
+end
+{{?model=nearest|mapview}} nearby()
+{{?model=pano}} nearby(["is_pano=true"])  # panoramas only, filtered by the API
+{{?model!=byid}} order = "{{pick}}" == "newest" ? "captured_at DESC" : "metres"  # the nearest image, or the newest within the radius
+{{?model=byid}} given = strip(raw"{{imageId}}")
+{{?model=byid}} link = match(r"pKey=(\d+)", given)  # a link of mapillary.com names its image with pKey
+{{?model=byid}} image = link !== nothing ? String(link[1]) : occursin(r"^\d+$", given) ? String(given) : given == "nearest" ? "" : error("Image ID or Link is neither the id of an image, nor a link of mapillary.com with pKey=, nor nearest")
+{{?model=byid}} isempty(image) ? nearby() : read_images(mly_get("https://graph.mapillary.com/$(image)?fields=$(fields)", tempname() * ".json"); list = false)  # nearest: the image nearest the point
+{{?model=byid}} order = "metres"
+chosen = query("SELECT id, CAST(CAST(captured_at AS DATE) AS VARCHAR) AS day, round(metres, 1) AS metres, coalesce(CAST(round(compass_angle) AS VARCHAR) || ' degrees', 'unknown') AS heading, is_pano, coalesce(camera_type, 'unknown') AS camera FROM images ORDER BY $(order) LIMIT 1")
+{{?model!=pano}} isempty(chosen.id) && error("Mapillary has no image within $(radius) m of the point: make the Search Radius larger, or move the point onto a street")
+{{?model=pano}} isempty(chosen.id) && error("Mapillary has no panorama within $(radius) m of the point: make the Search Radius larger, or use Nearest Image")
+image = chosen.id[1]  # the image the viewer opens, and the Next Steps look at
+println("Image ", image, ", captured ", chosen.day[1], ", ", chosen.metres[1], " m from the point, heading ", chosen.heading[1], chosen.is_pano[1] ? ", a panorama" : ", camera " * chosen.camera[1], "; ", only(query("SELECT count(*) AS n FROM images").n), " images in the table images")
+{{?model!=mapview}} display(Pollis.streetview(image; title = name))  # drag to look around; the arrows walk along the sequence
+{{?model=mapview}} display(Pollis.streetview(image; map = true, title = name))  # a click on the map opens the image there, and the marker follows the viewer
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "viewer-and-map"
+label = "Viewer and Map"
+desc = "The image in the street-level viewer beside a map of Mapillary's sequences and images, kept in step: a click on the map opens the image there, and the marker follows the viewer as it walks"
+models = ["nearest", "byid", "pano"]
+code = '''
+display(Pollis.streetview(image; map = true, title = name))
+'''
+
+[[actionGroups.actions]]
+id = "images-around"
+label = "Images Around the Point"
+desc = "The images within the Search Radius as points coloured by the year they were captured, with the point, on an OpenStreetMap base map in Pollis's map view; click an image for its id, date and distance"
+models = ["nearest", "pano", "mapview"]
+code = '''
+shown = joinpath(mktempdir(), "images.geojson")
+DBInterface.execute(con, "COPY (SELECT id, CAST(captured_at AS VARCHAR) AS captured, year(captured_at) AS year, round(metres, 1) AS metres, compass_angle, is_pano, geom FROM images) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+point = """{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"$(name)"},"geometry":{"type":"Point","coordinates":[$(lon),$(lat)]}}]}"""
+display(Pollis.webmap(Pollis.layer(shown; name = "Images by year", column = "year"), Pollis.layer(point; name = name, color = "#e15759"); title = "Mapillary Images Around $(name)"))
+'''
+
+[[actionGroups.actions]]
+id = "look-at-image"
+label = "Look at the Image"
+desc = "The thumbnail of the image, 1024 pixels wide, downloaded into the folder mapillary and shown with its date, heading and creator on a page in Pollis's browser, linked to the image on Mapillary"
+code = '''
+t = only(query("SELECT thumb_url, CAST(CAST(captured_at AS DATE) AS VARCHAR) AS day, coalesce(CAST(round(compass_angle) AS VARCHAR) || '°', 'unknown') AS heading, coalesce(creator, 'unknown') AS creator FROM images WHERE id = ?", [image]) |> Tables.rows)
+ismissing(t.thumb_url) && error("Mapillary gives no thumbnail of image $(image)")
+thumb = joinpath(mkpath(joinpath(place, "thumbnails")), image * ".jpg")
+isfile(thumb) || mv(Downloads.download(t.thumb_url, thumb * ".part"), thumb)
+sheet = joinpath(place, "mapillary-image-$(image).html")
+write(sheet, """<!doctype html><html><head><meta charset="utf-8"><title>Mapillary Image $(image)</title>
+<style>body{font-family:sans-serif;margin:16px}img{max-width:100%;border-radius:4px}p{color:#666}</style></head>
+<body><h2>$(name)</h2><a href="https://www.mapillary.com/app/?pKey=$(image)"><img src="thumbnails/$(image).jpg" alt="Image $(image)"></a>
+<p>Image $(image) · $(t.day) · heading $(t.heading) · by $(t.creator). Image from Mapillary.</p></body></html>""")
+Pollis.browse(sheet)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "image-details"
+label = "Image Details"
+desc = "Everything the API gives of the image: date, camera, size, heading, panorama, creator and sequence, and how far Mapillary moved the camera's own position when it computed the image's position"
+code = '''
+d = only(query("SELECT id, CAST(captured_at AS VARCHAR) AS captured, camera_type, make, camera_model, width, height, round(compass_angle, 1) AS heading, is_pano, creator, sequence_id, round(metres, 1) AS from_point, round(ST_Distance_Sphere(geom, camera_geom), 1) AS moved FROM images WHERE id = ?", [image]) |> Tables.rows)
+labels = (id = "Image", captured = "Captured", camera_type = "Projection", make = "Camera make", camera_model = "Camera model", width = "Width (px)", height = "Height (px)", heading = "Heading (deg)", is_pano = "Panorama", creator = "Creator", sequence_id = "Sequence", from_point = "From point (m)", moved = "Position moved (m)")
+for (k, v) in pairs(d)
+	println(rpad(labels[k], 20), ismissing(v) ? "not given" : v)
+end
+'''
+
+[[actionGroups.actions]]
+id = "distances"
+label = "Images by Distance"
+desc = "How many images, and how many panoramas, lie within each 10 m of the point: whether the Search Radius is too small, or larger than needed"
+models = ["nearest", "pano", "mapview"]
+code = '''
+r = query("SELECT CAST(greatest(ceil(metres / 10), 1) * 10 AS INTEGER) AS ring, count(*) AS n, count(*) FILTER (WHERE is_pano) AS panoramas FROM images GROUP BY ring ORDER BY ring")
+println("Images within each 10 m of the point, up to ", radius, " m:")
+for i in eachindex(r.n)
+	println(lpad("$(r.ring[i] - 10) to $(r.ring[i]) m", 14), lpad(r.n[i], 7), " images, ", r.panoramas[i], " panoramas  ", repeat("#", round(Int, 40 * r.n[i] / maximum(r.n))))
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "oldest-newest"
+label = "Oldest and Newest"
+desc = "The oldest and the newest image within the Search Radius, each in its own street-level viewer: how the place has changed between them"
+models = ["nearest", "pano", "mapview"]
+code = '''
+o = query("SELECT id, CAST(CAST(captured_at AS DATE) AS VARCHAR) AS day, round(metres, 1) AS metres FROM images ORDER BY captured_at")
+length(o.id) < 2 && error("There is only one image within $(radius) m of the point: make the Search Radius larger")
+println("Oldest: image ", o.id[1], ", ", o.day[1], ", ", o.metres[1], " m from the point")
+println("Newest: image ", o.id[end], ", ", o.day[end], ", ", o.metres[end], " m from the point")
+display(Pollis.streetview(o.id[1]; title = "$(name), $(o.day[1])"))
+display(Pollis.streetview(o.id[end]; title = "$(name), $(o.day[end])"))
+'''
+
+[[actionGroups.actions]]
+id = "panoramas-others"
+label = "Panoramas and Others"
+desc = "The panoramas beside the other images within the Search Radius: how many, in how many sequences, the nearest of each, and their first and last dates"
+models = ["nearest", "mapview"]
+code = '''
+p = query("SELECT is_pano, count(*) AS n, count(DISTINCT sequence_id) AS k, round(min(metres), 1) AS nearest, CAST(min(captured_at) AS DATE) AS t0, CAST(max(captured_at) AS DATE) AS t1 FROM images GROUP BY is_pano ORDER BY is_pano")
+println(rpad("", 14), rpad("images", 9), rpad("sequences", 11), rpad("nearest", 10), "first and last")
+for i in eachindex(p.n)
+	println(rpad(p.is_pano[i] ? "Panoramas" : "Other images", 14), rpad(p.n[i], 9), rpad(p.k[i], 11), rpad("$(p.nearest[i]) m", 10), p.t0[i], " to ", p.t1[i])
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "point-in-view"
+label = "Is the Point in View?"
+desc = "The compass direction from the image to the point, beside the direction the camera faced: how far to turn the viewer to look at the point"
+code = '''
+p = only(query("SELECT ST_X(geom) AS x, ST_Y(geom) AS y, compass_angle, is_pano, metres FROM images WHERE id = ?", [image]) |> Tables.rows)
+bearing = mod(atand(sind(lon - p.x) * cosd(lat), cosd(p.y) * sind(lat) - sind(p.y) * cosd(lat) * cosd(lon - p.x)), 360)  # the initial great-circle bearing from the image to the point
+println("From image ", image, ", ", name, " is ", round(p.metres; digits = 1), " m away, towards ", round(Int, bearing), " degrees")
+if p.is_pano
+	println("A panorama sees all round: turn the viewer to ", round(Int, bearing), " degrees")
+elseif ismissing(p.compass_angle)
+	println("Mapillary gives no heading for this image")
+else
+	turn = mod(bearing - p.compass_angle + 180, 360) - 180  # from -180 to 180: negative to the left
+	println("The camera faced ", round(Int, p.compass_angle), " degrees: the point is ", round(Int, abs(turn)), " degrees to the ", turn >= 0 ? "right" : "left", " of the centre of the image")
+end
+'''
+
+[[actionGroups.actions]]
+id = "coverage-by-year"
+label = "Coverage by Year"
+desc = "The images within the Search Radius by the year they were captured: how many, in how many sequences, and how many panoramas"
+models = ["nearest", "pano", "mapview"]
+code = '''
+y = query("SELECT year(captured_at) AS year, count(*) AS n, count(DISTINCT sequence_id) AS k, count(*) FILTER (WHERE is_pano) AS panoramas FROM images GROUP BY year ORDER BY year")
+for i in eachindex(y.n)
+	println(y.year[i], lpad(y.n[i], 7), " images", lpad(y.k[i], 5), " sequences", lpad(y.panoramas[i], 6), " panoramas  ", repeat("#", round(Int, 40 * y.n[i] / maximum(y.n))))
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-image"
+label = "Save the Image"
+desc = "Download the image, 2048 pixels wide, as a JPEG file in the folder mapillary, named by its id"
+code = '''
+u = only(query("SELECT large_url FROM images WHERE id = ?", [image]).large_url)
+ismissing(u) && error("Mapillary gives no image 2048 pixels wide of image $(image)")
+saved = joinpath(place, "mapillary-$(image)-2048.jpg")
+mv(Downloads.download(u, saved * ".part"), saved; force = true)
+println("Wrote ", saved, ", ", round(filesize(saved) / 2^10; digits = 1), " KB")
+'''
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Write the table images, every image the tab found with its attributes and computed position, as a GeoParquet file in the folder mapillary"
+code = '''
+parquet_file = joinpath(place, "mapillary-images-near-point.parquet")
+DBInterface.execute(con, "COPY (SELECT * EXCLUDE (camera_geom) FROM images ORDER BY metres) TO '$(parquet_file)' (FORMAT parquet)")
+println("Wrote ", only(query("SELECT count(*) AS n FROM images").n), " images to ", parquet_file)
+'''
+
+[[actionGroups.actions]]
+id = "open-on-mapillary"
+label = "Open on Mapillary"
+desc = "The link of the image on mapillary.com, printed and opened in Pollis's browser"
+code = '''
+link = "https://www.mapillary.com/app/?pKey=$(image)"
+println(link)
+Pollis.browse(link)
+'''
