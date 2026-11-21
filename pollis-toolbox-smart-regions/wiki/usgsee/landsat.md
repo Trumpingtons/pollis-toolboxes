@@ -2,7 +2,7 @@
 
 ## The Level-2 Products of Landsat 8 and Landsat 9
 
-The Collection 2 Level-2 science products of Landsat 8 and Landsat 9 hold surface reflectance, from the Land Surface Reflectance Code, and surface temperature, from the thermal band, with quality assessment bands ([U.S. Geological Survey (2024)](#ref-USGS2024a)). Surface reflectance is the reflectance at the top of the atmosphere corrected for the scattering and absorption of atmospheric gases and aerosols, which products for monitoring the land surface need; Vermote, Justice, Claverie and Franch assessed this correction for the Operational Land Imager of Landsat 8 ([Vermote, Justice, Claverie and Franch (2016)](#ref-VJCF2016a)). Landsat Download reads the dataset landsat_ot_c2_l2 of EarthExplorer, which holds both satellites ([Earth Resources Observation and Science (EROS) Center (2020)](#ref-EROSC2020a)).
+The Collection 2 Level-2 science products of Landsat 8 and Landsat 9 hold surface reflectance, from the Land Surface Reflectance Code, and surface temperature, from the thermal band, with quality assessment bands ([U.S. Geological Survey (2024)](#ref-USGS2024a)). Surface reflectance is the reflectance at the top of the atmosphere corrected for the scattering and absorption of atmospheric gases and aerosols, which products for monitoring the land surface need; Vermote, Justice, Claverie and Franch assessed this correction for the Operational Land Imager of Landsat 8 ([Vermote, Justice, Claverie and Franch (2016)](#ref-VJCF2016a)). Landsat Download reads the dataset `landsat_ot_c2_l2` of EarthExplorer, which holds both satellites ([Earth Resources Observation and Science (EROS) Center (2020)](#ref-EROSC2020a)).
 
 ## The Bands of a Landsat 8-9 Level-2 Scene
 

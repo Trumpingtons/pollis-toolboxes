@@ -19,7 +19,7 @@ Find Scenes downloads no file, only the pages of the search, so it is the place 
 | `landsat_etm_c2_l2` | Landsat 7, Level-2 |
 | `landsat_tm_c2_l2` | Landsat 4 and Landsat 5, Level-2 |
 
-Collection 2 holds the whole Landsat archive processed consistently ([Crawford and 34 coauthors (2023)](#ref-CRABV...2023a)), so the older satellites extend a series back in time. The Dataset input of Find Scenes takes any dataset name of the M2M API ([U.S. Geological Survey (2026)](#ref-USGS2026a)); Landsat Download reads landsat_ot_c2_l2 only.
+Collection 2 holds the whole Landsat archive processed consistently ([Crawford and 34 coauthors (2023)](#ref-CRABV...2023a)), so the older satellites extend a series back in time. The Dataset input of Find Scenes takes any dataset name of the M2M API ([U.S. Geological Survey (2026)](#ref-USGS2026a)); Landsat Download reads `landsat_ot_c2_l2` only.
 
 ## Which Bands to Download From a Landsat Scene
 
