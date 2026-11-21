@@ -425,22 +425,13 @@ plot(p1, p2, layout=(2, 1), size=(800, 550))
 [[actionGroups.actions]]
 id = "smile"
 label = "Implied Volatility Smile"
-desc = "Black implied volatility across strikes: closed-form prices inverted for Heston and Bates, the Hagan formula for SABR"
+desc = "Black implied volatility across strikes: closed-form prices inverted by implied_volatility for Heston and Bates, the Hagan formula for SABR"
 code = '''
-using Distributions, Plots
+using Plots
 {{?model=heston|bates}} F = S0 * exp({{mu}} * T)  # forward price
 {{?model=sabr}} F = S0
-black(sig, K) = (d1 = (log(F / K) + sig^2 * T / 2) / (sig * sqrt(T)); F * cdf(Normal(), d1) - K * cdf(Normal(), d1 - sig * sqrt(T)))
-function implied(c, K)  # bisection on the undiscounted Black price
-    lo, hi = 1e-4, 3.0
-    for _ in 1:60
-        mid = (lo + hi) / 2
-        black(mid, K) < c ? (lo = mid) : (hi = mid)
-    end
-    (lo + hi) / 2
-end
 strikes = F .* (0.7:0.05:1.3)
-{{?model=heston|bates}} ivs = [implied(european_price(model, K, T; rate=0), K) for K in strikes]  # rate 0: the undiscounted price
+{{?model=heston|bates}} ivs = [implied_volatility(european_price(model, K, T; rate=0, call=K >= F), F, K, T; rate=0, call=K >= F) for K in strikes]  # rate 0: the undiscounted price of the out-of-the-money option
 {{?model=sabr}} ivs = [hagan_implied_vol(model, K, T) for K in strikes]
 plot(strikes ./ F, ivs, marker=:circle, xlabel="moneyness K / F", ylabel="implied volatility", legend=false, title="Implied volatility smile")
 '''
@@ -469,6 +460,25 @@ ST = simulate_terminal(model, T; paths=2000)
 {{?model=sabr}} expected = S0  # the forward is a martingale
 se = std(ST) / sqrt(length(ST))
 (simulated_mean = mean(ST), expected = expected, std_error = se, z = (mean(ST) - expected) / se)
+'''
+
+[[actionGroups.actions]]
+id = "calibration"
+label = "Calibration Recovers the Parameters"
+desc = "Implied volatilities of the model itself, calibrated from a different start: the parameters found beside the true ones show which the smile pins down"
+code = '''
+{{?model=heston|bates}} rate = {{mu}}
+{{?model=sabr}} rate = 0.0
+{{?model=heston|bates}} quotes = [(K, Tq) for Tq in (0.25, 0.5, 1.0, 2.0) for K in S0 .* (0.8:0.05:1.2)]  # strikes by maturities
+{{?model=sabr}} quotes = [(K, T) for K in S0 .* (0.7:0.05:1.3)]  # SABR: one maturity
+Ks, Ts = first.(quotes), last.(quotes)
+{{?model=heston|bates}} vols = [(F = S0 * exp(rate * Tq); implied_volatility(european_price(model, K, Tq; rate, call=K >= F), F, K, Tq; rate, call=K >= F)) for (K, Tq) in quotes]
+{{?model=sabr}} vols = [hagan_implied_vol(model, K, T) for K in Ks]
+{{?model=heston}} start = Heston(; S0, v0=1.5 * {{v0}}, mu={{mu}}, kappa=1.5 * {{kappa}}, theta=1.5 * {{theta}}, xi=1.5 * {{xi}}, rho={{rho}} / 2)
+{{?model=bates}} start = Bates(; S0, v0=1.5 * {{v0}}, mu={{mu}}, kappa=1.5 * {{kappa}}, theta=1.5 * {{theta}}, xi=1.5 * {{xi}}, rho={{rho}} / 2, lambda=1.5 * {{lambda}}, muJ={{muJ}} / 2, deltaJ=1.5 * {{sigmaJ}})
+{{?model=sabr}} start = SABR(; F0, alpha=1.5 * {{alpha}}, beta={{beta}}, rho={{rho-sabr}} / 2, nu=1.5 * {{nu}})  # beta held fixed
+fit = calibrate(start, Ks, Ts, vols; rate)
+(converged = fit.converged, sse = fit.sse, true_model = model, calibrated = fit.model)
 '''
 
 [[actionGroups]]
@@ -500,6 +510,32 @@ strikes = S0 .* (0.8:0.1:1.2)
 calls = monte_carlo_price(model, strikes, T; rate, paths=5000)
 puts = monte_carlo_price(model, strikes, T; rate, call=false, paths=5000)
 [(strike = K, call = closed(K, true), call_mc = c.price, call_se = c.standard_error, put = closed(K, false), put_mc = p.price, put_se = p.standard_error) for (K, c, p) in zip(strikes, calls, puts)]
+'''
+
+[[actionGroups.actions]]
+id = "greeks"
+label = "Greeks by Strike"
+desc = "Price, delta, gamma and time decay of European calls at five strikes, with the derivatives with respect to every parameter, by automatic differentiation"
+code = '''
+strikes = S0 .* (0.8:0.1:1.2)
+{{?model=heston|bates}} rate = {{mu}}
+{{?model=sabr}} rate = 0.0  # prices in forward terms
+[(g = greeks(model, K, T; rate); (strike = K, price = g.price, delta = g.delta, gamma = g.gamma, time_decay = -g.maturity, parameters = g.parameters)) for K in strikes]
+'''
+
+[[actionGroups.actions]]
+id = "american"
+label = "American Against European"
+desc = "American puts and calls by finite differences at five strikes beside their European prices. Heston and Bates: with no dividend an American call is worth its European price, so the call's difference shows the error of the grid, and the put's beyond it is the early-exercise premium. SABR: both by finite differences, so the difference is the premium"
+code = '''
+strikes = S0 .* (0.8:0.1:1.2)
+{{?model=heston|bates}} rate = {{mu}}  # no dividend, so an American call is worth its European price
+{{?model=sabr}} rate = 0.05  # a positive rate, at which early exercise of a put can pay
+american_put = finite_difference_price(model, strikes, T; rate, call=false)
+american_call = finite_difference_price(model, strikes, T; rate)
+{{?model=heston|bates}} european(K, call) = european_price(model, K, T; rate, call)
+{{?model=sabr}} european(K, call) = finite_difference_price(model, K, T; rate, call, american=false)
+[(strike = K, put = european(K, false), american_put = ap, put_premium = ap - european(K, false), call = european(K, true), american_call = ac, call_premium = ac - european(K, true)) for (K, ap, ac) in zip(strikes, american_put, american_call)]
 '''
 
 [[actionGroups]]
