@@ -4,11 +4,11 @@
 
 | Need | Tab | Overture feature type |
 |---|---|---|
-| Shops, services, schools, hospitals and other points of interest | Places | place |
-| Building footprints, with subtype, height and floors where known | Buildings | building |
-| Roads and paths, railways, or ferry routes, with their classes and junctions | Transportation | segment |
-| The boundaries of counties, localities or neighbourhoods | Divisions | division_area |
-| Address points with street, number and postcode | Addresses | address |
+| Shops, services, schools, hospitals and other points of interest | Places | `place` |
+| Building footprints, with subtype, height and floors where known | Buildings | `building` |
+| Roads and paths, railways, or ferry routes, with their classes and junctions | Transportation | `segment` |
+| The boundaries of counties, localities or neighbourhoods | Divisions | `division_area` |
+| Address points with street, number and postcode | Addresses | `address` |
 
 Overture defines a place as a concrete, physically identifiable, stationary destination in a publicly observable space, so administrative areas belong to divisions, standalone address points to addresses, and bus stops and platforms to the base theme rather than places ([Overture Maps Foundation (2026)](#ref-OMF2026a)). The base theme, with land, water, land use, land cover, infrastructure and bathymetry, has no tab in the Overture Maps Data panel.
 
@@ -22,7 +22,7 @@ The Release input set to latest reads the newest release in Overture's catalogue
 
 ## Which Places to Keep
 
-The Category input of the Places tab keeps one basic category, such as restaurant or college_university, and Minimum Confidence leaves out places whose confidence is lower ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Overture describes confidence as a relative filter, where a higher threshold trades coverage for precision. Ballantyne and Berragan evaluated Overture's places for the United Kingdom against a reference dataset of supermarkets ([Ballantyne and Berragan (2024)](#ref-BB2024a)); a comparison with a trusted list of the places of interest is the surest way to choose a threshold for a study.
+The Category input of the Places tab keeps one basic category, such as `restaurant` or `college_university`, and Minimum Confidence leaves out places whose confidence is lower ([Overture Maps Foundation (2026)](#ref-OMF2026a)). Overture describes confidence as a relative filter, where a higher threshold trades coverage for precision. Ballantyne and Berragan evaluated Overture's places for the United Kingdom against a reference dataset of supermarkets ([Ballantyne and Berragan (2024)](#ref-BB2024a)); a comparison with a trusted list of the places of interest is the surest way to choose a threshold for a study.
 
 ## What to Save for Other Tools
 
