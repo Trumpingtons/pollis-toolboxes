@@ -6,7 +6,7 @@ Image by ID opens one image of Mapillary given by its id, wherever it is. It rea
 
 ## The Image ID or Link Input
 
-Image ID or Link takes the numeric id of a Mapillary image, or a link of mapillary.com that names an image with the parameter `pKey`, from which the tab reads the number. Anything else stops the tab with a message, before any request is made. An id that Mapillary does not know stops it with Mapillary's own message, before the viewer is drawn. The value nearest is the default, so that the tab runs before an id is known; it looks for the image nearest the point, as Nearest Image does, and prints its id.
+Image ID or Link takes the numeric id of a Mapillary image, or a link of mapillary.com that names an image with the parameter `pKey`, from which the tab reads the number. Anything else but the word nearest stops the tab with a message, before any request is made. An id that Mapillary does not know stops it with Mapillary's own message, before the viewer is drawn. The default is the id of one image, which shows the tab at work before an id of one's own is at hand; replacing it with another id, or pasting a link over it, opens that image instead.
 
 ## Image by ID with Nearest
 

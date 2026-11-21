@@ -282,8 +282,8 @@ label = "The Newest"
 [[inputs]]
 id = "imageId"
 label = "Image ID or Link"
-tooltip = "The id of a Mapillary image, the number after pKey= in a link of mapillary.com, or the whole link; nearest opens the image nearest the point, and prints its id."
-default = "nearest"
+tooltip = "The id of a Mapillary image, the number after pKey= in a link of mapillary.com, or the whole link; by default an image of Dam Square, Amsterdam. nearest opens the image nearest the point, and prints its id."
+default = "3403764919922615"
 models = ["byid"]
 
 [[codeBranches]]
