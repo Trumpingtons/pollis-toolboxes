@@ -25,7 +25,7 @@ The 3D map carries exploration controls by default ([Google (2026b)](#ref-Goo202
 
 ## Orbiting the Place
 
-Orbit the Place opens the 3D map and calls `flyCameraAround`, which turns the camera clockwise around the centre while the centre stays in the middle of the view ([Google (2026b)](#ref-Goo2026b)). The page passes the centre, the Range, Tilt and Heading of the inputs, a duration of 60,000 milliseconds for one turn, and a repeat count of 1, so the camera goes once around the place in a minute and stops. The method starts the animation only once the map has loaded enough, and the heading of the map changes as the camera goes round. A repeat count of `Number.Infinity` would turn it for as long as the page is open.
+Orbit the Place opens the 3D map, with what the 3D tab drew on it, and calls `flyCameraAround`, which turns the camera clockwise around the centre while the centre stays in the middle of the view ([Google (2026b)](#ref-Goo2026b)). The page passes the centre, the Range, Tilt and Heading of the inputs, a duration of 60,000 milliseconds for one turn, and a repeat count of 1, so the camera goes once around the place in a minute and stops. The method starts the animation only once the map has loaded enough, and the heading of the map changes as the camera goes round. A repeat count of `Number.Infinity` would turn it for as long as the page is open.
 
 ## References
 

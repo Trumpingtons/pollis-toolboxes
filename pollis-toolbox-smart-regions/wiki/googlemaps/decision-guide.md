@@ -9,8 +9,11 @@
 | Where are the streets on the imagery? | Satellite, With Labels | The hybrid map: imagery with labels |
 | How does the land rise and fall? | Terrain | A physical map from terrain information |
 | How tall are the buildings, and how do they stand together? | 3D Map | Photorealistic 3D imagery seen at an angle ([Google (2026b)](#ref-Goo2026b)) |
+| How do areas of my own compare in height, or in a value given as a height? | Your Features | Polygons raised to a column, among Google's buildings |
+| Where across a place is a count or a measurement highest? | Values as Columns | A column for each cell of a grid |
+| Where do flights, drones or cable cars pass, and how high? | Routes at Height | Lines at the altitude of each point |
 
-The 2D tabs share their Next Steps: features on the Data layer, a colour by column, a size check, and two map types side by side. The 3D Map tab adds the orbit of the camera. A first look at an unfamiliar place usually starts with Every Map Type, which opens all four 2D maps of it at once.
+The 2D tabs share their Next Steps: features on the Data layer, a colour by column, a size check, and two map types side by side. The four 3D tabs share the orbit of the camera, which keeps what the tab drew on the map, and each of the three tabs with data has a step that lists what it drew. A first look at an unfamiliar place usually starts with Every Map Type, which opens all four 2D maps of it at once.
 
 ## Google Maps, OpenStreetMap Base Maps or Copernicus Imagery Layers
 
@@ -22,7 +25,7 @@ The Maps Demo Key is meant for evaluation and testing, and its terms strictly pr
 
 ## How Many Map Loads Each Step Uses
 
-Each map that a page of the Google Maps panel opens is one map load of the Maps JavaScript API, whether 2D or 3D ([Google (2026g)](#ref-Goo2026g)). Running a tab opens one map, and opening its page again in Pollis's browser loads the map again. Features on the Map, Coloured by a Column and Orbit the Place open one map each. Every Map Type opens four, one for each map type, and Two Map Types Side by Side opens two on one page. Layer Size opens none, as it only reads the query `places`. Within the Demo Key's daily limit, the tabs and single-map steps leave room for many looks at a place in a day.
+Each map that a page of the Google Maps panel opens is one map load of the Maps JavaScript API, whether 2D or 3D ([Google (2026g)](#ref-Goo2026g)). Running a tab opens one map, and opening its page again in Pollis's browser loads the map again. Your Features, Values as Columns and Routes at Height open one map each, however many shapes they draw on it. Features on the Map, Coloured by a Column and Orbit the Place open one map each. Every Map Type opens four, one for each map type, and Two Map Types Side by Side opens two on one page. Layer Size, Tallest Buildings, Places by Category and Flights Drawn open none, as they only read the tables of their tabs. Within the Demo Key's daily limit, the tabs and single-map steps leave room for many looks at a place in a day.
 
 ## References
 
@@ -39,4 +42,4 @@ Each map that a page of the Google Maps panel opens is one map load of the Maps 
 <a id="ref-Goo2026g"></a>Google (2026g). Maps JavaScript API Usage and Billing. [developers.google.com/maps/documentation/javascript/usage-and-billing](https://developers.google.com/maps/documentation/javascript/usage-and-billing)
 
 ## See Also
-- [Overview](overview.md) · [Terms of Use](terms.md) · [The Demo Key](demo-key.md) · [Map Types](map-types.md)
+- [Overview](overview.md) · [Terms of Use](terms.md) · [The Demo Key](demo-key.md) · [Map Types](map-types.md) · [3D Features](features3d.md)
