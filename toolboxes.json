@@ -1,0 +1,139 @@
+{
+	"toolboxes": [
+		{
+			"id": "pollis.pollis-toolbox-a-vineyard-for-the-portfolio",
+			"name": "A Vineyard for the Portfolio",
+			"description": "A Simulation Game case for Pollis: a British drinks group negotiates to buy one of three wineries, in Chile, Italy and Australia, whose owners each know something it does not, then every winery is run for three years, on a Julia model the class can open afterwards.",
+			"author": "Pollis",
+			"version": "0.1.3",
+			"vsix": "pollis-toolbox-a-vineyard-for-the-portfolio-0.1.3.vsix",
+			"readme": "pollis-toolbox-a-vineyard-for-the-portfolio-README.md",
+			"icon": "pollis-toolbox-a-vineyard-for-the-portfolio-icon.png",
+			"games": true
+		},
+		{
+			"id": "pollis.pollis-toolbox-chocolate-chain",
+			"name": "Grow a Chocolate Chain",
+			"description": "A Simulation Game case for Pollis: rival teams each run a chocolate brand in one country for five years, setting price, beans, shops, staff and marketing, on a Julia model the class can open afterwards.",
+			"author": "Pollis",
+			"version": "0.1.3",
+			"vsix": "pollis-toolbox-chocolate-chain-0.1.3.vsix",
+			"readme": "pollis-toolbox-chocolate-chain-README.md",
+			"icon": "pollis-toolbox-chocolate-chain-icon.png",
+			"games": true
+		},
+		{
+			"id": "pollis.pollis-toolbox-economics",
+			"name": "Economics Toolbox",
+			"description": "Pollis Economics Toolbox: business cycle filters, discrete-time stochastic volatility models, DSGE models, VAR/VECM systems, heterogeneous-agent models, continuous-time macro-finance and game theory.",
+			"author": "Pollis",
+			"version": "0.1.11",
+			"vsix": "pollis-toolbox-economics-0.1.11.vsix",
+			"readme": "pollis-toolbox-economics-README.md",
+			"icon": "pollis-toolbox-economics-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-epidemiology",
+			"name": "Epidemiology Toolbox",
+			"description": "Pollis Epidemiology Toolbox: inference of epidemiological parameters, inference on contact networks, compartmental models (SIR, SIS, SEIR, SIRS, SEIRD), branching processes, epidemics on networks and coinfection.",
+			"author": "Pollis",
+			"version": "0.1.6",
+			"vsix": "pollis-toolbox-epidemiology-0.1.6.vsix",
+			"readme": "pollis-toolbox-epidemiology-README.md",
+			"icon": "pollis-toolbox-epidemiology-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-econometrics",
+			"name": "Finance Toolbox",
+			"description": "Pollis Finance Toolbox: volatility measurement from daily and intraday prices, high-frequency covariance, ARIMAX models, GARCH-type, stochastic volatility and regime switching models, point processes, Bayesian asset-pricing factor models, portfolio optimisation, loss risk measures, extreme value analysis, and simulated limit order book markets.",
+			"author": "Pollis",
+			"version": "0.1.22",
+			"vsix": "pollis-toolbox-econometrics-0.1.22.vsix",
+			"readme": "pollis-toolbox-econometrics-README.md",
+			"icon": "pollis-toolbox-econometrics-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-learning-and-practice",
+			"name": "Self-Study: Learn and Practise",
+			"description": "Turn your slides, notes and PDFs into what helps you study: more problems with their solutions, a topic explained in depth, a summary of a paper, prose and audio from slides, or slides from a long text. For students, and for teachers preparing their classes.",
+			"author": "Pollis",
+			"version": "0.1.8",
+			"vsix": "pollis-toolbox-learning-and-practice-0.1.8.vsix",
+			"readme": "pollis-toolbox-learning-and-practice-README.md",
+			"icon": "pollis-toolbox-learning-and-practice-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-mathematical-core",
+			"name": "Core Mathematics Toolbox",
+			"description": "Pollis Core Mathematics Toolbox: symbolic math, linear algebra, nonlinear systems, automatic and numerical differentiation, numerical integration, and ordinary and partial differential equations.",
+			"author": "Pollis",
+			"version": "0.1.10",
+			"vsix": "pollis-toolbox-mathematical-core-0.1.10.vsix",
+			"readme": "pollis-toolbox-mathematical-core-README.md",
+			"icon": "pollis-toolbox-mathematical-core-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-merge-or-be-bought",
+			"name": "Merge or Be Bought",
+			"description": "A Simulation Game case for Pollis: three listed bicycle makers, each run by a team as its board, bid for each other's shares for six quarters, on a Julia model the class can open afterwards.",
+			"author": "Pollis",
+			"version": "0.1.3",
+			"vsix": "pollis-toolbox-merge-or-be-bought-0.1.3.vsix",
+			"readme": "pollis-toolbox-merge-or-be-bought-README.md",
+			"icon": "pollis-toolbox-merge-or-be-bought-icon.png",
+			"games": true
+		},
+		{
+			"id": "pollis.pollis-toolbox-save-the-company",
+			"name": "Save the Company",
+			"description": "A Simulation Game case for Pollis: the shareholders, banks and bondholders of a British retailer that cannot pay its debts negotiate a plan before its cash runs out, in four or six quarters, on a Julia model the class can open afterwards.",
+			"author": "Pollis",
+			"version": "0.1.3",
+			"vsix": "pollis-toolbox-save-the-company-0.1.3.vsix",
+			"readme": "pollis-toolbox-save-the-company-README.md",
+			"icon": "pollis-toolbox-save-the-company-icon.png",
+			"games": true
+		},
+		{
+			"id": "pollis.pollis-toolbox-smart-regions",
+			"name": "Smart Regions Toolbox",
+			"description": "Pollis Smart Regions Toolbox: spatiotemporal infrastructure, pollution and climate, for municipalities and regional authorities in Smart Cities and Smart Rural Areas. Reads GeoJSON, GeoPackage, Shapefile, GeoParquet, FlatGeobuf, KML and GPX files through DuckDB's spatial extension, reads GeoTIFF rasters, LAS and LAZ lidar point clouds, CityGML and CityJSON 3D city models, GTFS transit feeds and OpenStreetMap PBF extracts, reads the features of OpenStreetMap with a tag in an area from the Overpass API, and the layers or the full extract of a region from Geofabrik's download server, reads the places, buildings, roads, boundaries and addresses of an area from Overture Maps, reads the NUTS regions, local administrative units, countries and Urban Audit cities of Eurostat GISCO and maps Eurostat's tables on them, finds the INSPIRE datasets of administrative and statistical units in data.europa.eu and reads them from the countries' WFS, Atom feeds and OGC API Features, finds the Sentinel scenes of an area in the STAC catalogue of the Copernicus Data Space Ecosystem and downloads the bands of a Sentinel-2 scene or of a Sentinel-1 monthly mosaic, finds the scenes of a dataset of USGS EarthExplorer through its Machine-to-Machine API and downloads the bands of a Landsat 8-9 scene or the SRTM elevation of an area, finds the lidar surveys and elevation models of an area in the catalogue of OpenTopography and downloads the elevation of an area from a global model or from the 3D Elevation Program of the U.S. Geological Survey, reads the street-level images of an area from the coverage tiles and image search of Mapillary, with their thumbnails and the map features located from them, opens the Mapillary image nearest a point, or one given by its id, in an interactive street-level viewer beside a map of Mapillary's coverage, builds the street network of an area from OpenStreetMap for walking, cycling or driving and finds the fastest routes, service areas, travel-time matrices and network measures of it with Graphs.jl, reads the commuting flows, trips, traffic counts and flights of cities from the open data of their statistical offices, transport authorities and the OpenSky Network, with the domestic air networks of the United States, Canada, India, Brazil and Australia, and fits gravity models to them with GLFixedEffectModels.jl, reads the aircraft over an area now, the arrivals and departures of an airport on a day and the track of an aircraft from the REST API of the OpenSky Network, shows them on OpenStreetMap base maps, tests a value of a set of areas for spatial autocorrelation with Moran's I and Local Moran (LISA), and maps a value measured at stations with variograms, kriging, inverse distance weighting and Gaussian simulation.",
+			"author": "Pollis",
+			"version": "0.1.31",
+			"vsix": "pollis-toolbox-smart-regions-0.1.31.vsix",
+			"readme": "pollis-toolbox-smart-regions-README.md",
+			"icon": "pollis-toolbox-smart-regions-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-spatial-econometrics",
+			"name": "Spatial Econometrics Toolbox",
+			"description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, spatial discrete choice, spatial interaction models of flows, spatial panel data, spatio-temporal forecasting, spatial causal inference, shift-share designs, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
+			"author": "Pollis",
+			"version": "0.1.12",
+			"vsix": "pollis-toolbox-spatial-econometrics-0.1.12.vsix",
+			"readme": "pollis-toolbox-spatial-econometrics-README.md",
+			"icon": "pollis-toolbox-spatial-econometrics-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-time-series-forecasting",
+			"name": "Time-Series Forecasting Toolbox",
+			"description": "Pollis Time-Series Forecasting Toolbox: BATS and TBATS, the Theta method and intermittent demand, neural network forecasting with LSTnet, DA-RNN, TPA-LSTM and DSANet, and automatic forecasting with auto ARIMA, auto ETS, auto ARARMA and a race between models.",
+			"author": "Pollis",
+			"version": "0.1.0",
+			"vsix": "pollis-toolbox-time-series-forecasting-0.1.0.vsix",
+			"readme": "pollis-toolbox-time-series-forecasting-README.md",
+			"icon": "pollis-toolbox-time-series-forecasting-icon.png"
+		},
+		{
+			"id": "pollis.pollis-toolbox-trading-floor",
+			"name": "Trading Floor",
+			"description": "A Simulation Game case for Pollis: trading desks buy and sell one company's shares on a live order book, period by period by the clock, as its results move the share's value and some desks receive hints first, on a Julia model the class can open afterwards.",
+			"author": "Pollis",
+			"version": "0.1.3",
+			"vsix": "pollis-toolbox-trading-floor-0.1.3.vsix",
+			"readme": "pollis-toolbox-trading-floor-README.md",
+			"icon": "pollis-toolbox-trading-floor-icon.png",
+			"games": true
+		}
+	]
+}
