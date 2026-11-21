@@ -2,23 +2,15 @@
 
 ## The Code Stops Before Opening a Map
 
-The Example Code of the Google Maps panel stops at once, with a message asking for the key, when the Julia session has no variable `GOOGLE_MAPS_API_KEY`. The key on the Powered by line sets it in the Julia REPL that Pollis starts; code sent to an editor or a notebook runs in a session that may not have it, and needs `ENV["GOOGLE_MAPS_API_KEY"]` set there first. A Next Step run before the Example Code of its tab stops too, since it uses the variables and functions that code defines, such as `map2d`, `places` and `maptype`. The Next Steps of the 2D tabs need a 2D tab's Example Code, Orbit the Place that of one of the 3D tabs, and Tallest Buildings, Places by Category and Flights Drawn that of their own tab.
+The Example Code of the Google Maps panel stops at once, with a message asking for the key, when the Julia session has no variable `GOOGLE_MAPS_API_KEY`. The key on the Powered by line sets it in the Julia REPL that Pollis starts; code sent to an editor or a notebook runs in a session that may not have it, and needs `ENV["GOOGLE_MAPS_API_KEY"]` set there first. A Next Step run before the Example Code of its tab stops too, since it uses the variables and functions that code defines, such as `map2d`, `places` and `maptype`.
 
 ## Google Refuses the Maps Demo Key
 
-When the Maps JavaScript API cannot authenticate a key, it calls a global function `gm_authFailure` of the page, if there is one ([Google (2026a)](#ref-Goo2026a)). The 2D pages of the Google Maps panel define it to replace the title over the map with a message saying that Google refused the key. The 3D map fires the event `gmp-error` when it fails to initialise, which the 3D pages answer with a message of their own ([Google (2026b)](#ref-Goo2026b)); with a refused key, Google also says over the map that the page did not load Google Maps correctly. The first thing to check is the key itself, against the one the Google Cloud console shows for the Maps Demo Project ([Google (2026c)](#ref-Goo2026c)); Google may also suspend or end access to a Maps Demo Project at any time ([Google (2026f)](#ref-Goo2026f)). Setting the key again with the key on the Powered by line, and running the tab again, writes a new page with the new key.
+When the Maps JavaScript API cannot authenticate a key, it calls a global function `gm_authFailure` of the page, if there is one ([Google (2026a)](#ref-Goo2026a)). The pages of the Google Maps panel define it to replace the title over the map with a message saying that Google refused the key. With a refused key, Google also says over the map that the page did not load Google Maps correctly. The first thing to check is the key itself, against the one the Google Cloud console shows for the Maps Demo Project ([Google (2026c)](#ref-Goo2026c)); Google may also suspend or end access to a Maps Demo Project at any time ([Google (2026f)](#ref-Goo2026f)). Setting the key again with the key on the Powered by line, and running the tab again, writes a new page with the new key.
 
 ## The Maps Stop for the Rest of the Day
 
 A Maps Demo Key has a daily limit of 100 calls per API, according to Google's page on AI Studio ([Google (2026d)](#ref-Goo2026d)). When it is reached, Google pauses the key's usage until the following day, without charges ([Google (2026c)](#ref-Goo2026c)), so maps that opened earlier in the day stop opening. Each map a page opens is a map load ([Google (2026g)](#ref-Goo2026g)): Every Map Type uses four, and Two Map Types Side by Side two, so repeating them uses the limit faster than the tabs alone. The Maps Demo Project Terms let Google change the limits without notice ([Google (2026f)](#ref-Goo2026f)).
-
-## A 3D Map Without Buildings
-
-The SATELLITE and HYBRID modes of the 3D map show photorealistic imagery where it is available ([Google (2026b)](#ref-Goo2026b)). In a place without it, the 3D Map tab shows flatter imagery, and the buildings do not stand up. A very large Range looks down from far away, where buildings are too small to see, and a Tilt near 0 looks straight down, where their heights do not show. A Range of one or two kilometres and a Tilt of about 60 degrees show the buildings of a city centre. Orbit the Place starts only once the map has loaded enough to animate, so the camera may wait a moment before it turns.
-
-## The 3D Tabs Read No Data
-
-Your Features and Values as Columns read Overture Maps over HTTPS with DuckDB's extension `httpfs`, which the Smart Regions Toolbox installs; without a connection to the internet they stop when they ask Overture's catalogue for its newest release ([Overture Maps Foundation (2026)](#ref-OMF2026a)). A Radius (m) around a place that Overture covers poorly finds few features, and buildings without a height or floors are not drawn. Routes at Height stops when no aircraft flies above 1,000 m over the box, when the OpenSky Network has no track of those nearest, or when the anonymous credits of the day are spent, which the API reports with HTTP 429 ([The OpenSky Network (2026)](#ref-OSN2026a)). A wider Box Side, another time of day or a place near a large airport finds more aircraft.
 
 ## Features That Do Not Show on the Map
 
@@ -32,8 +24,6 @@ The Data layer reads GeoJSON, whose coordinates are longitude and latitude on WG
 
 <a id="ref-Goo2026a"></a>Google (2026a). Maps JavaScript API Documentation. [developers.google.com/maps/documentation/javascript](https://developers.google.com/maps/documentation/javascript)
 
-<a id="ref-Goo2026b"></a>Google (2026b). 3D Maps in Maps JavaScript. [developers.google.com/maps/documentation/javascript/3d/overview](https://developers.google.com/maps/documentation/javascript/3d/overview)
-
 <a id="ref-Goo2026c"></a>Google (2026c). Get a Maps Demo Key and Use It with Google Maps Platform. [developers.google.com/maps/demo-key](https://developers.google.com/maps/demo-key)
 
 <a id="ref-Goo2026d"></a>Google (2026d). Google Maps Platform in AI Studio. [developers.google.com/maps/ai/ai-studio](https://developers.google.com/maps/ai/ai-studio)
@@ -42,9 +32,5 @@ The Data layer reads GeoJSON, whose coordinates are longitude and latitude on WG
 
 <a id="ref-Goo2026g"></a>Google (2026g). Maps JavaScript API Usage and Billing. [developers.google.com/maps/documentation/javascript/usage-and-billing](https://developers.google.com/maps/documentation/javascript/usage-and-billing)
 
-<a id="ref-OMF2026a"></a>Overture Maps Foundation (2026). Overture Maps Documentation. [docs.overturemaps.org](https://docs.overturemaps.org/)
-
-<a id="ref-OSN2026a"></a>The OpenSky Network (2026). The OpenSky REST API. [openskynetwork.github.io/opensky-api](https://openskynetwork.github.io/opensky-api/rest.html)
-
 ## See Also
-- [The Demo Key](demo-key.md) · [3D Maps and the Camera](map3d.md) · [3D Features](features3d.md) · [Map Types](map-types.md) · [Factsheet](factsheet.md)
+- [The Demo Key](demo-key.md) · [Map Types](map-types.md) · [Factsheet](factsheet.md)

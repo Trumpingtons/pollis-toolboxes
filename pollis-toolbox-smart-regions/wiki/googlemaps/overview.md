@@ -2,11 +2,11 @@
 
 ## Google's Maps of a Place in Pollis
 
-Google Maps Platform publishes the maps of Google Maps for other applications to show, through the Maps JavaScript API, a library that a web page loads with an API key ([Google (2026a)](#ref-Goo2026a)). The Google Maps panel of the Smart Regions Toolbox uses it to show a place on Google's road, satellite and terrain maps, and in 3D. Each map opens on a page of its own in Pollis's browser, which the Julia code of the panel writes: Pollis adds nothing to the map but the title, and, in the Next Steps, the user's own features. The user zooms, pans and clicks on the page as on any Google map, and the code can open several maps of the same place, each in its tab. Three tabs, Your Features, Values as Columns and Routes at Height, draw the user's own data in 3D on the 3D map: polygons raised to a height, columns on a grid of cells, and lines at an altitude, described in the 3D Features wiki.
+Google Maps Platform publishes the maps of Google Maps for other applications to show, through the Maps JavaScript API, a library that a web page loads with an API key ([Google (2026a)](#ref-Goo2026a)). The Google Maps panel of the Smart Regions Toolbox uses it to show a place on Google's road, satellite and terrain maps; Google Photorealistic 3D Maps, beside it, shows the place in 3D. Each map opens on a page of its own in Pollis's browser, which the Julia code of the panel writes: Pollis adds nothing to the map but the title, and, in the Next Steps, the user's own features. The user zooms, pans and clicks on the page as on any Google map, and the code can open several maps of the same place, each in its tab.
 
 ## What the Maps JavaScript API Draws
 
-A 2D map of the Maps JavaScript API has a map type, which decides what the map shows: streets and places, satellite and aerial images, the same images with labels, or relief ([Google (2026a)](#ref-Goo2026a)). Its Data layer draws points, lines and polygons given as GeoJSON over the map, with colours that can follow the properties of each feature, and reports clicks on them. The 3D map is a separate element, `gmp-map-3d`, which renders photorealistic 3D imagery of cities, terrain and landmarks in its satellite and hybrid modes, and is seen from a camera with a range, a tilt and a heading ([Google (2026b)](#ref-Goo2026b)). The camera can fly to another view or orbit a centre, and 3D polygons, polylines and markers of the page's own stand among Google's buildings.
+A 2D map of the Maps JavaScript API has a map type, which decides what the map shows: streets and places, satellite and aerial images, the same images with labels, or relief ([Google (2026a)](#ref-Goo2026a)). Its Data layer draws points, lines and polygons given as GeoJSON over the map, with colours that can follow the properties of each feature, and reports clicks on them.
 
 ## What the Maps Demo Key Allows
 
@@ -20,11 +20,9 @@ The Google Maps Platform Terms of Service forbid using Google's maps with or nea
 
 <a id="ref-Goo2026a"></a>Google (2026a). Maps JavaScript API Documentation. [developers.google.com/maps/documentation/javascript](https://developers.google.com/maps/documentation/javascript)
 
-<a id="ref-Goo2026b"></a>Google (2026b). 3D Maps in Maps JavaScript. [developers.google.com/maps/documentation/javascript/3d/overview](https://developers.google.com/maps/documentation/javascript/3d/overview)
-
 <a id="ref-Goo2026c"></a>Google (2026c). Get a Maps Demo Key and Use It with Google Maps Platform. [developers.google.com/maps/demo-key](https://developers.google.com/maps/demo-key)
 
 <a id="ref-Goo2026e"></a>Google (2026e). Google Maps Platform Terms of Service. [cloud.google.com/maps-platform/terms](https://cloud.google.com/maps-platform/terms)
 
 ## See Also
-- [Factsheet](factsheet.md) · [Terms of Use](terms.md) · [The Demo Key](demo-key.md) · [3D Features](features3d.md) · [Decision Guide](decision-guide.md)
+- [Factsheet](factsheet.md) · [Terms of Use](terms.md) · [The Demo Key](demo-key.md) · [Decision Guide](decision-guide.md)

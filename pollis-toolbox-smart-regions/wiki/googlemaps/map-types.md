@@ -34,4 +34,4 @@ The style of the Data layer is set with `setStyle`, either one style for every f
 <a id="ref-Goo2026a"></a>Google (2026a). Maps JavaScript API Documentation. [developers.google.com/maps/documentation/javascript](https://developers.google.com/maps/documentation/javascript)
 
 ## See Also
-- [3D Maps and the Camera](map3d.md) · [Factsheet](factsheet.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md)
+- [Factsheet](factsheet.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md)

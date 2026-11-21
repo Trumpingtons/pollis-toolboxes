@@ -2,13 +2,13 @@
 
 ## Drawing Your Own Data in 3D on Google's 3D Map
 
-The 3D map of the Maps JavaScript API draws shapes of the page's own among Google's photorealistic buildings and terrain: 3D polygons, 3D polylines and 3D markers, the elements `Polygon3DElement`, `Polyline3DElement` and `Marker3DElement` of the library `maps3d` ([Google (2026b)](#ref-Goo2026b)). Their interactive versions also report a click. The Maps Demo Key covers 2D and 3D maps, markers and events, and drawing shapes and polylines, so the three tabs Your Features, Values as Columns and Routes at Height need no other key than the 3D Map tab ([Google (2026c)](#ref-Goo2026c)). The Julia code of each tab writes the user's data as a GeoJSON file, and `map3d(title; features, height, column, curtain, note)` puts it into the page: polygons become 3D polygons, lines 3D polylines and points 3D markers, coloured by the column `column`. A click on a shape opens a popover with its columns.
+The 3D map of the Maps JavaScript API draws shapes of the page's own among Google's photorealistic buildings and terrain: 3D polygons, 3D polylines and 3D markers, the elements `Polygon3DElement`, `Polyline3DElement` and `Marker3DElement` of the library `maps3d` ([Google (2026b)](#ref-Goo2026b)). Their interactive versions also report a click. The Maps Demo Key covers 2D and 3D maps, markers and events, and drawing shapes and polylines, so the three tabs Your Features, Values as Columns and Routes at Height need no other key than 3D View ([Google (2026c)](#ref-Goo2026c)). The Julia code of each tab writes the user's data as a GeoJSON file, and `map3d(title; features, height, column, curtain, note)` puts it into the page: polygons become 3D polygons, lines 3D polylines and points 3D markers, coloured by the column `column`. A click on a shape opens a popover with its columns.
 
 ## Altitude Modes of the 3D Shapes
 
 Each 3D shape has an altitude mode, which says how the altitude of its coordinates is read ([Google (2026b)](#ref-Goo2026b)):
 
-| Altitude mode | The altitude of a point is | Used by the Google Maps panel for |
+| Altitude mode | The altitude of a point is | Used by Google Photorealistic 3D Maps for |
 |---|---|---|
 | `CLAMP_TO_GROUND` | Ignored: the shape lies on the ground | Points without an altitude |
 | `RELATIVE_TO_GROUND` | Metres above the ground under it | Polygons of Your Features and Values as Columns |
@@ -46,4 +46,4 @@ Overture Maps publishes a release every month and keeps each for about two month
 <a id="ref-OSN2026a"></a>The OpenSky Network (2026). The OpenSky REST API. [openskynetwork.github.io/opensky-api](https://openskynetwork.github.io/opensky-api/rest.html)
 
 ## See Also
-- [3D Maps and the Camera](map3d.md) · [Factsheet](factsheet.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md) · [Terms of Use](terms.md)
+- [3D Maps and the Camera](camera.md) · [Factsheet](factsheet.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md)
