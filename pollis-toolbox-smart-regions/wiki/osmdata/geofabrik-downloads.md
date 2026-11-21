@@ -14,7 +14,7 @@ Geofabrik's .osm.pbf files are pure, un-filtered OpenStreetMap data, with all th
 
 ## The Layers: Shape Files and GeoPackages
 
-Geofabrik's shape files are not complete: Geofabrik has made a selection of features and attributes, in layers such as the road and railway network, forests, water areas and many points of interest, and offers them only for smaller areas ([Geofabrik (2026)](#ref-Geo2026a)). The same layers come as GeoPackages. Reichert and Ramm describe the mapping: coordinates in WGS 84 (EPSG:4326), strings in UTF-8, and, in most layers, the columns osm_id, code, a four-digit code of the feature class, fclass, the class name, and name, the name in OpenStreetMap's name tag ([Reichert and Ramm (2026)](#ref-RR2026a)). Layers of features drawn as areas have the suffix _a. The Geofabrik Layers tab of the OpenStreetMap Data panel reads the GeoPackage of the region, without unpacking its zip file.
+Geofabrik's shape files are not complete: Geofabrik has made a selection of features and attributes, in layers such as the road and railway network, forests, water areas and many points of interest, and offers them only for smaller areas ([Geofabrik (2026)](#ref-Geo2026a)). The same layers come as GeoPackages. Reichert and Ramm describe the mapping: coordinates in WGS 84 (EPSG:4326), strings in UTF-8, and, in most layers, the columns `osm_id`, `code`, a four-digit code of the feature class, `fclass`, the class name, and `name`, the name in OpenStreetMap's name tag ([Reichert and Ramm (2026)](#ref-RR2026a)). Layers of features drawn as areas have the suffix `_a`. The Geofabrik Layers tab of the OpenStreetMap Data panel reads the GeoPackage of the region, without unpacking its zip file.
 
 ## Why the Layers Have Fewer Tags
 

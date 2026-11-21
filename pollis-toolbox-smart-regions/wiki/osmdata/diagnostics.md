@@ -10,7 +10,7 @@ Geofabrik updates its extracts once a day, around 21:00 CET, from the latest Ope
 
 ## Areas and Lines
 
-GDAL's OSM driver puts nodes with significant tags in its points layer, ways it recognises as non-areas in lines, route and multilinestring relations in multilinestrings, multipolygon and boundary relations and the ways it recognises as areas in multipolygons, and every other relation in other_relations ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)). Its configuration file, osmconf.ini, lists the keys, or key=value pairs, that make a closed way an area, among them amenity, building, landuse, leisure, natural, shop and tourism. A closed way with none of them, such as a roundabout, is a line. The OpenStreetMap Data panel reads OpenStreetMap files with GDAL's osmconf.ini, and Geometry Check counts the features of each layer and geometry type.
+GDAL's OSM driver puts nodes with significant tags in its `points` layer, ways it recognises as non-areas in `lines`, route and multilinestring relations in `multilinestrings`, multipolygon and boundary relations and the ways it recognises as areas in `multipolygons`, and every other relation in `other_relations` ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)). Its configuration file, osmconf.ini, lists the keys, or key=value pairs, that make a closed way an area, among them amenity, building, landuse, leisure, natural, shop and tourism. A closed way with none of them, such as a roundabout, is a line. The OpenStreetMap Data panel reads OpenStreetMap files with GDAL's osmconf.ini, and Geometry Check counts the features of each layer and geometry type.
 
 ## Features Missing From Larger Files
 
@@ -22,11 +22,11 @@ The bounding box of an Overpass QL query limits the elements selected, but the w
 
 ## The Date of the Data
 
-The Overpass API tab of the OpenStreetMap Data panel prints the time of the OpenStreetMap data the server holds, which the server gives as osm_base in the meta element of its answer; Query and Date prints it again with the query sent. Geofabrik's extracts are normally updated every day ([Geofabrik (2026)](#ref-Geo2026a)), and the Geofabrik tabs keep a downloaded file in the Folder until it is deleted: Query and Date prints when the file was downloaded and the date of Geofabrik's current file.
+The Overpass API tab of the OpenStreetMap Data panel prints the time of the OpenStreetMap data the server holds, which the server gives as `osm_base` in the meta element of its answer; Query and Date prints it again with the query sent. Geofabrik's extracts are normally updated every day ([Geofabrik (2026)](#ref-Geo2026a)), and the Geofabrik tabs keep a downloaded file in the Folder until it is deleted: Query and Date prints when the file was downloaded and the date of Geofabrik's current file.
 
 ## Kept, Added and Removed Features
 
-Each type of OpenStreetMap element has its own id space, so a node and a way may share an id ([OpenStreetMap Wiki contributors (2026)](#ref-OSMWC2026d)). Then and Now in the Overpass API and Geofabrik Full Extract tabs matches features by their type and id: a shop that was a node and is now a building outline counts as one removed and one added. In Geofabrik's layers, osm_id is the id of the node, way or relation, and is not necessarily unique, because one OpenStreetMap object can result in several geometries ([Reichert and Ramm (2026)](#ref-RR2026a)); Then and Now in the Geofabrik Layers tab matches by layer and osm_id.
+Each type of OpenStreetMap element has its own id space, so a node and a way may share an id ([OpenStreetMap Wiki contributors (2026)](#ref-OSMWC2026d)). Then and Now in the Overpass API and Geofabrik Full Extract tabs matches features by their type and id: a shop that was a node and is now a building outline counts as one removed and one added. In Geofabrik's layers, `osm_id` is the id of the node, way or relation, and is not necessarily unique, because one OpenStreetMap object can result in several geometries ([Reichert and Ramm (2026)](#ref-RR2026a)); Then and Now in the Geofabrik Layers tab matches by layer and `osm_id`.
 
 ## Empty Names and Population 0
 

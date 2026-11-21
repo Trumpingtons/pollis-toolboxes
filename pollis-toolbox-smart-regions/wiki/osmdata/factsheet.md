@@ -17,7 +17,7 @@ The Overpass API tab sends a query in Overpass QL to the server given in Server,
 
 ## How Does the OpenStreetMap Data Panel Read OpenStreetMap Files?
 
-OpenStreetMap files hold nodes, ways and relations, not geometries. GDAL's OSM driver reconstructs points, lines and polygons from them, in five layers: points, lines, multilinestrings, multipolygons and other_relations ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)). The Overpass API and Geofabrik Full Extract tabs read the five layers with DuckDB's spatial extension, which uses GDAL, and keep the features with the tag, each with all its tags as JSON. The Geofabrik Layers tab reads Geofabrik's GeoPackage, whose layers are already geometries with a fixed set of columns ([Reichert and Ramm (2026)](#ref-RR2026a)).
+OpenStreetMap files hold nodes, ways and relations, not geometries. GDAL's OSM driver reconstructs points, lines and polygons from them, in five layers: `points`, `lines`, `multilinestrings`, `multipolygons` and `other_relations` ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)). The Overpass API and Geofabrik Full Extract tabs read the five layers with DuckDB's spatial extension, which uses GDAL, and keep the features with the tag, each with all its tags as JSON. The Geofabrik Layers tab reads Geofabrik's GeoPackage, whose layers are already geometries with a fixed set of columns ([Reichert and Ramm (2026)](#ref-RR2026a)).
 
 ## What the Next Steps of the OpenStreetMap Data Panel Do
 

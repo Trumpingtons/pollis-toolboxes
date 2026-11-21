@@ -14,11 +14,11 @@ There is no fixed dictionary of tags, but there are conventions documented on th
 
 ## Untagged Elements
 
-Not all elements have tags: nodes are often untagged when they are part of ways, and ways and nodes may be untagged when they are members of a relation ([OpenStreetMap Wiki contributors (2026)](#ref-OSMWC2026d)). The nodes of a way define its shape, and only some of them carry tags of their own, such as highway=traffic_signals on a road. GDAL's OSM driver puts in its points layer only the nodes that have significant tags ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)).
+Not all elements have tags: nodes are often untagged when they are part of ways, and ways and nodes may be untagged when they are members of a relation ([OpenStreetMap Wiki contributors (2026)](#ref-OSMWC2026d)). The nodes of a way define its shape, and only some of them carry tags of their own, such as `highway=traffic_signals` on a road. GDAL's OSM driver puts in its `points` layer only the nodes that have significant tags ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)).
 
 ## Tags With Columns of Their Own
 
-GDAL's OSM driver writes the tags its configuration file osmconf.ini names for a layer as columns of their own, such as name, highway and building, and every other tag in the field other_tags, which the open option TAGS_FORMAT=JSON writes as JSON ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)). The Overpass API and Geofabrik Full Extract tabs of the OpenStreetMap Data panel merge both into one JSON object per feature, so the column tags holds every tag of the element whatever its layer.
+GDAL's OSM driver writes the tags its configuration file osmconf.ini names for a layer as columns of their own, such as `name`, `highway` and `building`, and every other tag in the field `other_tags`, which the open option `TAGS_FORMAT=JSON` writes as JSON ([GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026b)). The Overpass API and Geofabrik Full Extract tabs of the OpenStreetMap Data panel merge both into one JSON object per feature, so the column `tags` holds every tag of the element whatever its layer.
 
 ## Tags in Geofabrik's Layers
 
