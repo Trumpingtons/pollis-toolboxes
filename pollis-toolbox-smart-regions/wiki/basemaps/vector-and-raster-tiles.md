@@ -18,12 +18,12 @@ A schema says which layers vector tiles have and what is in each. The OpenMapTil
 
 | Layers | What they hold |
 |---|---|
-| water, waterway, water_name | Seas, lakes and rivers, and their names |
-| landcover, landuse, park | Woods, grass and sand; residential and industrial areas; parks and reserves |
-| transportation, transportation_name | Roads, railways and ferries, and their names |
-| building, housenumber | Buildings with their heights, and house numbers |
-| place, boundary | Countries, cities, towns and villages; administrative borders |
-| poi, aeroway, aerodrome_label, mountain_peak | Points of interest, airports and peaks |
+| `water`, `waterway`, `water_name` | Seas, lakes and rivers, and their names |
+| `landcover`, `landuse`, `park` | Woods, grass and sand; residential and industrial areas; parks and reserves |
+| `transportation`, `transportation_name` | Roads, railways and ferries, and their names |
+| `building`, `housenumber` | Buildings with their heights, and house numbers |
+| `place`, `boundary` | Countries, cities, towns and villages; administrative borders |
+| `poi`, `aeroway`, `aerodrome_label`, `mountain_peak` | Points of interest, airports and peaks |
 
 The schema is open under CC-BY and must be credited when built upon.
 

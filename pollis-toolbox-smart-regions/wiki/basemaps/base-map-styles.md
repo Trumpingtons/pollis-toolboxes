@@ -24,7 +24,7 @@ A base map for data should step back, so the data is what the eye finds first. P
 
 ## Labels and Languages of Base Map Styles
 
-The names on a base map come from the tags of OpenStreetMap features, which volunteers enter ([Haklay and Weber (2008)](#ref-HW2008a)). The vector tiles carry those names with the features of the place, transportation_name, water_name and other labelled layers of the OpenMapTiles schema, and the style says which name field each label shows ([OpenMapTiles Contributors (2026)](#ref-OMTC2026a); [MapLibre Contributors (2026)](#ref-MLC2026a)). On a map of Rome, the styles of OpenFreeMap show "Rome" in English beside street names such as "Via del Corso" in Italian. A copy of a style, with its label fields changed, can show names in another language, and `Pollis.webmap` takes the address of such a style in place of a name.
+The names on a base map come from the tags of OpenStreetMap features, which volunteers enter ([Haklay and Weber (2008)](#ref-HW2008a)). The vector tiles carry those names with the features of the place, `transportation_name`, `water_name` and other labelled layers of the OpenMapTiles schema, and the style says which name field each label shows ([OpenMapTiles Contributors (2026)](#ref-OMTC2026a); [MapLibre Contributors (2026)](#ref-MLC2026a)). On a map of Rome, the styles of OpenFreeMap show "Rome" in English beside street names such as "Via del Corso" in Italian. A copy of a style, with its label fields changed, can show names in another language, and `Pollis.webmap` takes the address of such a style in place of a name.
 
 ## References
 
