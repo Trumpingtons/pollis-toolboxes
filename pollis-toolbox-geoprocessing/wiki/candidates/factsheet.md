@@ -26,7 +26,7 @@ Every tab first computes `lrm`, the local relief model, with `local_relief`, the
 
 | Group | Action | What it shows |
 |---|---|---|
-| Visualise | Zoom and Pan | The local relief model in grey from −0.5 to 0.5 m beside imagery of the same ground, moving together with a scale bar, with each candidate outlined in yellow, on the whole area, with a button that goes to the square of the Zoom Size around the Zoom Centre and back. The imagery is asked from Esri's server, which learns where the terrain model is. |
+| Visualise | Zoom and Pan | The local relief model in grey from −0.5 to 0.5 m beside imagery of the same ground, moving together with a scale bar, with each candidate outlined in yellow, on the whole area, with a button that goes to the square of the Zoom Size around the Zoom Centre and back. The imagery comes from Google or Esri, with the user's own key, or from EOX's Sentinel-2 cloudless of 2016, open but in cells of 10 m, as Imagery chooses; its server learns where the terrain model is. |
 | Interpret | Highest Candidates | The 15 candidates highest above or deepest below their surroundings, or with the best scores |
 | Interpret | Candidates and Scheduled Monuments | The scheduled monuments of England in the area, the candidates that meet each, and those that meet none |
 | Interpret | Profile Through a Place | The height, the local relief and the candidate at points along a line from west to east |

@@ -6,6 +6,21 @@ viewType = "pollis.candidates"
 defaultModel = "mounds"
 decisionFirstColumn = "Method"
 
+# The user's keys for the imagery of Google and Esri, kept by Pollis in Secret Storage and set in the Julia REPL; either may be left empty
+[apiKey]
+label = "Imagery"
+noun = "keys"
+
+[[apiKey.fields]]
+name = "googleMapsKey"
+envVar = "GOOGLE_MAPS_API_KEY"
+prompt = "Google Maps key, for Google's satellite imagery (press Enter to leave it empty)"
+
+[[apiKey.fields]]
+name = "arcgisKey"
+envVar = "ARCGIS_API_KEY"
+prompt = "ArcGIS Location Platform API key, for Esri's World Imagery (press Enter to leave it empty)"
+
 [[packages]]
 name = "SmartRegions.jl"
 github = "https://github.com/Trumpingtons/SmartRegions.jl"
@@ -375,6 +390,33 @@ label = "Zoom Size (m)"
 tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, and the length of the line Profile Through a Place follows, in metres."
 default = "300"
 
+[[inputs]]
+id = "imagery"
+label = "Imagery"
+kind = "select"
+tooltip = "The imagery beside the maps. Automatic takes Google when a Google Maps key is set, otherwise Esri when an ArcGIS key is set, otherwise Sentinel-2: the keys are set on the Powered by line. Google and Esri need the user's own key and come under their terms, which are the user's to follow; EOX's Sentinel-2 cloudless of 2016 needs no key and is open (CC BY 4.0), but in cells of 10 m. The server of the imagery learns where the terrain model is."
+default = "auto"
+
+[[inputs.options]]
+value = "auto"
+label = "Automatic"
+
+[[inputs.options]]
+value = "google"
+label = "Google Satellite (Your Key)"
+
+[[inputs.options]]
+value = "esri"
+label = "Esri World Imagery (Your Key)"
+
+[[inputs.options]]
+value = "sentinel"
+label = "Sentinel-2 Cloudless, 10 m"
+
+[[inputs.options]]
+value = "none"
+label = "None"
+
 [[codeBranches]]
 model = "*"
 code = '''
@@ -404,12 +446,12 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "zoom"
 label = "Zoom and Pan"
-desc = "The local relief model in grey from -0.5 to 0.5 m beside Esri's aerial and satellite imagery of the same ground, with the outline of each candidate in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
+desc = "The local relief model in grey from -0.5 to 0.5 m beside aerial or satellite imagery of the same ground, from the source Imagery names, with the outline of each candidate in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
 println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " candidates within ", d, " m of ", x0, ", ", y0)
-Pollis.browse(terrain_maps("Candidate Features", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels, centre = (x0, y0), width = 2d))
+Pollis.browse(terrain_maps("Candidate Features", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels, centre = (x0, y0), width = 2d, imagery = :{{imagery}}))
 '''
 
 [[actionGroups]]

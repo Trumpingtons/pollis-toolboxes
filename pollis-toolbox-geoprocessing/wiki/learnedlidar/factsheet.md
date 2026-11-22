@@ -28,7 +28,7 @@ The network is that of AiTLAS, the toolbox that runs ADAF's models, on the HRNet
 |---|---|---|
 | 5. Save the Network's Output | `write` | The probability map, before any threshold, as a Cloud-Optimised GeoTIFF |
 | 6. Compute the Features | `adaf_features` | The cells at or above the Threshold, without the 8 cells along each tile's edges, joined through their sides, filtered by the Minimum Area and the Minimum Roundness, ranked by highest probability |
-| 7. Look at the Features | `terrain_maps` | Zoom and Pan: the local relief the model reads, the probability and imagery of the same ground, side by side with a scale bar, moving together, with each feature outlined in yellow, on the whole area, with a button that goes to the square of the Zoom Size around the Zoom Centre and back. The imagery is asked from Esri's server, which learns where the terrain model is. |
+| 7. Look at the Features | `terrain_maps` | Zoom and Pan: the local relief the model reads, the probability and imagery of the same ground, side by side with a scale bar, moving together, with each feature outlined in yellow, on the whole area, with a button that goes to the square of the Zoom Size around the Zoom Centre and back. The imagery comes from Google or Esri, with the user's own key, or from EOX's Sentinel-2 cloudless of 2016, open but in cells of 10 m, as Imagery chooses; its server learns where the terrain model is. |
 | 8. Save Features | `save_candidates` | The outline of each feature with its measures, as a GeoPackage in the coordinate system of the terrain model |
 
 ## How the Steps of Learned Detection in Lidar Run

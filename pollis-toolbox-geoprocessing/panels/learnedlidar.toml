@@ -6,6 +6,21 @@ viewType = "pollis.learnedlidar"
 style = "timeArrow"
 intro = "Find archaeological features in a lidar terrain model with trained neural networks, from the terrain model to the features saved for a GIS. A step first runs the steps before it that have not run in the Julia REPL as they are now, so a new threshold does not run the network again."
 
+# The user's keys for the imagery of Google and Esri, kept by Pollis in Secret Storage and set in the Julia REPL; either may be left empty
+[apiKey]
+label = "Imagery"
+noun = "keys"
+
+[[apiKey.fields]]
+name = "googleMapsKey"
+envVar = "GOOGLE_MAPS_API_KEY"
+prompt = "Google Maps key, for Google's satellite imagery (press Enter to leave it empty)"
+
+[[apiKey.fields]]
+name = "arcgisKey"
+envVar = "ARCGIS_API_KEY"
+prompt = "ArcGIS Location Platform API key, for Esri's World Imagery (press Enter to leave it empty)"
+
 [[packages]]
 name = "ArchaeologicalDetection.jl"
 github = "https://github.com/Trumpingtons/ArchaeologicalDetection.jl"
@@ -319,7 +334,7 @@ default = "0"
 [[steps]]
 id = "look"
 title = "Look at the Features"
-intro = "See the features on the image the model reads, on the probability map and on imagery of the same ground, side by side, whole or around a place. The imagery is asked from Esri's server, which learns where the terrain model is."
+intro = "See the features on the image the model reads, on the probability map and on imagery of the same ground, side by side, whole or around a place. The imagery is asked from the server of the source Imagery names, which learns where the terrain model is."
 
 [[steps.inputs]]
 id = "zoomCentre"
@@ -333,10 +348,37 @@ label = "Zoom Size (m)"
 tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, in metres."
 default = "300"
 
+[[steps.inputs]]
+id = "imagery"
+label = "Imagery"
+kind = "select"
+tooltip = "The imagery beside the maps. Automatic takes Google when a Google Maps key is set, otherwise Esri when an ArcGIS key is set, otherwise Sentinel-2: the keys are set on the Powered by line. Google and Esri need the user's own key and come under their terms, which are the user's to follow; EOX's Sentinel-2 cloudless of 2016 needs no key and is open (CC BY 4.0), but in cells of 10 m. The server of the imagery learns where the terrain model is."
+default = "auto"
+
+[[steps.inputs.options]]
+value = "auto"
+label = "Automatic"
+
+[[steps.inputs.options]]
+value = "google"
+label = "Google Satellite (Your Key)"
+
+[[steps.inputs.options]]
+value = "esri"
+label = "Esri World Imagery (Your Key)"
+
+[[steps.inputs.options]]
+value = "sentinel"
+label = "Sentinel-2 Cloudless, 10 m"
+
+[[steps.inputs.options]]
+value = "none"
+label = "None"
+
 [[steps.actions]]
 id = "zoom"
 label = "Zoom and Pan"
-desc = "The image the model reads and the probability of a feature, as separate maps, side by side with Esri's aerial and satellite imagery of the same ground, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
+desc = "The image the model reads and the probability of a feature, as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
@@ -344,7 +386,7 @@ println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " feat
 Pollis.browse(terrain_maps("Learned Detection in Lidar",
 	"Image the Model Reads" => image,
 	"Probability of a Feature" => probability;
-	labels = found.labels, centre = (x0, y0), width = 2d))
+	labels = found.labels, centre = (x0, y0), width = 2d, imagery = :{{imagery}}))
 '''
 
 [[steps]]
