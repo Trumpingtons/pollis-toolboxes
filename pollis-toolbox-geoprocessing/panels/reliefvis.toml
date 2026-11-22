@@ -18,10 +18,6 @@ github = "https://github.com/rafaqz/Rasters.jl"
 name = "ArchGDAL.jl"
 github = "https://github.com/yeesian/ArchGDAL.jl"
 
-# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
-[requires]
-packages = ["DuckDB.jl"]
-
 [[wikis]]
 name = "Factsheet"
 file = "reliefvis/factsheet.md"
@@ -382,44 +378,27 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "show-image"
 label = "Show the Image"
-desc = "The result as a grey image at full resolution, one pixel a cell, north up, stretched from the 2% to the 98% quantile (the layered image from 0 to 1)"
+desc = "The result in grey, stretched from the 2% to the 98% quantile (the layered image from 0 to 1), beside Esri's aerial and satellite imagery of the same ground: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
 code = '''
 lo, hi = quantile(collect(skipmissing(result)), [0.02, 0.98])
 {{?model=vat}}lo, hi = 0.0, 1.0
 {{?model=shade}}{{?shadeKind=slope}}lo, hi = hi, lo  # steep ground dark
-grey = [ismissing(x) ? 0x00 : round(UInt8, 255 * clamp((x - lo) / (hi - lo), 0, 1)) for x in parent(result)]
-first(lookup(result, Y)) < last(lookup(result, Y)) && (grey = reverse(grey; dims = 2))  # the first row of the image is the north
-png = joinpath(mktempdir(), "{{model}}.png")
-ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(grey, 1), height = size(grey, 2), nbands = 1, dtype = UInt8) do mem
-	ArchGDAL.write!(mem, grey, 1)
-	ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
-end
-display(MIME("image/png"), read(png))
+Pollis.browse(terrain_maps("Relief Visualisation, {{model}}", "Relief Visualisation" => (result, lo, hi)))
 '''
 
 [[actionGroups.actions]]
 id = "zoom"
 label = "Zoom on a Place"
-desc = "The result in a square of the Zoom Size around the Zoom Centre, enlarged so that each cell is several pixels, stretched over the square itself"
+desc = "The same maps, opened on a square of the Zoom Size around the Zoom Centre, with the grey stretched over that square: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
 part = result[X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d)]
-v = collect(skipmissing(part))
-lo, hi = quantile(v, [0.02, 0.98])
+lo, hi = quantile(collect(skipmissing(part)), [0.02, 0.98])
 {{?model=vat}}lo, hi = 0.0, 1.0
 {{?model=shade}}{{?shadeKind=slope}}lo, hi = hi, lo
-k = max(1, fld(800, max(size(part)...)))  # pixels a cell, for an image about 800 pixels wide
-grey = [ismissing(x) ? 0x00 : round(UInt8, 255 * clamp((x - lo) / (hi - lo), 0, 1)) for x in parent(part)]
-first(lookup(part, Y)) < last(lookup(part, Y)) && (grey = reverse(grey; dims = 2))
-grey = repeat(grey; inner = (k, k))
-png = joinpath(mktempdir(), "{{model}}-zoom.png")
-ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(grey, 1), height = size(grey, 2), nbands = 1, dtype = UInt8) do mem
-	ArchGDAL.write!(mem, grey, 1)
-	ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
-end
-println(size(part, X), " x ", size(part, Y), " cells around ", x0, ", ", y0, ", ", k, " pixels a cell")
-display(MIME("image/png"), read(png))
+println(size(part, X), " x ", size(part, Y), " cells around ", x0, ", ", y0)
+Pollis.browse(terrain_maps("Relief Visualisation, {{model}}, Zoom on a Place", "Relief Visualisation" => (result, lo, hi); centre = (x0, y0), width = 2d))
 '''
 
 [[actionGroups]]

@@ -24,7 +24,7 @@ github = "https://github.com/yeesian/ArchGDAL.jl"
 
 # Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
 [requires]
-packages = ["DataStructures.jl", "DuckDB.jl", "ECharts.jl"]
+packages = ["DataStructures.jl", "ECharts.jl"]
 
 [[wikis]]
 name = "Factsheet"

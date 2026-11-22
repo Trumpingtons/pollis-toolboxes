@@ -24,7 +24,7 @@
 
 | Group | Action | What it shows |
 |---|---|---|
-| Visualise | Show the Image, Zoom on a Place | The result as a grey image, whole or around the Zoom Centre |
+| Visualise | Show the Image, Zoom on a Place | The result in grey beside imagery of the same ground, moving together with a scale bar, whole or around the Zoom Centre. The imagery is asked from Esri's server, which learns where the terrain model is. |
 | Interpret | Summary of the Result, Profile Through a Place, Scheduled Monuments in the Area | Quantiles, a line across a feature, the protected sites of England within the area |
 | Export | Save the Result as Cloud-Optimised GeoTIFF | A file written to the folder of the files |
 

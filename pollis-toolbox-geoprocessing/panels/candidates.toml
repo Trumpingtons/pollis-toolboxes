@@ -18,10 +18,6 @@ github = "https://github.com/rafaqz/Rasters.jl"
 name = "ArchGDAL.jl"
 github = "https://github.com/yeesian/ArchGDAL.jl"
 
-# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
-[requires]
-packages = ["DuckDB.jl"]
-
 [[wikis]]
 name = "Factsheet"
 file = "candidates/factsheet.md"
@@ -408,37 +404,20 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "show-candidates"
 label = "Candidates on the Image"
-desc = "The local relief model as a grey image, from -0.5 to 0.5 m, north up, with the outline of each candidate in yellow"
+desc = "The local relief model in grey from -0.5 to 0.5 m beside Esri's aerial and satellite imagery of the same ground, with the outline of each candidate in yellow: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
 code = '''
-function picture(lrm, labels, k)  # the local relief model in grey, k pixels a cell, with the candidates outlined in yellow
-	g = [ismissing(v) ? 0x00 : round(UInt8, 255 * clamp(v + 0.5, 0, 1)) for v in parent(lrm)]
-	L = parent(labels)
-	n, m = size(L)
-	edge = [L[i, j] > 0 && any(L[a, b] != L[i, j] for a in max(1, i - 1):min(n, i + 1), b in max(1, j - 1):min(m, j + 1)) for i in 1:n, j in 1:m]
-	bands = [ifelse.(edge, c, g) for c in (0xe8, 0xa3, 0x3d)]
-	bands = [repeat(b; inner = (k, k)) for b in bands]
-	first(lookup(lrm, Y)) < last(lookup(lrm, Y)) && (bands = [reverse(b; dims = 2) for b in bands])  # the first row of the image is the north
-	png = joinpath(mktempdir(), "candidates.png")
-	ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(bands[1], 1), height = size(bands[1], 2), nbands = 3, dtype = UInt8) do mem
-		foreach(b -> ArchGDAL.write!(mem, bands[b], b), 1:3)
-		ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
-	end
-	display(MIME("image/png"), read(png))
-end
-picture(lrm, found.labels, 1)
+Pollis.browse(terrain_maps("Candidate Features", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels))
 '''
 
 [[actionGroups.actions]]
 id = "zoom"
 label = "Zoom on a Place"
-desc = "The candidates in a square of the Zoom Size around the Zoom Centre, enlarged so that each cell is several pixels"
+desc = "The same maps, opened on a square of the Zoom Size around the Zoom Centre, at one scale: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
-around = (X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d))
-k = max(1, fld(800, size(lrm[around...], X)))  # pixels a cell, for an image about 800 pixels wide
 println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " candidates within ", d, " m of ", x0, ", ", y0)
-picture(lrm[around...], found.labels[around...], k)
+Pollis.browse(terrain_maps("Candidate Features, Zoom on a Place", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels, centre = (x0, y0), width = 2d))
 '''
 
 [[actionGroups]]

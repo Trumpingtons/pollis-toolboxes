@@ -30,10 +30,6 @@ github = "https://github.com/rafaqz/Rasters.jl"
 name = "ArchGDAL.jl"
 github = "https://github.com/yeesian/ArchGDAL.jl"
 
-# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
-[requires]
-packages = ["DuckDB.jl"]
-
 [[wikis]]
 name = "Factsheet"
 file = "learnedlidar/factsheet.md"
@@ -323,23 +319,10 @@ default = "0"
 [[steps]]
 id = "look"
 title = "Look at the Features"
-intro = "See the features on the image the model reads and on the probability map, whole or around a place."
+intro = "See the features on the image the model reads, on the probability map and on imagery of the same ground, side by side, whole or around a place. The imagery is asked from Esri's server, which learns where the terrain model is."
 code = '''
-function picture(image, labels, k)  # an image from 0 to 1 in grey, k pixels a cell, with the features outlined in yellow
-	g = [ismissing(v) || !isfinite(v) ? 0x00 : round(UInt8, 255 * clamp(v, 0, 1)) for v in parent(image)]
-	L = parent(labels)
-	n, m = size(L)
-	edge = [L[i, j] > 0 && any(L[a, b] != L[i, j] for a in max(1, i - 1):min(n, i + 1), b in max(1, j - 1):min(m, j + 1)) for i in 1:n, j in 1:m]
-	bands = [ifelse.(edge, c, g) for c in (0xe8, 0xa3, 0x3d)]
-	bands = [repeat(b; inner = (k, k)) for b in bands]
-	first(lookup(image, Y)) < last(lookup(image, Y)) && (bands = [reverse(b; dims = 2) for b in bands])  # the first row of the image is the north
-	png = joinpath(mktempdir(), "features.png")
-	ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(bands[1], 1), height = size(bands[1], 2), nbands = 3, dtype = UInt8) do mem
-		foreach(b -> ArchGDAL.write!(mem, bands[b], b), 1:3)
-		ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
-	end
-	display(MIME("image/png"), read(png))
-end
+# the maps the features are drawn on, each in grey from 0 to 1
+shown_maps = ("Features on the Image" => image, "Probability on the Image" => probability);
 '''
 
 [[steps.inputs]]
@@ -351,36 +334,26 @@ default = "549716, 252899"
 [[steps.inputs]]
 id = "zoomSize"
 label = "Zoom Size (m)"
-tooltip = "The width of the square Zoom on a Place shows, in metres."
+tooltip = "The width of the square Zoom on a Place opens on, in metres."
 default = "300"
 
 [[steps.actions]]
 id = "show-features"
-label = "Features on the Image"
-desc = "The image the model reads, the local relief from -0.5 to 0.5 m in grey, north up, with the outline of each feature in yellow"
+label = "Features on Both Maps"
+desc = "The image the model reads and the probability of a feature side by side with Esri's aerial and satellite imagery of the same ground, with each feature outlined in yellow: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
 code = '''
-picture(image, found.labels, 1)
-'''
-
-[[steps.actions]]
-id = "show-probability"
-label = "Probability on the Image"
-desc = "The probability of a feature at each cell in grey, from black at 0 to white at 1, north up, with the outline of each feature in yellow"
-code = '''
-picture(probability, found.labels, 1)
+Pollis.browse(terrain_maps("Learned Detection in Lidar", shown_maps...; labels = found.labels))
 '''
 
 [[steps.actions]]
 id = "zoom"
 label = "Zoom on a Place"
-desc = "The image the model reads in a square of the Zoom Size around the Zoom Centre, enlarged so that each cell is several pixels, with the features in yellow"
+desc = "The same maps, opened on a square of the Zoom Size around the Zoom Centre, at one scale: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
-around = (X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d))
-k = max(1, fld(800, size(image[around...], X)))  # pixels a cell, for an image about 800 pixels wide
 println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " features within ", d, " m of ", x0, ", ", y0)
-picture(image[around...], found.labels[around...], k)
+Pollis.browse(terrain_maps("Learned Detection in Lidar, Zoom on a Place", shown_maps...; labels = found.labels, centre = (x0, y0), width = 2d))
 '''
 
 [[steps]]
