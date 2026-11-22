@@ -1,8 +1,8 @@
-# OpenSky Network — Overview
+# Air Traffic — Overview
 
 ## The OpenSky Network and Its Receivers
 
-The OpenSky Network is a network of ground receivers that collect the ADS-B and other Mode S messages aircraft broadcast, from which it stores the position, velocity and identity of the aircraft within reach, for research ([Schäfer, Strohmeier, Lenders, Martinovic and Wilhelm (2014)](#ref-SSLMW2014a)). Its receivers are hosted by its members, so what it sees depends on where they have placed them and changes as receivers are added or switched off ([Strohmeier, Olive, Lübbe, Schäfer and Lenders (2021)](#ref-SOLSL2021a)). OpenSky Network, the panel, reads what the network serves through its REST API ([The OpenSky Network (2026)](#ref-OSN2026a)); what the network did not receive, the panel cannot show.
+The OpenSky Network is a network of ground receivers that collect the ADS-B and other Mode S messages aircraft broadcast, from which it stores the position, velocity and identity of the aircraft within reach, for research ([Schäfer, Strohmeier, Lenders, Martinovic and Wilhelm (2014)](#ref-SSLMW2014a)). Its receivers are hosted by its members, so what it sees depends on where they have placed them and changes as receivers are added or switched off ([Strohmeier, Olive, Lübbe, Schäfer and Lenders (2021)](#ref-SOLSL2021a)). Air Traffic, the panel, reads what the network serves through its REST API ([The OpenSky Network (2026)](#ref-OSN2026a)); what the network did not receive, the panel cannot show.
 
 ## Three Kinds of Data in the OpenSky REST API
 
@@ -12,9 +12,9 @@ The REST API of the OpenSky Network serves three kinds of data ([The OpenSky Net
 
 The OpenSky API gives times as Unix time in seconds, positions as longitude and latitude in degrees of WGS-84, altitudes in metres, velocities and vertical rates in metres per second, and headings in degrees clockwise from north ([The OpenSky Network (2026)](#ref-OSN2026a)). An aircraft is identified by the ICAO 24-bit address of its transponder, written as six lower-case hexadecimal characters; an airport by its four-letter ICAO code. OpenSky Network turns the times into timestamps in UTC and keeps the other units, except where a Next Step states speeds in kilometres per hour or distances in kilometres.
 
-## OpenSky Network and the Air Traffic Tab of Mobility and Flows
+## Air Traffic and the Air Routes Tab of Mobility and Flows
 
-Two panels of the Smart Regions Toolbox read the OpenSky Network. The Air Traffic tab of Mobility and Flows reads the flight list the network published on Zenodo for each month of 2019 to 2022, and fits gravity models to the flights between airports. OpenSky Network, the panel, reads the REST API: the aircraft in the air now, the flights of an airport on a recent day, and single tracks. The REST API reaches back days rather than years, and its requests are limited by daily credits, so it suits an area, an airport or a flight rather than a whole network over months ([The OpenSky Network (2026)](#ref-OSN2026a)).
+Three panels of the Smart Regions Toolbox read the OpenSky Network. The Air Routes tab of Mobility and Flows reads the flight list the network published on Zenodo for each month of 2019 to 2022, and fits gravity models to the flights between airports. Air Traffic, the panel, reads the REST API: the aircraft in the air now, the flights of an airport on a recent day, and single tracks. The Flights in 3D tab of Google Photorealistic 3D Maps reads the live tracks of the aircraft near a place, without an account, and draws them at their altitudes on Google's 3D map. The REST API reaches back days rather than years, and its requests are limited by daily credits, so it suits an area, an airport or a flight rather than a whole network over months ([The OpenSky Network (2026)](#ref-OSN2026a)).
 
 ## References
 

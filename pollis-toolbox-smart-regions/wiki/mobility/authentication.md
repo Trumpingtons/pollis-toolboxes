@@ -2,7 +2,7 @@
 
 ## The LTA DataMall Account Key
 
-The bus trips and bus stops of Singapore come from LTA DataMall, the open data portal of the Land Transport Authority, whose API answers only requests that carry an account key ([Land Transport Authority (2026)](#ref-LTA2026a)). The key is free: it is requested on the DataMall site and sent by email. Only Singapore needs it, on Trips and Spatial Interaction; every other city of Mobility and Flows, and Air Traffic, reads open files that need no account. The planning areas of Singapore come from data.gov.sg, which needs no key either ([Urban Redevelopment Authority (2026)](#ref-URA2026a)).
+The bus trips and bus stops of Singapore come from LTA DataMall, the open data portal of the Land Transport Authority, whose API answers only requests that carry an account key ([Land Transport Authority (2026)](#ref-LTA2026a)). The key is free: it is requested on the DataMall site and sent by email. Only Singapore needs it, on Trips and Spatial Interaction; every other city of Mobility and Flows, and Air Routes, reads open files that need no account. The planning areas of Singapore come from data.gov.sg, which needs no key either ([Urban Redevelopment Authority (2026)](#ref-URA2026a)).
 
 ## Where Pollis Keeps the LTA DataMall Account Key
 

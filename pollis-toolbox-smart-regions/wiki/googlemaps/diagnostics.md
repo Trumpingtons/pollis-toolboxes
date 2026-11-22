@@ -2,7 +2,7 @@
 
 ## The Code Stops Before Opening a Map
 
-The Example Code of the Google Maps panel stops at once, with a message asking for the key, when the Julia session has no variable `GOOGLE_MAPS_API_KEY`. The key on the Powered by line sets it in the Julia REPL that Pollis starts; code sent to an editor or a notebook runs in a session that may not have it, and needs `ENV["GOOGLE_MAPS_API_KEY"]` set there first. A Next Step run before the Example Code of its tab stops too, since it uses the variables and functions that code defines, such as `map2d`, `places` and `maptype`.
+The Example Code of the Google Maps panel stops at once, with a message asking for the key, when the Julia session has no variable `GOOGLE_MAPS_API_KEY`. The key on the Powered by line sets it in the Julia REPL that Pollis starts; code sent to an editor or a notebook runs in a session that may not have it, and needs `ENV["GOOGLE_MAPS_API_KEY"]` set there first. A Next Step run before the Example Code of its tab stops too, since it uses the variables and functions that code defines, such as `places`, `maptype` and `zoom`.
 
 ## Google Refuses the Maps Demo Key
 

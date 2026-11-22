@@ -1,17 +1,17 @@
-# OpenSky Network — Factsheet
+# Air Traffic — Factsheet
 
-**OpenSky Network** reads the REST API of the OpenSky Network, a network of receivers that collect the messages aircraft broadcast ([Schäfer, Strohmeier, Lenders, Martinovic and Wilhelm (2014)](#ref-SSLMW2014a)): the aircraft over an area now, the flights that arrived at and departed from an airport on a day, and the track of one aircraft ([The OpenSky Network (2026)](#ref-OSN2026a)). The panel of the Smart Regions Toolbox reads every answer with DuckDB.jl and draws its maps with DuckDB's spatial extension ([Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
+**Air Traffic** reads the REST API of the OpenSky Network, a network of receivers that collect the messages aircraft broadcast ([Schäfer, Strohmeier, Lenders, Martinovic and Wilhelm (2014)](#ref-SSLMW2014a)): the aircraft over an area now, the flights that arrived at and departed from an airport on a day, and the track of one aircraft ([The OpenSky Network (2026)](#ref-OSN2026a)). The panel of the Smart Regions Toolbox reads every answer with DuckDB.jl and draws its maps with DuckDB's spatial extension ([Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
 
-| Item | OpenSky Network panel |
+| Item | Air Traffic panel |
 |---|---|
 | **Purpose** | The aircraft in the air over an area, the traffic of an airport, and the path of a flight |
 | **Input** | An Example Area (London, Paris, Frankfurt, New York, Singapore, United States, Canada, India, Brazil, Australia) or a Custom Box; an Airport and a Day; an Aircraft and a Time |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension; [ECharts.jl](https://github.com/randyzwitch/ECharts.jl) for the charts |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension; [ECharts.jl](https://github.com/randyzwitch/ECharts.jl) for the charts |
 | **Tabs** | Live Aircraft; Flights by Airport; Aircraft Track |
 | **Account** | An OpenSky API client for Flights by Airport and past tracks; none for Live Aircraft and live tracks |
 | **Output** | `aircraft` for Live Aircraft; `flights` and `airports` for Flights by Airport; `track` for Aircraft Track |
 
-## Requests Each Tab of OpenSky Network Makes
+## Requests Each Tab of Air Traffic Makes
 
 | Tab | Request of the OpenSky API | Account | Kept in the Folder |
 |---|---|---|---|
@@ -19,7 +19,7 @@
 | Flights by Airport | `flights/arrival` and `flights/departure` of the Airport over the Day | An API client | Yes, one file for each day and direction |
 | Aircraft Track | `tracks/all` for the Aircraft at the Time, after `states/all` when Aircraft is nearest | An API client for a past flight | No |
 
-## What the Next Steps of OpenSky Network Do
+## What the Next Steps of Air Traffic Do
 
 | Group | Action | What it shows |
 |---|---|---|

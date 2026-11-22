@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Read the places, buildings, transportation, divisions or addresses of an area, check them, measure them and save them |
 | **Input** | An area as west, south, east, north in degrees; a release, or latest |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial and httpfs extensions |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial and httpfs extensions |
 | **Tabs** | Places; Buildings; Transportation; Divisions; Addresses |
 | **Output** | The table `features`: one row per feature, with its main columns, its main source and licence, all its sources, and its geometry as `geom` |
 | **Key choices** | The area; the release; the category and minimum confidence of places; the network of segments; the subtype of divisions |

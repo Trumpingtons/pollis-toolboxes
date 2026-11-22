@@ -1,8 +1,8 @@
-# OpenSky Network: the aircraft the receivers of the OpenSky Network see now over an area, the flights that arrived at and
+# Air Traffic: the aircraft the receivers of the OpenSky Network see now over an area, the flights that arrived at and
 # departed from an airport on a day, and the track of one aircraft, from the OpenSky REST API
 
 [meta]
-title = "OpenSky Network"
+title = "Air Traffic"
 viewType = "pollis.opensky"
 defaultModel = "live"
 decisionFirstColumn = "Tab"
@@ -21,6 +21,10 @@ password = false
 name = "clientSecret"
 envVar = "OPENSKY_CLIENT_SECRET"
 prompt = "Client secret of the same OpenSky API client"
+
+[[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -307,7 +311,7 @@ models = ["track"]
 [[codeBranches]]
 model = "live"
 code = '''
-using DuckDB, Tables, Downloads, Dates
+using DuckDB, Tables, Dates, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -316,63 +320,24 @@ execute(sql) = DBInterface.execute(con, sql)
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 place = mkpath(joinpath(folder, "opensky"))  # where the Next Steps save their files
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~" ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)
-has_account = haskey(ENV, "OPENSKY_CLIENT_ID") && haskey(ENV, "OPENSKY_CLIENT_SECRET")  # an OpenSky API client, set with the key on the Powered by line
-credits = Dict{String, String}()  # the credits left today for states, flights and tracks, as the API reports them
-held_token = Ref(("", 0.0))
-function token()  # an access token of the OpenSky Network for the API client, kept for 25 of its 30 minutes
-	time() < held_token[][2] && return held_token[][1]
-	out = IOBuffer()
-	r = Downloads.request("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
-		input = IOBuffer("grant_type=client_credentials&client_id=$(enc(ENV["OPENSKY_CLIENT_ID"]))&client_secret=$(enc(ENV["OPENSKY_CLIENT_SECRET"]))"),
-		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
-	answer = String(take!(out))
-	r isa Downloads.Response && r.status == 200 || error("The OpenSky Network refused the API client (HTTP $(r isa Downloads.Response ? r.status : r.message)): check the client id and secret set with the key on the Powered by line")
-	held_token[] = (match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1], time() + 25 * 60)
-	return held_token[][1]
-end
-function opensky(path, file; account = has_account, empty = "[]")  # one request to the OpenSky REST API, its answer written to file
-	account && !has_account && error("This request needs an OpenSky API client: set its client id and secret with the key on the Powered by line, or set ENV[\"OPENSKY_CLIENT_ID\"] and ENV[\"OPENSKY_CLIENT_SECRET\"]: see the Authentication wiki")
-	headers = ["User-Agent" => "Pollis (https://pollis.org)"]
-	account && push!(headers, "Authorization" => "Bearer $(token())")
-	r = open(io -> Downloads.request("https://opensky-network.org/api/" * path; output = io, headers = headers, throw = false), file * ".part", "w")
-	r isa Downloads.Response || error("The OpenSky Network could not be reached: $(r.message)")
-	answer = Dict(lowercase(k) => v for (k, v) in r.headers)
-	bucket = first(split(path, '/'))
-	haskey(answer, "x-rate-limit-remaining") && (credits[bucket] = answer["x-rate-limit-remaining"])
-	if r.status in (200, 404)
-		r.status == 404 && write(file * ".part", empty)  # nothing found: no flights in the interval, or no track
-		return mv(file * ".part", file; force = true)
-	end
-	said = first(read(file * ".part", String), 300)
-	rm(file * ".part"; force = true)
-	r.status == 429 && error("The OpenSky credits for $(bucket) are spent: they refill in about $(round(parse(Int, get(answer, "x-rate-limit-retry-after-seconds", "86400")) / 3600; digits = 1)) hours. See the Credits and Limits wiki")
-	r.status in (401, 403) && error("The OpenSky Network refused the request (HTTP $(r.status)): $(said). " * (account ? "Check the API client set with the key on the Powered by line" : "It needs an OpenSky API client: see the Authentication wiki"))
-	error("The OpenSky Network answered HTTP $(r.status) to $(path): $(said)")
-end
+has_account = has_opensky_client()  # an OpenSky API client, set with the key on the Powered by line
 
 area = "{{area}}"
 boxes = Dict("london" => (-0.7, 51.2, 0.4, 51.8), "paris" => (1.9, 48.6, 2.9, 49.2), "frankfurt" => (8.2, 49.8, 9.1, 50.4), "newyork" => (-74.4, 40.4, -73.5, 41.0), "singapore" => (103.5, 1.1, 104.2, 1.6),
 	"usa" => (-125.0, 24.5, -66.9, 49.5), "canada" => (-141.0, 41.7, -52.6, 70.0), "india" => (68.1, 6.7, 97.4, 35.7), "brazil" => (-74.0, -33.8, -34.8, 5.3), "australia" => (112.9, -43.7, 153.7, -10.6))  # west, south, east, north
 west, south, east, north = area == "custom" ? Tuple(parse.(Float64, strip.(split(raw"{{box}}", ",")))) : boxes[area]
-box_query = "lamin=$(south)&lomin=$(west)&lamax=$(north)&lomax=$(east)"
-states_sql(file) = """SELECT make_timestamp(time * 1000000) AS seen, s->>0 AS icao24, nullif(trim(s->>1), '') AS callsign, s->>2 AS country,
-	make_timestamp((s->>3)::BIGINT * 1000000) AS positioned, make_timestamp((s->>4)::BIGINT * 1000000) AS last_contact, (s->>5)::DOUBLE AS lon, (s->>6)::DOUBLE AS lat,
-	(s->>7)::DOUBLE AS altitude, (s->>8)::BOOLEAN AS on_ground, (s->>9)::DOUBLE AS velocity, (s->>10)::DOUBLE AS heading, (s->>11)::DOUBLE AS vertical_rate,
-	(s->>13)::DOUBLE AS geo_altitude, s->>14 AS squawk, (s->>16)::INTEGER AS source, (s->>17)::INTEGER AS category
-	FROM (SELECT time, unnest(states) AS s FROM read_json('$(file)', columns = {time: 'BIGINT', states: 'JSON[]'}))"""  # one row per state vector; times in UTC, altitudes in metres, speeds in m/s
-snapshot() = states_sql(opensky("states/all?$(box_query)&extended=1", joinpath(mktempdir(), "states.json"); empty = "{\"time\": 0, \"states\": null}"))
+snapshot() = opensky_states((west, south, east, north))  # the SQL of the state vectors of the aircraft over the box now: one request
 execute("CREATE OR REPLACE TABLE aircraft AS " * snapshot())  # the state vectors of the aircraft over the box now
 tag = "$(area)-$(Dates.format(now(UTC), "yyyymmdd-HHMM"))"
 seen = query("SELECT count(*) AS n, count(*) FILTER (WHERE NOT on_ground) AS airborne, count(*) FILTER (WHERE lon IS NULL) AS unplaced, max(seen) AS seen FROM aircraft")
 println(only(seen.n), " aircraft over the box at ", only(seen.seen), " UTC: ", only(seen.airborne), " airborne, ", only(seen.n) - only(seen.airborne), " on the ground, ", only(seen.unplaced), " without a position")
-println("States credits left today: ", get(credits, "states", "not reported"), has_account ? " (API client)" : " (anonymous)")
+println("States credits left today: ", get(opensky_credits(), "states", "not reported"), has_account ? " (API client)" : " (anonymous)")
 '''
 
 [[codeBranches]]
 model = "airport"
 code = '''
-using DuckDB, Tables, Downloads, Dates
+using DuckDB, Tables, Downloads, Dates, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -381,40 +346,7 @@ execute(sql) = DBInterface.execute(con, sql)
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 place = mkpath(joinpath(folder, "opensky"))  # where the airports and the flights of past days are kept, and the Next Steps save their files
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~" ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)
-has_account = haskey(ENV, "OPENSKY_CLIENT_ID") && haskey(ENV, "OPENSKY_CLIENT_SECRET")  # an OpenSky API client, set with the key on the Powered by line
-credits = Dict{String, String}()  # the credits left today for states, flights and tracks, as the API reports them
-held_token = Ref(("", 0.0))
-function token()  # an access token of the OpenSky Network for the API client, kept for 25 of its 30 minutes
-	time() < held_token[][2] && return held_token[][1]
-	out = IOBuffer()
-	r = Downloads.request("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
-		input = IOBuffer("grant_type=client_credentials&client_id=$(enc(ENV["OPENSKY_CLIENT_ID"]))&client_secret=$(enc(ENV["OPENSKY_CLIENT_SECRET"]))"),
-		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
-	answer = String(take!(out))
-	r isa Downloads.Response && r.status == 200 || error("The OpenSky Network refused the API client (HTTP $(r isa Downloads.Response ? r.status : r.message)): check the client id and secret set with the key on the Powered by line")
-	held_token[] = (match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1], time() + 25 * 60)
-	return held_token[][1]
-end
-function opensky(path, file; account = has_account, empty = "[]")  # one request to the OpenSky REST API, its answer written to file
-	account && !has_account && error("This request needs an OpenSky API client: set its client id and secret with the key on the Powered by line, or set ENV[\"OPENSKY_CLIENT_ID\"] and ENV[\"OPENSKY_CLIENT_SECRET\"]: see the Authentication wiki")
-	headers = ["User-Agent" => "Pollis (https://pollis.org)"]
-	account && push!(headers, "Authorization" => "Bearer $(token())")
-	r = open(io -> Downloads.request("https://opensky-network.org/api/" * path; output = io, headers = headers, throw = false), file * ".part", "w")
-	r isa Downloads.Response || error("The OpenSky Network could not be reached: $(r.message)")
-	answer = Dict(lowercase(k) => v for (k, v) in r.headers)
-	bucket = first(split(path, '/'))
-	haskey(answer, "x-rate-limit-remaining") && (credits[bucket] = answer["x-rate-limit-remaining"])
-	if r.status in (200, 404)
-		r.status == 404 && write(file * ".part", empty)  # nothing found: no flights in the interval, or no track
-		return mv(file * ".part", file; force = true)
-	end
-	said = first(read(file * ".part", String), 300)
-	rm(file * ".part"; force = true)
-	r.status == 429 && error("The OpenSky credits for $(bucket) are spent: they refill in about $(round(parse(Int, get(answer, "x-rate-limit-retry-after-seconds", "86400")) / 3600; digits = 1)) hours. See the Credits and Limits wiki")
-	r.status in (401, 403) && error("The OpenSky Network refused the request (HTTP $(r.status)): $(said). " * (account ? "Check the API client set with the key on the Powered by line" : "It needs an OpenSky API client: see the Authentication wiki"))
-	error("The OpenSky Network answered HTTP $(r.status) to $(path): $(said)")
-end
+has_account = has_opensky_client()  # an OpenSky API client, set with the key on the Powered by line
 function fetch(url, name)  # a file downloaded once into the folder opensky: a later run reads it from there
 	path = joinpath(place, name)
 	isfile(path) || mv(Downloads.download(url, path * ".part"; headers = ["User-Agent" => "Pollis (https://pollis.org)"]), path)
@@ -427,30 +359,18 @@ airports_file = fetch("https://davidmegginson.github.io/ourairports-data/airport
 execute("CREATE OR REPLACE TABLE airports AS SELECT ident AS icao, name, iso_country AS country, municipality, longitude_deg AS lon, latitude_deg AS lat FROM read_csv('$(airports_file)')")
 here = query("SELECT name, country, lon, lat FROM airports WHERE icao = ?", [airport])
 isempty(here.name) && error("OurAirports lists no airport with the ICAO code $(airport)")
-function flights_of(airport, day)  # the SQL of the arrivals and departures of an airport on a day (UTC), each downloaded once into the folder opensky
-	first_second = round(Int, datetime2unix(DateTime(day)))
-	columns = "columns = {icao24: 'VARCHAR', callsign: 'VARCHAR', firstSeen: 'BIGINT', lastSeen: 'BIGINT', estDepartureAirport: 'VARCHAR', estArrivalAirport: 'VARCHAR', estDepartureAirportHorizDistance: 'DOUBLE', estArrivalAirportHorizDistance: 'DOUBLE', departureAirportCandidatesCount: 'INTEGER', arrivalAirportCandidatesCount: 'INTEGER'}"
-	parts = map(("arrival", "departure")) do direction
-		file = joinpath(place, "flights-$(airport)-$(day)-$(direction).json")
-		isfile(file) || opensky("flights/$(direction)?airport=$(airport)&begin=$(first_second)&end=$(first_second + 86399)", file; account = true)
-		"""SELECT '$(direction)' AS direction, icao24, nullif(trim(callsign), '') AS callsign, estDepartureAirport AS origin, estArrivalAirport AS destination,
-			$(direction == "arrival" ? "estDepartureAirport" : "estArrivalAirport") AS other, make_timestamp(firstSeen * 1000000) AS first_seen, make_timestamp(lastSeen * 1000000) AS last_seen,
-			estDepartureAirportHorizDistance AS origin_distance, estArrivalAirportHorizDistance AS destination_distance, departureAirportCandidatesCount AS origin_candidates, arrivalAirportCandidatesCount AS destination_candidates
-			FROM read_json('$(file)', $(columns))"""
-	end
-	return join(parts, " UNION ALL ")
-end
+flights_of(airport, day) = opensky_flights(airport, day; folder = place)  # the SQL of the arrivals and departures of an airport on a day (UTC), each downloaded once into the folder opensky
 execute("CREATE OR REPLACE TABLE flights AS " * flights_of(airport, day))  # one row per flight; other is the estimated airport at the other end, times in UTC
 tag = "$(airport)-$(day)"
 counts = query("SELECT count(*) FILTER (WHERE direction = 'arrival') AS arrivals, count(*) FILTER (WHERE direction = 'departure') AS departures FROM flights")
 println(only(here.name), " (", airport, ") on ", day, " (UTC): ", only(counts.arrivals), " arrivals and ", only(counts.departures), " departures seen by the OpenSky Network")
-haskey(credits, "flights") && println("Flights credits left today: ", credits["flights"])
+haskey(opensky_credits(), "flights") && println("Flights credits left today: ", opensky_credits()["flights"])
 '''
 
 [[codeBranches]]
 model = "track"
 code = '''
-using DuckDB, Tables, Downloads, Dates
+using DuckDB, Tables, Dates, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -459,40 +379,7 @@ execute(sql) = DBInterface.execute(con, sql)
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 place = mkpath(joinpath(folder, "opensky"))  # where the Next Steps save their files
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~" ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)
-has_account = haskey(ENV, "OPENSKY_CLIENT_ID") && haskey(ENV, "OPENSKY_CLIENT_SECRET")  # an OpenSky API client, set with the key on the Powered by line
-credits = Dict{String, String}()  # the credits left today for states, flights and tracks, as the API reports them
-held_token = Ref(("", 0.0))
-function token()  # an access token of the OpenSky Network for the API client, kept for 25 of its 30 minutes
-	time() < held_token[][2] && return held_token[][1]
-	out = IOBuffer()
-	r = Downloads.request("https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
-		input = IOBuffer("grant_type=client_credentials&client_id=$(enc(ENV["OPENSKY_CLIENT_ID"]))&client_secret=$(enc(ENV["OPENSKY_CLIENT_SECRET"]))"),
-		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
-	answer = String(take!(out))
-	r isa Downloads.Response && r.status == 200 || error("The OpenSky Network refused the API client (HTTP $(r isa Downloads.Response ? r.status : r.message)): check the client id and secret set with the key on the Powered by line")
-	held_token[] = (match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1], time() + 25 * 60)
-	return held_token[][1]
-end
-function opensky(path, file; account = has_account, empty = "[]")  # one request to the OpenSky REST API, its answer written to file
-	account && !has_account && error("This request needs an OpenSky API client: set its client id and secret with the key on the Powered by line, or set ENV[\"OPENSKY_CLIENT_ID\"] and ENV[\"OPENSKY_CLIENT_SECRET\"]: see the Authentication wiki")
-	headers = ["User-Agent" => "Pollis (https://pollis.org)"]
-	account && push!(headers, "Authorization" => "Bearer $(token())")
-	r = open(io -> Downloads.request("https://opensky-network.org/api/" * path; output = io, headers = headers, throw = false), file * ".part", "w")
-	r isa Downloads.Response || error("The OpenSky Network could not be reached: $(r.message)")
-	answer = Dict(lowercase(k) => v for (k, v) in r.headers)
-	bucket = first(split(path, '/'))
-	haskey(answer, "x-rate-limit-remaining") && (credits[bucket] = answer["x-rate-limit-remaining"])
-	if r.status in (200, 404)
-		r.status == 404 && write(file * ".part", empty)  # nothing found: no flights in the interval, or no track
-		return mv(file * ".part", file; force = true)
-	end
-	said = first(read(file * ".part", String), 300)
-	rm(file * ".part"; force = true)
-	r.status == 429 && error("The OpenSky credits for $(bucket) are spent: they refill in about $(round(parse(Int, get(answer, "x-rate-limit-retry-after-seconds", "86400")) / 3600; digits = 1)) hours. See the Credits and Limits wiki")
-	r.status in (401, 403) && error("The OpenSky Network refused the request (HTTP $(r.status)): $(said). " * (account ? "Check the API client set with the key on the Powered by line" : "It needs an OpenSky API client: see the Authentication wiki"))
-	error("The OpenSky Network answered HTTP $(r.status) to $(path): $(said)")
-end
+has_account = has_opensky_client()  # an OpenSky API client, set with the key on the Powered by line
 
 area = "{{area}}"
 boxes = Dict("london" => (-0.7, 51.2, 0.4, 51.8), "paris" => (1.9, 48.6, 2.9, 49.2), "frankfurt" => (8.2, 49.8, 9.1, 50.4), "newyork" => (-74.4, 40.4, -73.5, 41.0), "singapore" => (103.5, 1.1, 104.2, 1.6),
@@ -503,29 +390,27 @@ moment = strip("{{trackTime}}")
 at = moment == "live" ? 0 : round(Int, datetime2unix(DateTime(moment, dateformat"yyyy-mm-dd HH:MM")))  # 0 asks for the flight the aircraft is on now
 if aircraft == "nearest"
 	at == 0 || error("Set Aircraft to the address of a transponder for a past flight: nearest picks an aircraft in the air now")
-	states_file = opensky("states/all?lamin=$(south)&lomin=$(west)&lamax=$(north)&lomax=$(east)", joinpath(mktempdir(), "states.json"); empty = "{\"time\": 0, \"states\": null}")
-	candidates = query("""SELECT icao24 FROM (SELECT s->>0 AS icao24, (s->>5)::DOUBLE AS lon, (s->>6)::DOUBLE AS lat, (s->>8)::BOOLEAN AS on_ground
-		FROM (SELECT unnest(states) AS s FROM read_json('$(states_file)', columns = {time: 'BIGINT', states: 'JSON[]'})))
+	candidates = query("""SELECT icao24 FROM ($(opensky_states((west, south, east, north); extended = false)))
 		WHERE NOT on_ground AND lon IS NOT NULL ORDER BY (lon - ?) * (lon - ?) + (lat - ?) * (lat - ?) LIMIT 5""",
 		[(west + east) / 2, (west + east) / 2, (south + north) / 2, (south + north) / 2]).icao24  # the five airborne aircraft nearest the centre of the box
 	isempty(candidates) && error("No aircraft in the air over the Example Area now")
 else
 	candidates = [aircraft]
 end
-track_file = joinpath(mktempdir(), "track.json")
-for a in candidates  # the first of them whose track the OpenSky Network has
-	opensky("tracks/all?icao24=$(a)&time=$(at)", track_file; account = has_account || at != 0, empty = "{}")
-	read(track_file, String) == "{}" || break
+track = let found = nothing
+	for a in candidates  # the first of them whose track the OpenSky Network has
+		found = opensky_track(a; time = at)
+		found === nothing || break
+	end
+	found
 end
-read(track_file, String) == "{}" && error("The OpenSky Network has no track of $(join(candidates, ", ")) at that time")
-execute("""CREATE OR REPLACE TABLE track AS SELECT icao24, nullif(trim(callsign), '') AS callsign, make_timestamp((p->>0)::BIGINT * 1000000) AS time, (p->>1)::DOUBLE AS lat, (p->>2)::DOUBLE AS lon,
-	(p->>3)::DOUBLE AS altitude, (p->>4)::DOUBLE AS heading, (p->>5)::BOOLEAN AS on_ground
-	FROM (SELECT icao24, callsign, unnest(path) AS p FROM read_json('$(track_file)', columns = {icao24: 'VARCHAR', callsign: 'VARCHAR', startTime: 'DOUBLE', endTime: 'DOUBLE', path: 'JSON[]'}))""")  # one row per waypoint; times in UTC, altitudes in metres
+track === nothing && error("The OpenSky Network has no track of $(join(candidates, ", ")) at that time")
+execute("CREATE OR REPLACE TABLE track AS " * track)  # one row per waypoint; times in UTC, altitudes in metres
 flown = query("""SELECT any_value(icao24) AS icao24, any_value(callsign) AS callsign, count(*) AS waypoints, min(time) AS first, max(time) AS last, sum(km) AS km
 	FROM (SELECT *, ST_Distance_Spheroid(ST_Point(lag(lon) OVER (ORDER BY time), lag(lat) OVER (ORDER BY time)), ST_Point(lon, lat)) / 1000 AS km FROM track)""")
 tag = only(flown.icao24)
 println("Track of ", only(flown.icao24), " (", coalesce(only(flown.callsign), "no callsign"), "): ", only(flown.waypoints), " waypoints from ", only(flown.first), " to ", only(flown.last), " UTC, ", round(coalesce(only(flown.km), 0.0); digits = 1), " km along them")
-println("Tracks credits left today: ", get(credits, "tracks", "not reported"), has_account ? " (API client)" : " (anonymous)")
+println("Tracks credits left today: ", get(opensky_credits(), "tracks", "not reported"), has_account ? " (API client)" : " (anonymous)")
 '''
 
 [[actionGroups]]
@@ -681,7 +566,7 @@ println(rpad("UTC", 22), lpad("aircraft", 9), lpad("airborne", 9), lpad("mean m"
 for r in Tables.rows(compared)
 	println(rpad(string(r.seen), 22), lpad(r.aircraft, 9), lpad(r.airborne, 9), lpad(coalesce(r.altitude, 0), 8))
 end
-println(only(query("SELECT count(*) AS n FROM (SELECT icao24 FROM snapshots GROUP BY icao24 HAVING count(DISTINCT k) = 5)").n), " aircraft in all five snapshots, of ", only(query("SELECT count(DISTINCT icao24) AS n FROM snapshots").n), " seen; states credits left today: ", get(credits, "states", "not reported"))
+println(only(query("SELECT count(*) AS n FROM (SELECT icao24 FROM snapshots GROUP BY icao24 HAVING count(DISTINCT k) = 5)").n), " aircraft in all five snapshots, of ", only(query("SELECT count(DISTINCT icao24) AS n FROM snapshots").n), " seen; states credits left today: ", get(opensky_credits(), "states", "not reported"))
 '''
 
 [[actionGroups.actions]]

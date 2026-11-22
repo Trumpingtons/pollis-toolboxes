@@ -6,7 +6,7 @@ The **Google Maps** panel of the Smart Regions Toolbox opens Google's maps of a 
 |---|---|
 | **Purpose** | Look at a place on Google's maps, from above |
 | **Input** | Sydney Harbour, Midtown Manhattan, or a place given by name, longitude and latitude |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
 | **Tabs** | Roadmap, Satellite, Terrain |
 | **Service** | The Maps JavaScript API, with a Maps Demo Key |
 | **Output** | A page in Pollis's browser with a Google map and nothing else |
@@ -24,7 +24,7 @@ The Place input picks one of two example places, each with eight named places fo
 
 ## The Pages the Google Maps Panel Writes
 
-The Example Code writes each map as an HTML page and opens it with `Pollis.browse`, so the page holds Google's map and the user's own features, and nothing else. `map2d(title, types; features, column, note)` writes a page with one 2D map, or two side by side that move together. A page is named after its title, so a map with the same title opens again in its tab. The page loads the Maps JavaScript API with the key in its address, as Google's documentation gives, so the pages are written in a temporary folder that Julia removes when it exits ([Google (2026a)](#ref-Goo2026a)). Each page also says in text, for screen readers, which map it shows and where it is centred, taken from the inputs alone.
+The Example Code writes each map as an HTML page with SmartRegions.jl and opens it with `Pollis.browse`, so the page holds Google's map and the user's own features, and nothing else. `googlemap(title, lon, lat; types, zoom, features, column, note, place)` writes a page with one 2D map, or several side by side that move together, and returns its path. A page is named after its title, so a map with the same title opens again in its tab. The page loads the Maps JavaScript API with the key in its address, as Google's documentation gives, so the pages are written in a temporary folder that Julia removes when it exits ([Google (2026a)](#ref-Goo2026a)). Each page also says in text, for screen readers, which map it shows and where it is centred, taken from the inputs alone.
 
 ## Next Steps of the Google Maps Panel
 

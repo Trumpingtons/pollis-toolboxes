@@ -19,6 +19,10 @@ envVar = "GOOGLE_MAPS_API_KEY"
 prompt = "Maps Demo Key, from developers.google.com/maps/demo-key with a personal Google Account"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -142,14 +146,14 @@ wiki = "The Demo Key"
 [[faq]]
 question = "Which tab should I use?"
 answer = '''
-3D View to look at buildings and landscape from a camera that turns and tilts. Your Features to raise polygons of your own to a height, Values as Columns to show a value across a place as columns, and Routes at Height to draw lines at the altitude of each of their points.
+3D View to look at buildings and landscape from a camera that turns and tilts. Your Features to raise polygons of your own to a height, Values as Columns to show a value across a place as columns, and Flights in 3D to draw lines at the altitude of each of their points.
 '''
 wiki = "Decision Guide"
 
 [[faq]]
 question = "Can I draw my own data in 3D on the 3D map?"
 answer = '''
-Yes. Your Features raises polygons to a height from a column, Values as Columns draws a value on a grid of square cells as columns, and Routes at Height draws lines at the altitude of each of their points. The examples use the buildings and places of Overture Maps and the tracks of aircraft from the OpenSky Network: replace them with a table of your own.
+Yes. Your Features raises polygons to a height from a column, Values as Columns draws a value on a grid of square cells as columns, and Flights in 3D draws lines at the altitude of each of their points. The examples use the buildings and places of Overture Maps and the tracks of aircraft from the OpenSky Network: replace them with a table of your own.
 '''
 wiki = "3D Features"
 
@@ -178,7 +182,7 @@ wiki = "3D Maps and the Camera"
 hidden = true
 
 [[faq]]
-question = "Why does Routes at Height find no aircraft?"
+question = "Why does Flights in 3D find no aircraft?"
 answer = '''
 The tab reads the aircraft flying above 1,000 m over the box around the place now, from the OpenSky Network, without an account. At night, or over a place with little air traffic, there may be none: widen Box Side, or choose a place near a large airport. When the day's anonymous credits are spent, the OpenSky Network answers HTTP 429 and the code says so.
 '''
@@ -188,7 +192,7 @@ hidden = true
 [[faq]]
 question = "Why do the columns or buildings sink into the ground or float?"
 answer = '''
-Polygons are raised relative to the ground under them, which Google's 3D map takes from its terrain. Lines of Routes at Height are drawn at their altitude above sea level, as aircraft report it: near the ground the two may differ by tens of metres. See the altitude modes in the 3D Features wiki.
+Polygons are raised relative to the ground under them, which Google's 3D map takes from its terrain. Lines of Flights in 3D are drawn at their altitude above sea level, as aircraft report it: near the ground the two may differ by tens of metres. See the altitude modes in the 3D Features wiki.
 '''
 wiki = "3D Features"
 hidden = true
@@ -207,7 +211,7 @@ label = "Values as Columns"
 
 [[models]]
 id = "routes"
-label = "Routes at Height"
+label = "Flights in 3D"
 
 [[bullets]]
 text = "3D View"
@@ -222,7 +226,7 @@ text = "Values as Columns"
 detail = "A value on a grid of square cells, drawn as columns as tall as the value: here the number of places of Overture Maps in each cell"
 
 [[bullets]]
-text = "Routes at Height"
+text = "Flights in 3D"
 detail = "Lines drawn in the air at the altitude of each point: here the tracks of the aircraft flying near the place now, from the OpenSky Network"
 
 [[decisionRows]]
@@ -241,7 +245,7 @@ context = "A value across a place"
 purpose = "Compare a count or a measurement over a place as columns of different heights"
 
 [[decisionRows]]
-task = "Routes at Height"
+task = "Flights in 3D"
 context = "Paths in the air"
 purpose = "Follow flights, drones or cable cars at the altitude of each point"
 
@@ -380,11 +384,8 @@ label = "Line Only"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables
-{{?model=routes}}using Downloads
+using DuckDB, Tables, SmartRegions
 
-haskey(ENV, "GOOGLE_MAPS_API_KEY") || error("Set your Maps Demo Key with the key on the Powered by line, or set ENV[\"GOOGLE_MAPS_API_KEY\"]: see The Demo Key wiki")
-key = ENV["GOOGLE_MAPS_API_KEY"]
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database, for the features drawn on the map
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
@@ -393,183 +394,44 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 {{?place=sydney}}{{?model=features|columns}} name, lon, lat = "Sydney CBD", 151.2093, -33.8675  # around Martin Place: few buildings by the harbour have a height in Overture Maps
 {{?place=manhattan}} name, lon, lat = "Midtown Manhattan", -73.98, 40.756  # around Fifth Avenue and 42nd Street
 {{?place=own}} name, lon, lat = "{{placeName}}", {{lon}}, {{lat}}  # the centre, in degrees of longitude and latitude
-pages = mktempdir()  # the pages hold the key, so they stay in a folder Julia removes when it exits
-slug(s) = lowercase(join((m.match for m in eachmatch(r"[A-Za-z0-9]+", s)), "-"))
-html(s) = replace(string(s), "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-# The end tag of a script element, written in two parts: Pollis shows this code inside a script of its own page, which
-# the tag in one piece would end
-endscript = "</" * "script>"
-# A page with a map of Google's and nothing else, opened in Pollis's browser: the same title opens again in its tab.
-# Its text says what the map shows, from the inputs only, for screen readers.
-function page(title, about, body)
-	file = joinpath(pages, slug(title) * ".html")
-	write(file, """<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>$(html(title))</title>
-<style>
-html, body { height: 100%; margin: 0; font: 13px sans-serif; }
-gmp-map-3d { display: block; height: 100%; }
-.about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.box { position: absolute; z-index: 1; top: 10px; left: 10px; max-width: 60%; padding: 6px 10px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); font-weight: 600; }
-.legend { margin: 0 0 10px 10px; padding: 6px 10px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
-.swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; }
-.corner { position: absolute; z-index: 1; left: 0; bottom: 24px; }
-</style>
-<script>function gm_authFailure() { document.getElementById("title").textContent = "Google refused the Maps Demo Key: check it with the key on the Powered by line, and see the Diagnostics wiki." }$(endscript)
-</head><body>
-<section class="about" aria-label="What the map shows"><h1>$(html(title))</h1><ul>$(join("<li>" .* html.(about) .* "</li>"))</ul></section>
-<div class="box" id="title">$(html(title))</div>
-$(body)
-</body></html>""")
-	Pollis.browse(file)
-	return file
-end
-# The colours of the features of a page by the values of a column: five steps for numbers, a colour for each value of
-# text, grey where there is none; and the legend, the column's name over a line for each step or value
-scale_js = """
-function scale(all, column) {
-	const RAMP = ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"], PALETTE = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
-	const values = all.filter(v => v !== null && v !== undefined);
-	const numeric = values.length > 0 && values.every(v => typeof v === "number");
-	const lo = numeric ? values.reduce((a, b) => Math.min(a, b)) : 0, hi = numeric ? values.reduce((a, b) => Math.max(a, b)) : 0;
-	const kinds = [...new Set(values.map(String))];
-	const step = v => hi > lo ? Math.min(4, Math.floor((v - lo) / (hi - lo) * 5)) : 2;
-	const colour = v => !column ? PALETTE[0] : v === null || v === undefined ? "#999999" : numeric ? RAMP[step(v)] : PALETTE[kinds.indexOf(String(v)) % PALETTE.length];
-	const legend = () => {
-		const box = document.createElement("div");
-		box.className = "legend";
-		const row = (c, text) => { const line = document.createElement("div"); const swatch = document.createElement("span"); swatch.className = "swatch"; swatch.style.background = c; line.append(swatch, text); box.append(line); };
-		const title = document.createElement("div");
-		title.textContent = column;
-		title.style.fontWeight = "600";
-		box.append(title);
-		const format = v => Number(v.toPrecision(4)).toLocaleString();
-		if (numeric) {
-			RAMP.forEach((c, i) => row(c, format(lo + (hi - lo) * i / 5) + " to " + format(lo + (hi - lo) * (i + 1) / 5)));
-		} else {
-			kinds.slice(0, PALETTE.length).forEach((k, i) => row(PALETTE[i], k));
-		}
-		return box;
-	};
-	return { colour, legend, shown: Boolean(column && values.length) };
-}"""
-# Google's 3D map, from a camera at the range, tilt and heading given; with orbit = true, the camera turns once around
-# the centre. The features of a GeoJSON file are drawn in 3D, coloured by a column, and a click on one shows its columns:
-# polygons raised the metres of the column height above the ground, lines at the altitude of each point above sea level
-# (with curtain = true, hanging down to the ground), and points at their altitude, labelled by their column label
-function map3d(title; orbit = false, features = "", height = "", column = "", curtain = false, note = "")
-	camera = "range $(range_m) m, tilt $(tilt) degrees, heading $(heading) degrees"
-	about = ["Google's 3D map, mode $(mode), centred on $(name): longitude $(lon), latitude $(lat); camera at $(camera)." * (orbit ? " The camera turns once around the centre." : "")]
-	isempty(note) || push!(about, note)
-	geojson = isempty(features) ? "null" : replace(read(features, String), "</" => "<\\/")
-	turn = orbit ? """<script>customElements.whenDefined("gmp-map-3d").then(() => document.getElementById("map").flyCameraAround({ camera: { center: { lat: $(lat), lng: $(lon), altitude: 0 }, range: $(range_m), tilt: $(tilt), heading: $(heading) }, durationMillis: 60000, repeatCount: 1 }));$(endscript)""" : ""
-	page(title, about, """<gmp-map-3d id="map" center="$(lat),$(lon),0" range="$(range_m)" tilt="$(tilt)" heading="$(heading)" mode="$(mode)"></gmp-map-3d>
-<script>
-document.getElementById("map").addEventListener("gmp-error", () => { document.getElementById("title").textContent = "Google could not open the 3D map: check the Maps Demo Key with the key on the Powered by line, and see the Diagnostics wiki." });
-const GEOJSON = $(geojson), HEIGHT = $(repr(height)), COLUMN = $(repr(column)), CURTAIN = $(curtain);
-$(scale_js)
-async function start() {
-	if (!GEOJSON) {
-		return;
-	}
-	const { Polygon3DInteractiveElement, Polyline3DInteractiveElement, Marker3DInteractiveElement, PopoverElement, AltitudeMode } = await google.maps.importLibrary("maps3d");
-	const map = document.getElementById("map");
-	const popover = new PopoverElement();
-	map.append(popover);
-	const show = (properties, position) => {
-		popover.replaceChildren(...Object.entries(properties).map(([k, v]) => { const line = document.createElement("div"); line.textContent = k + ": " + v; return line; }));
-		popover.positionAnchor = position;
-		popover.open = true;
-	};
-	const { colour, legend, shown } = scale(GEOJSON.features.map(f => f.properties ? f.properties[COLUMN] : undefined), COLUMN);
-	const at = (q, altitude) => ({ lat: q[1], lng: q[0], altitude: altitude ?? q[2] ?? 0 });
-	for (const f of GEOJSON.features) {
-		const g = f.geometry, p = f.properties || {}, c = colour(p[COLUMN]);
-		if (!g) {
-			continue;
-		}
-		const parts = g.type.startsWith("Multi") ? g.coordinates : [g.coordinates];
-		let shapes = [];
-		if (g.type.endsWith("Polygon")) {
-			const h = Number(p[HEIGHT]) || 0;
-			shapes = parts.map(rings => new Polygon3DInteractiveElement({ altitudeMode: AltitudeMode.RELATIVE_TO_GROUND, extruded: true, fillColor: c + "b3", strokeColor: c, strokeWidth: 1, path: rings[0].map(q => at(q, h)), innerPaths: rings.slice(1).map(r => r.map(q => at(q, h))) }));
-		} else if (g.type.endsWith("LineString")) {
-			shapes = parts.map(line => new Polyline3DInteractiveElement({ altitudeMode: AltitudeMode.ABSOLUTE, extruded: CURTAIN, drawsOccludedSegments: true, strokeColor: c, strokeWidth: 4, path: line.map(q => at(q)) }));
-		} else if (g.type.endsWith("Point")) {
-			shapes = parts.map(q => new Marker3DInteractiveElement({ altitudeMode: q.length > 2 ? AltitudeMode.ABSOLUTE : AltitudeMode.CLAMP_TO_GROUND, extruded: q.length > 2, drawsWhenOccluded: true, position: at(q), label: String(p.label ?? "") }));
-		}
-		shapes.forEach(shape => { shape.addEventListener("gmp-click", e => show(p, e.position)); map.append(shape); });
-	}
-	if (shown) {
-		const box = legend();
-		box.classList.add("corner");
-		document.body.append(box);
-	}
-}
-$(endscript)
-<script async src="https://maps.googleapis.com/maps/api/js?key=$(key)&v=weekly&loading=async&libraries=maps3d&callback=start">$(endscript)
-$(turn)""")
-end
-{{?model=features|columns}}# The features of an Overture Maps type whose centres lie within radius metres of the centre, into the table of the
-{{?model=features|columns}}# name given: from the newest release, reading over HTTPS only the files and row groups that overlap the area
-{{?model=features|columns}}function overture(kind, columns, radius, table)
-{{?model=features|columns}}	dlat = radius / 111320  # the radius in degrees of latitude, and of longitude below
-{{?model=features|columns}}	dlon = dlat / cosd(lat)
-{{?model=features|columns}}	box = "bbox.xmin <= $(lon + dlon) AND bbox.xmax >= $(lon - dlon) AND bbox.ymin <= $(lat + dlat) AND bbox.ymax >= $(lat - dlat)"
-{{?model=features|columns}}	catalogue = "https://stac.overturemaps.org"  # Overture's catalogue of its releases
-{{?model=features|columns}}	release = only(only(Tables.columntable(DBInterface.execute(con, "SELECT latest FROM '$(catalogue)/catalog.json'"))))
-{{?model=features|columns}}	files = Tables.columntable(DBInterface.execute(con, "SELECT assets.aws.href AS href FROM '$(catalogue)/$(release)/collections.parquet' WHERE collection = '$(kind)' AND $(box)")).href
-{{?model=features|columns}}	isempty(files) && error("No $(kind) file of Overture release $(release) covers $(name)")
-{{?model=features|columns}}	DBInterface.execute(con, "CREATE OR REPLACE TABLE $(table) AS SELECT $(columns), geometry AS geom FROM read_parquet([$(join(["'$(f)'" for f in files], ", "))]) WHERE $(box) AND ST_Distance_Sphere(ST_Centroid(geometry)::GEOMETRY, ST_Point($(lon), $(lat))) <= $(radius)")
-{{?model=features|columns}}	n = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM $(table)"))))
-{{?model=features|columns}}	println("Overture Maps release ", release, ": ", n, " ", kind, " features within ", radius, " m of the centre of ", name)
-{{?model=features|columns}}end
-{{?model=routes}}# A request to the REST API of the OpenSky Network, without an account; the answer goes to a file, nothing when
-{{?model=routes}}# the network has none (HTTP 404)
-{{?model=routes}}function opensky(path)
-{{?model=routes}}	file = joinpath(mktempdir(), "answer.json")
-{{?model=routes}}	r = Downloads.request("https://opensky-network.org/api/" * path; output = file, throw = false)
-{{?model=routes}}	r.status == 404 && return nothing
-{{?model=routes}}	r.status == 429 && error("The OpenSky Network's credits for anonymous users are spent for today: see the 3D Features wiki")
-{{?model=routes}}	r.status == 200 || error("The OpenSky Network answered HTTP $(r.status) to $(path)")
-{{?model=routes}}	return file
-{{?model=routes}}end
 {{?model=view|features|columns}} range_m, tilt, heading = {{range}}, {{tilt}}, {{heading}}  # the camera: metres from the centre, degrees from straight down, degrees from north
 mode = "{{labels}}" == "yes" ? "hybrid" : "satellite"
 {{?model=view}} shapes = (;)  # nothing drawn on the 3D map
 {{?model=features}} # The buildings of Overture Maps around the place, with their heights in metres, or 3 m a floor where only the floors are known
-{{?model=features}} overture("building", "id, names.primary AS name, subtype, class, height AS given_height, num_floors, coalesce(height, num_floors * 3.0) AS height", {{radius}}, "buildings")
+{{?model=features}} r = overture(con, "building"; within = (lon, lat, {{radius}}), columns = "id, names.primary AS name, subtype, class, height AS given_height, num_floors, coalesce(height, num_floors * 3.0) AS height", table = "buildings")
+{{?model=features}} println("Overture Maps release ", r.release, ": ", r.n, " buildings within {{radius}} m of the centre of ", name)
 {{?model=features}} # Replace them with your own polygons and a column of heights in metres, e.g. SELECT * FROM ST_Read('file.gpkg')
-{{?model=features}} file = joinpath(mktempdir(), "buildings.geojson")
-{{?model=features}} DBInterface.execute(con, "COPY (SELECT id, name, subtype, class, round(height, 1) AS height, num_floors, geom FROM buildings WHERE height > 0) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+{{?model=features}} file = geojson(con, "SELECT id, name, subtype, class, round(height, 1) AS height, num_floors, geom FROM buildings WHERE height > 0")
 {{?model=features}} shapes = (features = file, height = "height", column = "height", note = "The buildings of Overture Maps within {{radius}} m of the centre, raised to their heights in metres and coloured by them.")
 {{?model=columns}} # The places of Overture Maps around the place: shops, restaurants, offices, services. Replace them with your own points
-{{?model=columns}} overture("place", "id, names.primary AS name, basic_category AS category", {{radius}}, "places3d")
+{{?model=columns}} r = overture(con, "place"; within = (lon, lat, {{radius}}), columns = "id, names.primary AS name, basic_category AS category", table = "places3d")
+{{?model=columns}} println("Overture Maps release ", r.release, ": ", r.n, " places within {{radius}} m of the centre of ", name)
 {{?model=columns}} cell, tallest = {{cellSize}}, {{tallest}}  # the side of a cell, and the height of the column of the fullest cell, in metres
-{{?model=columns}} utm = "EPSG:$((lat >= 0 ? 32600 : 32700) + floor(Int, (lon + 180) / 6) + 1)"  # the UTM zone of the place, in metres
+{{?model=columns}} utm = utmzone(lon, lat)  # the UTM zone of the place, in metres
 {{?model=columns}} DBInterface.execute(con, "CREATE OR REPLACE TABLE cells AS SELECT floor(ST_X(p) / $(cell)) AS i, floor(ST_Y(p) / $(cell)) AS j, count(*) AS places FROM (SELECT ST_Transform(ST_Centroid(geom)::GEOMETRY, 'EPSG:4326', '$(utm)') AS p FROM places3d) GROUP BY ALL")  # the places counted in each square cell of the grid
-{{?model=columns}} file = joinpath(mktempdir(), "cells.geojson")
-{{?model=columns}} DBInterface.execute(con, "COPY (SELECT places, round(places / max(places) OVER () * $(tallest), 1) AS height, ST_Transform(ST_MakeEnvelope(i * $(cell) + 2, j * $(cell) + 2, (i + 1) * $(cell) - 2, (j + 1) * $(cell) - 2), '$(utm)', 'EPSG:4326') AS geom FROM cells) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")  # each cell a square 2 m inside its edges, so that the columns stand apart
+{{?model=columns}} file = geojson(con, "SELECT places, round(places / max(places) OVER () * $(tallest), 1) AS height, ST_Transform(ST_MakeEnvelope(i * $(cell) + 2, j * $(cell) + 2, (i + 1) * $(cell) - 2, (j + 1) * $(cell) - 2), '$(utm)', 'EPSG:4326') AS geom FROM cells")  # each cell a square 2 m inside its edges, so that the columns stand apart
 {{?model=columns}} shapes = (features = file, height = "height", column = "places", note = "The places of Overture Maps within {{radius}} m of the centre, counted in square cells of {{cellSize}} m, as columns as tall as the count: the fullest {{tallest}} m.")
 {{?model=routes}} side, most = {{side}}, {{aircraft}}  # the side of the box around the place in kilometres, and the most aircraft whose tracks are read
-{{?model=routes}} dlat = side / 2 / 111.32  # half the side in degrees of latitude
-{{?model=routes}} west, south, east, north = lon - dlat / cosd(lat), lat - dlat, lon + dlat / cosd(lat), lat + dlat
+{{?model=routes}} west, south, east, north = around(lon, lat, side * 500)  # the box, in degrees of longitude and latitude
 {{?model=routes}} range_m, tilt, heading = round(Int, side * 1200), 50, 0  # the camera far enough back to see the box
-{{?model=routes}} states = opensky("states/all?lamin=$(south)&lomin=$(west)&lamax=$(north)&lomax=$(east)")  # the aircraft over the box now
-{{?model=routes}} nearest = Tables.columntable(DBInterface.execute(con, "SELECT s->>0 AS icao24 FROM (SELECT unnest(states) AS s FROM read_json('$(states)', columns = {time: 'BIGINT', states: 'JSON[]'})) WHERE NOT (s->>8)::BOOLEAN AND s->>5 IS NOT NULL AND (s->>7)::DOUBLE > 1000 ORDER BY power((s->>5)::DOUBLE - $(lon), 2) + power((s->>6)::DOUBLE - $(lat), 2) LIMIT $(most)")).icao24  # the aircraft flying above 1,000 m nearest the centre
+{{?model=routes}} DBInterface.execute(con, "CREATE OR REPLACE TABLE aircraft AS " * opensky_states((west, south, east, north); extended = false))  # the aircraft over the box now, from the OpenSky Network
+{{?model=routes}} nearest = Tables.columntable(DBInterface.execute(con, "SELECT icao24 FROM aircraft WHERE NOT on_ground AND lon IS NOT NULL AND altitude > 1000 ORDER BY power(lon - $(lon), 2) + power(lat - $(lat), 2) LIMIT $(most)")).icao24  # the aircraft flying above 1,000 m nearest the centre
 {{?model=routes}} isempty(nearest) && error("No aircraft flying above 1,000 m over the box around $(name) now: widen Box Side, or try again later")
-{{?model=routes}} tracks = filter(!isnothing, [opensky("tracks/all?icao24=$(a)&time=0") for a in nearest])  # the flight each one is on now: one request each
+{{?model=routes}} tracks = [t for t in opensky_track.(nearest) if t !== nothing]  # the flight each one is on now: one request each
 {{?model=routes}} isempty(tracks) && error("The OpenSky Network has no track of the aircraft over $(name) now: try again later")
 {{?model=routes}} # The waypoints of the tracks inside the box, with their barometric altitudes in metres, none below sea level. Replace them with your own lines
-{{?model=routes}} DBInterface.execute(con, "CREATE OR REPLACE TABLE waypoints AS SELECT icao24, nullif(trim(callsign), '') AS callsign, (p->>0)::BIGINT AS time, (p->>1)::DOUBLE AS lat, (p->>2)::DOUBLE AS lon, greatest((p->>3)::DOUBLE, 0) AS altitude FROM (SELECT icao24, callsign, unnest(path) AS p FROM read_json([$(join(["'$(t)'" for t in tracks], ", "))], columns = {icao24: 'VARCHAR', callsign: 'VARCHAR', startTime: 'DOUBLE', endTime: 'DOUBLE', path: 'JSON[]'})) WHERE (p->>3) IS NOT NULL AND (p->>1)::DOUBLE BETWEEN $(south) AND $(north) AND (p->>2)::DOUBLE BETWEEN $(west) AND $(east)")
+{{?model=routes}} DBInterface.execute(con, "CREATE OR REPLACE TABLE waypoints AS SELECT icao24, callsign, time, lat, lon, greatest(altitude, 0) AS altitude FROM ($(join(tracks, " UNION ALL "))) WHERE altitude IS NOT NULL AND lat BETWEEN $(south) AND $(north) AND lon BETWEEN $(west) AND $(east)")
 {{?model=routes}} DBInterface.execute(con, "CREATE OR REPLACE TABLE flights AS SELECT icao24, any_value(callsign) AS callsign, count(*) AS waypoints, max(altitude) AS highest_m, to_json(list([lon, lat, altitude] ORDER BY time)) AS path, arg_max([lon, lat, altitude], time) AS now FROM waypoints GROUP BY icao24 HAVING count(*) > 1")  # one line for each aircraft, and where it is now
 {{?model=routes}} file = joinpath(mktempdir(), "tracks.geojson")
 {{?model=routes}} write(file, only(only(Tables.columntable(DBInterface.execute(con, "SELECT json_object('type', 'FeatureCollection', 'features', json_group_array(f))::VARCHAR FROM (SELECT json_object('type', 'Feature', 'properties', json_object('icao24', icao24, 'callsign', callsign, 'waypoints', waypoints, 'highest_m', highest_m), 'geometry', json_object('type', 'LineString', 'coordinates', path)) AS f FROM flights UNION ALL SELECT json_object('type', 'Feature', 'properties', json_object('label', coalesce(callsign, icao24), 'icao24', icao24, 'altitude_m', now[3]), 'geometry', json_object('type', 'Point', 'coordinates', now)) FROM flights)")))))  # GeoJSON with an altitude at each point
 {{?model=routes}} println(length(nearest), " aircraft nearest ", name, " now; ", only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM flights")))), " with a track inside the box")
 {{?model=routes}} shapes = (features = file, column = "highest_m", curtain = "{{curtain}}" == "yes", note = "The tracks of the aircraft flying above 1,000 m nearest the centre now, inside a box of {{side}} km, at their altitudes, coloured by the highest, each with a marker where the aircraft is now.")
-{{?model=view}} map3d("$(name), 3D View")  # the controls on the map move, zoom, turn and tilt the camera
-{{?model=features}} map3d("$(name), Buildings by Height"; shapes...)  # a click on a building shows its columns
-{{?model=columns}} map3d("$(name), Places per Cell"; shapes...)  # a click on a column shows its count
-{{?model=routes}} map3d("$(name), Aircraft Tracks"; shapes...)  # a click on a track shows the aircraft
+camera = (; range = range_m, tilt, heading, mode)
+# Google's 3D map on a page of its own in Pollis's browser, with the Maps Demo Key set with the key on the Powered by line
+{{?model=view}} Pollis.browse(googlemap3d("$(name), 3D View", lon, lat; place = name, camera...))  # the controls on the map move, zoom, turn and tilt the camera
+{{?model=features}} Pollis.browse(googlemap3d("$(name), Buildings by Height", lon, lat; place = name, camera..., shapes...))  # a click on a building shows its columns
+{{?model=columns}} Pollis.browse(googlemap3d("$(name), Places per Cell", lon, lat; place = name, camera..., shapes...))  # a click on a column shows its count
+{{?model=routes}} Pollis.browse(googlemap3d("$(name), Flights in 3D", lon, lat; place = name, camera..., shapes...))  # a click on a track shows the aircraft
 '''
 
 [[actionGroups]]
@@ -581,7 +443,7 @@ id = "orbit"
 label = "Orbit the Place"
 desc = "The 3D map with what the tab drew on it, its camera turning once around the centre in a minute at the camera's range and tilt, clockwise"
 code = '''
-map3d("$(name), Orbit"; orbit = true, shapes...)
+Pollis.browse(googlemap3d("$(name), Orbit", lon, lat; orbit = true, place = name, camera..., shapes...))
 '''
 
 [[actionGroups]]

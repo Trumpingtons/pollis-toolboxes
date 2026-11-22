@@ -6,7 +6,7 @@ The OpenSky API authenticates users with the OAuth2 client credentials flow, and
 
 ## Where Pollis Keeps the OpenSky API Client
 
-The key on the Powered by line of OpenSky Network asks for the client id and the client secret of the API client and keeps them in Pollis's Secret Storage, encrypted by the operating system, never in a setting or a file. When the code of the panel runs in the Julia REPL, Pollis sets them for that session as the environment variables `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET`, which the code reads. Without them, a request that needs the client stops before it is sent, with a message that names the variables. The same key on the Powered by line removes the client.
+The key on the Powered by line of Air Traffic asks for the client id and the client secret of the API client and keeps them in Pollis's Secret Storage, encrypted by the operating system, never in a setting or a file. When the code of the panel runs in the Julia REPL, Pollis sets them for that session as the environment variables `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET`, which the code reads. Without them, a request that needs the client stops before it is sent, with a message that names the variables. The same key on the Powered by line removes the client.
 
 ## The Access Token of the OpenSky Network
 

@@ -7,7 +7,7 @@
 | How tall are the buildings, and how do they stand together? | 3D View | Google's photorealistic 3D imagery seen at an angle ([Google (2026b)](#ref-Goo2026b)) |
 | How do areas of my own compare in height, or in a value given as a height? | Your Features | Polygons raised to a column, among Google's buildings |
 | Where across a place is a count or a measurement highest? | Values as Columns | A column for each cell of a grid |
-| Where do flights, drones or cable cars pass, and how high? | Routes at Height | Lines at the altitude of each point |
+| Where do flights, drones or cable cars pass, and how high? | Flights in 3D | Lines at the altitude of each point |
 
 All four tabs share the Next Step Orbit the Place, which turns the camera once around the centre and keeps what the tab drew. Each of the three tabs with data has a Next Step that lists what it drew, from the tables its Example Code made.
 

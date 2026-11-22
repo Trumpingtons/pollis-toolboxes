@@ -6,7 +6,7 @@ Wilson (1971) derived a family of spatial interaction models that share one form
 
 ## Fitting a Gravity Model as a Poisson Regression
 
-Flowerdew and Aitkin (1982) proposed fitting the gravity model to counts of migrants or commuters as a Poisson regression, in place of a least squares regression of the logs, which cannot take flows of zero ([Flowerdew and Aitkin (1982)](#ref-FA1982a)). Santos Silva and Tenreyro (2006) showed that the logged regression is biased when the errors are heteroskedastic, and that the Poisson pseudo-maximum-likelihood estimator stays consistent without the flows following a Poisson distribution ([Santos Silva and Tenreyro (2006)](#ref-SST2006a)). Spatial Interaction and Air Traffic fit every model as a Poisson regression with a log link, using GLFixedEffectModels.jl, and report robust standard errors ([Boehm (2020)](#ref-Boe2020a)).
+Flowerdew and Aitkin (1982) proposed fitting the gravity model to counts of migrants or commuters as a Poisson regression, in place of a least squares regression of the logs, which cannot take flows of zero ([Flowerdew and Aitkin (1982)](#ref-FA1982a)). Santos Silva and Tenreyro (2006) showed that the logged regression is biased when the errors are heteroskedastic, and that the Poisson pseudo-maximum-likelihood estimator stays consistent without the flows following a Poisson distribution ([Santos Silva and Tenreyro (2006)](#ref-SST2006a)). Spatial Interaction and Air Routes fit every model as a Poisson regression with a log link, using GLFixedEffectModels.jl, and report robust standard errors ([Boehm (2020)](#ref-Boe2020a)).
 
 ## Constraints as Fixed Effects
 
@@ -14,7 +14,7 @@ In a Poisson regression, a fixed effect for each origin makes the fitted flows l
 
 ## Power and Exponential Distance Functions
 
-The Distance Function of Spatial Interaction sets how the flows fall with distance. With Power, the model contains the log of the distance, and its parameter is an elasticity: the percentage change of the flow for a one per cent change of the distance. With Exponential, the model contains the distance itself, and its parameter is the change of the log of the flow for each further unit of distance, a kilometre for Spatial Interaction and a thousand kilometres for Air Traffic. Lenormand, Bassolas and Ramasco (2016) compared the two functions on commuting data from several countries ([Lenormand, Bassolas and Ramasco (2016)](#ref-LBR2016a)). Power and Exponential fits both with the same Constraint.
+The Distance Function of Spatial Interaction sets how the flows fall with distance. With Power, the model contains the log of the distance, and its parameter is an elasticity: the percentage change of the flow for a one per cent change of the distance. With Exponential, the model contains the distance itself, and its parameter is the change of the log of the flow for each further unit of distance, a kilometre for Spatial Interaction and a thousand kilometres for Air Routes. Lenormand, Bassolas and Ramasco (2016) compared the two functions on commuting data from several countries ([Lenormand, Bassolas and Ramasco (2016)](#ref-LBR2016a)). Power and Exponential fits both with the same Constraint.
 
 ## Common Part of the Flows and SRMSE
 
@@ -41,4 +41,4 @@ Spatial Interaction fits the model to every ordered pair of different zones, wit
 <a id="ref-Wil1971a"></a>Wilson, A. G. (1971). A family of spatial interaction models, and associated developments. *Environment and Planning A*, 3(1), 1–32. [doi:10.1068/a030001](https://doi.org/10.1068/a030001)
 
 ## See Also
-- [Overview](overview.md) · [Commuting Data](commuting-data.md) · [Air Traffic Data](air-traffic.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md) · [Factsheet](factsheet.md)
+- [Overview](overview.md) · [Commuting Data](commuting-data.md) · [Air Route Data](air-traffic.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md) · [Factsheet](factsheet.md)

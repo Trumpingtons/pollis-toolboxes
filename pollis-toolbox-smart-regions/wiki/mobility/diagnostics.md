@@ -14,7 +14,7 @@ Each source counts some flows that leave the zones of the Example City: people w
 
 ## Overdispersion of the Flows
 
-A Poisson model expects the variance of each flow to equal its mean ([Flowerdew and Aitkin (1982)](#ref-FA1982a)); flows whose variance is larger are overdispersed. Overdispersion gives the Pearson statistic over its degrees of freedom, near 1 when the variation is as the Poisson model expects and above 1 when it is larger, and the share of pairs with no flow, observed and expected. Overdispersion leaves the Poisson estimates of the parameters consistent but makes the usual standard errors too small ([Santos Silva and Tenreyro (2006)](#ref-SST2006a)); Spatial Interaction and Air Traffic report robust standard errors, which remain valid ([Boehm (2020)](#ref-Boe2020a)).
+A Poisson model expects the variance of each flow to equal its mean ([Flowerdew and Aitkin (1982)](#ref-FA1982a)); flows whose variance is larger are overdispersed. Overdispersion gives the Pearson statistic over its degrees of freedom, near 1 when the variation is as the Poisson model expects and above 1 when it is larger, and the share of pairs with no flow, observed and expected. Overdispersion leaves the Poisson estimates of the parameters consistent but makes the usual standard errors too small ([Santos Silva and Tenreyro (2006)](#ref-SST2006a)); Spatial Interaction and Air Routes report robust standard errors, which remain valid ([Boehm (2020)](#ref-Boe2020a)).
 
 ## Where a Gravity Model Fits Badly
 
@@ -22,7 +22,7 @@ Fitted Against Observed draws each pair's observed flow against its fitted flow,
 
 ## Flights Without an Airport
 
-The OpenSky flight list leaves the airport of departure or arrival empty when the trajectory of a flight did not reveal it, and some codes it gives are missing from OurAirports ([Olive, Strohmeier and Lübbe (2023)](#ref-OSL2023a); [OurAirports (2026)](#ref-Our2026a)). Flights Without an Airport gives the share of flights with no airport of departure and with no airport of arrival, the flights that return to the airport they left, and the most frequent codes OurAirports does not list. None of these flights count towards a route, so the routes of Air Traffic hold fewer flights than the list.
+The OpenSky flight list leaves the airport of departure or arrival empty when the trajectory of a flight did not reveal it, and some codes it gives are missing from OurAirports ([Olive, Strohmeier and Lübbe (2023)](#ref-OSL2023a); [OurAirports (2026)](#ref-Our2026a)). Flights Without an Airport gives the share of flights with no airport of departure and with no airport of arrival, the flights that return to the airport they left, and the most frequent codes OurAirports does not list. None of these flights count towards a route, so the routes of Air Routes hold fewer flights than the list.
 
 ## References
 
@@ -37,4 +37,4 @@ The OpenSky flight list leaves the airport of departure or arrival empty when th
 <a id="ref-SST2006a"></a>Santos Silva, J. M. C. and Tenreyro, S. (2006). The log of gravity. *The Review of Economics and Statistics*, 88(4), 641–658. [doi:10.1162/rest.88.4.641](https://doi.org/10.1162/rest.88.4.641)
 
 ## See Also
-- [Commuting Data](commuting-data.md) · [Spatial Interaction Models](spatial-interaction.md) · [Air Traffic Data](air-traffic.md) · [Decision Guide](decision-guide.md) · [Factsheet](factsheet.md)
+- [Commuting Data](commuting-data.md) · [Spatial Interaction Models](spatial-interaction.md) · [Air Route Data](air-traffic.md) · [Decision Guide](decision-guide.md) · [Factsheet](factsheet.md)

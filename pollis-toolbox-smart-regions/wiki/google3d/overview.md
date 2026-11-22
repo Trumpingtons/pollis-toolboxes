@@ -6,7 +6,7 @@ Google's 3D maps in the Maps JavaScript API render photorealistic 3D imagery of 
 
 ## Data of One's Own in 3D Among Google's Buildings
 
-Three tabs of Google Photorealistic 3D Maps put data of the user's own on the 3D map, as 3D polygons, polylines and markers of the library `maps3d` ([Google (2026b)](#ref-Goo2026b)). Your Features raises polygons to the heights of a column, Values as Columns draws a value on a grid of square cells as columns, and Routes at Height draws lines at the altitude of each point, above sea level. The examples read the buildings and places of Overture Maps around the place, and the tracks of the aircraft flying near it now from the OpenSky Network ([Overture Maps Foundation (2026)](#ref-OMF2026a); [The OpenSky Network (2026)](#ref-OSN2026a)). Each tab writes its data as GeoJSON, so any table of DuckDB with a geometry can take the place of the example.
+Three tabs of Google Photorealistic 3D Maps put data of the user's own on the 3D map, as 3D polygons, polylines and markers of the library `maps3d` ([Google (2026b)](#ref-Goo2026b)). Your Features raises polygons to the heights of a column, Values as Columns draws a value on a grid of square cells as columns, and Flights in 3D draws lines at the altitude of each point, above sea level. The examples read the buildings and places of Overture Maps around the place, and the tracks of the aircraft flying near it now from the OpenSky Network ([Overture Maps Foundation (2026)](#ref-OMF2026a); [The OpenSky Network (2026)](#ref-OSN2026a)). Each tab writes its data as GeoJSON, so any table of DuckDB with a geometry can take the place of the example.
 
 ## The Key and the Terms of Google Photorealistic 3D Maps
 

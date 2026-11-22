@@ -13,7 +13,7 @@ Every tab of the Google Photorealistic 3D Maps panel shows Google's 3D map with 
 | `tilt` | Tilt (degrees) | The angle of the camera's view from straight down: 0 looks straight down |
 | `heading` | Heading (degrees) | The compass direction of the view, with north at 0 |
 
-The camera's own position follows from the centre, range, tilt and heading ([Google (2026b)](#ref-Goo2026b)). A small range with a large tilt looks along the streets at the buildings; a large range with a small tilt looks down on a whole district. The page sets the altitude of the centre to 0 metres above mean sea level. 3D View, Your Features and Values as Columns take the range, tilt and heading from the inputs; Routes at Height places the camera itself, at a range of 1.2 times Box Side, a tilt of 50 degrees and a heading of 0, so that the whole box is in view.
+The camera's own position follows from the centre, range, tilt and heading ([Google (2026b)](#ref-Goo2026b)). A small range with a large tilt looks along the streets at the buildings; a large range with a small tilt looks down on a whole district. The page sets the altitude of the centre to 0 metres above mean sea level. 3D View, Your Features and Values as Columns take the range, tilt and heading from the inputs; Flights in 3D places the camera itself, at a range of 1.2 times Box Side, a tilt of 50 degrees and a heading of 0, so that the whole box is in view.
 
 ## The Modes of the 3D Map
 

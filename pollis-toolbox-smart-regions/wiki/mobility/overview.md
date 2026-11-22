@@ -6,7 +6,7 @@ A flow is a number of people, vehicles or flights going from one place, the orig
 
 ## Five Kinds of Mobility Data in Mobility and Flows
 
-Each tab of Mobility and Flows reads one kind of open data. **Commuting Flows** reads censuses and registers of jobs, which count the people who live in one zone and work in another at a given date. **Trips** reads records of individual journeys over a month, from bike sharing, taxis or tap-ins on buses, and counts them between zones and by hour. **Spatial Interaction** fits gravity models to commuting flows or bus trips. **Traffic Counts** reads the vehicles counted at points on the roads, which say how busy a road is but not where its traffic comes from or goes. **Air Traffic** reads the flights seen by the receivers of the OpenSky Network between airports ([Strohmeier, Olive, Lübbe, Schäfer and Lenders (2021)](#ref-SOLSL2021a)).
+Each tab of Mobility and Flows reads one kind of open data. **Commuting Flows** reads censuses and registers of jobs, which count the people who live in one zone and work in another at a given date. **Trips** reads records of individual journeys over a month, from bike sharing, taxis or tap-ins on buses, and counts them between zones and by hour. **Spatial Interaction** fits gravity models to commuting flows or bus trips. **Traffic Counts** reads the vehicles counted at points on the roads, which say how busy a road is but not where its traffic comes from or goes. **Air Routes** reads the flights seen by the receivers of the OpenSky Network between airports ([Strohmeier, Olive, Lübbe, Schäfer and Lenders (2021)](#ref-SOLSL2021a)).
 
 ## Zones, Centroids and Distances in Mobility and Flows
 
@@ -14,7 +14,7 @@ The zones of Mobility and Flows are the areas each source counts its flows in: m
 
 ## Gravity Models in Mobility and Flows
 
-A gravity model explains the flow between two places by their sizes and by the distance between them, the flow falling as the distance grows. Wilson (1971) set out a family of such models that differ in which totals they keep: those of the origins, those of the destinations, both, or neither ([Wilson (1971)](#ref-Wil1971a)). Flowerdew and Aitkin (1982) fitted the model as a Poisson regression of the counts, which handles flows of zero and keeps the totals of the constraint ([Flowerdew and Aitkin (1982)](#ref-FA1982a)). Spatial Interaction and Air Traffic fit the models in that way, with fixed effects for the constrained totals. Spatial Interaction Models describes them.
+A gravity model explains the flow between two places by their sizes and by the distance between them, the flow falling as the distance grows. Wilson (1971) set out a family of such models that differ in which totals they keep: those of the origins, those of the destinations, both, or neither ([Wilson (1971)](#ref-Wil1971a)). Flowerdew and Aitkin (1982) fitted the model as a Poisson regression of the counts, which handles flows of zero and keeps the totals of the constraint ([Flowerdew and Aitkin (1982)](#ref-FA1982a)). Spatial Interaction and Air Routes fit the models in that way, with fixed effects for the constrained totals. Spatial Interaction Models describes them.
 
 ## Running Mobility and Flows on Your Own Files
 
@@ -33,4 +33,4 @@ With Example City set to Custom, Commuting Flows, Trips and Spatial Interaction 
 <a id="ref-Wil1971a"></a>Wilson, A. G. (1971). A family of spatial interaction models, and associated developments. *Environment and Planning A*, 3(1), 1–32. [doi:10.1068/a030001](https://doi.org/10.1068/a030001)
 
 ## See Also
-- [Factsheet](factsheet.md) · [Commuting Data](commuting-data.md) · [Trip Data](trips-data.md) · [Spatial Interaction Models](spatial-interaction.md) · [Traffic Counts](traffic-counts.md) · [Air Traffic Data](air-traffic.md) · [Decision Guide](decision-guide.md)
+- [Factsheet](factsheet.md) · [Commuting Data](commuting-data.md) · [Trip Data](trips-data.md) · [Spatial Interaction Models](spatial-interaction.md) · [Traffic Counts](traffic-counts.md) · [Air Route Data](air-traffic.md) · [Decision Guide](decision-guide.md)

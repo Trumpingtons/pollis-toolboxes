@@ -1,4 +1,4 @@
-# OpenSky Network — Decision Guide
+# Air Traffic — Decision Guide
 
 | Tab | Data | Question it answers |
 |---|---|---|
@@ -6,7 +6,7 @@
 | Flights by Airport | Flights of a day | When an airport is busy, which airports it is linked to, and which airlines fly there |
 | Aircraft Track | Waypoints of one flight | Where a flight went, how its altitude changed, and how far it flew |
 
-## Which Tab of OpenSky Network to Use
+## Which Tab of Air Traffic to Use
 
 Live Aircraft answers what is in the air now: the number of aircraft over a city or a country, their altitudes and speeds, how they report their positions, their countries of registration and their categories. Flights by Airport answers what an airport handled on a recent day: its arrivals and departures by hour, the airports at the other end and the callsigns of the airlines. Aircraft Track answers what one aircraft did: the path of its flight, its altitude profile, the gaps in what the receivers saw, and the time it spent climbing, level and descending ([The OpenSky Network (2026)](#ref-OSN2026a)).
 

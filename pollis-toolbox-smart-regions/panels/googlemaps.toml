@@ -18,6 +18,10 @@ envVar = "GOOGLE_MAPS_API_KEY"
 prompt = "Maps Demo Key, from developers.google.com/maps/demo-key with a personal Google Account"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -261,10 +265,8 @@ default = "distance_m"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables
+using DuckDB, Tables, SmartRegions
 
-haskey(ENV, "GOOGLE_MAPS_API_KEY") || error("Set your Maps Demo Key with the key on the Powered by line, or set ENV[\"GOOGLE_MAPS_API_KEY\"]: see The Demo Key wiki")
-key = ENV["GOOGLE_MAPS_API_KEY"]
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database, for the places of the Next Steps
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
@@ -276,109 +278,13 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 {{?place=manhattan}} points = "VALUES ('Empire State Building', 'Landmark', -73.9857, 40.7484), ('Chrysler Building', 'Landmark', -73.9755, 40.7516), ('Grand Central Terminal', 'Station', -73.9772, 40.7527), ('Rockefeller Center', 'Landmark', -73.9787, 40.7587), ('Times Square', 'Square', -73.9855, 40.758), ('Bryant Park', 'Park', -73.9837, 40.7536), ('Museum of Modern Art', 'Museum', -73.9776, 40.7614), ('American Museum of Natural History', 'Museum', -73.974, 40.7813)"
 {{?place=own}} points = "VALUES ('$(name)', 'Place', $(lon), $(lat))"
 places = "SELECT name, kind, round(ST_Distance_Sphere(ST_Point(x, y), ST_Point($(lon), $(lat)))) AS distance_m, ST_Point(x, y) AS geom FROM ($(points)) t(name, kind, x, y)"
-pages = mktempdir()  # the pages hold the key, so they stay in a folder Julia removes when it exits
-slug(s) = lowercase(join((m.match for m in eachmatch(r"[A-Za-z0-9]+", s)), "-"))
-html(s) = replace(string(s), "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-# The end tag of a script element, written in two parts: Pollis shows this code inside a script of its own page, which
-# the tag in one piece would end
-endscript = "</" * "script>"
 labels = Dict("roadmap" => "Roadmap", "satellite" => "Satellite", "hybrid" => "Satellite with Labels", "terrain" => "Terrain")
-# A page with a map of Google's and nothing else, opened in Pollis's browser: the same title opens again in its tab.
-# Its text says what the map shows, from the inputs only, for screen readers.
-function page(title, about, body)
-	file = joinpath(pages, slug(title) * ".html")
-	write(file, """<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>$(html(title))</title>
-<style>
-html, body { height: 100%; margin: 0; font: 13px sans-serif; }
-.maps { display: flex; height: 100%; } .maps > div { flex: 1; height: 100%; }
-.about { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.box { position: absolute; z-index: 1; top: 10px; left: 10px; max-width: 60%; padding: 6px 10px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); font-weight: 600; }
-.legend { margin: 0 0 10px 10px; padding: 6px 10px; background: #fff; border-radius: 4px; box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3); }
-.swatch { display: inline-block; width: 10px; height: 10px; margin-right: 6px; border-radius: 2px; }
-</style>
-<script>function gm_authFailure() { document.getElementById("title").textContent = "Google refused the Maps Demo Key: check it with the key on the Powered by line, and see the Diagnostics wiki." }$(endscript)
-</head><body>
-<section class="about" aria-label="What the map shows"><h1>$(html(title))</h1><ul>$(join("<li>" .* html.(about) .* "</li>"))</ul></section>
-<div class="box" id="title">$(html(title))</div>
-$(body)
-</body></html>""")
-	Pollis.browse(file)
-	return file
-end
-# Google's 2D maps of the types given, side by side and moving together, with the features of a GeoJSON file
-# on Google's Data layer, coloured by a column; a click on a feature shows its columns
-function map2d(title, types; features = "", column = "", note = "")
-	geojson = isempty(features) ? "null" : replace(read(features, String), "</" => "<\\/")
-	about = ["Google Maps, $(join([labels[t] for t in types], " and ")), centred on $(name): longitude $(lon), latitude $(lat), zoom $(zoom)."]
-	isempty(note) || push!(about, note)
-	page(title, about, """<div class="maps">$(join(["<div id=\"map$(i - 1)\"></div>" for i in eachindex(types)]))</div>
-<script>
-const TYPES = [$(join(repr.(types), ", "))], GEOJSON = $(geojson), COLUMN = $(repr(column));
-const RAMP = ["#440154", "#3b528b", "#21918c", "#5ec962", "#fde725"], PALETTE = ["#4e79a7", "#f28e2b", "#e15759", "#76b7b2", "#59a14f", "#edc948", "#b07aa1", "#ff9da7"];
-async function start() {
-	const { Map, InfoWindow } = await google.maps.importLibrary("maps");
-	const maps = TYPES.map((type, i) => new Map(document.getElementById("map" + i), { center: { lat: $(lat), lng: $(lon) }, zoom: $(zoom), mapTypeId: type, mapTypeControl: false, streetViewControl: false }));
-	if (maps.length > 1) {
-		let moving = false;
-		const follow = (a, b) => a.addListener("bounds_changed", () => { if (!moving) { moving = true; b.setCenter(a.getCenter()); b.setZoom(a.getZoom()); moving = false; } });
-		follow(maps[0], maps[1]);
-		follow(maps[1], maps[0]);
-	}
-	if (!GEOJSON) {
-		return;
-	}
-	const values = GEOJSON.features.map(f => f.properties ? f.properties[COLUMN] : undefined).filter(v => v !== null && v !== undefined);
-	const numeric = values.length > 0 && values.every(v => typeof v === "number");
-	const lo = numeric ? Math.min(...values) : 0, hi = numeric ? Math.max(...values) : 0;
-	const kinds = [...new Set(values.map(String))];
-	const step = v => hi > lo ? Math.min(4, Math.floor((v - lo) / (hi - lo) * 5)) : 2;
-	const colour = v => !COLUMN ? PALETTE[0] : v === null || v === undefined ? "#999999" : numeric ? RAMP[step(v)] : PALETTE[kinds.indexOf(String(v)) % PALETTE.length];
-	const info = new InfoWindow();
-	const bounds = new google.maps.LatLngBounds();
-	maps.forEach(map => {
-		map.data.addGeoJson(GEOJSON);
-		map.data.setStyle(f => {
-			const c = colour(f.getProperty(COLUMN));
-			return { icon: { path: google.maps.SymbolPath.CIRCLE, scale: 7, fillColor: c, fillOpacity: 1, strokeColor: "#ffffff", strokeWeight: 2 }, fillColor: c, fillOpacity: 0.5, strokeColor: c, strokeWeight: 1 };
-		});
-		map.data.addListener("click", e => {
-			const lines = document.createElement("div");
-			e.feature.forEachProperty((v, k) => { const line = document.createElement("div"); line.textContent = k + ": " + v; lines.append(line); });
-			info.setContent(lines);
-			info.setPosition(e.latLng);
-			info.open({ map });
-		});
-		map.data.forEach(f => f.getGeometry().forEachLatLng(p => bounds.extend(p)));
-	});
-	if (!bounds.getNorthEast().equals(bounds.getSouthWest())) {
-		maps[0].fitBounds(bounds, 40);
-	}
-	if (COLUMN && values.length) {
-		const legend = document.createElement("div");
-		legend.className = "legend";
-		const row = (c, text) => { const line = document.createElement("div"); const swatch = document.createElement("span"); swatch.className = "swatch"; swatch.style.background = c; line.append(swatch, text); legend.append(line); };
-		const title = document.createElement("div");
-		title.textContent = COLUMN;
-		title.style.fontWeight = "600";
-		legend.append(title);
-		const format = v => Number(v.toPrecision(4)).toLocaleString();
-		if (numeric) {
-			RAMP.forEach((c, i) => row(c, format(lo + (hi - lo) * i / 5) + " to " + format(lo + (hi - lo) * (i + 1) / 5)));
-		} else {
-			kinds.slice(0, PALETTE.length).forEach((k, i) => row(PALETTE[i], k));
-		}
-		maps[maps.length - 1].controls[google.maps.ControlPosition.LEFT_BOTTOM].push(legend);
-	}
-}
-$(endscript)
-<script async src="https://maps.googleapis.com/maps/api/js?key=$(key)&v=weekly&loading=async&callback=start">$(endscript)""")
-end
 zoom = {{zoom}}  # from 0, the whole world: each level up shows half the width
 {{?model=roadmap}} maptype = "roadmap"
 {{?model=satellite}} maptype = "{{labels}}" == "yes" ? "hybrid" : "satellite"  # hybrid: the satellite map with Google's labels
 {{?model=terrain}} maptype = "terrain"
-map2d("$(name), $(labels[maptype])", [maptype])
+# Google's map on a page of its own in Pollis's browser, with the Maps Demo Key set with the key on the Powered by line
+Pollis.browse(googlemap("$(name), $(labels[maptype])", lon, lat; types = maptype, zoom, place = name))
 '''
 
 [[actionGroups]]
@@ -391,7 +297,7 @@ label = "Every Map Type"
 desc = "The place as a roadmap, a satellite map, a satellite map with labels and a terrain map, each on its own page: four map loads, each counted against the Demo Key's daily limit"
 code = '''
 for t in ["roadmap", "satellite", "hybrid", "terrain"]
-	map2d("$(name), $(labels[t])", [t])
+	Pollis.browse(googlemap("$(name), $(labels[t])", lon, lat; types = t, zoom, place = name))
 end
 '''
 
@@ -400,10 +306,9 @@ id = "features-on-map"
 label = "Features on the Map"
 desc = "The places of the example, or the features of your own query, on Google's Data layer over the map: the map fits them, and a click on one shows its name, kind and distance from the centre"
 code = '''
-shown = joinpath(mktempdir(), "places.geojson")
-DBInterface.execute(con, "COPY ($(places)) TO '$(shown)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+shown = geojson(con, places)  # the places as a GeoJSON file
 n = only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS n FROM ($(places))")).n)
-map2d("$(name), Places", [maptype]; features = shown, note = "$(n) places of the example, as points, in one colour.")
+Pollis.browse(googlemap("$(name), Places", lon, lat; types = maptype, zoom, place = name, features = shown, note = "$(n) places of the example, as points, in one colour."))
 '''
 
 [[actionGroups.actions]]
@@ -411,10 +316,9 @@ id = "coloured-by-column"
 label = "Coloured by a Column"
 desc = "The area within 300 m of each place, coloured by the Colour By column, with a legend: a colour scale for numbers, a colour per value for text"
 code = '''
-utm = "EPSG:$((lat >= 0 ? 32600 : 32700) + floor(Int, (lon + 180) / 6) + 1)"  # the UTM zone of the place, in metres
-areas = joinpath(mktempdir(), "areas.geojson")
-DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom), ST_Transform(ST_Buffer(ST_Transform(geom, 'EPSG:4326', '$(utm)'), 300), '$(utm)', 'EPSG:4326') AS geom FROM ($(places))) TO '$(areas)' (FORMAT GDAL, DRIVER 'GeoJSON')")
-map2d("$(name), {{column}}", [maptype]; features = areas, column = "{{column}}", note = "The areas within 300 m of the places of the example, coloured by {{column}}.")
+utm = utmzone(lon, lat)  # the UTM zone of the place, in metres
+areas = geojson(con, "SELECT * EXCLUDE (geom), ST_Transform(ST_Buffer(ST_Transform(geom, 'EPSG:4326', '$(utm)'), 300), '$(utm)', 'EPSG:4326') AS geom FROM ($(places))")
+Pollis.browse(googlemap("$(name), {{column}}", lon, lat; types = maptype, zoom, place = name, features = areas, column = "{{column}}", note = "The areas within 300 m of the places of the example, coloured by {{column}}."))
 '''
 
 [[actionGroups]]
@@ -426,8 +330,7 @@ id = "layer-size"
 label = "Layer Size"
 desc = "The features of the places query by geometry type, their vertices and the kilobytes of GeoJSON the page would hold: a large layer makes the Data layer slow to draw"
 code = '''
-file = joinpath(mktempdir(), "places.geojson")
-DBInterface.execute(con, "COPY ($(places)) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+file = geojson(con, places)
 s = Tables.columntable(DBInterface.execute(con, "SELECT ST_GeometryType(geom)::VARCHAR AS type, count(*) AS n, sum(ST_NPoints(geom))::BIGINT AS vertices FROM ($(places)) WHERE geom IS NOT NULL GROUP BY ALL ORDER BY n DESC"))
 println("The layer the page would hold: ", round(filesize(file) / 1024, digits = 1), " KB of GeoJSON")
 println(rpad("geometry type", 22), rpad("features", 10), "vertices")
@@ -446,5 +349,5 @@ label = "Two Map Types Side by Side"
 desc = "The roadmap beside the satellite map, or beside the map of the tab, on one page: panning or zooming either moves both. Two map loads"
 code = '''
 pair = maptype == "roadmap" ? ["roadmap", "satellite"] : ["roadmap", maptype]
-map2d("$(name), $(labels[pair[1]]) and $(labels[pair[2]])", pair)
+Pollis.browse(googlemap("$(name), $(labels[pair[1]]) and $(labels[pair[2]])", lon, lat; types = pair, zoom, place = name))
 '''

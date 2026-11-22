@@ -8,6 +8,10 @@ defaultModel = "places"
 decisionFirstColumn = "Theme"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -345,7 +349,7 @@ label = "All"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database: only the features of the area are copied into it
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -354,40 +358,32 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
 west, south, east, north = parse.(Float64, split("{{bbox}}", ","))  # the area, in degrees of longitude and latitude
 catalogue = "https://stac.overturemaps.org"  # Overture's catalogue of its releases
-release = "{{release}}" == "latest" ? only(only(Tables.columntable(DBInterface.execute(con, "SELECT latest FROM '$(catalogue)/catalog.json'")))) : "{{release}}"
 {{?model=places}}kind, by = "place", "category"  # the feature type read, and the column the map and the chart group by
 {{?model=places}}columns = "id, names.primary AS name, basic_category AS category, taxonomy.primary AS taxonomy, confidence, operating_status, addresses[1].freeform AS address, websites[1] AS website, phones[1] AS phone"
-{{?model=places}}filter = "confidence >= {{minConfidence}}" * ("{{placeCategory}}" == "all" ? "" : " AND basic_category = '{{placeCategory}}'")
+{{?model=places}}condition = "confidence >= {{minConfidence}}" * ("{{placeCategory}}" == "all" ? "" : " AND basic_category = '{{placeCategory}}'")
 {{?model=places}}fields = "id, name, category, confidence, dataset"  # the columns shown on the map and saved to GeoPackage
 {{?model=buildings}}kind, by = "building", "subtype"  # the feature type read, and the column the map and the chart group by
 {{?model=buildings}}columns = "id, names.primary AS name, subtype, class, height, num_floors, roof_shape, is_underground, ST_Area_Spheroid(geometry) AS area_m2"  # footprint areas in square metres on the WGS 84 ellipsoid
-{{?model=buildings}}filter = "true"
+{{?model=buildings}}condition = "true"
 {{?model=buildings}}fields = "id, name, subtype, class, height, num_floors, round(area_m2, 1) AS area_m2, dataset"  # the columns shown on the map and saved to GeoPackage
 {{?model=transportation}}kind, by = "segment", "class"  # the feature type read, and the column the map and the chart group by
 {{?model=transportation}}columns = "id, names.primary AS name, subtype, class, subclass, connectors, ST_Length_Spheroid(geometry) AS metres"  # lengths in metres on the WGS 84 ellipsoid
-{{?model=transportation}}filter = "subtype = '{{segmentSubtype}}'"
+{{?model=transportation}}condition = "subtype = '{{segmentSubtype}}'"
 {{?model=transportation}}fields = "id, name, class, subclass, round(metres) AS metres, dataset"  # the columns shown on the map and saved to GeoPackage
 {{?model=divisions}}kind, by = "division_area", "subtype"  # the feature type read, and the column the map and the chart group by
 {{?model=divisions}}columns = "id, names.primary AS name, subtype, class, admin_level, country, region, division_id"
-{{?model=divisions}}filter = "{{divisionSubtype}}" == "all" ? "true" : "subtype = '{{divisionSubtype}}'"
+{{?model=divisions}}condition = "{{divisionSubtype}}" == "all" ? "true" : "subtype = '{{divisionSubtype}}'"
 {{?model=divisions}}fields = "id, name, subtype, class, admin_level, country, region, dataset"  # the columns shown on the map and saved to GeoPackage
 {{?model=addresses}}kind, by = "address", "postcode"  # the feature type read, and the column the map and the chart group by
 {{?model=addresses}}columns = "id, street, number, unit, postcode, postal_city, address_levels[1].value AS level_1, country"
-{{?model=addresses}}filter = "true"
+{{?model=addresses}}condition = "true"
 {{?model=addresses}}fields = "id, street, number, postcode, level_1, dataset"  # the columns shown on the map and saved to GeoPackage
 
-in_box = "bbox.xmin <= $(east) AND bbox.xmax >= $(west) AND bbox.ymin <= $(north) AND bbox.ymax >= $(south)"  # the bounding box of a feature overlaps the area
-files = Tables.columntable(DBInterface.execute(con, "SELECT assets.aws.href AS href, assets.aws.\"file:size\" AS bytes FROM '$(catalogue)/$(release)/collections.parquet' WHERE collection = '$(kind)' AND $(in_box)"))  # the release's files of the type whose features overlap the area
-isempty(files.href) && error("No $(kind) file of Overture release $(release) covers the area")
-main = "list_filter(sources, lambda s: coalesce(s.property, '') = '')[1]"  # the source of the feature itself, not of one of its properties
-seconds = @elapsed DBInterface.execute(con, """
-CREATE OR REPLACE TABLE features AS
-SELECT $(columns), $(main).dataset AS dataset, $(main).license AS license, sources, geometry AS geom
-FROM read_parquet([$(join(["'$(f)'" for f in files.href], ", "))])
-WHERE $(in_box) AND $(filter) AND ST_Intersects(geometry, ST_MakeEnvelope($(west), $(south), $(east), $(north)))
-""")  # only the row groups whose bounding boxes overlap the area are read; of their features, those that meet the area are kept
-n = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM features"))))
-println("Overture release ", release, ": ", n, " ", kind, " features in longitude ", west, " to ", east, ", latitude ", south, " to ", north, ", from ", length(files.href), " file(s) in ", round(seconds, digits = 1), " s")
+# The features of the type over the area, into the table features: only the files of the release, and in them the row
+# groups, that overlap the area are read over HTTPS; of their features, those that meet the area are kept
+r = overture(con, kind; box = (west, south, east, north), columns, filter = condition, release = "{{release}}", table = "features")
+release, n, seconds = r.release, r.n, r.seconds
+println("Overture release ", release, ": ", n, " ", kind, " features in longitude ", west, " to ", east, ", latitude ", south, " to ", north, ", from ", length(r.files), " file(s) in ", round(seconds, digits = 1), " s")
 '''
 
 # Next Steps action groups
@@ -434,8 +430,8 @@ schema = only(only(Tables.columntable(DBInterface.execute(con, "SELECT regexp_ex
 kept = Tables.columntable(DBInterface.execute(con, "SELECT split_part(l.title, ' ', 1) AS name FROM (SELECT UNNEST(links) AS l FROM '$(catalogue)/catalog.json') WHERE l.rel = 'child' ORDER BY name")).name
 println("Release ", release, ", schema version ", schema, "; releases in the catalogue: ", join(kept, ", "))
 km2 = only(only(Tables.columntable(DBInterface.execute(con, "SELECT ST_Area_Spheroid(ST_MakeEnvelope($(west), $(south), $(east), $(north))) / 1e6"))))
-println("Area: ", round(km2, digits = 2), " km²; ", n, " ", kind, " features, read in ", round(seconds, digits = 1), " s from ", length(files.href), " file(s):")
-for (href, bytes) in zip(files.href, files.bytes)
+println("Area: ", round(km2, digits = 2), " km²; ", n, " ", kind, " features, read in ", round(seconds, digits = 1), " s from ", length(r.files), " file(s):")
+for (href, bytes) in zip(r.files, r.bytes)
 	println("  ", basename(href), ", ", round(bytes / 2^20, digits = 1), " MB")
 end
 '''

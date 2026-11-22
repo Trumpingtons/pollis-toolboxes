@@ -5,9 +5,9 @@
 | Item | Mobility and Flows panel |
 |---|---|
 | **Purpose** | The flows between the zones of a city, the traffic on its roads and the flights between airports, and how flows fall with distance |
-| **Input** | An Example City (Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore), Global or a country (United States, Canada, India, Brazil, Australia) on Air Traffic, or Custom files |
+| **Input** | An Example City (Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore), Global or a country (United States, Canada, India, Brazil, Australia) on Air Routes, or Custom files |
 | **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [GLFixedEffectModels.jl](https://github.com/jmboehm/GLFixedEffectModels.jl), [GLM.jl](https://github.com/JuliaStats/GLM.jl), [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), [ZipArchives.jl](https://github.com/JuliaIO/ZipArchives.jl), with DuckDB's spatial extension |
-| **Tabs** | Commuting Flows; Trips; Spatial Interaction; Traffic Counts; Air Traffic |
+| **Tabs** | Commuting Flows; Trips; Spatial Interaction; Traffic Counts; Air Routes |
 | **Account** | An LTA DataMall account key for Singapore only |
 | **Output** | `zones` and `flows`; `hours` for trips; `modelled` and `fit` for a model; `counts` for traffic counts; `flights`, `routes` and `traffic` for air traffic |
 
@@ -19,7 +19,7 @@
 | Trips | London (Santander Cycles), New York (yellow taxis), Singapore (buses), Custom |
 | Spatial Interaction | Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Singapore, Custom |
 | Traffic Counts | Cambridge, Oxford, London, Paris, New York, Custom |
-| Air Traffic | Global, United States, Canada, India, Brazil, Australia, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore |
+| Air Routes | Global, United States, Canada, India, Brazil, Australia, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore |
 
 ## Files Kept in the Folder of Mobility and Flows
 
@@ -48,4 +48,4 @@ Every file the panel downloads goes to the folder mobility of the Folder, under 
 <a id="ref-Wil1971a"></a>Wilson, A. G. (1971). A family of spatial interaction models, and associated developments. *Environment and Planning A*, 3(1), 1–32. [doi:10.1068/a030001](https://doi.org/10.1068/a030001)
 
 ## See Also
-- [Overview](overview.md) · [Commuting Data](commuting-data.md) · [Trip Data](trips-data.md) · [Spatial Interaction Models](spatial-interaction.md) · [Traffic Counts](traffic-counts.md) · [Air Traffic Data](air-traffic.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md)
+- [Overview](overview.md) · [Commuting Data](commuting-data.md) · [Trip Data](trips-data.md) · [Spatial Interaction Models](spatial-interaction.md) · [Traffic Counts](traffic-counts.md) · [Air Route Data](air-traffic.md) · [Decision Guide](decision-guide.md) · [Diagnostics](diagnostics.md)

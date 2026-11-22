@@ -42,9 +42,9 @@ The OpenSky API limits how far back each user can reach ([The OpenSky Network (2
 
 When the credits of a bucket are spent, the OpenSky API answers with HTTP 429, Too Many Requests, and the header `X-Rate-Limit-Retry-After-Seconds` gives the seconds until it accepts requests again ([The OpenSky Network (2026)](#ref-OSN2026a)). The panel stops with a message naming the bucket, states, flights or tracks, and the hours until the refill. The other tabs, which draw on other buckets, still work. Flights by Airport keeps the days it downloaded in the folder opensky, so running it again on the same Airport and Day costs nothing.
 
-## Credits the Next Steps of OpenSky Network Use
+## Credits the Next Steps of Air Traffic Use
 
-Most Next Steps of OpenSky Network work on the table the tab has read and make no request. Three make more. Snapshots over Time asks for the state vectors of the area four more times, a minute apart. A Week Before asks for the arrivals and the departures of the day a week earlier, unless they are already in the folder opensky. Aircraft Track with Aircraft set to nearest asks for the state vectors of the area once, then for the track of up to five aircraft, until one has a track. The cost of each follows the tables of the cost of each request ([The OpenSky Network (2026)](#ref-OSN2026a)).
+Most Next Steps of Air Traffic work on the table the tab has read and make no request. Three make more. Snapshots over Time asks for the state vectors of the area four more times, a minute apart. A Week Before asks for the arrivals and the departures of the day a week earlier, unless they are already in the folder opensky. Aircraft Track with Aircraft set to nearest asks for the state vectors of the area once, then for the track of up to five aircraft, until one has a track. The cost of each follows the tables of the cost of each request ([The OpenSky Network (2026)](#ref-OSN2026a)).
 
 ## References
 

@@ -91,7 +91,7 @@ file = "mobility/traffic-counts.md"
 bundled = true
 
 [[wikis]]
-name = "Air Traffic Data"
+name = "Air Route Data"
 file = "mobility/air-traffic.md"
 bundled = true
 
@@ -267,11 +267,11 @@ The bus trips and bus stops of Singapore come from LTA DataMall, whose API needs
 wiki = "Authentication"
 
 [[faq]]
-question = "What does Air Traffic count?"
+question = "What does Air Routes count?"
 answer = '''
 The flights the OpenSky Network's receivers saw in a month, from its flight list on Zenodo, between airports OurAirports lists: for Global, the routes among the busiest airports of the world; for a city, the routes from its airports to the busiest others. The flight list runs from January 2019 to December 2022.
 '''
-wiki = "Air Traffic Data"
+wiki = "Air Route Data"
 
 [[faq]]
 question = "Why are there no flows within a district for Frankfurt?"
@@ -306,19 +306,19 @@ wiki = "Traffic Counts"
 hidden = true
 
 [[faq]]
-question = "Which flights count for a country in Air Traffic?"
+question = "Which flights count for a country in Air Routes?"
 answer = '''
 The domestic flights: those whose airports of departure and arrival both lie in the country, by the country OurAirports gives each airport. With Flights set to Airline Flights, only flights with an airline callsign between airports with scheduled service count; with All Flights, general and business aviation count too.
 '''
-wiki = "Air Traffic Data"
+wiki = "Air Route Data"
 hidden = true
 
 [[faq]]
-question = "Why do some countries have so few routes in Air Traffic?"
+question = "Why do some countries have so few routes in Air Routes?"
 answer = '''
 The OpenSky Network sees only the flights within reach of its receivers. Where few receivers cover the approaches, many flights lack their airport of arrival and drop out of the routes; Countries Compared gives, for each country, the share of departures seen whose airport of arrival is known.
 '''
-wiki = "Air Traffic Data"
+wiki = "Air Route Data"
 hidden = true
 
 [[models]]
@@ -339,7 +339,7 @@ label = "Traffic Counts"
 
 [[models]]
 id = "air"
-label = "Air Traffic"
+label = "Air Routes"
 
 [[bullets]]
 text = "Commuting Flows"
@@ -358,7 +358,7 @@ text = "Traffic Counts"
 detail = "The daily flows of vehicles at the count points of the roads, by year, and by kind of vehicle or hour where published"
 
 [[bullets]]
-text = "Air Traffic"
+text = "Air Routes"
 detail = "The flights of a month between airports, from the OpenSky Network, worldwide or from a city's airports, with a gravity model"
 
 [[decisionRows]]
@@ -382,7 +382,7 @@ context = "Vehicles on roads"
 purpose = "How busy the roads are, how traffic changes over the years, and the mix of vehicles"
 
 [[decisionRows]]
-task = "Air Traffic"
+task = "Air Routes"
 context = "Flights"
 purpose = "The busiest airports and routes, and a gravity model of the flights between airports"
 
@@ -399,7 +399,7 @@ id = "city"
 label = "Example City"
 kind = "select"
 default = "cambridge"
-tooltip = "The city whose data the tab reads: each tab lists the cities it has open data for. On Air Traffic, Global reads the flights among the busiest airports of the world, and a country its domestic flights. Custom reads your own files."
+tooltip = "The city whose data the tab reads: each tab lists the cities it has open data for. On Air Routes, Global reads the flights among the busiest airports of the world, and a country its domestic flights. Custom reads your own files."
 newRow = true
 
 [[inputs.options]]
