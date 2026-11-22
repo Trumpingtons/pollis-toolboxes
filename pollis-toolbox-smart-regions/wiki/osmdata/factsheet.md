@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Get the features of OpenStreetMap with a tag in an area, or the layers or features of a region, show them, check them, compare them with an earlier date, and save them |
 | **Input** | Overpass API: an area, a tag, a server and an earlier date; Geofabrik Layers: a region, a layer and an earlier year; Geofabrik Full Extract: a region, a tag and an earlier year |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension and GDAL's OSM driver |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`osm_overpass`, `osm_read`, `geofabrik_layer`, `geofabrik_extract`, `geofabrik_earlier`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension and GDAL's OSM driver |
 | **Tabs** | Overpass API; Geofabrik Layers; Geofabrik Full Extract |
 | **Output** | The table `features`: one row per feature, with its OSM id, the value of the tag (or Geofabrik's class) as `value`, its name, its layer, its tags as JSON (or Geofabrik's columns) and its geometry as `geom` |
 | **Key choices** | The source; the tag or layer; the area or region; the earlier date or year |

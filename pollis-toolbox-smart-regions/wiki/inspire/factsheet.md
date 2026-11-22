@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Find the INSPIRE datasets of a theme in a country, read their units from a download service, check them, compare them with GISCO's and save them |
 | **Input** | A theme and a country; the address of a WFS, an Atom feed or an OGC API, with its layer, file or collection; the name and colour columns |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [EzXML.jl](https://github.com/JuliaIO/EzXML.jl), [ZipArchives.jl](https://github.com/JuliaIO/ZipArchives.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`inspire_search`, `inspire_countries`, `wfs_features`, `atom_features`, `ogc_features`, `vector_units`, `gisco_file`), which reads XML with [EzXML.jl](https://github.com/JuliaIO/EzXML.jl) and zip archives with [ZipArchives.jl](https://github.com/JuliaIO/ZipArchives.jl), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension |
 | **Tabs** | Find Datasets; WFS Download; Atom Download; OGC API Features |
 | **Output** | Find Datasets: the tables `datasets` and `services`. The other tabs: the table `features`, one row per unit, with the service's columns, its area in km² as `km2` and its geometry as `geom` |
 | **Key choices** | The theme and country; the service and its layer, file or collection; the page size; the Name Column and Colour By |

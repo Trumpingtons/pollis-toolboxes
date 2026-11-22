@@ -8,6 +8,10 @@ defaultModel = "nuts"
 decisionFirstColumn = "Units"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -352,14 +356,13 @@ models = ["urau"]
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "LOAD httpfs")  # DuckDB's extension for files over HTTPS, for Eurostat's tables
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 folder = mkpath(expanduser(raw"{{folder}}"))  # where GISCO's files are kept, and the Next Steps save theirs
-gisco = "https://gisco-services.ec.europa.eu/distribution/v2"  # GISCO's distribution of geographic data
 year = "{{year}}"
 {{?model=nuts}}theme, file = "nuts", "NUTS_RG_{{scale}}_$(year)_4326_LEVL_{{nutsLevel}}"  # the regions of one NUTS level at one scale, in longitude and latitude
 {{?model=nuts}}code, label, by = "NUTS_ID", "NAME_LATN", "parent"  # the columns of the code and the name, and the one the map colours by
@@ -374,20 +377,8 @@ year = "{{year}}"
 {{?model=nuts}}extra = ", CASE WHEN LEVL_CODE = 0 THEN CNTR_CODE ELSE left(NUTS_ID, length(NUTS_ID) - 1) END AS parent"  # the code of the region one level up
 {{?model=lau|countries|urau}}extra = ""
 
-listing = try
-	String(take!(Downloads.download("$(gisco)/$(theme)/$(theme)-$(year)-files.json", IOBuffer())))  # the files GISCO has for the year
-catch
-	error("GISCO has no $(theme) for the year $(year)")
-end
-occursin("\"$(file).gpkg\"", listing) || error("GISCO has no $(file).gpkg: $(gisco)/$(theme)/$(theme)-$(year)-files.json lists the files it has for $(year)")
-path = joinpath(folder, "$(file).gpkg")
-isfile(path) || Downloads.download("$(gisco)/$(theme)/gpkg/$(file).gpkg", path)  # downloaded once, then read from the folder
-function units(p)  # a file's units as SQL, its geometry column named geom whatever the file calls it (geom or Shape)
-	d = Tables.columntable(DBInterface.execute(con, "DESCRIBE SELECT * FROM ST_Read('$(p)')"))
-	g = d.column_name[findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)]
-	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('fid', 'ogc_fid', '$(lowercase(g))')), \"$(g)\" AS geom FROM ST_Read('$(p)'))"
-end
-DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2$(extra) FROM $(units(path)) WHERE $(keep)")  # areas in km² on the WGS 84 ellipsoid
+path = gisco_file(theme, file; folder)  # GISCO's file, downloaded once, then read from the folder
+DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2$(extra) FROM $(vector_units(con, path)) WHERE $(keep)")  # areas in km² on the WGS 84 ellipsoid
 columns = Tables.columntable(DBInterface.execute(con, "DESCRIBE features")).column_name
 by in columns || (by = "CNTR_CODE")  # an older file may lack the column
 n = only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(*) FROM features"))))
@@ -418,10 +409,8 @@ models = ["nuts", "countries", "urau"]
 code = '''
 {{?model=nuts|countries}}dataset, key = "{{table}}", "{{tableKey}}"
 {{?model=urau}}dataset, key = "{{cityTable}}", "{{cityKey}}"
-url = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/$(dataset)/$(key)?format=SDMX-CSV"  # Eurostat's API: the series of the key, all periods
-DBInterface.execute(con, "CREATE OR REPLACE TABLE eurostat AS SELECT * FROM read_csv('$(url)', all_varchar = true)")
+place = eurostat(con, dataset, key)  # Eurostat's API: the series of the key, all periods, as the table eurostat; place, the column of the codes of regions, countries or cities
 cols = Tables.columntable(DBInterface.execute(con, "DESCRIBE eurostat")).column_name
-place = only(intersect(["geo", "cities"], cols))  # the column of the codes of regions, countries or cities
 dims = setdiff(cols, ["DATAFLOW", "LAST UPDATE", place, "TIME_PERIOD", "OBS_VALUE", "OBS_FLAG", "CONF_STATUS"])
 varying = filter(d -> only(only(Tables.columntable(DBInterface.execute(con, "SELECT count(DISTINCT \"$(d)\") FROM eurostat")))) > 1, dims)
 isempty(varying) || error("The key selects several series per unit: give a value for $(join(varying, ", ")) in the Key")
@@ -485,9 +474,7 @@ models = ["nuts", "countries", "urau"]
 code = '''
 {{?model=nuts|countries}}dataset, key = "{{table}}", "{{tableKey}}"
 {{?model=urau}}dataset, key = "{{cityTable}}", "{{cityKey}}"
-url = "https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/$(dataset)/$(key)?format=SDMX-CSV"  # Eurostat's API: the series of the key, all periods
-DBInterface.execute(con, "CREATE OR REPLACE TABLE eurostat AS SELECT * FROM read_csv('$(url)', all_varchar = true)")
-place = only(intersect(["geo", "cities"], Tables.columntable(DBInterface.execute(con, "DESCRIBE eurostat")).column_name))
+place = eurostat(con, dataset, key)  # the series of the key, all periods, as the table eurostat
 {{?model=nuts}}same = "length(e.\"$(place)\") = $(2 + {{nutsLevel}}) AND left(e.\"$(place)\", 2) IN (SELECT DISTINCT CNTR_CODE FROM features)"  # codes of the same level and countries
 {{?model=countries}}same = "length(e.\"$(place)\") = 2"  # codes of countries
 {{?model=urau}}same = "left(e.\"$(place)\", 2) IN (SELECT DISTINCT CNTR_CODE FROM features) AND right(e.\"$(place)\", 1) = right((SELECT any_value($(code)) FROM features), 1)"  # codes of the same countries and kind
@@ -514,10 +501,9 @@ code = '''
 {{?model=countries}}names = ["CNTR_RG_$(s)_$(year)_4326" for s in ("01M", "03M", "10M", "20M", "60M")]
 println(rpad("file", 36), rpad("units", 8), rpad("vertices", 12), rpad("km²", 14), "% from 1:1 million")
 reference = nothing
-for name in filter(f -> occursin("\"$(f).gpkg\"", listing), names)  # the scales GISCO has for the year
-	local_path = joinpath(folder, "$(name).gpkg")
-	isfile(local_path) || Downloads.download("$(gisco)/$(theme)/gpkg/$(name).gpkg", local_path)  # downloaded once
-	r = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS units, sum(ST_NPoints(geom)) AS vertices, sum(ST_Area_Spheroid(geom)) / 1e6 AS km2 FROM $(units(local_path)) WHERE $(keep)"))
+for name in filter(in(gisco_files(theme, year)), names)  # the scales GISCO has for the year
+	local_path = gisco_file(theme, name; folder)  # downloaded once
+	r = Tables.columntable(DBInterface.execute(con, "SELECT count(*) AS units, sum(ST_NPoints(geom)) AS vertices, sum(ST_Area_Spheroid(geom)) / 1e6 AS km2 FROM $(vector_units(con, local_path)) WHERE $(keep)"))
 	global reference = something(reference, r.km2[1])
 	println(rpad(name, 36), rpad(r.units[1], 8), rpad(r.vertices[1], 12), rpad(round(r.km2[1], digits = 0), 14), round(100 * (r.km2[1] / reference - 1), digits = 2))
 end
@@ -533,9 +519,8 @@ versions = ["2003", "2006", "2010", "2013", "2016", "2021", "2024"]
 k = findfirst(==(year), versions)
 (k === nothing || k == 1) && error("No NUTS version before $(year) to compare with")
 before = "NUTS_RG_{{scale}}_$(versions[k - 1])_4326_LEVL_{{nutsLevel}}"
-before_path = joinpath(folder, "$(before).gpkg")
-isfile(before_path) || Downloads.download("$(gisco)/nuts/gpkg/$(before).gpkg", before_path)  # downloaded once
-DBInterface.execute(con, "CREATE OR REPLACE TABLE previous AS SELECT NUTS_ID, NAME_LATN, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(units(before_path)) WHERE $(keep)")
+before_path = gisco_file("nuts", before; folder)  # downloaded once
+DBInterface.execute(con, "CREATE OR REPLACE TABLE previous AS SELECT NUTS_ID, NAME_LATN, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(vector_units(con, before_path)) WHERE $(keep)")
 v = Tables.columntable(DBInterface.execute(con, "SELECT (SELECT count(*) FROM features WHERE NUTS_ID IN (SELECT NUTS_ID FROM previous)) AS kept, (SELECT count(*) FROM features WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM previous)) AS added, (SELECT count(*) FROM previous WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM features)) AS removed"))
 println("NUTS ", versions[k - 1], " to ", year, ", level {{nutsLevel}}: ", v.kept[1], " codes kept, ", v.added[1], " added, ", v.removed[1], " removed")
 a = Tables.columntable(DBInterface.execute(con, "SELECT NUTS_ID AS code, NAME_LATN AS name FROM features WHERE NUTS_ID NOT IN (SELECT NUTS_ID FROM previous) ORDER BY code LIMIT 20"))
@@ -553,7 +538,7 @@ desc = "The local administrative units of every country in the file: how many, t
 models = ["lau"]
 code = '''
 pop = "POP_$(year)" in columns ? "nullif(POP_$(year), 0)" : "NULL"  # the population of the year, when the file has it; a population of 0 is left out
-c = Tables.columntable(DBInterface.execute(con, "SELECT CNTR_CODE AS country, count(*) AS units, round(median(ST_Area_Spheroid(geom)) / 1e6, 1) AS km2, median($(pop))::BIGINT AS population, round(100 * avg(($(pop) < 1000)::INT), 1) AS small FROM $(units(path)) GROUP BY ALL ORDER BY units DESC"))
+c = Tables.columntable(DBInterface.execute(con, "SELECT CNTR_CODE AS country, count(*) AS units, round(median(ST_Area_Spheroid(geom)) / 1e6, 1) AS km2, median($(pop))::BIGINT AS population, round(100 * avg(($(pop) < 1000)::INT), 1) AS small FROM $(vector_units(con, path)) GROUP BY ALL ORDER BY units DESC"))
 println(rpad("country", 9), rpad("units", 8), rpad("median km²", 12), rpad("median population", 19), "% under 1,000 (of units with a population above 0)")
 for i in eachindex(c.country)
 	println(rpad(c.country[i], 9), rpad(c.units[i], 8), rpad(c.km2[i], 12), rpad(coalesce(c.population[i], ""), 19), coalesce(c.small[i], ""))
@@ -567,9 +552,8 @@ desc = "Each city beside its functional urban area, the city with its commuting 
 models = ["urau"]
 code = '''
 other = replace(file, r"_(CITIES|FUA)$" => "_" * ("{{urauKind}}" == "CITIES" ? "FUA" : "CITIES"))
-other_path = joinpath(folder, "$(other).gpkg")
-isfile(other_path) || Downloads.download("$(gisco)/urau/gpkg/$(other).gpkg", other_path)  # downloaded once
-cities, fuas = "{{urauKind}}" == "CITIES" ? ("features", units(other_path)) : (units(other_path), "features")
+other_path = gisco_file("urau", other; folder)  # downloaded once
+cities, fuas = "{{urauKind}}" == "CITIES" ? ("features", vector_units(con, other_path)) : (vector_units(con, other_path), "features")
 c = Tables.columntable(DBInterface.execute(con, """
 SELECT c.URAU_CODE AS city, c.URAU_NAME AS name, round(ST_Area_Spheroid(c.geom) / 1e6, 1) AS city_km2, f.URAU_CODE AS fua, round(ST_Area_Spheroid(f.geom) / 1e6, 1) AS fua_km2
 FROM $(cities) c JOIN $(fuas) f ON f.URAU_CODE = c.FUA_CODE WHERE $(replace(keep, "CNTR_CODE" => "c.CNTR_CODE")) ORDER BY fua_km2 DESC LIMIT 25

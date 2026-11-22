@@ -18,6 +18,10 @@ envVar = "LTA_ACCOUNT_KEY"
 prompt = "LTA DataMall account key, sent by email by the Land Transport Authority after signing up to DataMall: needed only for Singapore"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -32,10 +36,6 @@ github = "https://github.com/jmboehm/GLFixedEffectModels.jl"
 [[packages]]
 name = "GLM.jl"
 github = "https://github.com/JuliaStats/GLM.jl"
-
-[[packages]]
-name = "ZipArchives.jl"
-github = "https://github.com/JuliaIO/ZipArchives.jl"
 
 # Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
 [requires]
@@ -594,7 +594,7 @@ models = ["air"]
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, Downloads, ZipArchives, Dates
+using DuckDB, Tables, SmartRegions
 {{?model=interaction|air}}using GLM, GLFixedEffectModels
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
@@ -605,160 +605,24 @@ query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, param
 folder = mkpath(expanduser(raw"{{folder}}"))
 place = mkpath(joinpath(folder, "mobility"))  # where the files downloaded are kept, and the Next Steps save theirs
 city = "{{city}}"
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
-function fetch(url, name; headers = Pair{String, String}[])  # a file downloaded once into the folder mobility: a later run reads it from there
-	path = joinpath(place, name)
-	isfile(path) && return path
-	for k in 0:4
-		try
-			Downloads.download(url, path * ".part"; headers = ["User-Agent" => "Pollis (https://pollis.org)"; headers])
-			return mv(path * ".part", path; force = true)
-		catch e
-			status = e isa Downloads.RequestError ? e.response.status : 0
-			(k == 4 || 400 <= status < 500 && status != 429) && rethrow()
-			println("Download of ", name, " failed (", status, "): trying again in ", 5 * 2^k, " s")
-			sleep(5 * 2^k)
-		end
-	end
-end
-unzipped(zip, entry) = (path = joinpath(place, entry); isfile(path) || write(path, zip_readentry(ZipReader(read(zip)), entry)); path)  # one file of a zip archive, extracted once
-{{?model=commuting|trips|interaction}}{{?city=cambridge|oxford|london}}authorities = Dict("cambridge" => ["Cambridge", "South Cambridgeshire"], "oxford" => ["Oxford", "Cherwell", "South Oxfordshire", "Vale of White Horse", "West Oxfordshire"],
-{{?model=commuting|trips|interaction}}{{?city=cambridge|oxford|london}}	"london" => ["City of London", "Barking and Dagenham", "Barnet", "Bexley", "Brent", "Bromley", "Camden", "Croydon", "Ealing", "Enfield", "Greenwich", "Hackney", "Hammersmith and Fulham", "Haringey", "Harrow", "Havering", "Hillingdon",
-{{?model=commuting|trips|interaction}}{{?city=cambridge|oxford|london}}	"Hounslow", "Islington", "Kensington and Chelsea", "Kingston upon Thames", "Lambeth", "Lewisham", "Merton", "Newham", "Redbridge", "Richmond upon Thames", "Southwark", "Sutton", "Tower Hamlets", "Waltham Forest", "Wandsworth", "Westminster"])[city]  # the local authorities whose areas are the zones
-{{?model=commuting|trips|interaction}}{{?city=cambridge|oxford|london}}boundaries = fetch("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/MSOA_2021_EW_BSC_V3_RUC/FeatureServer/0/query?where=" * enc(join(["MSOA21NM LIKE '$(a) 0%'" for a in authorities], " OR ")) * "&outFields=MSOA21CD,MSOA21NM&outSR=4326&f=geojson", "msoa-2021-$(city).geojson")
-{{?model=commuting|trips|interaction}}{{?city=cambridge|oxford|london}}execute("CREATE OR REPLACE TABLE zones AS SELECT MSOA21CD AS zone, MSOA21NM AS name, geom FROM ST_Read('$(boundaries)')")  # the middle layer super output areas (MSOAs) of 2021, Office for National Statistics
-{{?model=commuting|interaction}}{{?city=cambridge|oxford|london}}census = unzipped(fetch("https://www.nomisweb.co.uk/output/census/2021/odwp01ew.zip", "odwp01ew.zip"), "ODWP01EW_MSOA.csv")  # Census 2021, residence and place of work by MSOA, ONS through Nomis (77 MB, once)
-{{?model=commuting|interaction}}{{?city=cambridge|oxford|london}}execute("""CREATE OR REPLACE TABLE census AS SELECT "Middle layer Super Output Areas code" AS origin, "MSOA of workplace code" AS destination, "Place of work indicator (4 categories) code" AS kind, "Count" AS people FROM read_csv('$(census)') WHERE origin IN (SELECT zone FROM zones)""")
-{{?model=commuting|interaction}}{{?city=cambridge|oxford|london}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, sum(people)::DOUBLE AS flow FROM census WHERE kind = 3 AND destination IN (SELECT zone FROM zones) GROUP BY ALL")  # those who travel to a place of work in the UK, between the zones
-{{?model=commuting|interaction}}{{?city=cambridge|oxford|london}}left = query("SELECT sum(people) FILTER (WHERE kind = 3 AND destination NOT IN (SELECT zone FROM zones)) AS away, sum(people) FILTER (WHERE kind = 1) AS home FROM census")
-{{?model=commuting|interaction}}{{?city=cambridge|oxford|london}}unit, source = "workers", "Census 2021 (March 2021), workers aged 16 and over"
-{{?model=commuting|interaction}}{{?city=amsterdam}}boundaries = fetch("https://api.pdok.nl/cbs/gebiedsindelingen/ogc/v1/collections/gemeente_gegeneraliseerd/items?f=json&limit=1000&jaarcode=2024&bbox=4.5,52.2,5.35,52.58", "gemeenten-2024-amsterdam.geojson")
-{{?model=commuting|interaction}}{{?city=amsterdam}}execute("CREATE OR REPLACE TABLE zones AS SELECT statcode AS zone, statnaam AS name, geom FROM ST_Read('$(boundaries)')")  # the municipalities around Amsterdam in 2024, Statistics Netherlands (CBS) through PDOK
-{{?model=commuting|interaction}}{{?city=amsterdam}}codes = query("SELECT zone FROM zones").zone
-{{?model=commuting|interaction}}{{?city=amsterdam}}selection = "Perioden eq '2024MM12' and (" * join(["WoonregioS eq '$(c)'" for c in codes], " or ") * ") and (WerkregioS eq 'NL00  ' or " * join(["WerkregioS eq '$(c)'" for c in codes], " or ") * ")"
-{{?model=commuting|interaction}}{{?city=amsterdam}}jobs = fetch("https://opendata.cbs.nl/ODataApi/odata/85481NED/TypedDataSet?\$format=json&\$filter=" * enc(selection), "cbs-85481NED-2024-amsterdam.json")  # jobs of employees by municipality of residence and of work, CBS table 85481NED
-{{?model=commuting|interaction}}{{?city=amsterdam}}execute("CREATE OR REPLACE TABLE cbs AS SELECT trim(r.WoonregioS) AS origin, trim(r.WerkregioS) AS destination, coalesce(r.BanenVanWerknemers_1, 0) * 1000 AS jobs FROM (SELECT unnest(value) AS r FROM read_json('$(jobs)'))")  # the table counts thousands of jobs
-{{?model=commuting|interaction}}{{?city=amsterdam}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, jobs AS flow FROM cbs WHERE destination <> 'NL00' AND jobs > 0")
-{{?model=commuting|interaction}}{{?city=amsterdam}}left = query("SELECT sum(jobs) FILTER (WHERE destination = 'NL00') - sum(jobs) FILTER (WHERE destination <> 'NL00') AS away, NULL::DOUBLE AS home FROM cbs")
-{{?model=commuting|interaction}}{{?city=amsterdam}}unit, source = "jobs", "Statistics Netherlands, jobs of employees in December 2024 (provisional)"
-{{?model=commuting|interaction}}{{?city=paris}}geo = "https://geo.api.gouv.fr/communes?format=geojson&geometry=contour&fields=code,nom&codeDepartement="
-{{?model=commuting|interaction}}{{?city=paris}}parts = [fetch(geo * "75&type=arrondissement-municipal", "paris-arrondissements.geojson"); [fetch(geo * d, "communes-$(d).geojson") for d in ("92", "93", "94")]]  # Paris and the three departments around it, from geo.api.gouv.fr
-{{?model=commuting|interaction}}{{?city=paris}}execute("CREATE OR REPLACE TABLE zones AS " * join(["SELECT code AS zone, nom AS name, geom FROM ST_Read('$(p)')" for p in parts], " UNION ALL "))  # the 20 arrondissements of Paris and the communes of Hauts-de-Seine, Seine-Saint-Denis and Val-de-Marne
-{{?model=commuting|interaction}}{{?city=paris}}flux = unzipped(fetch("https://www.insee.fr/fr/statistiques/fichier/8582949/base-flux-mobilite-domicile-lieu-travail-2022_csv.zip", "insee-flux-domicile-travail-2022.zip"), "base-flux-mobilite-domicile-lieu-travail-2022.csv")  # INSEE, 2022 census
-{{?model=commuting|interaction}}{{?city=paris}}execute("CREATE OR REPLACE TABLE insee AS SELECT CODGEO AS origin, DCLT AS destination, NBFLUX_C22_ACTOCC15P AS workers FROM read_csv('$(flux)', delim = ';', types = {'CODGEO': 'VARCHAR', 'DCLT': 'VARCHAR'}) WHERE CODGEO IN (SELECT zone FROM zones)")
-{{?model=commuting|interaction}}{{?city=paris}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, sum(workers) AS flow FROM insee WHERE destination IN (SELECT zone FROM zones) GROUP BY ALL")
-{{?model=commuting|interaction}}{{?city=paris}}left = query("SELECT sum(workers) FILTER (WHERE destination NOT IN (SELECT zone FROM zones)) AS away, NULL::DOUBLE AS home FROM insee")
-{{?model=commuting|interaction}}{{?city=paris}}unit, source = "workers", "INSEE, 2022 census, employed people aged 15 and over by commune of residence and of work"
-{{?model=commuting|interaction}}{{?city=frankfurt}}boundaries = fetch("https://sgx.geodatenzentrum.de/wfs_vg250?service=WFS&version=2.0.0&request=GetFeature&typeNames=vg250:vg250_krs&outputFormat=application/json&srsName=EPSG:4326&bbox=49.75,8.15,50.45,9.3,urn:ogc:def:crs:EPSG::4326", "vg250-kreise-frankfurt.geojson")
-{{?model=commuting|interaction}}{{?city=frankfurt}}execute("CREATE OR REPLACE TABLE zones AS SELECT ags AS zone, gen AS name, ST_Union_Agg(geom) AS geom FROM ST_Read('$(boundaries)') WHERE gf = 4 GROUP BY ALL")  # the districts (Kreise) around Frankfurt, VG250 of the Federal Agency for Cartography and Geodesy (BKG)
-{{?model=commuting|interaction}}{{?city=frankfurt}}execute("INSTALL excel"); execute("LOAD excel")  # DuckDB's extension for Excel files
-{{?model=commuting|interaction}}{{?city=frankfurt}}pendler = fetch("https://statistik.arbeitsagentur.de/Statistikdaten/Detail/202306/iiia6/beschaeftigung-pendler-krpend/krpend-k-0-202306-xlsx.xlsx?__blob=publicationFile&v=1", "krpend-k-0-202306.xlsx")  # Federal Employment Agency, commuters between districts on 30 June 2023
-{{?model=commuting|interaction}}{{?city=frankfurt}}execute("""CREATE OR REPLACE TABLE ba AS WITH r AS (SELECT row_number() OVER () AS i, * FROM read_xlsx('$(pendler)', sheet = 'Auspendler Kreise', all_varchar = true, header = false, range = 'A1:E400000', stop_at_empty = false))
-{{?model=commuting|interaction}}{{?city=frankfurt}}	SELECT origin, destination, people FROM (SELECT last_value(A IGNORE NULLS) OVER (ORDER BY i) AS origin, C AS destination, TRY_CAST(E AS DOUBLE) AS people FROM r)
-{{?model=commuting|interaction}}{{?city=frankfurt}}	WHERE length(destination) = 5 AND origin IN (SELECT zone FROM zones)""")  # a residence row, then one row per district of work; codes of 5 digits are districts, the shorter ones totals
-{{?model=commuting|interaction}}{{?city=frankfurt}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, people AS flow FROM ba WHERE destination IN (SELECT zone FROM zones) AND people > 0")
-{{?model=commuting|interaction}}{{?city=frankfurt}}left = query("SELECT sum(people) FILTER (WHERE destination NOT IN (SELECT zone FROM zones)) AS away, NULL::DOUBLE AS home FROM ba")
-{{?model=commuting|interaction}}{{?city=frankfurt}}unit, source = "employees", "Federal Employment Agency, employees subject to social insurance who work outside their district, 30 June 2023"
-{{?model=commuting|interaction}}{{?city=newyork}}areas = fetch("https://data.cityofnewyork.us/resource/9nt8-h7nd.geojson?\$limit=1000", "nyc-nta-2020.geojson")
-{{?model=commuting|interaction}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE zones AS SELECT nta2020 AS zone, ntaname AS name, geom FROM ST_Read('$(areas)')")  # the 262 Neighborhood Tabulation Areas of 2020, NYC Department of City Planning
-{{?model=commuting|interaction}}{{?city=newyork}}tracts = fetch("https://data.cityofnewyork.us/resource/63ge-mke6.csv?\$select=geoid,nta2020&\$limit=5000", "nyc-tracts-2020.csv")  # the area each census tract of 2020 is in
-{{?model=commuting|interaction}}{{?city=newyork}}lodes = fetch("https://lehd.ces.census.gov/data/lodes/LODES8/ny/od/ny_od_main_JT00_2023.csv.gz", "ny_od_main_JT00_2023.csv.gz")  # LODES 8, all jobs of 2023 with home and work in New York State, U.S. Census Bureau
-{{?model=commuting|interaction}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE tracts AS SELECT CAST(geoid AS VARCHAR) AS tract, nta2020 AS zone FROM read_csv('$(tracts)', types = {'geoid': 'VARCHAR'})")
-{{?model=commuting|interaction}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE lodes AS SELECT h.zone AS origin, w.zone AS destination, sum(S000)::DOUBLE AS jobs FROM read_csv('$(lodes)', types = {'w_geocode': 'VARCHAR', 'h_geocode': 'VARCHAR'}) l JOIN tracts h ON h.tract = left(l.h_geocode, 11) LEFT JOIN tracts w ON w.tract = left(l.w_geocode, 11) GROUP BY ALL")
-{{?model=commuting|interaction}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, jobs AS flow FROM lodes WHERE destination IS NOT NULL")
-{{?model=commuting|interaction}}{{?city=newyork}}left = query("SELECT sum(jobs) FILTER (WHERE destination IS NULL) AS away, NULL::DOUBLE AS home FROM lodes")
-{{?model=commuting|interaction}}{{?city=newyork}}unit, source = "jobs", "LEHD Origin-Destination Employment Statistics (LODES 8), primary and other jobs in 2023"
-{{?model=commuting|interaction}}{{?city=tokyo}}table = fetch("https://www.toukei.metro.tokyo.lg.jp/tyukanj/2020/tj20zv0702.csv", "tokyo-2020-table-7-2.csv")  # Table 7-2 of Tokyo's daytime population: commuters between municipalities, 2020 Census, Tokyo Metropolitan Government
-{{?model=commuting|interaction}}{{?city=tokyo}}small_areas = fetch("https://www.e-stat.go.jp/gis/statmap-search/data?dlserveyId=A002005212020&code=13&coordSys=1&format=shape&downloadType=5&datum=2011", "estat-2020-small-areas-tokyo.zip")  # the small areas of the 2020 Census in Tokyo, e-Stat
-{{?model=commuting|interaction}}{{?city=tokyo}}execute("CREATE OR REPLACE TABLE places AS SELECT \"地域コード\" AS code, replace(\"地域\", '従業地・通学地／', '') AS name FROM read_csv('$(table)', all_varchar = true) WHERE \"階層\" = '5'")  # the municipalities, by code and name
-{{?model=commuting|interaction}}{{?city=tokyo}}execute("""CREATE OR REPLACE TABLE tokyo AS SELECT h.code AS origin, w.code AS destination, TRY_CAST(replace(people, ',', '') AS DOUBLE) AS people
-{{?model=commuting|interaction}}{{?city=tokyo}}	FROM (UNPIVOT (SELECT * FROM read_csv('$(table)', all_varchar = true) WHERE "階層" = '5') ON COLUMNS('^常住地／') INTO NAME home VALUE people) r
-{{?model=commuting|interaction}}{{?city=tokyo}}	JOIN places w ON w.code = r."地域コード" JOIN places h ON '常住地／' || h.name || '（人）' = r.home""")  # rows are places of work, columns places of residence
-{{?model=commuting|interaction}}{{?city=tokyo}}execute("CREATE OR REPLACE TABLE zones AS SELECT a.zone, p.name, a.geom FROM (SELECT PREF || CITY AS zone, ST_Union_Agg(geom) AS geom FROM ST_Read('/vsizip/$(small_areas)/r2ka13.shp') WHERE (PREF || CITY) < '13360' GROUP BY ALL) a JOIN places p ON p.code = a.zone")  # the 23 wards and the cities, towns and villages of Tama, without the islands
-{{?model=commuting|interaction}}{{?city=tokyo}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, people AS flow FROM tokyo WHERE origin IN (SELECT zone FROM zones) AND destination IN (SELECT zone FROM zones) AND people > 0")
-{{?model=commuting|interaction}}{{?city=tokyo}}left = (away = [missing], home = [missing])  # the table counts only commuters who live and work in Tokyo, and none who work at home
-{{?model=commuting|interaction}}{{?city=tokyo}}unit, source = "commuters", "2020 Census, commuters aged 15 and over who live and work in Tokyo"
-{{?model=commuting}}{{?city=hongkong}}districts = fetch("https://portal.csdi.gov.hk/csdi-webpage/file-api?dataset_id=censtatd_rcd_1635932856094_19982&format=geojson&layer_name=DC_21C", "hk-2021-census-districts.geojson")  # the 18 districts with the statistics of the 2021 Population Census, through the CSDI portal (25 MB, once)
-{{?model=commuting}}{{?city=hongkong}}execute("CREATE OR REPLACE TABLE census AS SELECT dc_class AS zone, dc_eng AS name, CASE WHEN dc_class <= 'D' THEN 'HKI' WHEN dc_class <= 'J' THEN 'KLN' ELSE 'NT' END AS area, * EXCLUDE (dc_class, dc_eng) FROM ST_Read('$(districts)')")
-{{?model=commuting}}{{?city=hongkong}}execute("CREATE OR REPLACE TABLE zones AS SELECT zone, name, geom FROM census UNION ALL SELECT area, CASE area WHEN 'HKI' THEN 'Hong Kong Island' WHEN 'KLN' THEN 'Kowloon' ELSE 'New Territories' END, ST_Union_Agg(geom) FROM census GROUP BY area")  # the districts, and the three areas the census groups places of work in
-{{?model=commuting}}{{?city=hongkong}}work_in(a) = "CASE '$(a)' WHEN 'HKI' THEN plw_diff_hk WHEN 'KLN' THEN plw_diff_kln ELSE plw_diff_nt + plw_diff_oth END"  # those who work in another district of an area
-{{?model=commuting}}{{?city=hongkong}}execute("CREATE OR REPLACE TABLE flows AS " * join(["SELECT zone AS origin, '$(a)' AS destination, ($(work_in(a)) + CASE WHEN area = '$(a)' THEN plw_same ELSE 0 END)::DOUBLE AS flow FROM census" for a in ("HKI", "KLN", "NT")], " UNION ALL "))
-{{?model=commuting}}{{?city=hongkong}}left = query("SELECT sum(plw_out) AS away, sum(plw_hm) AS home FROM census")
-{{?model=commuting}}{{?city=hongkong}}unit, source = "workers", "2021 Population Census, working population by district of residence and area of work"
-{{?model=commuting|trips|interaction}}{{?city=custom}}flows_file, zones_file = isabspath(expanduser(raw"{{flowsFile}}")) ? expanduser(raw"{{flowsFile}}") : joinpath(folder, raw"{{flowsFile}}"), isabspath(expanduser(raw"{{zonesFile}}")) ? expanduser(raw"{{zonesFile}}") : joinpath(folder, raw"{{zonesFile}}")
-{{?model=commuting|trips|interaction}}{{?city=custom}}columns = query("DESCRIBE SELECT * FROM ST_Read('$(zones_file)')").column_name
-{{?model=commuting|trips|interaction}}{{?city=custom}}execute("CREATE OR REPLACE TABLE zones AS SELECT CAST(zone AS VARCHAR) AS zone, CAST($("name" in columns ? "name" : "zone") AS VARCHAR) AS name, geom FROM ST_Read('$(zones_file)')")
-{{?model=commuting|trips|interaction}}{{?city=custom}}execute("CREATE OR REPLACE TABLE given AS SELECT CAST(origin AS VARCHAR) AS origin, CAST(destination AS VARCHAR) AS destination, CAST(flow AS DOUBLE) AS flow FROM read_csv('$(flows_file)')")
-{{?model=commuting|trips|interaction}}{{?city=custom}}execute("CREATE OR REPLACE TABLE flows AS SELECT * FROM given WHERE origin IN (SELECT zone FROM zones) AND destination IN (SELECT zone FROM zones)")
-{{?model=commuting|trips|interaction}}{{?city=custom}}left = query("SELECT sum(flow) FILTER (WHERE origin NOT IN (SELECT zone FROM zones) OR destination NOT IN (SELECT zone FROM zones)) AS away, NULL::DOUBLE AS home FROM given")
-{{?model=commuting|trips|interaction}}{{?city=custom}}unit, source = "flows", basename(flows_file)
-{{?model=trips}}{{?city=london}}listing = String(take!(Downloads.download("https://s3-eu-west-1.amazonaws.com/cycling.data.tfl.gov.uk?list-type=2&prefix=usage-stats/", IOBuffer())))  # the journey files of Santander Cycles, Transport for London
-{{?model=trips}}{{?city=london}}files = [(key = m[1], month = Date(parse(Int, m[4]), findfirst(==(m[3]), Dates.LOCALES["english"].months_abbr), 1)) for m in eachmatch(r"<Key>usage-stats/(\d+JourneyDataExtract(\d{2})([A-Z][a-z]{2})(\d{4})-\d{2}[A-Z][a-z]{2}\d{4}\.csv)</Key>", listing)]  # each file covers half a month
-{{?model=trips}}{{?city=london}}chosen = "{{month}}" == "latest" ? maximum(f.month for f in files) : Date("{{month}}-01")
-{{?model=trips}}{{?city=london}}journeys = [fetch("https://cycling.data.tfl.gov.uk/usage-stats/$(f.key)", f.key) for f in files if f.month == chosen]
-{{?model=trips}}{{?city=london}}isempty(journeys) && error("No journey files of Santander Cycles for $(Dates.format(chosen, "yyyy-mm"))")
-{{?model=trips}}{{?city=london}}stations = fetch("https://api.tfl.gov.uk/BikePoint", "tfl-bikepoints.json")  # the docking stations, with their terminal numbers and positions
-{{?model=trips}}{{?city=london}}execute("CREATE OR REPLACE TABLE stations AS SELECT s.station, s.name, z.zone FROM (SELECT lpad([p.value FOR p IN additionalProperties IF p.key = 'TerminalName'][1], 6, '0') AS station, commonName AS name, ST_Point(lon, lat) AS point FROM read_json('$(stations)')) s JOIN zones z ON ST_Within(s.point, z.geom)")
-{{?model=trips}}{{?city=london}}execute("CREATE OR REPLACE TABLE journeys AS SELECT lpad(\"Start station number\", 6, '0') AS a, lpad(\"End station number\", 6, '0') AS b, strptime(\"Start date\", '%Y-%m-%d %H:%M') AS start FROM read_csv([$(join(["'$(j)'" for j in journeys], ", "))], all_varchar = true)")
-{{?model=trips}}{{?city=london}}execute("CREATE OR REPLACE TABLE trips AS SELECT o.zone AS origin, d.zone AS destination, start FROM journeys j LEFT JOIN stations o ON o.station = j.a LEFT JOIN stations d ON d.station = j.b")
-{{?model=trips}}{{?city=london}}unit, source = "journeys", "Santander Cycles journeys of $(Dates.format(chosen, "U yyyy")), Transport for London"
-{{?model=trips}}{{?city=newyork}}taxi_zones = fetch("https://d37ci6vzurychx.cloudfront.net/misc/taxi_zones.zip", "taxi_zones.zip")  # the taxi zones, NYC Taxi and Limousine Commission (TLC)
-{{?model=trips}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE zones AS SELECT CAST(LocationID AS VARCHAR) AS zone, zone AS name, ST_Transform(geom, 'EPSG:2263', 'EPSG:4326') AS geom FROM ST_Read('/vsizip/$(taxi_zones)/taxi_zones/taxi_zones.shp')")
-{{?model=trips}}{{?city=newyork}}months = "{{month}}" == "latest" ? [firstdayofmonth(today()) - Month(k) for k in 1:8] : [Date("{{month}}-01")]  # the TLC publishes each month about two months later
-{{?model=trips}}{{?city=newyork}}chosen, records = nothing, ""
-{{?model=trips}}{{?city=newyork}}for m in months
-{{?model=trips}}{{?city=newyork}}	name = "yellow_tripdata_$(Dates.format(m, "yyyy-mm")).parquet"
-{{?model=trips}}{{?city=newyork}}	try
-{{?model=trips}}{{?city=newyork}}		global records = fetch("https://d37ci6vzurychx.cloudfront.net/trip-data/$(name)", name)  # the yellow taxi trips of the month (about 60 MB)
-{{?model=trips}}{{?city=newyork}}		global chosen = m
-{{?model=trips}}{{?city=newyork}}		break
-{{?model=trips}}{{?city=newyork}}	catch e
-{{?model=trips}}{{?city=newyork}}		m == last(months) && rethrow()
-{{?model=trips}}{{?city=newyork}}	end
-{{?model=trips}}{{?city=newyork}}end
-{{?model=trips}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE trips AS SELECT CAST(PULocationID AS VARCHAR) AS origin, CAST(DOLocationID AS VARCHAR) AS destination, tpep_pickup_datetime AS start FROM read_parquet('$(records)') WHERE tpep_pickup_datetime >= DATE '$(chosen)' AND tpep_pickup_datetime < DATE '$(chosen + Month(1))'")
-{{?model=trips}}{{?city=newyork}}unit, source = "trips", "yellow taxi trips of $(Dates.format(chosen, "U yyyy")), NYC Taxi and Limousine Commission"
-{{?model=trips|interaction}}{{?city=singapore}}haskey(ENV, "LTA_ACCOUNT_KEY") || error("Set your LTA DataMall account key with the key on the Powered by line, or set ENV[\"LTA_ACCOUNT_KEY\"]: see the Authentication wiki")
-{{?model=trips|interaction}}{{?city=singapore}}lta = ["AccountKey" => ENV["LTA_ACCOUNT_KEY"], "accept" => "application/json"]
-{{?model=trips|interaction}}{{?city=singapore}}areas = joinpath(place, "sg-planning-areas-2025.geojson")  # the 55 planning areas of the Master Plan 2025, Urban Redevelopment Authority, through data.gov.sg
-{{?model=trips|interaction}}{{?city=singapore}}if !isfile(areas)
-{{?model=trips|interaction}}{{?city=singapore}}	poll = Downloads.download("https://api-open.data.gov.sg/v1/public/api/datasets/d_2cc750190544007400b2cfd5d7f53209/poll-download", tempname())  # a link to the file, valid for a short time
-{{?model=trips|interaction}}{{?city=singapore}}	Downloads.download(only(query("SELECT data.url AS u FROM read_json('$(poll)')").u), areas)
-{{?model=trips|interaction}}{{?city=singapore}}end
-{{?model=trips|interaction}}{{?city=singapore}}execute("CREATE OR REPLACE TABLE zones AS SELECT PLN_AREA_C AS zone, array_to_string(list_transform(string_split(lower(PLN_AREA_N), ' '), lambda w: upper(w[1]) || w[2:]), ' ') AS name, geom FROM ST_Read('$(areas)')")
-{{?model=trips|interaction}}{{?city=singapore}}pages = [fetch("https://datamall2.mytransport.sg/ltaodataservice/BusStops?\$skip=$(500k)", "lta-bus-stops-$(k).json"; headers = lta) for k in 0:19]  # the bus stops, 500 a page
-{{?model=trips|interaction}}{{?city=singapore}}execute("CREATE OR REPLACE TABLE stops AS SELECT s.BusStopCode AS stop, z.zone FROM (SELECT unnest(value, recursive := true) FROM read_json([$(join(["'$(p)'" for p in pages], ", "))], columns = {'value': 'STRUCT(BusStopCode VARCHAR, Latitude DOUBLE, Longitude DOUBLE)[]'})) s JOIN zones z ON ST_Within(ST_Point(s.Longitude, s.Latitude), z.geom)")
-{{?model=trips|interaction}}{{?city=singapore}}month_wanted = "{{month}}" == "latest" ? "" : "?Date=" * replace("{{month}}", "-" => "")  # DataMall keeps the last three months
-{{?model=trips|interaction}}{{?city=singapore}}answer = Downloads.download("https://datamall2.mytransport.sg/ltaodataservice/PV/ODBus" * month_wanted, tempname(); headers = lta)
-{{?model=trips|interaction}}{{?city=singapore}}link = only(query("SELECT value[1].Link AS link FROM read_json('$(answer)')").link)  # a link to the month's file, valid for 15 minutes
-{{?model=trips|interaction}}{{?city=singapore}}chosen = match(r"origin_destination_bus_(\d{6})", link)[1]
-{{?model=trips|interaction}}{{?city=singapore}}archive = fetch(link, "origin_destination_bus_$(chosen).zip")
-{{?model=trips|interaction}}{{?city=singapore}}records = unzipped(archive, only(filter(endswith(".csv"), zip_names(ZipReader(read(archive))))))
-{{?model=trips|interaction}}{{?city=singapore}}execute("CREATE OR REPLACE TABLE od AS SELECT DAY_TYPE AS day, TIME_PER_HOUR AS hour, o.zone AS origin, d.zone AS destination, TOTAL_TRIPS AS trips FROM read_csv('$(records)', types = {'ORIGIN_PT_CODE': 'VARCHAR', 'DESTINATION_PT_CODE': 'VARCHAR'}) r LEFT JOIN stops o ON o.stop = r.ORIGIN_PT_CODE LEFT JOIN stops d ON d.stop = r.DESTINATION_PT_CODE")
-{{?model=trips|interaction}}{{?city=singapore}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, sum(trips)::DOUBLE AS flow FROM od WHERE origin IS NOT NULL AND destination IS NOT NULL GROUP BY ALL")
-{{?model=trips|interaction}}{{?city=singapore}}left = query("SELECT sum(trips) FILTER (WHERE origin IS NULL OR destination IS NULL) AS away, NULL::DOUBLE AS home FROM od")
-{{?model=trips}}{{?city=singapore}}execute("CREATE OR REPLACE TABLE hours AS SELECT hour, CASE day WHEN 'WEEKDAY' THEN 'Weekdays' ELSE 'Weekends and holidays' END AS day, sum(trips)::DOUBLE AS flow FROM od GROUP BY ALL")
-{{?model=trips|interaction}}{{?city=singapore}}unit, source = "bus trips", "bus trips by stop of origin and of destination, $(chosen[1:4])-$(chosen[5:6]), LTA DataMall"
-{{?model=trips}}{{?city=london|newyork}}execute("CREATE OR REPLACE TABLE flows AS SELECT origin, destination, count(*)::DOUBLE AS flow FROM trips WHERE origin IS NOT NULL AND destination IS NOT NULL GROUP BY ALL")
-{{?model=trips}}{{?city=london|newyork}}left = query("SELECT count(*) FILTER (WHERE origin IS NULL OR destination IS NULL OR origin NOT IN (SELECT zone FROM zones) OR destination NOT IN (SELECT zone FROM zones)) AS away, NULL::DOUBLE AS home FROM trips")
-{{?model=trips}}{{?city=london|newyork}}execute("DELETE FROM flows WHERE origin NOT IN (SELECT zone FROM zones) OR destination NOT IN (SELECT zone FROM zones)")
-{{?model=trips}}{{?city=london|newyork}}execute("CREATE OR REPLACE TABLE hours AS SELECT hour(start) AS hour, CASE WHEN dayofweek(start) IN (0, 6) THEN 'Weekends' ELSE 'Weekdays' END AS day, count(*)::DOUBLE AS flow FROM trips GROUP BY ALL")
-{{?model=commuting|trips|interaction}}execute("CREATE OR REPLACE TABLE zones AS SELECT zone, name, geom, ST_X(ST_Centroid(geom)) AS lon, ST_Y(ST_Centroid(geom)) AS lat FROM zones")  # the centroid of each zone, from which distances are measured
+{{?city=custom}}given(name) = isabspath(expanduser(name)) ? expanduser(name) : joinpath(folder, name)  # a file of your own, by its path or its name in the folder
+{{?model=commuting}}{{?city!=custom}}(; unit, source, away, home) = commuting_flows(con, city; folder = place)  # the census or employment statistics of the city's country, downloaded once: the tables zones and flows
+{{?model=interaction}}{{?city!=singapore|custom}}(; unit, source, away, home) = commuting_flows(con, city; folder = place)  # the commuters between the zones: the tables zones and flows
+{{?model=trips}}{{?city=london|newyork}}(; unit, source, away, home) = trip_flows(con, city; month = "{{month}}", folder = place)  # the trips of the month: the tables zones, flows, hours and trips
+{{?model=trips|interaction}}{{?city=singapore}}(; unit, source, away, home) = trip_flows(con, city; month = "{{month}}", folder = place)  # the bus trips of the month, with the key of LTA DataMall: the tables zones, flows and hours
+{{?model=commuting|trips|interaction}}{{?city=custom}}(; unit, source, away, home) = given_flows(con, given(raw"{{flowsFile}}"), given(raw"{{zonesFile}}"))  # your flows and zones: the tables zones and flows
+{{?model=counts}}{{?city!=custom}}(; unit, source) = traffic_counts(con, city; folder = place)  # the city's counts of road traffic, downloaded once: the table counts, with classes or hours
+{{?model=counts}}{{?city=custom}}(; unit, source) = given_counts(con, given(raw"{{countsFile}}"))  # your counts: the table counts
+{{?model=air}}flights_file = air_flights(con, "{{airMonth}}"; folder = place)  # the flights of the month seen by the OpenSky Network's receivers (150 to 200 MB, once), and the airports of OurAirports: the tables flights and airports
+{{?model=air}}key = basename(flights_file)
 {{?model=commuting|trips|interaction}}totals = query("SELECT count(*) AS pairs, sum(flow) AS flow, sum(flow) FILTER (WHERE origin = destination) AS within FROM flows")
 {{?model=commuting|trips}}println(source, ": ", only(query("SELECT count(*) AS n FROM zones").n), " zones, ", totals.pairs[1], " pairs of zones with a flow, ", round(Int, totals.flow[1]), " ", unit, " between them, ", round(Int, coalesce(totals.within[1], 0)), " within a zone")
-{{?model=commuting|trips}}ismissing(left.away[1]) || println(round(Int, left.away[1]), " more ", unit, " start or end outside the zones", ismissing(left.home[1]) ? "" : ", and $(round(Int, left.home[1])) work mainly at or from home")
+{{?model=commuting|trips}}ismissing(away) || println(round(Int, away), " more ", unit, " start or end outside the zones", ismissing(home) ? "" : ", and $(round(Int, home)) work mainly at or from home")
 {{?model=interaction}}execute("""CREATE OR REPLACE TABLE pairs AS SELECT a.zone AS origin, b.zone AS destination, coalesce(f.flow, 0) AS flow, ST_Distance_Spheroid(ST_Point(a.lon, a.lat), ST_Point(b.lon, b.lat)) / 1000 AS km
 {{?model=interaction}}	FROM zones a CROSS JOIN zones b LEFT JOIN flows f ON f.origin = a.zone AND f.destination = b.zone WHERE a.zone <> b.zone""")  # every ordered pair of different zones, with no flow as 0, and the distance between their centroids
 {{?model=air}}hubs = Dict("global" => String[], "london" => ["EGLL", "EGKK", "EGSS", "EGGW", "EGLC"], "amsterdam" => ["EHAM"], "paris" => ["LFPG", "LFPO"], "frankfurt" => ["EDDF"], "newyork" => ["KJFK", "KEWR", "KLGA"], "tokyo" => ["RJTT", "RJAA"], "hongkong" => ["VHHH"], "singapore" => ["WSSS"], "usa" => String[], "canada" => String[], "india" => String[], "brazil" => String[], "australia" => String[])[city]  # the ICAO codes of the city's airports
 {{?model=air}}countries = Dict("usa" => ("US", "the United States"), "canada" => ("CA", "Canada"), "india" => ("IN", "India"), "brazil" => ("BR", "Brazil"), "australia" => ("AU", "Australia"))  # the ISO codes of the countries whose domestic flights the tab reads
-{{?model=air}}record = fetch("https://zenodo.org/api/records/7923702", "opensky-flightlist-record.json")  # the files of the OpenSky Network's flight list, 2019 to 2022, on Zenodo
-{{?model=air}}month_air = replace("{{airMonth}}", "-" => "")
-{{?model=air}}key = only(query("SELECT f.key FROM (SELECT unnest(files) AS f FROM read_json('$(record)')) WHERE f.key LIKE 'flightlist_$(month_air)01_%'").key)
-{{?model=air}}flights_file = fetch("https://zenodo.org/api/records/7923702/files/$(key)/content", key)  # the flights of the month seen by the OpenSky Network's receivers (150 to 200 MB, once)
-{{?model=air}}airports_file = fetch("https://davidmegginson.github.io/ourairports-data/airports.csv", "ourairports-airports.csv")  # the airports of the world, OurAirports
-{{?model=air}}execute("CREATE OR REPLACE TABLE airports AS SELECT ident AS icao, name, iso_country AS country, municipality, longitude_deg AS lon, latitude_deg AS lat, scheduled_service = 'yes' AS scheduled FROM read_csv('$(airports_file)')")
 {{?model=air}}served = "{{flightKind}}" == "airline" ? "AND regexp_matches(f.callsign, '^[A-Z]{3}[0-9]') AND a.scheduled AND b.scheduled" : ""  # flights with an airline's callsign between airports with scheduled service, or all
-{{?model=air}}execute("CREATE OR REPLACE TABLE flights AS SELECT callsign, origin, destination, typecode, CAST(day AS DATE) AS day FROM read_csv('$(flights_file)', types = {'callsign': 'VARCHAR', 'origin': 'VARCHAR', 'destination': 'VARCHAR', 'typecode': 'VARCHAR', 'day': 'VARCHAR'})")
 {{?model=air}}routes_of(source, scope = "") = """SELECT f.origin, f.destination, count(*)::DOUBLE AS flights, ST_Distance_Spheroid(ST_Point(a.lon, a.lat), ST_Point(b.lon, b.lat)) / 1000 AS km
 {{?model=air}}	FROM $(source) f JOIN airports a ON a.icao = f.origin JOIN airports b ON b.icao = f.destination WHERE f.origin <> f.destination $(served) $(scope) GROUP BY f.origin, f.destination, a.lon, a.lat, b.lon, b.lat"""  # the flights between two known airports
 {{?model=air}}domestic(code) = "AND a.country = '$(code)' AND b.country = '$(code)'"  # both airports in the country
@@ -813,31 +677,6 @@ unzipped(zip, entry) = (path = joinpath(place, entry); isfile(path) || write(pat
 {{?model=interaction|air}}execute("CREATE OR REPLACE TABLE modelled AS SELECT * FROM read_csv('$(modelled_csv)', header = false, names = ['origin', 'destination', 'flow', 'fitted', 'km'], types = {'origin': 'VARCHAR', 'destination': 'VARCHAR'})")  # the observed and fitted flow of each pair, which the Next Steps use
 {{?model=interaction|air}}println(Dict("doubly" => "Doubly constrained", "production" => "Production constrained", "attraction" => "Attraction constrained", "none" => "Unconstrained")[constraint], " model, ", decay, " distance function, ", length(data.flow), " pairs, ", round(Int, sum(data.flow)), " ", unit)
 {{?model=interaction|air}}println("Distance parameter ", round(beta; digits = 4), decay == "power" ? "" : per_km == 1 ? " a km" : " a thousand km", " (robust standard error ", round(beta_se; digits = 4), "); common part of the flows ", round(cpc; digits = 3), ", SRMSE ", round(srmse; digits = 3))
-{{?model=counts}}{{?city=cambridge|oxford|london}}dft = "https://storage.googleapis.com/dft-statistics/road-traffic/downloads/aadf/"
-{{?model=counts}}{{?city=cambridge|oxford|london}}file = fetch(dft * Dict("cambridge" => "local_authority_id/dft_aadf_local_authority_id_97.csv", "oxford" => "local_authority_id/dft_aadf_local_authority_id_142.csv", "london" => "region_id/dft_aadf_region_id_6.csv")[city], "dft-aadf-$(city).csv")  # annual average daily flows at the count points, Department for Transport
-{{?model=counts}}{{?city=cambridge|oxford|london}}box = Dict("cambridge" => (-0.05, 52.13, 0.25, 52.28), "oxford" => (-1.40, 51.68, -1.13, 51.82), "london" => (-0.52, 51.28, 0.34, 51.70))[city]  # the area around the city, in degrees of longitude and latitude
-{{?model=counts}}{{?city=cambridge|oxford|london}}execute("CREATE OR REPLACE TABLE dft AS SELECT * FROM read_csv('$(file)') WHERE longitude BETWEEN $(box[1]) AND $(box[3]) AND latitude BETWEEN $(box[2]) AND $(box[4])")
-{{?model=counts}}{{?city=cambridge|oxford|london}}execute("CREATE OR REPLACE TABLE counts AS SELECT CAST(count_point_id AS VARCHAR) AS site, road_name || coalesce(' (' || start_junction_road_name || ' to ' || end_junction_road_name || ')', '') AS name, road_type AS kind, longitude AS lon, latitude AS lat, year, all_motor_vehicles::DOUBLE AS flow, estimation_method AS method FROM dft")
-{{?model=counts}}{{?city=cambridge|oxford|london}}execute("""CREATE OR REPLACE TABLE classes AS UNPIVOT (SELECT CAST(count_point_id AS VARCHAR) AS site, year, pedal_cycles AS "Pedal cycles", two_wheeled_motor_vehicles AS "Motorcycles", cars_and_taxis AS "Cars and taxis", buses_and_coaches AS "Buses and coaches", lgvs AS "Light goods vehicles", all_hgvs AS "Heavy goods vehicles" FROM dft) ON COLUMNS(* EXCLUDE (site, year)) INTO NAME class VALUE flow""")
-{{?model=counts}}{{?city=cambridge|oxford|london}}unit, source = "motor vehicles a day", "Department for Transport, annual average daily flows"
-{{?model=counts}}{{?city=newyork}}socrata = "https://data.cityofnewyork.us/resource/7ym2-wayt.csv?"  # automated traffic volume counts, NYC Department of Transportation
-{{?model=counts}}{{?city=newyork}}file = fetch(socrata * "\$select=" * enc("segmentid, boro, street, fromst, tost, direction, wktgeom, yr, avg(vol) * 96 AS daily") * "&\$group=" * enc("segmentid, boro, street, fromst, tost, direction, wktgeom, yr") * "&\$limit=500000", "nyc-dot-counts-$(today()).csv")  # the mean count of a quarter hour, times 96
-{{?model=counts}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE counts AS SELECT segmentid || ' ' || direction AS site, street || ' (' || fromst || ' to ' || tost || ', ' || direction || ')' AS name, boro AS kind, ST_X(p) AS lon, ST_Y(p) AS lat, CAST(yr AS INTEGER) AS year, daily AS flow, 'Automated count' AS method FROM (SELECT *, ST_Transform(ST_GeomFromText(wktgeom), 'EPSG:2263', 'EPSG:4326') AS p FROM read_csv('$(file)', types = {'segmentid': 'VARCHAR', 'yr': 'VARCHAR'}))")
-{{?model=counts}}{{?city=newyork}}latest_year = only(query("SELECT max(year) AS y FROM counts").y)
-{{?model=counts}}{{?city=newyork}}hourly = fetch(socrata * "\$select=" * enc("hh, avg(vol) * 4 AS flow") * "&\$where=" * enc("yr = '$(latest_year)'") * "&\$group=hh", "nyc-dot-hours-$(latest_year).csv")
-{{?model=counts}}{{?city=newyork}}execute("CREATE OR REPLACE TABLE hours AS SELECT CAST(hh AS INTEGER) AS hour, 'All days' AS day, flow FROM read_csv('$(hourly)')")
-{{?model=counts}}{{?city=newyork}}unit, source = "vehicles a day", "NYC Department of Transportation, automated traffic volume counts"
-{{?model=counts}}{{?city=paris}}paris = "https://opendata.paris.fr/api/explore/v2.1/catalog/datasets/"
-{{?model=counts}}{{?city=paris}}sections = fetch(paris * "referentiel-comptages-routiers/exports/geojson", "paris-counted-sections.geojson")  # the road sections with a permanent counter, Ville de Paris
-{{?model=counts}}{{?city=paris}}yearly = fetch(paris * "comptages-routiers-permanents/exports/csv?select=" * enc("iu_ac, avg(q) * 24 AS flow") * "&group_by=" * enc("iu_ac, year(t_1h) AS year") * "&where=" * enc("q is not null") * "&timezone=Europe%2FParis&delimiter=%3B", "paris-counts-$(today()).csv")  # the mean hourly flow of each counter in each year, times 24
-{{?model=counts}}{{?city=paris}}hourly = fetch(paris * "comptages-routiers-permanents/exports/csv?select=" * enc("avg(q) AS flow") * "&group_by=" * enc("hour(t_1h) AS hour") * "&where=" * enc("q is not null") * "&timezone=Europe%2FParis&delimiter=%3B", "paris-hours-$(today()).csv")
-{{?model=counts}}{{?city=paris}}execute("CREATE OR REPLACE TABLE counts AS SELECT CAST(c.iu_ac AS VARCHAR) AS site, replace(s.libelle, '_', ' ') AS name, 'Road section' AS kind, ST_X(ST_Centroid(s.geom)) AS lon, ST_Y(ST_Centroid(s.geom)) AS lat, c.year, c.flow, 'Permanent counter' AS method FROM read_csv('$(yearly)', delim = ';') c JOIN (SELECT * FROM ST_Read('$(sections)') QUALIFY row_number() OVER (PARTITION BY iu_ac ORDER BY coalesce(date_fin, TIMESTAMP '9999-12-31') DESC) = 1) s ON CAST(s.iu_ac AS VARCHAR) = CAST(c.iu_ac AS VARCHAR)")
-{{?model=counts}}{{?city=paris}}execute("CREATE OR REPLACE TABLE hours AS SELECT hour, 'All days' AS day, flow FROM read_csv('$(hourly)', delim = ';')")
-{{?model=counts}}{{?city=paris}}unit, source = "vehicles a day", "Ville de Paris, permanent road counters"
-{{?model=counts}}{{?city=custom}}counts_file = isabspath(expanduser(raw"{{countsFile}}")) ? expanduser(raw"{{countsFile}}") : joinpath(folder, raw"{{countsFile}}")
-{{?model=counts}}{{?city=custom}}columns = query("DESCRIBE SELECT * FROM read_csv('$(counts_file)')").column_name
-{{?model=counts}}{{?city=custom}}execute("CREATE OR REPLACE TABLE counts AS SELECT CAST(site AS VARCHAR) AS site, CAST($("name" in columns ? "name" : "site") AS VARCHAR) AS name, 'Count point' AS kind, lon, lat, year, CAST(flow AS DOUBLE) AS flow, 'Given' AS method FROM read_csv('$(counts_file)')")
-{{?model=counts}}{{?city=custom}}unit, source = "vehicles a day", basename(counts_file)
 {{?model=counts}}s = query("SELECT count(DISTINCT site) AS sites, min(year) AS first, max(year) AS last FROM counts")
 {{?model=counts}}y = query("SELECT count(*) AS sites, avg(flow) AS mean, median(flow) AS median, max(flow) AS top FROM counts WHERE year = $(s.last[1])")
 {{?model=counts}}println(source, ": ", s.sites[1], " count points, ", s.first[1], " to ", s.last[1])
@@ -975,7 +814,7 @@ quiet = query("SELECT z.name, z.zone NOT IN (SELECT origin FROM flows) AS no_out
 println(only(query("SELECT count(*) AS n FROM zones").n), " zones; ", count(quiet.no_out), " with no flow leaving, ", count(quiet.no_in), " with no flow arriving", isempty(quiet.name) ? "" : ": " * join(first(quiet.name, 12), ", ") * (length(quiet.name) > 12 ? "..." : ""))
 within_share = coalesce(totals.within[1], 0) / totals.flow[1]
 println(round(100 * within_share; digits = 1), "% of the ", unit, " between the zones stay within a zone", within_share == 0 ? " (the source counts none within a zone)" : "")
-ismissing(left.away[1]) ? println("The source counts only flows that start and end in its area") : println(round(Int, left.away[1]), " ", unit, " (", round(100 * left.away[1] / (left.away[1] + totals.flow[1]); digits = 1), "% of all) start or end outside the zones")
+ismissing(away) ? println("The source counts only flows that start and end in its area") : println(round(Int, away), " ", unit, " (", round(100 * away / (away + totals.flow[1]); digits = 1), "% of all) start or end outside the zones")
 '''
 
 [[actionGroups.actions]]
@@ -1114,8 +953,7 @@ code = '''
 month_of_year = "{{airMonth}}"[6:7]
 println(rpad("month", 9), lpad("airports", 9), lpad("routes", 8), lpad("flights", 9), lpad("top 5 %", 9), lpad("mean km", 9), lpad("distance", 10), lpad("CPC", 7))
 for y in 2019:2022
-	key_y = only(query("SELECT f.key FROM (SELECT unnest(files) AS f FROM read_json('$(record)')) WHERE f.key LIKE 'flightlist_$(y)$(month_of_year)01_%'").key)
-	file_y = key_y == key ? flights_file : fetch("https://zenodo.org/api/records/7923702/files/$(key_y)/content", key_y)  # a flight list of 150 to 200 MB, downloaded once
+	file_y = flight_list("$(y)-$(month_of_year)"; folder = place)  # a flight list of 150 to 200 MB, downloaded once
 	r = network_fit(routes_of("read_csv('$(file_y)', types = {'callsign': 'VARCHAR', 'origin': 'VARCHAR', 'destination': 'VARCHAR'})", haskey(countries, city) ? domestic(countries[city][1]) : ""))
 	println(rpad("$(y)-$(month_of_year)", 9), lpad(r.airports, 9), lpad(r.routes, 8), lpad(round(Int, r.flights), 9), lpad(round(100 * r.top5; digits = 1), 9), lpad(round(Int, r.mean_km), 9), lpad(round(r.beta; digits = 3), 10), lpad(round(r.cpc; digits = 3), 7))
 end

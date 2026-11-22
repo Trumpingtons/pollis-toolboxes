@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Travel times and routes on the streets of an area, the areas reached in given times, and the structure of the network |
 | **Input** | An Example City (Cambridge, Oxford) or a Custom Area, Origin, Destination and Places; a Mode (walk, cycle, drive); where the network comes from |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`osm_streets`, `street_network`, `nearest_node`, `fastest_route`, `travel_times`, `service_areas`, `travel_matrix`, `geofabrik_file`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), with DuckDB's spatial extension |
 | **Tabs** | Shortest Route; Service Areas; Travel-Time Matrix; Network Measures |
 | **Account** | None |
 | **Output** | `route`, `reach`, `matrix` or `nodes`, with `network`, the streets of the mode; the graph `net` |

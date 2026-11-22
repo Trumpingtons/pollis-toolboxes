@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Read the boundaries of European statistical and administrative units, map Eurostat's statistics on them, check them, compare versions and scales, and save them |
 | **Input** | A year (the version of the units), a level and scale for NUTS and countries, a country, and a Eurostat table with its key |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial and httpfs extensions |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`gisco_file`, `gisco_files`, `vector_units`, `eurostat`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial and httpfs extensions |
 | **Tabs** | NUTS Regions; Local Administrative Units; Countries; Cities and Functional Urban Areas |
 | **Output** | The table `features`: one row per unit, with GISCO's columns, its area in km² as `km2`, and its geometry as `geom` |
 | **Key choices** | The year; the NUTS level; the scale; the country; the Eurostat table and key |

@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | The flows between the zones of a city, the traffic on its roads and the flights between airports, and how flows fall with distance |
 | **Input** | An Example City (Cambridge, Oxford, London, Amsterdam, Paris, Frankfurt, New York, Tokyo, Hong Kong, Singapore), Global or a country (United States, Canada, India, Brazil, Australia) on Air Routes, or Custom files |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [GLFixedEffectModels.jl](https://github.com/jmboehm/GLFixedEffectModels.jl), [GLM.jl](https://github.com/JuliaStats/GLM.jl), [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), [ZipArchives.jl](https://github.com/JuliaIO/ZipArchives.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`commuting_flows`, `trip_flows`, `given_flows`, `traffic_counts`, `given_counts`, `air_flights`, `flight_list`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [GLFixedEffectModels.jl](https://github.com/jmboehm/GLFixedEffectModels.jl), [GLM.jl](https://github.com/JuliaStats/GLM.jl), [Graphs.jl](https://github.com/JuliaGraphs/Graphs.jl), with DuckDB's spatial extension |
 | **Tabs** | Commuting Flows; Trips; Spatial Interaction; Traffic Counts; Air Routes |
 | **Account** | An LTA DataMall account key for Singapore only |
 | **Output** | `zones` and `flows`; `hours` for trips; `modelled` and `fit` for a model; `counts` for traffic counts; `flights`, `routes` and `traffic` for air traffic |

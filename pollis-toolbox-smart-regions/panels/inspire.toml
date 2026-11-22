@@ -8,20 +8,16 @@ defaultModel = "find"
 decisionFirstColumn = "Service"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
 [[packages]]
 name = "Tables.jl"
 github = "https://github.com/JuliaData/Tables.jl"
-
-[[packages]]
-name = "EzXML.jl"
-github = "https://github.com/JuliaIO/EzXML.jl"
-
-[[packages]]
-name = "ZipArchives.jl"
-github = "https://github.com/JuliaIO/ZipArchives.jl"
 
 # Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
 [requires]
@@ -409,34 +405,13 @@ models = ["ogcapi"]
 [[codeBranches]]
 model = "find"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 query(sql) = Tables.columntable(DBInterface.execute(con, sql))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
-api = "https://data.europa.eu/api/hub/search/search"  # the search API of data.europa.eu, the European entry point for INSPIRE's datasets
 theme, country = "{{theme}}", lowercase("{{country}}")
-words = join([split(theme); "inspire"], "+AND+")  # every word of the theme, and inspire
-search = joinpath(mktempdir(), "search.json")
-Downloads.download("$(api)?q=$(words)&filter=dataset&limit={{rows}}&facets={\"country\":[\"$(country)\"]}", search)  # the most relevant first
-total = only(query("SELECT CAST(json_extract(content, '/result/count') AS BIGINT) AS n FROM read_text('$(search)')").n)
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE datasets AS
-SELECT row_number() OVER () AS n, coalesce(r->>'/title/en', r->'/title'->>(json_keys(r->'/title')[1])) AS title, r->>'/catalog/id' AS catalogue, r
-FROM (SELECT unnest(CAST(json_extract(content, '/result/results') AS JSON[])) AS r FROM read_text('$(search)'))
-""")  # one row per dataset, its title in English when the portal has it
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE services AS
-SELECT DISTINCT n, kind, CASE WHEN kind = 'WFS' THEN rtrim(regexp_replace(url, '(?i)(service|request|version|acceptversions|typenames?|outputformat|count|maxfeatures|startindex|srsname|content-disposition)=[^&]*&?', '', 'g'), '?&') ELSE url END AS address, licence
-FROM (
-	SELECT n, d->>'/format/id' AS format, coalesce(d->>'/download_url/0', d->>'/access_url/0') AS url, d->>'/license/id' AS licence,
-		CASE WHEN format = 'WFS_SRVC' OR url ILIKE '%service=wfs%' OR url ILIKE '%/wfs%' THEN 'WFS'
-			WHEN (format IN ('OGCFEAT', 'ogcapi-features') OR url ILIKE '%/ogc/%') AND url NOT ILIKE '%service=wms%' THEN 'OGC API Features'
-			WHEN (format = 'ATOM' OR url ILIKE '%atom%') AND (url ILIKE '%atom%' OR url ILIKE '%.xml%') AND url NOT LIKE '%#%' THEN 'Atom'
-			WHEN format IN ('GPKG', 'GEOJSON', 'SHP', 'GML', 'FGB', 'KML') THEN 'File' END AS kind
-	FROM (SELECT n, unnest(CAST(coalesce(r->'/distributions', '[]') AS JSON[])) AS d FROM datasets)
-) WHERE kind IS NOT NULL
-""")  # the download services of each dataset, a WFS by its address without a request
+total = inspire_search(con, theme, country; rows = {{rows}})  # the most relevant first, as the tables datasets and, for their download services, services
 s = query("SELECT d.n, d.title, d.catalogue, s.kind, s.address FROM datasets d JOIN services s USING (n) ORDER BY d.n, s.kind, s.address")
 println(total, " datasets of data.europa.eu match ", theme, " and inspire in ", uppercase(country), "; of the first ", min(total, {{rows}}), ", ", length(unique(s.n)), " have a download service.")
 println("Read a WFS with WFS Download, an Atom feed with Atom Download, an OGC API with OGC API Features, and a file with the Geospatial Vector Files panel.")
@@ -449,206 +424,62 @@ end
 [[codeBranches]]
 model = "wfs"
 code = '''
-using EzXML, DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 query(sql) = Tables.columntable(DBInterface.execute(con, sql))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the features are kept once downloaded, and the Next Steps save theirs
-function units(path, layer = "")  # a file's features as SQL: its columns, and its geometry as geom in longitude and latitude
-	from = isempty(layer) ? "ST_Read('$(path)')" : "ST_Read('$(path)', layer = '$(layer)')"
-	d = try
-		query("DESCRIBE SELECT * FROM $(from)")
-	catch e
-		gfs = splitext(path)[1] * ".gfs"  # GDAL's description of the layers of a GML file, written beside it
-		(occursin("duplicate column name", sprint(showerror, e)) && isfile(gfs)) || rethrow()
-		s = read(gfs, String)
-		for g in unique(m[1] for m in eachmatch(r"<GeometryName>([^<]+)</GeometryName>", s))  # a property named as the geometry, which DuckDB cannot have twice
-			s = join([i > 1 ? replace(c, "<Name>$(g)</Name>" => "<Name>$(g)_property</Name>"; count = 1) : c for (i, c) in enumerate(split(s, "<PropertyDefn>"))], "<PropertyDefn>")
-		end
-		write(gfs, s)
-		query("DESCRIBE SELECT * FROM $(from)")
-	end
-	k = findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)
-	k === nothing && error("$(path) has no geometry")
-	g, m = d.column_name[k], match(r"'([^']+)'", d.column_type[k])
-	crs = m === nothing ? "EPSG:4326" : m[1]
-	geom = crs in ("EPSG:4326", "OGC:CRS84") ? "\"$(g)\"" : "ST_Transform(\"$(g)\", '$(crs)', 'EPSG:4326')"
-	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid', '$(lowercase(g))')), $(geom) AS geom FROM $(from))"
-end
-
-service = rstrip(replace("{{wfsUrl}}", r"(?i)(service|request|version|acceptversions|typenames?|outputformat|count|maxfeatures|startindex|srsname|content-disposition)=[^&]*&?" => ""), ['?', '&'])  # the address, without a request
-ask(request) = string(service, occursin('?', service) ? "&" : "?", "service=WFS&version=2.0.0&request=", request)
-caps = root(parsexml(String(take!(Downloads.download(ask("GetCapabilities"), IOBuffer())))))  # what the service offers
-find(xpath) = nodecontent.(findall(xpath, caps, Pair{String, String}[]))  # by local names, whatever the prefixes of the namespaces
-layers = find("//*[local-name()='FeatureType']/*[local-name()='Name']")
-layer = "{{wfsLayer}}"
-layer in layers || error("The WFS has no layer $(layer): its layers are $(join(layers, ", "))")
-formats = find("//*[local-name()='Operation'][@name='GetFeature']//*[local-name()='Parameter'][@name='outputFormat']//*[local-name()='Value']")
-k = findfirst(f -> occursin(r"json"i, f), formats)
-format = k === nothing ? "GML" : formats[k]  # GeoJSON when the service offers it: GML may hold curves DuckDB cannot read
-stem = replace("inspire-wfs-$(match(r"//([^/:]+)", service)[1])-$(layer)", r"[^A-Za-z0-9.-]+" => "-")
-cache = joinpath(folder, "$(stem).parquet")  # the features, downloaded once, then read from the folder
-if !isfile(cache)
-	pages, parts = mktempdir(), String[]
-	for start in 0:{{pageSize}}:10^7  # a page at a time, until one has fewer features than asked for
-		path = joinpath(pages, "page-$(length(parts) + 1).$(format == "GML" ? "gml" : "geojson")")
-		request = "GetFeature&typeNames=$(layer)&count={{pageSize}}&startIndex=$(start)" * (format == "GML" ? "" : "&outputFormat=" * replace(format, " " => "%20", ";" => "%3B", "+" => "%2B"))
-		Downloads.download(ask(request), path)
-		m = only(query("SELECT count(*) AS n FROM $(units(path))").n)
-		m == 0 && break
-		push!(parts, path)
-		m < {{pageSize}} && break
-	end
-	isempty(parts) && error("The WFS sent no features of $(layer)")
-	DBInterface.execute(con, "COPY (SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM ($(join(["SELECT * FROM $(units(p))" for p in parts], " UNION ALL BY NAME ")))) TO '$(cache)' (FORMAT parquet)")  # areas in km² on the WGS 84 ellipsoid
-end
-DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT * FROM '$(cache)'")
-name, by, title, source = "{{wfsName}}", "{{wfsColour}}", layer, service
+layer, service = "{{wfsLayer}}", "{{wfsUrl}}"
+w = wfs_features(con, service, layer; folder, page = {{pageSize}})  # a page at a time, kept in the folder as GeoParquet, then read from there, as the table features
+name, by, title, source, stem, n = "{{wfsName}}", "{{wfsColour}}", layer, service, w.stem, w.n
 columns = query("DESCRIBE features").column_name
 for c in (name, by)
 	c in columns || error("The features have no column $(c): their columns are $(join(columns, ", "))")
 end
-n = only(query("SELECT count(*) AS n FROM features").n)
-println(n, " features of ", layer, " (", format, "), read from ", cache)
+println(n, " features of ", layer, " (", w.format, "), read from ", w.file)
 '''
 
 [[codeBranches]]
 model = "atom"
 code = '''
-using EzXML, ZipArchives, DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 query(sql) = Tables.columntable(DBInterface.execute(con, sql))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the file is kept once downloaded, and the Next Steps save theirs
-function units(path, layer = "")  # a file's features as SQL: its columns, and its geometry as geom in longitude and latitude
-	from = isempty(layer) ? "ST_Read('$(path)')" : "ST_Read('$(path)', layer = '$(layer)')"
-	d = try
-		query("DESCRIBE SELECT * FROM $(from)")
-	catch e
-		gfs = splitext(path)[1] * ".gfs"  # GDAL's description of the layers of a GML file, written beside it
-		(occursin("duplicate column name", sprint(showerror, e)) && isfile(gfs)) || rethrow()
-		s = read(gfs, String)
-		for g in unique(m[1] for m in eachmatch(r"<GeometryName>([^<]+)</GeometryName>", s))  # a property named as the geometry, which DuckDB cannot have twice
-			s = join([i > 1 ? replace(c, "<Name>$(g)</Name>" => "<Name>$(g)_property</Name>"; count = 1) : c for (i, c) in enumerate(split(s, "<PropertyDefn>"))], "<PropertyDefn>")
-		end
-		write(gfs, s)
-		query("DESCRIBE SELECT * FROM $(from)")
-	end
-	k = findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)
-	k === nothing && error("$(path) has no geometry")
-	g, m = d.column_name[k], match(r"'([^']+)'", d.column_type[k])
-	crs = m === nothing ? "EPSG:4326" : m[1]
-	geom = crs in ("EPSG:4326", "OGC:CRS84") ? "\"$(g)\"" : "ST_Transform(\"$(g)\", '$(crs)', 'EPSG:4326')"
-	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid', '$(lowercase(g))')), $(geom) AS geom FROM $(from))"
-end
-
-atom = ["a" => "http://www.w3.org/2005/Atom"]  # the namespace of Atom feeds
-feed(url) = root(parsexml(String(take!(Downloads.download(url, IOBuffer())))))
-top = feed("{{atomUrl}}")  # the feed of the download service: an entry for each dataset, linked to its own feed
-links = [l["href"] for l in findall("a:entry/a:link[@rel='alternate' and contains(@type, 'atom')]", top, atom)]
-files = []
-for f in (isempty(links) ? [top] : feed.(links))  # a feed with no dataset feeds is itself the feed of a dataset
-	for l in findall("a:entry/a:link[@rel='alternate' or @rel='section']", f, atom)  # the files of each dataset, in one part or several
-		occursin("atom", haskey(l, "type") ? l["type"] : "") && continue
-		push!(files, (href = l["href"], megabytes = haskey(l, "length") ? round(parse(Int, l["length"]) / 2^20, digits = 1) : missing))
-	end
-end
-isempty(files) && error("The feed lists no files")
+a = atom_features(con, "{{atomUrl}}", "{{atomFile}}"; layer = "{{atomLayer}}", folder)  # the first file of the feed that matches and DuckDB reads, unpacked from a .zip, as the table features
 println("Files of the feed:")
-foreach(f -> println("  ", f.href, ismissing(f.megabytes) ? "" : " ($(f.megabytes) MB)"), first(files, 20))
-readable = r"\.(gpkg|gml|geojson|json|shp|fgb|kml)$"i  # what DuckDB's spatial extension reads
-k = findfirst(f -> occursin("{{atomFile}}", f.href) && occursin(readable, replace(first(split(f.href, '?')), r"\.zip$"i => ".gml")), files)
-k === nothing && error("No file of the feed matches \"{{atomFile}}\" and is one DuckDB reads, or a .zip")
-href = first(split(files[k].href, '?'))
-stem = replace("inspire-atom-$(match(r"//([^/:]+)", href)[1])-$(splitext(basename(href))[1])", r"[^A-Za-z0-9.-]+" => "-")
-download = joinpath(folder, stem * lowercase(splitext(href)[2]))
-isfile(download) || Downloads.download(files[k].href, download)  # downloaded once, then read from the folder
-path = download
-if endswith(download, ".zip")  # unpacked once, into a folder beside the .zip
-	unpacked = mkpath(joinpath(folder, stem))
-	archive = ZipReader(read(download))
-	for entry in filter(e -> !endswith(e, "/"), zip_names(archive))
-		target = normpath(joinpath(unpacked, entry))
-		startswith(target, normpath(unpacked)) || continue  # never outside the folder
-		isfile(target) || (mkpath(dirname(target)); write(target, zip_readentry(archive, entry)))
-	end
-	inside = filter(e -> occursin(readable, e), zip_names(archive))
-	isempty(inside) && error("The .zip holds no file DuckDB reads: $(join(zip_names(archive), ", "))")
-	path = normpath(joinpath(unpacked, first(inside)))
-end
-layer = "{{atomLayer}}"
-layers = query("SELECT unnest(layers).name AS name FROM ST_Read_Meta('$(path)')").name
-isempty(layer) || layer in layers || error("$(basename(path)) has no layer $(layer): its layers are $(join(layers, ", "))")
-DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(units(path, layer))")  # areas in km² on the WGS 84 ellipsoid
-name, by, title, source = "{{atomName}}", "{{atomColour}}", isempty(layer) ? basename(path) : layer, files[k].href
+foreach(f -> println("  ", f.href, ismissing(f.megabytes) ? "" : " ($(f.megabytes) MB)"), first(a.files, 20))
+name, by, title, source, stem, n = "{{atomName}}", "{{atomColour}}", isempty("{{atomLayer}}") ? basename(a.path) : "{{atomLayer}}", a.href, a.stem, a.n
 columns = query("DESCRIBE features").column_name
 for c in (name, by)
 	c in columns || error("The features have no column $(c): their columns are $(join(columns, ", "))")
 end
-n = only(query("SELECT count(*) AS n FROM features").n)
-println(n, " features of ", title, ", read from ", path)
+println(n, " features of ", title, ", read from ", a.path)
 '''
 
 [[codeBranches]]
 model = "ogcapi"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 query(sql) = Tables.columntable(DBInterface.execute(con, sql))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the features are kept once downloaded, and the Next Steps save theirs
-function units(path, layer = "")  # a file's features as SQL: its columns, and its geometry as geom in longitude and latitude
-	from = isempty(layer) ? "ST_Read('$(path)')" : "ST_Read('$(path)', layer = '$(layer)')"
-	d = query("DESCRIBE SELECT * FROM $(from)")
-	k = findfirst(t -> startswith(t, "GEOMETRY"), d.column_type)
-	k === nothing && error("$(path) has no geometry")
-	g, m = d.column_name[k], match(r"'([^']+)'", d.column_type[k])
-	crs = m === nothing ? "EPSG:4326" : m[1]
-	geom = crs in ("EPSG:4326", "OGC:CRS84") ? "\"$(g)\"" : "ST_Transform(\"$(g)\", '$(crs)', 'EPSG:4326')"
-	return "(SELECT COLUMNS(lambda c: lower(c) NOT IN ('ogc_fid', 'fid', '$(lowercase(g))')), $(geom) AS geom FROM $(from))"
-end
-
-landing = rstrip(first(split("{{ogcUrl}}", '?')), '/')  # the landing page of the API
-collection = "{{ogcCollection}}"
-geojson = ["Accept" => "application/geo+json, application/json"]
-listing = joinpath(mktempdir(), "collections.json")
-Downloads.download("$(landing)/collections?f=json", listing; headers = geojson)
-collections = query("SELECT c->>'/id' AS id FROM (SELECT unnest(CAST(json_extract(content, '/collections') AS JSON[])) AS c FROM read_text('$(listing)'))").id
-collection in collections || error("The API has no collection $(collection): its collections are $(join(collections, ", "))")
-stem = replace("inspire-ogc-$(match(r"//([^/:]+)", landing)[1])-$(collection)", r"[^A-Za-z0-9.-]+" => "-")
-cache = joinpath(folder, "$(stem).parquet")  # the features, downloaded once, then read from the folder
-function pages(url)  # the pages of the collection's features, each linked to the next, until the last
-	dir, parts = mktempdir(), String[]
-	while url !== nothing
-		path = joinpath(dir, "page-$(length(parts) + 1).geojson")
-		Downloads.download(url, path; headers = geojson)
-		returned = only(query("SELECT coalesce(json_array_length(json_extract(content, '/features')), 0) AS n FROM read_text('$(path)')").n)
-		returned == 0 && break
-		push!(parts, path)
-		l = query("SELECT l->>'/href' AS href FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/links'), '[]') AS JSON[])) AS l FROM read_text('$(path)')) WHERE l->>'/rel' = 'next' ORDER BY coalesce(l->>'/type', '') ILIKE '%json%' DESC LIMIT 1").href
-		url = isempty(l) ? nothing : only(l)
-	end
-	return parts
-end
-if !isfile(cache)
-	parts = pages("$(landing)/collections/$(collection)/items?f=json&limit={{pageSize}}")
-	isempty(parts) && error("The API sent no features of $(collection)")
-	DBInterface.execute(con, "COPY (SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM ($(join(["SELECT * FROM $(units(p))" for p in parts], " UNION ALL BY NAME ")))) TO '$(cache)' (FORMAT parquet)")  # areas in km² on the WGS 84 ellipsoid
-end
-DBInterface.execute(con, "CREATE OR REPLACE TABLE features AS SELECT * FROM '$(cache)'")
-name, by, title, source = "{{ogcName}}", "{{ogcColour}}", collection, landing
+collection, landing = "{{ogcCollection}}", "{{ogcUrl}}"
+o = ogc_features(con, landing, collection; folder, page = {{pageSize}})  # page after page, kept in the folder as GeoParquet, then read from there, as the table features
+name, by, title, source, stem, n = "{{ogcName}}", "{{ogcColour}}", collection, landing, o.stem, o.n
 columns = query("DESCRIBE features").column_name
 for c in (name, by)
 	c in columns || error("The features have no column $(c): their columns are $(join(columns, ", "))")
 end
-n = only(query("SELECT count(*) AS n FROM features").n)
-println(n, " features of ", collection, ", read from ", cache)
+println(n, " features of ", collection, ", read from ", o.file)
 '''
 
 # Next Steps action groups
@@ -754,10 +585,9 @@ label = "Beside GISCO's Units"
 desc = "The units of the most frequent value of Colour By, the level with the most units, beside GISCO's local administrative units of 2024 for the Country: their numbers, total areas, and the units of the same name whose areas differ most (GISCO's file, about 78 MB, is downloaded once)"
 models = ["wfs", "atom", "ogcapi"]
 code = '''
-lau = joinpath(folder, "LAU_RG_01M_2024_4326.gpkg")  # GISCO's local administrative units of 2024, the file the Eurostat GISCO panel keeps
-isfile(lau) || Downloads.download("https://gisco-services.ec.europa.eu/distribution/v2/lau/gpkg/LAU_RG_01M_2024_4326.gpkg", lau)
+lau = gisco_file("lau", "LAU_RG_01M_2024_4326"; folder)  # GISCO's local administrative units of 2024, the file the Eurostat GISCO panel keeps
 code = replace(uppercase("{{country}}"), "GR" => "EL")  # Eurostat writes EL for Greece
-DBInterface.execute(con, "CREATE OR REPLACE TABLE gisco AS SELECT LAU_NAME AS name, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(units(lau)) WHERE CNTR_CODE = '$(code)'")
+DBInterface.execute(con, "CREATE OR REPLACE TABLE gisco AS SELECT LAU_NAME AS name, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM $(vector_units(con, lau)) WHERE CNTR_CODE = '$(code)'")
 level = only(query("SELECT \"$(by)\" AS v FROM features GROUP BY ALL ORDER BY count(*) DESC LIMIT 1").v)
 DBInterface.execute(con, "CREATE OR REPLACE TABLE national AS SELECT CAST(\"$(name)\" AS VARCHAR) AS name, km2 FROM features WHERE \"$(by)\" = '$(level)'")
 t = query("SELECT (SELECT count(*) FROM national) AS units, (SELECT round(sum(km2)) FROM national) AS km2, (SELECT count(*) FROM gisco) AS lau, (SELECT round(sum(km2)) FROM gisco) AS lau_km2, (SELECT count(*) FROM national a JOIN gisco b ON lower(a.name) = lower(b.name)) AS same")
@@ -777,15 +607,8 @@ label = "Countries Side by Side"
 desc = "For every country of data.europa.eu, how many datasets match the theme, and how many of them offer a WFS, an Atom feed or an OGC API"
 models = ["find"]
 code = '''
-dir = mktempdir()
-function by_country(label, formats)  # the number of datasets of each country, from the country facet of one search
-	p = joinpath(dir, "$(label).json")
-	facet = isempty(formats) ? "" : "&facets={\"format\":[$(join(["\"$(f)\"" for f in formats], ","))]}"
-	Downloads.download("$(api)?q=$(words)&filter=dataset&limit=0$(facet)", p)
-	DBInterface.execute(con, "CREATE OR REPLACE TABLE \"$(label)\" AS SELECT i->>'/id' AS country, CAST(i->>'/count' AS BIGINT) AS n FROM (SELECT unnest(CAST(f->'/items' AS JSON[])) AS i FROM (SELECT unnest(CAST(json_extract(content, '/result/facets') AS JSON[])) AS f FROM read_text('$(p)')) WHERE f->>'/id' = 'country')")
-end
-by_country("all", String[]); by_country("wfs", ["WFS_SRVC"]); by_country("atom", ["ATOM"]); by_country("ogc", ["OGCFEAT", "ogcapi-features"])
-c = query("SELECT upper(a.country) AS country, a.n AS datasets, coalesce(w.n, 0) AS wfs, coalesce(t.n, 0) AS atom, coalesce(o.n, 0) AS ogc FROM \"all\" a LEFT JOIN wfs w USING (country) LEFT JOIN atom t USING (country) LEFT JOIN ogc o USING (country) ORDER BY datasets DESC")
+inspire_countries(con, theme)  # the datasets of each country, and those with a service of each kind, as the table countries
+c = query("SELECT * FROM countries")
 println("Datasets of data.europa.eu matching ", theme, " and inspire, by country, and those with a service of each kind (by the format data.europa.eu gives the service)")
 println(rpad("country", 9), rpad("datasets", 10), rpad("WFS", 8), rpad("Atom", 8), "OGC API")
 for i in eachindex(c.country)
