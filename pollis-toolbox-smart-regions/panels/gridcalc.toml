@@ -1,0 +1,924 @@
+# Grid Calculations: map algebra on rasters (local, focal and zonal operations), resampling and rasterizing, with Rasters.jl and Stencils.jl
+
+[meta]
+title = "Grid Calculations"
+viewType = "pollis.gridcalc"
+defaultModel = "local"
+decisionFirstColumn = "Operation"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "Stencils.jl"
+github = "https://github.com/rafaqz/Stencils.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["Proj.jl", "Tables.jl", "ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "gridcalc/factsheet.md"
+bundled = true
+description = "One-page reference: the five operations, the functions that compute them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "gridcalc/overview.md"
+bundled = true
+description = "Map algebra: local, focal and zonal operations on grids of cells, and moving between grids"
+
+[[wikis]]
+name = "Diagnostics"
+file = "gridcalc/diagnostics.md"
+bundled = true
+description = "Grids that do not line up, cells recorded as points, edges of a window, missing cells, areas in degrees"
+
+[[wikis]]
+name = "Decision Guide"
+file = "gridcalc/decision-guide.md"
+bundled = true
+description = "Which operation answers which question, and which method of resampling suits which values"
+
+[[wikis]]
+separator = true
+label = "Operations"
+
+[[wikis]]
+name = "Local Operations"
+file = "gridcalc/local.md"
+bundled = true
+
+[[wikis]]
+name = "Focal Operations"
+file = "gridcalc/focal.md"
+bundled = true
+
+[[wikis]]
+name = "Zonal Operations"
+file = "gridcalc/zonal.md"
+bundled = true
+
+[[wikis]]
+name = "Resampling and Aggregation"
+file = "gridcalc/resampling.md"
+bundled = true
+
+[[wikis]]
+name = "Rasterizing"
+file = "gridcalc/rasterizing.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Sch2026b"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Hij2026a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "Tom1990a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "ESAA2022a"
+
+[[references]]
+key = "ZWVL...2022a"
+
+[[faq]]
+question = "What are local, focal and zonal operations?"
+answer = '''
+They are the three kinds of map algebra on a grid of cells. A local operation computes each cell from the same cell of one or more grids, such as a reclassification or the sum of two layers. A focal operation computes each cell from the cells around it, in a window such as 3 by 3 cells: a moving average or the range of heights. A zonal operation computes one value for each zone, such as the mean of the cells inside each area of a polygon layer.
+
+The Local, Focal and Zonal tabs compute one of each; Resample and Rasterize move values between grids, and from polygons onto a grid.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Why must two rasters be on the same grid before I combine them?"
+answer = '''
+A local operation pairs each cell of one raster with the cell at the same place in the other. When the grids differ in cell size, origin or coordinate system, the cells do not match one to one, and one raster must first be resampled onto the grid of the other.
+
+The Local tab puts the elevation onto the 10 m grid of the land cover before it compares the two; Grids Side by Side prints the coordinate system, cell size and extent of each raster.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Which resampling method should I use for land cover?"
+answer = '''
+A raster of categories, such as land cover classes, must be resampled by a method that returns one of its classes: the most common class in each new cell (mode) or the class of the nearest cell. An average of class codes is not a class.
+
+Continuous values, such as elevation, can be averaged, or interpolated bilinearly when the new cells are smaller.
+'''
+wiki = "Resampling and Aggregation"
+
+[[faq]]
+question = "What happens at the edges of a focal window?"
+answer = '''
+Near the edge of the grid, part of the window lies outside it. The Edges input decides what then happens: Cells Inside computes the statistic from the cells of the window that lie in the grid, as terra's focal does with na.rm = TRUE; Missing returns missing wherever the window reaches past the edge.
+
+Edges Compared counts the cells whose value differs between the two.
+'''
+wiki = "Focal Operations"
+hidden = true
+
+[[faq]]
+question = "Which cells does a zonal statistic count as inside an area?"
+answer = '''
+Rasters.jl and terra count a cell as inside an area when its centre is. A small area can then hold few cells, or none, and a cell on the boundary belongs to only one of the areas it touches.
+
+Cells per Area lists the number of cells each area counts.
+'''
+wiki = "Zonal Operations"
+hidden = true
+
+[[faq]]
+question = "How is an area measured on a grid in longitude and latitude?"
+answer = '''
+A cell of a grid in degrees spans a fixed angle, so its area shrinks towards the poles. cellarea of Rasters.jl computes the area of each cell on the sphere, in square metres; the Local tab sums those areas within each elevation band.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "local"
+label = "Local"
+
+[[models]]
+id = "focal"
+label = "Focal"
+
+[[models]]
+id = "zonal"
+label = "Zonal"
+
+[[models]]
+id = "resample"
+label = "Resample"
+
+[[models]]
+id = "rasterize"
+label = "Rasterize"
+
+[[bullets]]
+text = "Local"
+detail = "Each cell computed from the same cell of one or more grids: elevation bands, and the share of a land cover class in each band"
+
+[[bullets]]
+text = "Focal"
+detail = "Each cell computed from a window of cells around it: moving mean, median, maximum, minimum, standard deviation or relief"
+
+[[bullets]]
+text = "Zonal"
+detail = "One value for each area of a polygon layer from the cells inside it: elevation and the share of a land cover class"
+
+[[bullets]]
+text = "Resample"
+detail = "Coarser cells from blocks of the elevation's cells, and the land cover put onto that grid by the most common or the nearest class"
+
+[[bullets]]
+text = "Rasterize"
+detail = "Polygons onto a grid: each cell takes the value of the area at its centre, or the share of the cell the areas cover"
+
+[[decisionRows]]
+task = "Local"
+context = "Cell by cell"
+purpose = "Reclassify a raster, or combine rasters on the same grid, such as land cover by elevation"
+
+[[decisionRows]]
+task = "Focal"
+context = "Neighbourhood"
+purpose = "Smooth a raster, or measure how much it varies around each cell, such as local relief"
+
+[[decisionRows]]
+task = "Zonal"
+context = "By area"
+purpose = "Summarise a raster within each area, such as the mean elevation or the tree cover of each district"
+
+[[decisionRows]]
+task = "Resample"
+context = "Change of grid"
+purpose = "Coarser or finer cells, or one raster put onto the grid of another"
+
+[[decisionRows]]
+task = "Rasterize"
+context = "Polygons to cells"
+purpose = "Put the values of areas onto a grid, to combine them with rasters"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. Save the Result as Cloud-Optimised GeoTIFF writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "demFile"
+label = "Elevation File"
+tooltip = "A GeoTIFF of one band of continuous values, in the folder above, or an absolute path. With the default, london-dem.tif, the example first reads the Copernicus DEM GLO-30 over west and central London, about 30 m cells, from its Cloud-Optimised GeoTIFF on AWS, unless the folder has a london-dem.tif already: the file of the Raster Files panel."
+default = "london-dem.tif"
+
+[[inputs]]
+id = "coverFile"
+label = "Land Cover File"
+tooltip = "A GeoTIFF of categories in the coordinate system of the elevation, in the folder above, or an absolute path. With the default, london-worldcover.tif, the example first reads ESA WorldCover 2021 over central and west London, 10 m cells, from its Cloud-Optimised GeoTIFF on AWS, unless the folder has a london-worldcover.tif already."
+default = "london-worldcover.tif"
+models = ["local", "zonal", "resample"]
+
+[[inputs]]
+id = "zonesFile"
+label = "Areas File"
+tooltip = "The areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, london-msoa.gpkg, the example first downloads the middle layer super output areas (MSOAs) of London with the percentage of households without a car or van in the Census 2021 (no_car), unless the folder has a london-msoa.gpkg already: the file of the Spatial Autocorrelation panel."
+default = "london-msoa.gpkg"
+models = ["zonal", "rasterize"]
+
+[[inputs]]
+id = "zonesCrs"
+label = "Areas Coordinate System"
+tooltip = "The coordinate system of the areas file, such as EPSG:4326 for longitude and latitude or EPSG:27700 for the British National Grid. The areas are transformed to the coordinate system of the elevation."
+default = "EPSG:4326"
+models = ["zonal", "rasterize"]
+
+[[inputs]]
+id = "areaId"
+label = "Area Column"
+tooltip = "The column of the areas file that names each area."
+default = "msoa"
+models = ["zonal"]
+
+[[inputs]]
+id = "valueColumn"
+label = "Value Column"
+tooltip = "The numeric column of the areas file whose values are put onto the grid."
+default = "no_car"
+models = ["rasterize"]
+
+[[inputs]]
+id = "breaks"
+label = "Breaks"
+tooltip = "The limits of the elevation bands, in metres, from low to high: each band holds the values from one limit up to, but not including, the next. Cells outside the breaks form a band of their own."
+default = "0, 20, 40, 60, 80, 100, 150, 250"
+models = ["local"]
+newRow = true
+
+[[inputs]]
+id = "coverClass"
+label = "Land Cover Class"
+kind = "select"
+tooltip = "The class of ESA WorldCover whose share is computed: in each elevation band (Local) or in each area (Zonal)."
+default = "50"
+models = ["local", "zonal"]
+
+[[inputs.options]]
+value = "10"
+label = "Tree Cover"
+
+[[inputs.options]]
+value = "20"
+label = "Shrubland"
+
+[[inputs.options]]
+value = "30"
+label = "Grassland"
+
+[[inputs.options]]
+value = "40"
+label = "Cropland"
+
+[[inputs.options]]
+value = "50"
+label = "Built-Up"
+
+[[inputs.options]]
+value = "60"
+label = "Bare or Sparse Vegetation"
+
+[[inputs.options]]
+value = "80"
+label = "Permanent Water Bodies"
+
+[[inputs.options]]
+value = "90"
+label = "Herbaceous Wetland"
+
+[[inputs]]
+id = "focalStat"
+label = "Statistic"
+kind = "select"
+tooltip = "The statistic of the cells of each window."
+default = "mean"
+models = ["focal"]
+newRow = true
+
+[[inputs.options]]
+value = "mean"
+label = "Mean"
+
+[[inputs.options]]
+value = "median"
+label = "Median"
+
+[[inputs.options]]
+value = "maximum"
+label = "Maximum"
+
+[[inputs.options]]
+value = "minimum"
+label = "Minimum"
+
+[[inputs.options]]
+value = "std"
+label = "Standard Deviation"
+
+[[inputs.options]]
+value = "relief"
+label = "Relief (Maximum Minus Minimum)"
+
+[[inputs]]
+id = "shape"
+label = "Window"
+kind = "select"
+tooltip = "Square: every cell within the radius in rows and columns, 3 x 3 cells at radius 1. Circle: the cells whose centres lie within the radius of the centre cell."
+default = "Window"
+models = ["focal"]
+
+[[inputs.options]]
+value = "Window"
+label = "Square"
+
+[[inputs.options]]
+value = "Circle"
+label = "Circle"
+
+[[inputs]]
+id = "radius"
+label = "Radius in Cells"
+tooltip = "How many cells the window reaches from its centre: 1 gives a square of 3 x 3 cells, 2 of 5 x 5."
+default = "1"
+models = ["focal"]
+
+[[inputs]]
+id = "edges"
+label = "Edges"
+kind = "select"
+tooltip = "Where the window reaches past the edge of the grid: the statistic of the cells inside the grid, or missing."
+default = "inside"
+models = ["focal"]
+
+[[inputs.options]]
+value = "inside"
+label = "Cells Inside"
+
+[[inputs.options]]
+value = "missing"
+label = "Missing"
+
+[[inputs]]
+id = "zonalStat"
+label = "Elevation Statistic"
+kind = "select"
+tooltip = "The statistic of the elevation of the cells inside each area."
+default = "mean"
+models = ["zonal"]
+newRow = true
+
+[[inputs.options]]
+value = "mean"
+label = "Mean"
+
+[[inputs.options]]
+value = "median"
+label = "Median"
+
+[[inputs.options]]
+value = "maximum"
+label = "Maximum"
+
+[[inputs.options]]
+value = "minimum"
+label = "Minimum"
+
+[[inputs.options]]
+value = "std"
+label = "Standard Deviation"
+
+[[inputs]]
+id = "factor"
+label = "Block of Cells"
+tooltip = "The new cells are blocks of this many cells of the elevation a side: 10 turns cells of about 30 m into cells of about 300 m."
+default = "10"
+models = ["resample", "rasterize"]
+newRow = true
+
+[[inputs]]
+id = "demMethod"
+label = "Elevation Method"
+kind = "select"
+tooltip = "The statistic of the cells of each block of the elevation."
+default = "mean"
+models = ["resample"]
+
+[[inputs.options]]
+value = "mean"
+label = "Mean"
+
+[[inputs.options]]
+value = "median"
+label = "Median"
+
+[[inputs.options]]
+value = "maximum"
+label = "Maximum"
+
+[[inputs.options]]
+value = "minimum"
+label = "Minimum"
+
+[[inputs]]
+id = "coverMethod"
+label = "Land Cover Method"
+kind = "select"
+tooltip = "How the land cover is put onto the coarser grid: the most common class in each new cell, or the class of the cell nearest its centre. Classes are never averaged."
+default = "mode"
+models = ["resample"]
+
+[[inputs.options]]
+value = "mode"
+label = "Most Common Class"
+
+[[inputs.options]]
+value = "near"
+label = "Nearest Cell"
+
+[[inputs]]
+id = "rasterizeMethod"
+label = "Method"
+kind = "select"
+tooltip = "Value: each cell takes the value of the area its centre lies in. Coverage: the share of each cell that the areas cover, from 0 to 1."
+default = "value"
+models = ["rasterize"]
+
+[[inputs.options]]
+value = "value"
+label = "Value at the Cell Centre"
+
+[[inputs.options]]
+value = "coverage"
+label = "Share Covered"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using Rasters, ArchGDAL, Statistics
+using Rasters.Lookups: Intervals, Center, Points
+{{?model=local}}import Proj  # for the areas of the cells on the sphere
+{{?model=focal}}using Stencils
+{{?model=zonal|rasterize}}using DuckDB, Tables, Downloads
+
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+dem_path = joinpath(folder, "{{demFile}}")  # an absolute path is kept as it is
+{{?demFile=london-dem.tif}}# Example file: the Copernicus DEM GLO-30 over west and central London, about 30 m cells, read from the Cloud-Optimised GeoTIFF of its tile on AWS unless the folder has london-dem.tif already. Replace "london-dem.tif" with your own GeoTIFF.
+{{?demFile=london-dem.tif}}isfile(dem_path) || write(dem_path, read(Raster("/vsicurl/https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N51_00_W001_00_DEM/Copernicus_DSM_COG_10_N51_00_W001_00_DEM.tif"; lazy = true)[X(-0.6 .. 0.0), Y(51.3 .. 51.7)]); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))
+ArchGDAL.setconfigoption("GTIFF_POINT_GEO_IGNORE", "TRUE")  # a GeoTIFF that records its cells as points, as the Copernicus DEM does: GDAL gives the points themselves, not the corners of cells around them
+dem = read(Raster(dem_path; lazy = true))  # the elevation in memory
+Rasters.Lookups.sampling(lookup(dem, X)) isa Points && (dem = set(dem, X => Intervals(Center()), Y => Intervals(Center())))  # each point the centre of its cell, as GDAL and terra take it
+{{?model=local|zonal|resample}}cover_path = joinpath(folder, "{{coverFile}}")
+{{?model=local|zonal|resample}}{{?coverFile=london-worldcover.tif}}# Example file: ESA WorldCover 2021, land cover in 11 classes in 10 m cells, over central and west London, read from the Cloud-Optimised GeoTIFF of its tile on AWS unless the folder has london-worldcover.tif already. Replace "london-worldcover.tif" with your own GeoTIFF of classes.
+{{?model=local|zonal|resample}}{{?coverFile=london-worldcover.tif}}isfile(cover_path) || write(cover_path, read(Raster("/vsicurl/https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N51W003_Map.tif"; lazy = true)[X(-0.3 .. 0.0), Y(51.4 .. 51.6)]); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))
+{{?model=local|zonal|resample}}cover = read(Raster(cover_path; lazy = true))  # the land cover in memory, missing where the file has no data
+{{?model=zonal|rasterize}}con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
+{{?model=zonal|rasterize}}DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+{{?model=zonal|rasterize}}DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+{{?model=zonal|rasterize}}zones_path = joinpath(folder, "{{zonesFile}}")
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}# Example file: the middle layer super output areas (MSOAs) of London, boundaries of the Office for National Statistics, with no_car, the percentage of households without a car or van in the Census 2021 (table TS045, through Nomis), written to london-msoa.gpkg unless the folder has one already. Replace "london-msoa.gpkg" with your own file.
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}if !isfile(zones_path)
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}	boundaries = Downloads.download("https://services1.arcgis.com/ESMARspQHYMw9BZ9/arcgis/rest/services/MSOA_2021_EW_BSC_V3_RUC/FeatureServer/0/query?geometry=-0.52,51.28,0.34,51.70&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=MSOA21CD,MSOA21NM&outSR=4326&f=geojson")  # the MSOAs in a box around London
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}	census = Downloads.download("https://www.nomisweb.co.uk/api/v01/dataset/NM_2063_1.data.csv?date=latest&geography=2013265927TYPE152&c2021_cars_5=0,1&measures=20100&select=geography_code,c2021_cars_5,obs_value")  # all households, and those without a car or van, in each MSOA of the London region
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}	DBInterface.execute(con, """COPY (SELECT b.MSOA21CD AS msoa, b.MSOA21NM AS name, round(100 * sum(c.OBS_VALUE) FILTER (WHERE c.C2021_CARS_5 = 1) / sum(c.OBS_VALUE) FILTER (WHERE c.C2021_CARS_5 = 0), 2) AS no_car, any_value(b.geom) AS geom
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}		FROM ST_Read('$(boundaries)') b JOIN read_csv('$(census)') c ON c.GEOGRAPHY_CODE = b.MSOA21CD GROUP BY ALL) TO '$(zones_path)' (FORMAT GDAL, DRIVER 'GPKG', LAYER_NAME 'msoa', SRS 'EPSG:4326')""")
+{{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}end
+{{?model=zonal|rasterize}}raster_crs = convert(String, convert(WellKnownText, crs(dem)))  # the coordinate system of the rasters, as WKT
+{{?model=zonal|rasterize}}DBInterface.execute(con, "CREATE OR REPLACE TABLE areas AS SELECT * EXCLUDE (geom), ST_Transform(geom, '{{zonesCrs}}', '$(raster_crs)') AS geom FROM ST_Read('$(zones_path)')")  # the areas, in the coordinate system of the rasters
+{{?model=local}}
+{{?model=local}}# Local: each cell computed from the same cell of one or more grids, here by broadcasting a function over the cells
+{{?model=local}}breaks = Float64[{{breaks}}]  # the limits of the bands, in metres
+{{?model=local}}band_of(h) = ismissing(h) ? missing : (k = searchsortedlast(breaks, h); 1 <= k < length(breaks) ? k : 0)  # band k holds breaks[k] <= h < breaks[k + 1]; 0 outside the breaks
+{{?model=local}}bands = band_of.(dem)  # a raster of band numbers on the grid of the elevation
+{{?model=local}}cell_m2 = cellarea(dem)  # the area of each cell on the sphere, in square metres
+{{?model=local}}# Two rasters are combined cell by cell only on one grid: the elevation is put onto the 10 m grid of the land cover, interpolated bilinearly
+{{?model=local}}dem10 = resample(dem; to = cover, method = :bilinear)
+{{?model=local}}in_class = cover .== UInt8({{coverClass}})  # true where the land cover is of the class chosen, missing where it has no data
+{{?model=local}}bands10 = band_of.(dem10)
+{{?model=local}}label(k) = k == 0 ? "outside the breaks" : "$(breaks[k]) to $(breaks[k + 1]) m"
+{{?model=local}}result = bands
+{{?model=local}}[(band = label(k), cells = count(isequal(k), bands), km2 = round(sum(cell_m2[isequal.(bands, k)]) / 1e6, digits = 2), class_share = (v = collect(skipmissing(in_class[isequal.(bands10, k)])); isempty(v) ? missing : round(mean(v), digits = 4))) for k in 0:length(breaks) - 1 if any(isequal(k), bands)]  # the share is missing for a band the land cover does not reach
+{{?model=focal}}
+{{?model=focal}}# Focal: each cell computed from a window of cells around it
+{{?model=focal}}relief(v) = maximum(v) - minimum(v)  # the range of the values in the window
+{{?model=focal}}window = {{shape}}({{radius}})  # Window(1): 3 x 3 cells; Circle(r): the cells within r of the centre
+{{?model=focal}}cells = Matrix{Union{Missing, Float64}}(parent(dem))  # the cells, as a matrix that can hold missing values
+{{?model=focal}}{{?edges=inside}}values = mapstencil(v -> {{focalStat}}(skipmissing(v)), window, cells; boundary = Remove(missing))  # beyond the edge the window holds missing cells, which the statistic skips
+{{?model=focal}}{{?edges=missing}}values = mapstencil({{focalStat}}, window, cells; boundary = Remove(missing))  # missing wherever the window reaches past the edge
+{{?model=focal}}result = rebuild(dem; data = values, missingval = missing)  # the values on the grid of the elevation
+{{?model=focal}}println(size(result, X), " x ", size(result, Y), " cells, ", count(ismissing, result), " missing; values from ", round(minimum(skipmissing(result)), digits = 2), " to ", round(maximum(skipmissing(result)), digits = 2))
+{{?model=zonal}}
+{{?model=zonal}}# Zonal: one value for each area from the cells whose centres lie inside it; the areas within the land cover
+{{?model=zonal}}(xa, xb), (ya, yb) = Rasters.bounds(cover, X), Rasters.bounds(cover, Y)  # the edges of the land cover
+{{?model=zonal}}t = Tables.columntable(DBInterface.execute(con, "SELECT \"{{areaId}}\"::VARCHAR AS id, ST_AsWKB(geom) AS wkb FROM areas WHERE ST_Within(geom, ST_MakeEnvelope($xa, $ya, $xb, $yb)) ORDER BY id"))
+{{?model=zonal}}geoms = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in t.wkb]  # the polygons, as GDAL geometries
+{{?model=zonal}}elevation = zonal({{zonalStat}}, dem; of = geoms, skipmissing = true, progress = false)  # the statistic of the elevation in each area
+{{?model=zonal}}class_share = zonal(v -> mean(==(UInt8({{coverClass}})), v), cover; of = geoms, skipmissing = true, progress = false)  # the share of the cells of the class chosen
+{{?model=zonal}}DBInterface.execute(con, "CREATE OR REPLACE TABLE zonal_result AS SELECT * FROM (VALUES $(join(["('$(id)', $(e), $(s))" for (id, e, s) in zip(t.id, elevation, class_share)], ", "))) v(id, elevation, class_share)")  # for the maps of the Next Steps
+{{?model=zonal}}println(length(geoms), " areas")
+{{?model=zonal}}[(id = id, elevation = round(e, digits = 2), class_share = round(s, digits = 4)) for (id, e, s) in zip(t.id, elevation, class_share)]
+{{?model=resample}}
+{{?model=resample}}# Resample: coarser cells, from blocks of cells of the elevation, and the land cover put onto the same grid
+{{?model=resample}}coarse = Rasters.aggregate({{demMethod}}, dem, {{factor}})  # blocks of {{factor}} x {{factor}} cells; a partial block at the edge is left out
+{{?model=resample}}cover_coarse = resample(cover; to = coarse, method = :{{coverMethod}})  # classes are never averaged: the most common class, or the nearest cell's
+{{?model=resample}}shares(r) = (v = collect(skipmissing(r)); [Int(k) => round(count(==(k), v) / length(v), digits = 4) for k in sort(unique(v))])
+{{?model=resample}}result = coarse
+{{?model=resample}}println("Elevation: ", size(dem, X), " x ", size(dem, Y), " cells, now ", size(coarse, X), " x ", size(coarse, Y))
+{{?model=resample}}println("Land cover classes, share of cells: before ", shares(cover))
+{{?model=resample}}println("                                    after  ", shares(cover_coarse))
+{{?model=rasterize}}
+{{?model=rasterize}}# Rasterize: the areas onto a grid of blocks of {{factor}} x {{factor}} cells of the elevation
+{{?model=rasterize}}grid = Rasters.aggregate(mean, dem, {{factor}})
+{{?model=rasterize}}t = Tables.columntable(DBInterface.execute(con, "SELECT \"{{valueColumn}}\"::DOUBLE AS value, ST_AsWKB(geom) AS wkb FROM areas WHERE \"{{valueColumn}}\" IS NOT NULL"))
+{{?model=rasterize}}geoms = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in t.wkb]
+{{?model=rasterize}}{{?rasterizeMethod=value}}result = rasterize(last, geoms; to = grid, fill = t.value, missingval = missing, progress = false)  # each cell takes the value of the area its centre lies in
+{{?model=rasterize}}{{?rasterizeMethod=coverage}}result = coverage(union, geoms; to = grid, progress = false)  # the share of each cell inside the areas, from 0 to 1
+{{?model=rasterize}}println(size(result, X), " x ", size(result, Y), " cells, ", count(!ismissing, result), " with a value; from ", round(minimum(skipmissing(result)), digits = 3), " to ", round(maximum(skipmissing(result)), digits = 3))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "plot-result"
+label = "Plot the Result"
+desc = "The result as a heat map drawn with ECharts, north up, at most 200 cells a side (larger grids averaged over blocks of cells)"
+models = ["local", "focal", "resample", "rasterize"]
+code = '''
+using ECharts
+
+f = max(1, cld(max(size(result, X), size(result, Y)), 200))  # at most 200 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, result, f; skipmissingval = true) : result, (X, Y))
+north_first = first(lookup(small, Y)) > last(lookup(small, Y))
+nx, ny = size(small)
+heat = [[i - 1, (north_first ? ny - j : j - 1), round(Float64(small[i, j]), digits = 3)] for i in 1:nx, j in 1:ny if !ismissing(small[i, j])]  # column, row from the south, value
+lo, hi = extrema(skipmissing(small))
+EChart(ec_width = 760, ec_height = round(Int, 60 + 680 * ny / nx), title = [ECharts.Title(text = "{{model}}")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "category", data = string.(round.(lookup(small, X), digits = 3)), name = "x")],
+	yAxis = [ECharts.Axis(_type = "category", data = string.(round.(north_first ? reverse(lookup(small, Y)) : lookup(small, Y), digits = 3)), name = "y")],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"])),
+	series = [ECharts.HeatmapSeries(name = "Value", data = heat)])
+'''
+
+[[actionGroups.actions]]
+id = "map-result"
+label = "Show on a Map"
+desc = "The result on an OpenStreetMap base map in Pollis's map view, at most 80 cells a side (larger grids averaged over blocks of cells); click a cell for its value"
+models = ["local", "focal", "resample", "rasterize"]
+code = '''
+using DuckDB
+
+f = max(1, cld(max(size(result, X), size(result, Y)), 80))  # at most 80 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, result, f; skipmissingval = true) : result, (X, Y))
+edges(d) = [(min(lo, hi), max(lo, hi)) for (lo, hi) in Rasters.intervalbounds(small, d)]  # each cell's two edges
+xe, ye = edges(X), edges(Y)
+rows = ["($(round(Float64(small[i, j]), digits = 3)), $(xe[i][1]), $(ye[j][1]), $(xe[i][2]), $(ye[j][2]))" for i in axes(small, 1), j in axes(small, 2) if !ismissing(small[i, j])]
+db = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(db, "LOAD spatial")
+DBInterface.execute(db, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+file = joinpath(mktempdir(), "cells.geojson")
+DBInterface.execute(db, "COPY (SELECT value, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), '$(convert(String, convert(WellKnownText, crs(dem))))', 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(value, x0, y0, x1, y1)) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(file; name = "{{model}}", column = "value", opacity = 0.7)))
+'''
+
+[[actionGroups.actions]]
+id = "map-areas"
+label = "Map of the Areas"
+desc = "The areas coloured by the elevation statistic, or by the share of the class chosen, on an OpenStreetMap base map in Pollis's map view; click an area for its values"
+models = ["zonal"]
+code = '''
+file = joinpath(mktempdir(), "areas.geojson")
+DBInterface.execute(con, "COPY (SELECT a.\"{{areaId}}\"::VARCHAR AS id, r.elevation, r.class_share, ST_Transform(a.geom, '$(raster_crs)', 'EPSG:4326') AS geom FROM areas a JOIN zonal_result r ON r.id = a.\"{{areaId}}\"::VARCHAR) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(file; name = "Elevation ({{zonalStat}})", column = "elevation", opacity = 0.7), Pollis.layer(file; name = "Share of class {{coverClass}}", column = "class_share", opacity = 0.7)))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "grids"
+label = "Grids Side by Side"
+desc = "The coordinate system, size, cell size, extent and sampling of each raster of the tab: grids that differ in any of them must be resampled before they are combined cell by cell"
+code = '''
+crs_name(r) = (m = match(r"^\w+\[\"([^\"]+)\"", convert(String, convert(WellKnownText, crs(r)))); m === nothing ? "none recorded" : m[1])
+function describe(name, r)
+	println(name, ": ", size(r, X), " x ", size(r, Y), " cells of ", round(abs(step(lookup(r, X))), sigdigits = 6), " by ", round(abs(step(lookup(r, Y))), sigdigits = 6), ", ", crs_name(r))
+	println("    x from ", round.(Rasters.bounds(r, X), digits = 6), ", y from ", round.(Rasters.bounds(r, Y), digits = 6), "; cells as ", nameof(typeof(Rasters.Lookups.sampling(lookup(r, X)))))
+end
+describe("Elevation", dem)
+@isdefined(cover) && describe("Land cover", cover)
+@isdefined(result) && describe("Result", result)
+'''
+
+[[actionGroups.actions]]
+id = "missing-cells"
+label = "Missing Cells"
+desc = "How many cells of each raster of the tab are missing: at the edges of a focal window, outside the land cover, or outside the areas"
+code = '''
+for (name, r) in (("Elevation", dem), ("Land cover", @isdefined(cover) ? cover : nothing), ("Result", @isdefined(result) ? result : nothing))
+	r === nothing && continue
+	m = count(ismissing, r)
+	println(rpad(name, 12), m, " of ", length(r), " cells missing (", round(100 * m / length(r), digits = 2), "%)")
+end
+'''
+
+[[actionGroups.actions]]
+id = "cells-per-area"
+label = "Cells per Area"
+desc = "How many cells of the elevation and of the land cover have their centres inside each area: the areas with the fewest cells, whose statistics rest on little"
+models = ["zonal"]
+code = '''
+n_dem = zonal(v -> count(Returns(true), v), dem; of = geoms, progress = false)
+n_cover = zonal(v -> count(Returns(true), v), cover; of = geoms, progress = false)
+order = sortperm(n_dem)
+println("Cells per area, elevation: ", minimum(n_dem), " to ", maximum(n_dem), "; land cover: ", minimum(n_cover), " to ", maximum(n_cover))
+[(id = t.id[i], elevation_cells = n_dem[i], land_cover_cells = n_cover[i]) for i in order[1:min(10, end)]]
+'''
+
+[[actionGroups.actions]]
+id = "edges-compared"
+label = "Edges Compared"
+desc = "The window's statistic with the cells inside the grid and with missing beyond the edge: how many cells differ, all of them along the edges"
+models = ["focal"]
+code = '''
+inside = mapstencil(v -> {{focalStat}}(skipmissing(v)), window, cells; boundary = Remove(missing))
+beyond = mapstencil({{focalStat}}, window, cells; boundary = Remove(missing))
+differ = count(i -> !isequal(inside[i], beyond[i]), eachindex(inside))
+println(differ, " of ", length(inside), " cells differ: those within ", {{radius}}, " cell(s) of an edge, or next to a missing cell")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "terra-local"
+label = "Replicate with terra"
+desc = "The bands of 0, 20, 40, 60, 80, 100, 150 and 250 m and their share of built-up land, recomputed beside the values of R's terra 1.9.60 (classify, resample and zonal) on the example files"
+models = ["local"]
+when = "demFile=london-dem.tif"
+code = '''
+# terra 1.9.60 with GDAL 3.8.5, on london-dem.tif and london-worldcover.tif: classify(dem, rcl, right = FALSE, others = 0), freq; resample(dem, cover, "bilinear"), zonal(cover == 50, bands10, mean)
+terra_cells = [274, 456350, 582600, 350779, 235404, 193478, 206855, 46420]
+terra_built = [0.664019337, 0.6087972588, 0.6031256709, 0.5128887885, 0.4422478791, 0.3669873171, 0.2588640436]
+b = Float64[0, 20, 40, 60, 80, 100, 150, 250]
+band(h) = ismissing(h) ? missing : (k = searchsortedlast(b, h); 1 <= k < length(b) ? k : 0)
+jb = band.(dem)
+jb10 = band.(resample(dem; to = cover, method = :bilinear))
+built = cover .== UInt8(50)
+println(rpad("band", 6), rpad("cells, Julia", 15), rpad("terra", 10), rpad("built-up share, Julia", 24), "terra")
+for k in 0:7
+	share = any(isequal(k), jb10) ? mean(skipmissing(built[isequal.(jb10, k)])) : missing
+	println(rpad(k, 6), rpad(count(isequal(k), jb), 15), rpad(terra_cells[k + 1], 10), rpad(ismissing(share) ? "none" : round(share, digits = 6), 24), k < 7 ? terra_built[k + 1] : "none")
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-focal"
+label = "Replicate with terra"
+desc = "The mean and the relief in a 3 x 3 window, the cells inside the grid at the edges, recomputed beside the values of R's terra 1.9.60 (focal with na.rm = TRUE) on the example file"
+models = ["focal"]
+when = "demFile=london-dem.tif"
+code = '''
+# terra 1.9.60, on london-dem.tif: focal(dem, w = 3, fun = "mean", na.rm = TRUE), and the maximum less the minimum; rows and columns from 1, north first
+terra_mean_all = 51.39084073
+terra_relief_all = 5.06936182
+terra_cells = [(1, 1) => 142.9947243, (2, 2) => 142.0662706, (720, 720) => 21.79421213, (1440, 1439) => 214.484787, (100, 1000) => 96.80016073]
+m3 = mapstencil(v -> mean(skipmissing(v)), Window(1), cells; boundary = Remove(missing))
+r3 = mapstencil(v -> relief(skipmissing(v)), Window(1), cells; boundary = Remove(missing))
+println("Mean of the focal means: Julia ", round(mean(m3), digits = 8), ", terra ", terra_mean_all)
+println("Mean of the focal relief: Julia ", round(mean(r3), digits = 8), ", terra ", terra_relief_all)
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+for ((row, col), value) in terra_cells
+	j = north_first ? row : size(dem, Y) + 1 - row
+	println("Row ", row, ", column ", col, ": Julia ", round(m3[col, j], digits = 7), ", terra ", value)
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-zonal"
+label = "Replicate with terra"
+desc = "The mean elevation and the share of tree cover in each area within the land cover, recomputed beside the values of R's terra 1.9.60 (extract with fun = mean) on the example files"
+models = ["zonal"]
+when = "zonesFile=london-msoa.gpkg"
+code = '''
+# terra 1.9.60, on london-dem.tif, london-worldcover.tif and london-msoa.gpkg: the areas within ext(cover), extract(dem, v, fun = mean, na.rm = TRUE), extract(cover == 10, v, fun = mean, na.rm = TRUE)
+terra_areas = 421
+terra_mean_elevation, terra_mean_tree = 27.88530927, 0.2838642596
+terra_picks = ["E02000001" => (26.8530797, 0.05236827921), "E02000176" => (66.9737106, 0.3377296977), "E02000372" => (22.84589997, 0.2356558317), "E02000621" => (7.039822845, 0.1729579868), "E02007115" => (27.03084619, 0.2596978739)]
+z = Tables.columntable(DBInterface.execute(con, "SELECT msoa::VARCHAR AS id, ST_AsWKB(geom) AS wkb FROM areas WHERE ST_Within(geom, ST_MakeEnvelope($xa, $ya, $xb, $yb)) ORDER BY id"))
+g = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in z.wkb]
+ze = zonal(mean, dem; of = g, skipmissing = true, progress = false)
+zt = zonal(v -> mean(==(UInt8(10)), v), cover; of = g, skipmissing = true, progress = false)
+println("Areas: Julia ", length(g), ", terra ", terra_areas)
+println("Mean over the areas of the mean elevation: Julia ", round(mean(ze), digits = 8), ", terra ", terra_mean_elevation)
+println("Mean over the areas of the share of tree cover: Julia ", round(mean(zt), digits = 8), ", terra ", terra_mean_tree)
+for (id, (e, s)) in terra_picks
+	i = findfirst(==(id), z.id)
+	println(id, ": elevation Julia ", round(ze[i], digits = 7), ", terra ", e, "; tree cover Julia ", round(zt[i], digits = 8), ", terra ", s)
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-resample"
+label = "Replicate with terra"
+desc = "The mean of blocks of 10 x 10 cells and the land cover put onto them by the most common class, recomputed beside the values of R's terra 1.9.60 (aggregate and resample) on the example files, the complete blocks only"
+models = ["resample"]
+when = "demFile=london-dem.tif"
+code = '''
+# terra 1.9.60 with GDAL 3.8.5, on the 1,430 columns that make complete blocks: aggregate(dem[1:1440, 1:1430, drop = FALSE], 10, fun = "mean", na.rm = TRUE), 143 x 144 blocks; resample(cover, a, method = "mode")
+terra_north_west, terra_south_east, terra_mean = 137.4932974, 191.8959338, 51.39161243
+terra_mode_shares = [10 => 0.2343987823, 30 => 0.05555555556, 50 => 0.6870243531, 80 => 0.02283105023, 90 => 0.0001902587519]
+a = Rasters.aggregate(mean, dem, 10)  # Rasters.jl leaves out the partial block at the edge
+north_first = first(lookup(a, Y)) > last(lookup(a, Y))
+println("Blocks: Julia ", size(a, X), " x ", size(a, Y), ", terra 143 x 144")
+println("North-west block: Julia ", round(a[1, north_first ? 1 : end], digits = 7), ", terra ", terra_north_west)
+println("South-east block: Julia ", round(a[end, north_first ? end : 1], digits = 7), ", terra ", terra_south_east)
+println("Mean of the blocks: Julia ", round(mean(a), digits = 8), ", terra ", terra_mean)
+cm = collect(skipmissing(resample(cover; to = a, method = :mode)))
+for (k, s) in terra_mode_shares
+	println("Class ", k, " by mode: Julia ", round(count(==(k), cm) / length(cm), digits = 8), ", terra ", s)
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-rasterize"
+label = "Replicate with terra"
+desc = "no_car put onto blocks of 10 x 10 cells, and the share of each cell the areas cover, recomputed beside the values of R's terra 1.9.60 (rasterize, and rasterize with cover = TRUE) on the example files"
+models = ["rasterize"]
+when = "zonesFile=london-msoa.gpkg"
+code = '''
+# terra 1.9.60 on the 143 x 144 complete blocks of aggregate(dem, 10): rasterize(v, a, field = "no_car"), rasterize(v, a, cover = TRUE)
+terra_value_cells, terra_value_mean = 11997, 34.35269732
+terra_coverage_sum, terra_coverage_cells = 11997.62973, 12349
+z = Tables.columntable(DBInterface.execute(con, "SELECT no_car::DOUBLE AS value, ST_AsWKB(geom) AS wkb FROM areas WHERE no_car IS NOT NULL"))
+g = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in z.wkb]
+a = Rasters.aggregate(mean, dem, 10)
+rv = rasterize(last, g; to = a, fill = z.value, missingval = missing, progress = false)
+rc = coverage(union, g; to = a, progress = false)
+println("Grid: Julia ", size(a, X), " x ", size(a, Y), ", terra 143 x 144")
+println("Cells with a value: Julia ", count(!ismissing, rv), ", terra ", terra_value_cells, "; mean value: Julia ", round(mean(skipmissing(rv)), digits = 8), ", terra ", terra_value_mean)
+println("Coverage: sum Julia ", round(sum(skipmissing(rc)), digits = 5), ", terra ", terra_coverage_sum, "; cells covered in part or whole: Julia ", count(x -> !ismissing(x) && x > 0, rc), ", terra ", terra_coverage_cells)
+'''
+
+[[actionGroups.actions]]
+id = "windows-compared"
+label = "Window Sizes Compared"
+desc = "The statistic in square windows of radius 1, 2 and 3 cells: how much its spread across the grid changes as the window grows"
+models = ["focal"]
+code = '''
+for r in 1:3
+	v = collect(skipmissing(mapstencil(x -> {{focalStat}}(skipmissing(x)), Window(r), cells; boundary = Remove(missing))))
+	println("Radius ", r, " (", 2r + 1, " x ", 2r + 1, " cells): mean ", round(mean(v), digits = 3), ", standard deviation ", round(std(v), digits = 3), ", 5% to 95% ", round.(quantile(v, [0.05, 0.95]), digits = 3))
+end
+'''
+
+[[actionGroups.actions]]
+id = "methods-compared"
+label = "Methods Compared"
+desc = "The land cover put onto the coarser grid by the most common class and by the nearest cell, and the blocks of elevation by their mean, median, maximum and minimum"
+models = ["resample"]
+code = '''
+println("Land cover, share of cells: original ", shares(cover))
+println("    most common class        ", shares(resample(cover; to = coarse, method = :mode)))
+println("    nearest cell             ", shares(resample(cover; to = coarse, method = :near)))
+for f in (mean, median, maximum, minimum)
+	v = vec(Rasters.aggregate(f, dem, {{factor}}))
+	println(rpad("Elevation, " * string(f), 22), "mean ", round(mean(v), digits = 2), ", 5% to 95% ", round.(quantile(v, [0.05, 0.95]), digits = 2))
+end
+'''
+
+[[actionGroups.actions]]
+id = "centres-touching"
+label = "Centres and Touching Cells"
+desc = "The elevation statistic of each area from the cells whose centres lie inside it, beside that from every cell the area touches: the areas where the two differ most"
+models = ["zonal"]
+code = '''
+touching = zonal({{zonalStat}}, dem; of = geoms, skipmissing = true, boundary = :touches, progress = false)
+d = touching .- elevation
+order = sortperm(abs.(d); rev = true)
+println("Largest difference ", round(maximum(abs, d), digits = 3), ", mean absolute difference ", round(mean(abs, d), digits = 4))
+[(id = t.id[i], centres = round(elevation[i], digits = 3), touching = round(touching[i], digits = 3)) for i in order[1:min(10, end)]]
+'''
+
+[[actionGroups.actions]]
+id = "value-coverage"
+label = "Value and Coverage"
+desc = "The cells that take an area's value beside the share of each cell the areas cover: cells along the boundary of the areas, covered only in part"
+models = ["rasterize"]
+code = '''
+rv = rasterize(last, geoms; to = grid, fill = t.value, missingval = missing, progress = false)
+rc = coverage(union, geoms; to = grid, progress = false)
+part = count(x -> !ismissing(x) && 0 < x < 1, rc)
+println("Cells with a value at their centre: ", count(!ismissing, rv), "; cells covered in part or whole: ", count(x -> !ismissing(x) && x > 0, rc), ", of them in part: ", part)
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "result-summary"
+label = "Summary of the Result"
+desc = "The mean, standard deviation and quantiles of the cells of the result, missing cells left out"
+models = ["local", "focal", "resample", "rasterize"]
+code = '''
+v = Float64.(collect(skipmissing(result)))
+println("Cells with a value: ", length(v), " of ", length(result))
+println("Mean ", round(mean(v), digits = 3), ", standard deviation ", round(std(v), digits = 3))
+println("Quantiles 0, 5, 25, 50, 75, 95, 100%: ", join(round.(quantile(v, [0.0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0]), digits = 3), ", "))
+'''
+
+[[actionGroups.actions]]
+id = "highest-lowest"
+label = "Highest and Lowest Areas"
+desc = "The five areas with the highest and the five with the lowest elevation statistic, with their share of the class chosen"
+models = ["zonal"]
+code = '''
+order = sortperm(elevation; rev = true)
+pick = vcat(order[1:min(5, end)], order[max(1, end - 4):end])
+[(id = t.id[i], elevation = round(elevation[i], digits = 2), class_share = round(class_share[i], digits = 4)) for i in pick]
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-result"
+label = "Save the Result as Cloud-Optimised GeoTIFF"
+desc = "Write the result to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression"
+models = ["local", "focal", "resample", "rasterize"]
+code = '''
+out = joinpath(folder, "gridcalc-{{model}}.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, Float32.(coalesce.(result, NaN32)); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = NaN32)  # missing cells written as NaN
+	println("Wrote ", out)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-areas"
+label = "Save the Areas as GeoParquet"
+desc = "Write the areas with their elevation statistic and share of the class chosen to a GeoParquet file in the folder of the files"
+models = ["zonal"]
+code = '''
+out = joinpath(folder, "gridcalc-zonal.parquet")
+DBInterface.execute(con, "COPY (SELECT a.* EXCLUDE (geom), r.elevation, r.class_share, a.geom FROM areas a JOIN zonal_result r ON r.id = a.\"{{areaId}}\"::VARCHAR) TO '$(out)' (FORMAT PARQUET)")
+println("Wrote ", out)
+'''

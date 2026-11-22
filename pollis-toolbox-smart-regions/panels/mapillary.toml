@@ -18,6 +18,10 @@ envVar = "MAPILLARY_ACCESS_TOKEN"
 prompt = "Mapillary client access token, from the developer dashboard of Mapillary"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -315,7 +319,7 @@ newRow = true
 [[codeBranches]]
 model = "coverage"
 code = '''
-using DuckDB, Tables, Downloads, Dates
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -323,69 +327,18 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
 place = mkpath(joinpath(folder, "mapillary"))  # where the tiles are kept, and the Next Steps save their files
-haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Authentication wiki")
-function mly_get(url, path; headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]])  # one request of the Mapillary API, written to path; stops with the API's message
-	part = path * ".part"
-	r = open(io -> Downloads.request(url; output = io, headers = headers, throw = false), part, "w")
-	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
-	if r.status in (204, 404)  # a tile with no images
-		write(part, "")
-	elseif r.status != 200
-		answer = read(part, String)
-		rm(part; force = true)
-		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
-		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
-	end
-	return mv(part, path; force = true)
-end
-z = 14  # the zoom of the image layer of the coverage tiles
-tile_x(lon) = floor(Int, (lon + 180) / 360 * 2^z)
-tile_y(lat) = floor(Int, (1 - asinh(tand(lat)) / pi) / 2 * 2^z)
-tiles = [(x, y) for x in tile_x(west):tile_x(east) for y in tile_y(north):tile_y(south)]
-length(tiles) > 400 && error("The area needs $(length(tiles)) tiles at zoom 14, more than the 400 the tab reads in one run (Mapillary serves 50,000 tiles a day): make it smaller")
-day = joinpath(place, "tiles", string(today()))  # the tiles of today; a later day downloads them again
-tile_files = String[]
-for (x, y) in tiles
-	tile_path = joinpath(mkpath(joinpath(day, "$(z)", "$(x)")), "$(y).pbf")
-	isfile(tile_path) || mly_get("https://tiles.mapillary.com/maps/vtp/mly1_computed_public/2/$(z)/$(x)/$(y)?access_token=" * ENV["MAPILLARY_ACCESS_TOKEN"], tile_path; headers = Pair{String, String}[])
-	filesize(tile_path) > 0 && push!(tile_files, tile_path)
-end
-isempty(tile_files) && error("Mapillary has no images over the area")
-in_tiles = query("SELECT file_name, l.name AS layer FROM ST_Read_Meta(?) m, unnest(m.layers) AS u(l)", [tile_files])  # the layers of each tile
-function layer_of(name, columns)  # one layer of the tiles, read with GDAL's MVT driver, with the columns any tile may lack
-	reads = ["SELECT * FROM ST_Read('$(f)', layer = '$(name)')" for (f, l) in zip(in_tiles.file_name, in_tiles.layer) if l == name]
-	return join(["SELECT $(columns), NULL::GEOMETRY AS geom WHERE false"; reads], " UNION ALL BY NAME ")
-end
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE images AS
-SELECT DISTINCT ON (id) CAST(id AS VARCHAR) AS id, CAST(sequence_id AS VARCHAR) AS sequence_id, epoch_ms(CAST(captured_at AS BIGINT)) AS captured_at,
-	CAST(compass_angle AS DOUBLE) AS compass_angle, CAST(is_pano AS BOOLEAN) AS is_pano, CAST(quality_score AS DOUBLE) AS quality_score,
-	CAST(creator_id AS VARCHAR) AS creator, CAST(organization_id AS VARCHAR) AS organization_id, ST_Transform(geom, 'EPSG:3857', 'EPSG:4326') AS geom
-FROM ($(layer_of("image", "NULL::VARCHAR AS id, NULL::VARCHAR AS sequence_id, NULL::BIGINT AS captured_at, NULL::DOUBLE AS compass_angle, NULL::BOOLEAN AS is_pano, NULL::DOUBLE AS quality_score, NULL::VARCHAR AS creator_id, NULL::VARCHAR AS organization_id")))
-WHERE ST_Intersects(ST_Transform(geom, 'EPSG:3857', 'EPSG:4326'), $(area))
-""")  # one row per image: its sequence, date, compass angle, panorama, quality score, creator and organisation
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE sequences AS
-SELECT id, image_id, captured_at, is_pano, quality_score, ST_Intersection(geom, $(area)) AS geom FROM (
-	SELECT CAST(id AS VARCHAR) AS id, CAST(any_value(image_id) AS VARCHAR) AS image_id, epoch_ms(CAST(min(captured_at) AS BIGINT)) AS captured_at,
-		CAST(any_value(is_pano) AS BOOLEAN) AS is_pano, avg(CAST(quality_score AS DOUBLE)) AS quality_score,
-		ST_LineMerge(ST_Collect(list(ST_Transform(geom, 'EPSG:3857', 'EPSG:4326')))) AS geom
-	FROM ($(layer_of("sequence", "NULL::VARCHAR AS id, NULL::VARCHAR AS image_id, NULL::BIGINT AS captured_at, NULL::BOOLEAN AS is_pano, NULL::DOUBLE AS quality_score")))
-	GROUP BY id)
-WHERE ST_Intersects(geom, $(area))
-""")  # one row per sequence: its first image, date, panorama, mean quality score and line, pieces from several tiles joined
+r = mapillary_coverage(con, (west, south, east, north); folder = place)  # the tables images and sequences, from Mapillary's coverage tiles of zoom 14, with the access token on the Powered by line
 kept = ["images", "sequences"]  # the tables Save as GeoParquet writes
 s = only(query("SELECT count(*) AS n, count(DISTINCT sequence_id) AS k, CAST(min(captured_at) AS DATE) AS t0, CAST(max(captured_at) AS DATE) AS t1, round(100 * avg(CAST(is_pano AS INTEGER)), 1) AS pano FROM images") |> Tables.rows)
 s.n == 0 && error("Mapillary has no images over the area")
-println(s.n, " images in ", s.k, " sequences over the area, captured from ", s.t0, " to ", s.t1, "; ", s.pano, "% panoramas; from ", length(tile_files), " tiles in ", day)
+println(s.n, " images in ", s.k, " sequences over the area, captured from ", s.t0, " to ", s.t1, "; ", s.pano, "% panoramas; from ", r.tiles, " tiles in ", r.folder)
 '''
 
 [[codeBranches]]
 model = "images"
 code = '''
-using DuckDB, Tables, Downloads, Dates
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -393,65 +346,11 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
 place = mkpath(joinpath(folder, "mapillary"))  # where the thumbnails are kept, and the Next Steps save their files
-haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Authentication wiki")
-function mly_get(url, path; headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]])  # one request of the Mapillary API, written to path; stops with the API's message
-	part = path * ".part"
-	r = open(io -> Downloads.request(url; output = io, headers = headers, throw = false), part, "w")
-	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
-	if r.status != 200
-		answer = read(part, String)
-		rm(part; force = true)
-		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
-		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
-	end
-	return mv(part, path; force = true)
-end
-(east - west) * (north - south) > 1 && error("The area is $(round((east - west) * (north - south); digits = 2)) square degrees, more than the 1 the tab searches: make it smaller, or use Coverage")
-function search(endpoint, fields, filters)  # every answer over the area, in boxes under 0.01 square degrees; a box with 2,000 answers is split in four
-	boxes = [(w, s, min(w + 0.09, east), min(s + 0.09, north)) for w in west:0.09:prevfloat(east) for s in south:0.09:prevfloat(north)]
-	answers = String[]
-	while !isempty(boxes)
-		w, s, e, n = pop!(boxes)
-		answer = mly_get("https://graph.mapillary.com/$(endpoint)?" * join(["fields=$(fields)"; "bbox=$(w),$(s),$(e),$(n)"; "limit=2000"; filters], "&"), tempname() * ".json")
-		if only(query("SELECT json_array_length(content, '/data') AS k FROM read_text(?)", [answer]).k) >= 2000 && e - w > 1e-4
-			mw, ms = (w + e) / 2, (s + n) / 2
-			append!(boxes, [(w, s, mw, ms), (mw, s, e, ms), (w, ms, mw, n), (mw, ms, e, n)])
-		else
-			push!(answers, answer)
-		end
-	end
-	return answers
-end
-fields = "id,captured_at,compass_angle,computed_compass_angle,geometry,computed_geometry,camera_type,make,model,is_pano,on_foot,quality_score,sequence,creator,thumb_1024_url,width,height"
-filters = String[]
-from_day, to_day = "{{fromDay}}", "{{toDay}}"
-from_day == "any" || push!(filters, "start_captured_at=$(from_day)T00:00:00Z")
-to_day == "any" || push!(filters, "end_captured_at=$(to_day)T23:59:59Z")
-"{{pano}}" == "all" || push!(filters, "is_pano={{pano}}")
-answers = search("images", fields, filters)
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE images AS
-SELECT DISTINCT ON (id) x->>'id' AS id, x->>'sequence' AS sequence_id, epoch_ms(CAST(x->>'captured_at' AS BIGINT)) AS captured_at,
-	CAST(coalesce(x->>'computed_compass_angle', x->>'compass_angle') AS DOUBLE) AS compass_angle, CAST(x->>'is_pano' AS BOOLEAN) AS is_pano,
-	TRY_CAST(x->>'on_foot' AS BOOLEAN) AS on_foot, TRY_CAST(x->>'quality_score' AS DOUBLE) AS quality_score, x->>'camera_type' AS camera_type,
-	x->>'make' AS make, x->>'model' AS camera_model, CAST(x->>'width' AS INTEGER) AS width, CAST(x->>'height' AS INTEGER) AS height,
-	x->'creator'->>'username' AS creator, x->>'thumb_1024_url' AS thumb_url, CAST(NULL AS VARCHAR) AS thumbnail,
-	ST_GeomFromGeoJSON(coalesce(x->'computed_geometry', x->'geometry')) AS geom
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[])) AS x FROM read_text(?))
-""", [answers])  # one row per image: its sequence, date, heading, panorama, quality score, camera, creator, thumbnail and computed position
-foreach(rm, answers)
-thumbs = {{thumbs}}  # how many thumbnails to download
-if thumbs > 0
-	pick = query("SELECT id, thumb_url FROM (SELECT id, thumb_url, captured_at, row_number() OVER (PARTITION BY sequence_id ORDER BY captured_at DESC) AS k FROM images WHERE thumb_url IS NOT NULL) ORDER BY k, captured_at DESC LIMIT $(thumbs)")  # one image of each sequence first, the newest first
-	shelf = mkpath(joinpath(place, "thumbnails"))
-	for i in eachindex(pick.id)
-		thumb = joinpath(shelf, pick.id[i] * ".jpg")
-		isfile(thumb) || mv(Downloads.download(pick.thumb_url[i], thumb * ".part"), thumb)
-		DBInterface.execute(con, "UPDATE images SET thumbnail = ? WHERE id = ?", [thumb, pick.id[i]])
-	end
-end
+from, to = replace(["{{fromDay}}", "{{toDay}}"], "any" => nothing)  # the first and last days of capture, or no limit
+pano = "{{pano}}" == "all" ? nothing : "{{pano}}" == "true"  # panoramas only, the others only, or both
+mapillary_images(con, (west, south, east, north); from, to, pano)  # the table images, from Mapillary's image search over at most 1 square degree, with the access token on the Powered by line
+{{thumbs}} > 0 && mapillary_thumbnails(con, {{thumbs}}; folder = joinpath(place, "thumbnails"))  # one image of each sequence first, the newest first
 kept = ["images"]  # the tables Save as GeoParquet writes
 s = only(query("SELECT count(*) AS n, count(DISTINCT sequence_id) AS k, CAST(min(captured_at) AS DATE) AS t0, CAST(max(captured_at) AS DATE) AS t1, round(100 * avg(CAST(is_pano AS INTEGER)), 1) AS pano, count(thumbnail) AS shown FROM images") |> Tables.rows)
 s.n == 0 && error("Mapillary has no images over the area with these filters")
@@ -461,7 +360,7 @@ println(s.n, " images in ", s.k, " sequences over the area, captured from ", s.t
 [[codeBranches]]
 model = "features"
 code = '''
-using DuckDB, Tables, Downloads, Dates
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -469,51 +368,9 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
 place = mkpath(joinpath(folder, "mapillary"))  # where the Next Steps save their files
-haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Authentication wiki")
-function mly_get(url, path; headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]])  # one request of the Mapillary API, written to path; stops with the API's message
-	part = path * ".part"
-	r = open(io -> Downloads.request(url; output = io, headers = headers, throw = false), part, "w")
-	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
-	if r.status != 200
-		answer = read(part, String)
-		rm(part; force = true)
-		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
-		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
-	end
-	return mv(part, path; force = true)
-end
-(east - west) * (north - south) > 1 && error("The area is $(round((east - west) * (north - south); digits = 2)) square degrees, more than the 1 the tab searches: make it smaller")
-function search(endpoint, fields, filters)  # every answer over the area, in boxes under 0.01 square degrees; a box with 2,000 answers is split in four
-	boxes = [(w, s, min(w + 0.09, east), min(s + 0.09, north)) for w in west:0.09:prevfloat(east) for s in south:0.09:prevfloat(north)]
-	answers = String[]
-	while !isempty(boxes)
-		w, s, e, n = pop!(boxes)
-		answer = mly_get("https://graph.mapillary.com/$(endpoint)?" * join(["fields=$(fields)"; "bbox=$(w),$(s),$(e),$(n)"; "limit=2000"; filters], "&"), tempname() * ".json")
-		if only(query("SELECT json_array_length(content, '/data') AS k FROM read_text(?)", [answer]).k) >= 2000 && e - w > 1e-4
-			mw, ms = (w + e) / 2, (s + n) / 2
-			append!(boxes, [(w, s, mw, ms), (mw, s, e, ms), (w, ms, mw, n), (mw, ms, e, n)])
-		else
-			push!(answers, answer)
-		end
-	end
-	return answers
-end
-filters = String[]
-wanted = "{{values}}"
-wanted == "all" || push!(filters, "object_values=" * replace(wanted, " " => ""))
-kind = "{{kind}}"
-answers = search("map_features", "id,object_value,object_type,first_seen_at,last_seen_at,aligned_direction,geometry", filters)
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE features AS
-SELECT DISTINCT ON (id) x->>'id' AS id, x->>'object_value' AS value, x->>'object_type' AS kind, split_part(x->>'object_value', '--', 1) AS family,
-	TRY_CAST(left(x->>'first_seen_at', 19) AS TIMESTAMP) AS first_seen, TRY_CAST(left(x->>'last_seen_at', 19) AS TIMESTAMP) AS last_seen,
-	TRY_CAST(x->>'aligned_direction' AS DOUBLE) AS aligned_direction, ST_GeomFromGeoJSON(x->'geometry') AS geom
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[])) AS x FROM read_text(?))
-""", [answers])  # one row per map feature: its value, kind, family, first and last seen, direction and point
-foreach(rm, answers)
-kind == "all" || DBInterface.execute(con, "DELETE FROM features WHERE kind <> ?", [kind])
+wanted, kind = replace(["{{values}}", "{{kind}}"], "all" => nothing)  # the object values and the kind of feature, or all
+mapillary_features(con, (west, south, east, north); values = wanted, kind)  # the table features, from Mapillary's map features over at most 1 square degree, with the access token on the Powered by line
 kept = ["features"]  # the tables Save as GeoParquet writes
 s = query("SELECT kind, count(*) AS n, count(DISTINCT value) AS k FROM features GROUP BY kind ORDER BY kind")
 isempty(s.n) && error("Mapillary has no map features over the area with these filters")

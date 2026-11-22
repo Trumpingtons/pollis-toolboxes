@@ -6,7 +6,7 @@ The **Copernicus Data Space Ecosystem** distributes the data of the Copernicus S
 |---|---|
 | **Purpose** | Find the Sentinel scenes over an area between two dates, download the bands of one, and look at them, check them and save them |
 | **Input** | An Area as west, south, east and north in degrees; the From and To dates; a Collection and the Most Cloud; a Scene, the Bands or the Polarisations |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`copernicus_scenes`, `copernicus_band`, `projected_box`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), with DuckDB's spatial extension |
 | **Tabs** | Find Scenes; Sentinel-2 Bands; Sentinel-1 Radar |
 | **Account** | None for Find Scenes; a free account of the Copernicus Data Space Ecosystem for the two download tabs, kept by Pollis with the key on the Powered by line |
 | **Output** | Find Scenes: the table `scenes`, one row per scene with its date, cloud cover, satellite, tile, outline and assets. The download tabs: `bands`, each band cut to the area, and `grid`, the first of them |

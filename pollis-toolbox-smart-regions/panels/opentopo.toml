@@ -18,6 +18,10 @@ envVar = "OPENTOPOGRAPHY_API_KEY"
 prompt = "OpenTopography API key, from myOpenTopo"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -395,7 +399,7 @@ label = "GEDTM30, 30 m"
 [[codeBranches]]
 model = "find"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -403,21 +407,7 @@ query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, param
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their files
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
 area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
-product = "{{product}}"
-params = ["minx" => west, "miny" => south, "maxx" => east, "maxy" => north, "detail" => true, "outputFormat" => "json", "include_federated" => {{federated}}]
-product == "all" || push!(params, "productFormat" => product)
-found = Downloads.download("https://portal.opentopography.org/API/otCatalog?" * join(["$(k)=$(v)" for (k, v) in params], "&"), tempname() * ".json")  # the catalogue needs no key
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE datasets AS
-SELECT d->>'name' AS name, d->'identifier'->>'value' AS id,
-	CASE d->'identifier'->>'propertyID' WHEN 'opentopoID' THEN 'OpenTopography' WHEN 'USGS_3DEP_ID' THEN 'USGS 3DEP' WHEN 'NOAAID' THEN 'NOAA' ELSE d->'identifier'->>'propertyID' END AS source,
-	CASE WHEN d->>'fileFormat' ILIKE 'point%' THEN 'Point cloud' ELSE 'Raster' END AS format, d->>'alternateName' AS short_name,
-	TRY_CAST(split_part(d->>'temporalCoverage', ' / ', 1) AS DATE) AS first_day, TRY_CAST(nullif(split_part(d->>'temporalCoverage', ' / ', 2), '') AS DATE) AS last_day,
-	d->>'url' AS doi, ST_GeomFromGeoJSON(d->'spatialCoverage'->'geo'->'geojson'->'features'->0->'geometry') AS geom
-FROM (SELECT x->'Dataset' AS d FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/Datasets'), '[]') AS JSON[])) AS x FROM read_text('$(found)')))
-""")  # one row per dataset: its name, identifier, source, format, dates, DOI and outline
-DBInterface.execute(con, "ALTER TABLE datasets ADD COLUMN covered DOUBLE")
-DBInterface.execute(con, "UPDATE datasets SET covered = round(100 * ST_Area(ST_Intersection(ST_MakeValid(geom), $(area))) / ST_Area($(area)), 1)")  # the share of the area each dataset covers, in per cent
+opentopography_catalog(con, (west, south, east, north); product = "{{product}}", federated = {{federated}})  # the table datasets, from the catalogue of OpenTopography, which needs no key
 s = query("SELECT name, source, format, first_day, covered FROM datasets ORDER BY format, first_day DESC NULLS LAST")
 isempty(s.name) && error("The catalogue of OpenTopography has no dataset over the area: widen the area, or include the other catalogues")
 println(length(s.name), " datasets over the area, the most recent first:")
@@ -429,7 +419,7 @@ end
 [[codeBranches]]
 model = "globaldem"
 code = '''
-using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+using DuckDB, Tables, SmartRegions, Rasters, ArchGDAL
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -437,32 +427,9 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the elevation is kept once downloaded, and the Next Steps save theirs
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-km2 = 6371.0088^2 * deg2rad(east - west) * (sind(north) - sind(south))  # the size of the area, in square kilometres
-function ot_download(endpoint, params, path)  # one request of the OpenTopography API, written to path; stops with the API's message
-	haskey(ENV, "OPENTOPOGRAPHY_API_KEY") || error("Set your OpenTopography API key with the key on the Powered by line, or set ENV[\"OPENTOPOGRAPHY_API_KEY\"]: see the Authentication wiki")
-	url = "https://portal.opentopography.org/API/$(endpoint)?" * join(["$(k)=$(v)" for (k, v) in [params; "outputFormat" => "GTiff"; "API_Key" => ENV["OPENTOPOGRAPHY_API_KEY"]]], "&")
-	part = path * ".part"
-	r = open(io -> Downloads.request(url; output = io, throw = false), part, "w")
-	r isa Downloads.Response || (rm(part; force = true); error("OpenTopography could not be reached: $(r.message)"))
-	if r.status != 200
-		answer = read(part, String)
-		rm(part; force = true)
-		r.status == 204 && error("OpenTopography has no data of $(endpoint) over the area")
-		m = match(r"<error>(.*?)</error>"s, answer)
-		error("OpenTopography answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : strip(m[1]))")
-	end
-	return mv(part, path; force = true)
-end
-function elevation_of(endpoint, kind, model, limit)  # the elevation of the area from a model, downloaded once into its folder
-	km2 > limit && error("The area is $(round(Int, km2)) km², more than the $(round(Int, limit)) km² OpenTopography serves of $(model): make it smaller")
-	dir = mkpath(joinpath(folder, "opentopography", model))
-	path = joinpath(dir, "$(model)_$(west)_$(south)_$(east)_$(north).tif")  # one file for each model and area
-	isfile(path) || ot_download(endpoint, [kind => model, "south" => south, "north" => north, "west" => west, "east" => east], path)
-	return map(v -> ismissing(v) ? missing : Float32(v), read(Raster(path; lazy = true))), path
-end
-limits = Dict("SRTMGL3" => 4.05e6, "COP90" => 4.05e6, "SRTM15Plus" => 1.25e8, "GEBCOIceTopo" => 1.25e8)  # the largest areas OpenTopography serves, in km²; 450,000 for the other models
 model = "{{demtype}}"
-elevation, path = elevation_of("globaldem", "demtype", model, get(limits, model, 4.5e5))
+path = opentopography_dem((west, south, east, north), model; folder = joinpath(folder, "opentopography"))  # downloaded once for each model and area, with the API key on the Powered by line
+elevation = map(v -> ismissing(v) ? missing : Float32(v), read(Raster(path; lazy = true)))  # the elevation in metres, missing where the model has no data
 crs = ArchGDAL.read(ArchGDAL.getproj, path)  # the coordinate system of the file
 place = dirname(path)  # the folder of the model, which the Next Steps write to
 println(model, ": ", size(elevation, X), " x ", size(elevation, Y), " cells, ", count(ismissing, elevation), " without data; elevation from ", minimum(skipmissing(elevation)), " to ", maximum(skipmissing(elevation)), " m, from ", path)
@@ -471,7 +438,7 @@ println(model, ": ", size(elevation, X), " x ", size(elevation, Y), " cells, ", 
 [[codeBranches]]
 model = "usgsdem"
 code = '''
-using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+using DuckDB, Tables, SmartRegions, Rasters, ArchGDAL
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -479,32 +446,9 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the elevation is kept once downloaded, and the Next Steps save theirs
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-km2 = 6371.0088^2 * deg2rad(east - west) * (sind(north) - sind(south))  # the size of the area, in square kilometres
-function ot_download(endpoint, params, path)  # one request of the OpenTopography API, written to path; stops with the API's message
-	haskey(ENV, "OPENTOPOGRAPHY_API_KEY") || error("Set your OpenTopography API key with the key on the Powered by line, or set ENV[\"OPENTOPOGRAPHY_API_KEY\"]: see the Authentication wiki")
-	url = "https://portal.opentopography.org/API/$(endpoint)?" * join(["$(k)=$(v)" for (k, v) in [params; "outputFormat" => "GTiff"; "API_Key" => ENV["OPENTOPOGRAPHY_API_KEY"]]], "&")
-	part = path * ".part"
-	r = open(io -> Downloads.request(url; output = io, throw = false), part, "w")
-	r isa Downloads.Response || (rm(part; force = true); error("OpenTopography could not be reached: $(r.message)"))
-	if r.status != 200
-		answer = read(part, String)
-		rm(part; force = true)
-		r.status == 204 && error(endpoint == "usgsdem" ? "USGS 3DEP has no data over the area: it covers the United States" : "OpenTopography has no data of $(endpoint) over the area")
-		m = match(r"<error>(.*?)</error>"s, answer)
-		error("OpenTopography answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : strip(m[1]))")
-	end
-	return mv(part, path; force = true)
-end
-function elevation_of(endpoint, kind, model, limit)  # the elevation of the area from a model, downloaded once into its folder
-	km2 > limit && error("The area is $(round(Int, km2)) km², more than the $(round(Int, limit)) km² OpenTopography serves of $(model): make it smaller")
-	dir = mkpath(joinpath(folder, "opentopography", model))
-	path = joinpath(dir, "$(model)_$(west)_$(south)_$(east)_$(north).tif")  # one file for each model and area
-	isfile(path) || ot_download(endpoint, [kind => model, "south" => south, "north" => north, "west" => west, "east" => east], path)
-	return map(v -> ismissing(v) ? missing : Float32(v), read(Raster(path; lazy = true))), path
-end
-limits = Dict("USGS30m" => 2.25e5, "USGS10m" => 2.5e4, "USGS1m" => 250.0)  # the largest areas OpenTopography serves of each resolution, in km²
 model = "{{resolution}}"
-elevation, path = elevation_of("usgsdem", "datasetName", model, limits[model])
+path = opentopography_dem((west, south, east, north), model; folder = joinpath(folder, "opentopography"))  # USGS 3DEP over the United States, downloaded once for each resolution and area, with the API key on the Powered by line
+elevation = map(v -> ismissing(v) ? missing : Float32(v), read(Raster(path; lazy = true)))  # the elevation in metres, missing where 3DEP has no data
 crs = ArchGDAL.read(ArchGDAL.getproj, path)  # the coordinate system of the file, NAD83 for 3DEP
 place = dirname(path)  # the folder of the resolution, which the Next Steps write to
 println(model, ": ", size(elevation, X), " x ", size(elevation, Y), " cells, ", count(ismissing, elevation), " without data; elevation from ", minimum(skipmissing(elevation)), " to ", maximum(skipmissing(elevation)), " m, from ", path)
@@ -665,7 +609,7 @@ code = '''
 using Statistics
 
 other_model = "{{otherModel}}"
-other, other_path = elevation_of("globaldem", "demtype", other_model, 4.5e5)
+other = map(v -> ismissing(v) ? missing : Float32(v), read(Raster(opentopography_dem((west, south, east, north), other_model; folder = joinpath(folder, "opentopography")); lazy = true)))
 on_same_cells = resample(Raster(other; missingval = missing); to = elevation, method = :bilinear)  # the second model on the cells of the first
 difference = map((a, b) -> ismissing(a) || ismissing(b) ? missing : a - b, elevation, on_same_cells)
 both = [(a, b) for (a, b) in zip(elevation, on_same_cells) if !ismissing(a) && !ismissing(b)]

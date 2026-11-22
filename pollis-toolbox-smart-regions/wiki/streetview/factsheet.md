@@ -6,7 +6,7 @@ The **Mapillary Street-Level Viewer** panel of the Smart Regions Toolbox finds a
 |---|---|
 | **Purpose** | See a place as it looks from the street, look around it, and walk the streets near it |
 | **Input** | A point (longitude and latitude) and a Search Radius, or the id or link of an image |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`mapillary_near`, `mapillary_image`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl) |
 | **Tabs** | Nearest Image, Image by ID, Nearest Panorama, Map and Viewer |
 | **Service** | The image search and image entities of the Mapillary API, its computed coverage tiles, and its images, which the viewer loads |
 | **Output** | The table `images`, and a street-level viewer, alone or beside a coverage map |

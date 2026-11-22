@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Find the street-level images of an area, when and how they were captured, look at them, and list the objects located from them |
 | **Input** | An Area as west, south, east and north in degrees; for Images, the days of capture, Panoramas and Thumbnails; for Map Features, the Kind and Values |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`mapillary_coverage`, `mapillary_images`, `mapillary_thumbnails`, `mapillary_features`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension |
 | **Tabs** | Coverage; Images; Map Features |
 | **Account** | A Mapillary client access token for every tab, kept by Pollis with the key on the Powered by line |
 | **Output** | Coverage: the tables `images` and `sequences`. Images: the table `images`, with thumbnails in the folder. Map Features: the table `features` |

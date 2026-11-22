@@ -24,6 +24,10 @@ envVar = "USGS_TOKEN"
 prompt = "USGS M2M application token (not the password)"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -334,7 +338,7 @@ label = "SRTM Void Filled"
 [[codeBranches]]
 model = "find"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -343,49 +347,7 @@ folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their 
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
 area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
 first_day, last_day, dataset = "{{firstDay}}", "{{lastDay}}", "{{dataset}}"
-m2m, api_key = "https://m2m.cr.usgs.gov/api/api/json/stable/", nothing  # the Machine-to-Machine API of USGS EarthExplorer
-function m2m_call(endpoint, body)  # one request of the M2M API, its answer as a JSON file for DuckDB
-	out, headers = IOBuffer(), ["Content-Type" => "application/json"]
-	api_key === nothing || push!(headers, "X-Auth-Token" => api_key)
-	r = Downloads.request(m2m * endpoint; method = "POST", input = IOBuffer(body), output = out, headers = headers, throw = false)
-	r isa Downloads.Response || error("The M2M API could not be reached: $(r.message)")
-	answer = String(take!(out))
-	startswith(lstrip(answer), "{") || error("The M2M API answered $(endpoint) with HTTP $(r.status): $(first(answer, 300))")
-	file = tempname() * ".json"
-	write(file, answer)
-	e = query("SELECT json_extract_string(content, '/errorCode') AS code, json_extract_string(content, '/errorMessage') AS message FROM read_text('$(file)')")
-	ismissing(only(e.code)) || error("The M2M API answered $(endpoint) with $(only(e.code)): $(only(e.message))")
-	return file
-end
-function login()  # an API key for the session, from the username and the application token
-	for v in ("USGS_USERNAME", "USGS_TOKEN")
-		haskey(ENV, v) || error("Set the credentials of your USGS account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
-	end
-	body = only(query("SELECT CAST(json_object('username', ?, 'token', ?) AS VARCHAR) AS b", [ENV["USGS_USERNAME"], ENV["USGS_TOKEN"]]).b)
-	global api_key = only(query("SELECT json_extract_string(content, '/data') AS k FROM read_text('$(m2m_call("login-token", body))')").k)
-end
-login()
-scene_filter = """{"spatialFilter": {"filterType": "mbr", "lowerLeft": {"latitude": $(south), "longitude": $(west)}, "upperRight": {"latitude": $(north), "longitude": $(east)}}, "acquisitionFilter": {"start": "$(first_day)", "end": "$(last_day)"}, "cloudCoverFilter": {"min": 0, "max": {{maxCloud}}, "includeUnknown": true}}"""
-function search(dataset; most = 100)  # the scenes of a dataset over the area and between the dates, a hundred at a time
-	files, start = String[], 1
-	while 100 * length(files) < most
-		push!(files, m2m_call("scene-search", """{"datasetName": "$(dataset)", "maxResults": 100, "startingNumber": $(start), "sceneFilter": $(scene_filter)}"""))
-		t = query("SELECT CAST(json_extract(content, '/data/totalHits') AS BIGINT) AS total, CAST(json_extract(content, '/data/nextRecord') AS BIGINT) AS next, CAST(json_extract(content, '/data/recordsReturned') AS BIGINT) AS n FROM read_text('$(files[end])')")
-		(coalesce(only(t.n), 0) == 0 || coalesce(only(t.next), 0) <= start || only(t.next) > coalesce(only(t.total), 0)) && break
-		start = only(t.next)
-	end
-	return files
-end
-files = search(dataset; most = {{rows}})
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE scenes AS
-SELECT r->>'entityId' AS entity, r->>'displayId' AS id, TRY_CAST(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate') AS TIMESTAMP) AS acquired,
-	nullif(TRY_CAST(r->>'cloudCover' AS DOUBLE), -1) AS cloud, ST_GeomFromGeoJSON(r->'spatialCoverage') AS geom, r->'browse' AS browse
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text($(repr(files))))
-QUALIFY row_number() OVER (PARTITION BY entity) = 1
-""")  # one row per scene: its identifiers, date, cloud cover, outline and browse images
-DBInterface.execute(con, "ALTER TABLE scenes ADD COLUMN covered DOUBLE")
-DBInterface.execute(con, "UPDATE scenes SET covered = round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1)")  # the share of the area each scene covers, in per cent
+usgs_scenes(con, dataset; box = (west, south, east, north), days = (first_day, last_day), cloud = {{maxCloud}}, most = {{rows}})  # the table scenes, from the M2M API of USGS EarthExplorer, with the account on the Powered by line
 DBInterface.execute(con, "DELETE FROM scenes WHERE entity NOT IN (SELECT entity FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC LIMIT {{rows}})")
 s = query("SELECT id, acquired, cloud, covered FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC")
 isempty(s.id) && error("EarthExplorer has no scenes of $(dataset) over the area from $(first_day) to $(last_day) with at most {{maxCloud}}% of clouds: widen the dates, the area or the cloud cover")
@@ -398,7 +360,7 @@ end
 [[codeBranches]]
 model = "landsat"
 code = '''
-using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+using DuckDB, Tables, SmartRegions, Rasters, ArchGDAL
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -406,91 +368,26 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the bands are kept once downloaded, and the Next Steps save theirs
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
 first_day, last_day, dataset = "{{firstDay}}", "{{lastDay}}", "landsat_ot_c2_l2"  # Landsat 8-9 Collection 2 Level-2
-m2m, api_key = "https://m2m.cr.usgs.gov/api/api/json/stable/", nothing  # the Machine-to-Machine API of USGS EarthExplorer
-function m2m_call(endpoint, body)  # one request of the M2M API, its answer as a JSON file for DuckDB
-	out, headers = IOBuffer(), ["Content-Type" => "application/json"]
-	api_key === nothing || push!(headers, "X-Auth-Token" => api_key)
-	r = Downloads.request(m2m * endpoint; method = "POST", input = IOBuffer(body), output = out, headers = headers, throw = false)
-	r isa Downloads.Response || error("The M2M API could not be reached: $(r.message)")
-	answer = String(take!(out))
-	startswith(lstrip(answer), "{") || error("The M2M API answered $(endpoint) with HTTP $(r.status): $(first(answer, 300))")
-	file = tempname() * ".json"
-	write(file, answer)
-	e = query("SELECT json_extract_string(content, '/errorCode') AS code, json_extract_string(content, '/errorMessage') AS message FROM read_text('$(file)')")
-	ismissing(only(e.code)) || error("The M2M API answered $(endpoint) with $(only(e.code)): $(only(e.message))")
-	return file
-end
-function login()  # an API key for the session, from the username and the application token
-	for v in ("USGS_USERNAME", "USGS_TOKEN")
-		haskey(ENV, v) || error("Set the credentials of your USGS account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
-	end
-	body = only(query("SELECT CAST(json_object('username', ?, 'token', ?) AS VARCHAR) AS b", [ENV["USGS_USERNAME"], ENV["USGS_TOKEN"]]).b)
-	global api_key = only(query("SELECT json_extract_string(content, '/data') AS k FROM read_text('$(m2m_call("login-token", body))')").k)
-end
-function save_url(url, dir)  # one file of a download, named as the server names it
-	tmp = joinpath(dir, "download.part")
-	r = open(io -> Downloads.request(url; output = io), tmp, "w")
-	h = Dict(lowercase(k) => v for (k, v) in r.headers)
-	m = match(r"filename=\"?([^\";]+)", get(h, "content-disposition", ""))
-	return mv(tmp, joinpath(dir, m === nothing ? basename(first(split(url, '?'))) : m[1]); force = true)
-end
-function download_all(downloads, dir)  # ask the M2M API for the files, wait for those it prepares, and download them
-	label = "pollis-$(round(Int, time()))"
-	req = m2m_call("download-request", """{"downloads": [$(join(["{\"entityId\": \"$(e)\", \"productId\": \"$(p)\"}" for (e, p) in downloads], ", "))], "label": "$(label)"}""")
-	urls = query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/availableDownloads'), '[]') AS JSON[])) AS d FROM read_text('$(req)'))").url
-	deadline = time() + 600  # ten minutes at most for the files being prepared
-	while length(urls) < length(downloads) && time() < deadline
-		sleep(15)
-		ready = m2m_call("download-retrieve", """{"label": "$(label)"}""")
-		urls = unique([urls; query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/available'), '[]') AS JSON[])) AS d FROM read_text('$(ready)'))").url])
-	end
-	length(urls) < length(downloads) && println("Only ", length(urls), " of ", length(downloads), " files were ready after ten minutes: run the tab again later for the others")
-	return [save_url(u, dir) for u in urls]
-end
-login()
-scene_filter = """{"spatialFilter": {"filterType": "mbr", "lowerLeft": {"latitude": $(south), "longitude": $(west)}, "upperRight": {"latitude": $(north), "longitude": $(east)}}, "acquisitionFilter": {"start": "$(first_day)", "end": "$(last_day)"}, "cloudCoverFilter": {"min": 0, "max": {{maxCloud}}, "includeUnknown": false}}"""
-found = m2m_call("scene-search", """{"datasetName": "$(dataset)", "maxResults": 100, "startingNumber": 1, "sceneFilter": $(scene_filter)}""")
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE scenes AS
-SELECT r->>'entityId' AS entity, r->>'displayId' AS id, TRY_CAST(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate') AS TIMESTAMP) AS acquired,
-	nullif(TRY_CAST(r->>'cloudCover' AS DOUBLE), -1) AS cloud, ST_GeomFromGeoJSON(r->'spatialCoverage') AS geom
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text('$(found)'))
-""")
+usgs_scenes(con, dataset; box = (west, south, east, north), days = (first_day, last_day), cloud = {{maxCloud}}, unknown = false)  # the table scenes, from the M2M API of USGS EarthExplorer, with the account on the Powered by line
 scene = "{{scene}}"
-pick = query("SELECT entity, id, acquired, cloud, round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1) AS covered FROM scenes WHERE ? = '' OR id = ? ORDER BY covered DESC, cloud, acquired DESC LIMIT 1", [scene, scene])  # the least cloudy of the scenes that cover the most of the area
+pick = query("SELECT entity, id, acquired, cloud, covered FROM scenes WHERE ? = '' OR id = ? ORDER BY covered DESC, cloud, acquired DESC LIMIT 1", [scene, scene])  # the least cloudy of the scenes that cover the most of the area
 isempty(pick.id) && error(isempty(scene) ? "No Landsat 8-9 Level-2 scene over the area from $(first_day) to $(last_day) has at most {{maxCloud}}% of clouds: widen the dates or the cloud cover" : "The scene $(scene) is not among those over the area from $(first_day) to $(last_day): set the dates around it")
 entity, scene = only(pick.entity), only(pick.id)
 println("Scene ", scene, ", ", only(pick.acquired), ", cloud ", only(pick.cloud), "%, covering ", only(pick.covered), "% of the area")
 
 chosen = uppercase.(strip.(split("{{bands}}", ",")))
-dir = mkpath(joinpath(folder, "usgs", scene))  # the folder of the scene, which the Next Steps write to
-place = dir
-path_of(b) = joinpath(dir, "$(scene)_$(b).TIF")  # the file of a band, as USGS names it
-wanted = filter(b -> !isfile(path_of(b)), chosen)
-if !isempty(wanted)  # only the bands not in the folder yet
-	options = m2m_call("download-options", """{"datasetName": "$(dataset)", "entityIds": ["$(entity)"], "includeSecondaryFileGroups": true}""")
-	files = query("SELECT s->>'displayId' AS name, s->>'entityId' AS entity, s->>'id' AS id, CAST(s->>'available' AS VARCHAR) IN ('true', 'Y') AS available FROM (SELECT unnest(CAST(coalesce(o->'secondaryDownloads', '[]') AS JSON[])) AS s FROM (SELECT unnest(CAST(json_extract(content, '/data') AS JSON[])) AS o FROM read_text('$(options)')))")
-	downloads = map(wanted) do b
-		k = findfirst(n -> !ismissing(n) && endswith(uppercase(n), "_$(b).TIF"), files.name)
-		k === nothing && error("The scene has no band $(b): its files end in $(join(unique(replace.(skipmissing(files.name), r"^.*?_(?=[A-Z]+_?[A-Z0-9]*\.TIF$)"i => "")), ", "))")
-		files.available[k] || error("The band $(b) of the scene is not available for download")
-		(files.entity[k], files.id[k])
-	end
-	download_all(downloads, dir)
-end
-try m2m_call("logout", "{}") catch end  # the API key ends with the session
-
-crs = ArchGDAL.read(ArchGDAL.getproj, path_of(first(chosen)))  # the coordinate system of the scene, a zone of UTM
-box = query("SELECT ST_XMin(g) AS x0, ST_YMin(g) AS y0, ST_XMax(g) AS x1, ST_YMax(g) AS y1 FROM (SELECT ST_Transform($(area), 'EPSG:4326', ?) AS g)", [crs])
+place = mkpath(joinpath(folder, "usgs", scene))  # the folder of the scene, which the Next Steps write to
+files = usgs_bands(con, dataset, entity, scene, chosen; folder = place)  # each band downloaded once
+usgs_logout()  # the API key ends with the session
+crs = ArchGDAL.read(ArchGDAL.getproj, files[first(chosen)])  # the coordinate system of the scene, a zone of UTM
+x0, y0, x1, y1 = projected_box(con, (west, south, east, north), crs)
 bands = Dict{String, Any}()  # each band, cut to the area: reflectance, temperature in kelvin, or the bits of QA_PIXEL
 for b in chosen
-	isfile(path_of(b)) || error("The band $(b) was not downloaded: run the tab again")
-	cut = read(crop(Raster(path_of(b); lazy = true); to = Extent(X = (only(box.x0), only(box.x1)), Y = (only(box.y0), only(box.y1)))))  # the cells of the area only
+	cut = read(crop(Raster(files[b]; lazy = true); to = Extent(X = (x0, x1), Y = (y0, y1))))  # the cells of the area only
 	scale, offset = startswith(b, "SR_") ? (2.75e-5, -0.2) : startswith(b, "ST_B") ? (0.00341802, 149.0) : (nothing, nothing)  # the scale factors of the Collection 2 Level-2 product guide
 	bands[b] = map(v -> ismissing(v) ? missing : scale === nothing ? Int(v) : v == 0 ? missing : Float32(v * scale + offset), cut)  # 0 is the fill value of reflectance and temperature
-	println(rpad(b, 9), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", path_of(b))
+	println(rpad(b, 9), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", files[b])
 end
 grid = bands[first(chosen)]  # the first band, for the Next Steps that read one
 '''
@@ -498,86 +395,20 @@ grid = bands[first(chosen)]  # the first band, for the Next Steps that read one
 [[codeBranches]]
 model = "elevation"
 code = '''
-using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+using DuckDB, Tables, SmartRegions, Rasters, ArchGDAL
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the tiles are kept once downloaded, and the Next Steps save theirs
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-m2m, api_key = "https://m2m.cr.usgs.gov/api/api/json/stable/", nothing  # the Machine-to-Machine API of USGS EarthExplorer
-function m2m_call(endpoint, body)  # one request of the M2M API, its answer as a JSON file for DuckDB
-	out, headers = IOBuffer(), ["Content-Type" => "application/json"]
-	api_key === nothing || push!(headers, "X-Auth-Token" => api_key)
-	r = Downloads.request(m2m * endpoint; method = "POST", input = IOBuffer(body), output = out, headers = headers, throw = false)
-	r isa Downloads.Response || error("The M2M API could not be reached: $(r.message)")
-	answer = String(take!(out))
-	startswith(lstrip(answer), "{") || error("The M2M API answered $(endpoint) with HTTP $(r.status): $(first(answer, 300))")
-	file = tempname() * ".json"
-	write(file, answer)
-	e = query("SELECT json_extract_string(content, '/errorCode') AS code, json_extract_string(content, '/errorMessage') AS message FROM read_text('$(file)')")
-	ismissing(only(e.code)) || error("The M2M API answered $(endpoint) with $(only(e.code)): $(only(e.message))")
-	return file
-end
-function login()  # an API key for the session, from the username and the application token
-	for v in ("USGS_USERNAME", "USGS_TOKEN")
-		haskey(ENV, v) || error("Set the credentials of your USGS account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
-	end
-	body = only(query("SELECT CAST(json_object('username', ?, 'token', ?) AS VARCHAR) AS b", [ENV["USGS_USERNAME"], ENV["USGS_TOKEN"]]).b)
-	global api_key = only(query("SELECT json_extract_string(content, '/data') AS k FROM read_text('$(m2m_call("login-token", body))')").k)
-end
-function save_url(url, dir)  # one file of a download, named as the server names it
-	tmp = joinpath(dir, "download.part")
-	r = open(io -> Downloads.request(url; output = io), tmp, "w")
-	h = Dict(lowercase(k) => v for (k, v) in r.headers)
-	m = match(r"filename=\"?([^\";]+)", get(h, "content-disposition", ""))
-	return mv(tmp, joinpath(dir, m === nothing ? basename(first(split(url, '?'))) : m[1]); force = true)
-end
-function download_all(downloads, dir)  # ask the M2M API for the files, wait for those it prepares, and download them
-	label = "pollis-$(round(Int, time()))"
-	req = m2m_call("download-request", """{"downloads": [$(join(["{\"entityId\": \"$(e)\", \"productId\": \"$(p)\"}" for (e, p) in downloads], ", "))], "label": "$(label)"}""")
-	urls = query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/availableDownloads'), '[]') AS JSON[])) AS d FROM read_text('$(req)'))").url
-	deadline = time() + 600  # ten minutes at most for the files being prepared
-	while length(urls) < length(downloads) && time() < deadline
-		sleep(15)
-		ready = m2m_call("download-retrieve", """{"label": "$(label)"}""")
-		urls = unique([urls; query("SELECT d->>'url' AS url FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/available'), '[]') AS JSON[])) AS d FROM read_text('$(ready)'))").url])
-	end
-	length(urls) < length(downloads) && println("Only ", length(urls), " of ", length(downloads), " files were ready after ten minutes: run the tab again later for the others")
-	return [save_url(u, dir) for u in urls]
-end
-login()
 product = "{{dem}}"
-known = m2m_call("dataset-search", """{"datasetName": "SRTM"}""")  # the SRTM datasets of EarthExplorer, by their names
-d = query("SELECT x->>'datasetAlias' AS alias, x->>'collectionName' AS name FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[])) AS x FROM read_text('$(known)'))")
-k = findfirst(==(product), d.name)
-k === nothing && error("EarthExplorer has no dataset $(product): its SRTM datasets are $(join(skipmissing(d.name), ", "))")
-dataset = d.alias[k]
-found = m2m_call("scene-search", """{"datasetName": "$(dataset)", "maxResults": 100, "startingNumber": 1, "sceneFilter": {"spatialFilter": {"filterType": "mbr", "lowerLeft": {"latitude": $(south), "longitude": $(west)}, "upperRight": {"latitude": $(north), "longitude": $(east)}}}}""")
-tiles = query("SELECT r->>'entityId' AS entity, r->>'displayId' AS id FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text('$(found)'))")  # the tiles of 1 by 1 degree over the area
-isempty(tiles.entity) && error("$(product) has no tile over the area: it covers the land between 60 degrees north and 56 degrees south")
-tile_dir(e) = mkpath(joinpath(folder, "usgs", dataset, e))  # a folder for each tile, as it is downloaded
-has_tif(e) = any(f -> endswith(lowercase(f), ".tif"), readdir(tile_dir(e)))
-missing_tiles = [e for e in tiles.entity if !has_tif(e)]
-if !isempty(missing_tiles)  # only the tiles not in the folder yet
-	options = m2m_call("download-options", """{"datasetName": "$(dataset)", "entityIds": [$(join(["\"$(e)\"" for e in missing_tiles], ", "))]}""")
-	o = query("SELECT x->>'entityId' AS entity, x->>'id' AS id, x->>'productName' AS name, CAST(x->>'available' AS VARCHAR) IN ('true', 'Y') AS available FROM (SELECT unnest(CAST(json_extract(content, '/data') AS JSON[])) AS x FROM read_text('$(options)')) WHERE name ILIKE '%geotiff%'")
-	for e in missing_tiles
-		ks = [j for j in eachindex(o.entity) if o.entity[j] == e && o.available[j]]
-		isempty(ks) && error("The tile $(e) has no GeoTIFF available for download")
-		j = ks[something(findfirst(j -> occursin(r"1 arc"i, o.name[j]), ks), 1)]  # the finest of the GeoTIFFs offered
-		download_all([(e, o.id[j])], tile_dir(e))
-	end
-end
-try m2m_call("logout", "{}") catch end  # the API key ends with the session
-
-files = [joinpath(tile_dir(e), f) for e in tiles.entity for f in readdir(tile_dir(e)) if endswith(lowercase(f), ".tif")]
-length(files) < length(tiles.entity) && error("Only $(length(files)) of the $(length(tiles.entity)) tiles of $(product) over the area were downloaded: run the tab again")
-parts = [read(crop(Raster(f; lazy = true); to = Extent(X = (west, east), Y = (south, north)))) for f in files]  # the tiles of the area, each cut to it
-dem = length(parts) == 1 ? only(parts) : mosaic(first, parts...)  # the tiles joined
-grid = map(v -> ismissing(v) ? missing : Float32(v), dem)  # the elevation in metres, missing where the tile has no data
+tiles = usgs_dem(con, product; box = (west, south, east, north), folder = joinpath(folder, "usgs"))  # the tiles of 1 by 1 degree over the area, each downloaded once, with the account on the Powered by line
+usgs_logout()  # the API key ends with the session
+parts = [read(crop(Raster(f; lazy = true); to = Extent(X = (west, east), Y = (south, north)))) for f in tiles.files]  # the tiles of the area, each cut to it
+grid = map(v -> ismissing(v) ? missing : Float32(v), length(parts) == 1 ? only(parts) : mosaic(first, parts...))  # the elevation in metres, missing where the tiles have no data
 crs, chosen, scene, bands = "EPSG:4326", ["Elevation"], product, Dict{String, Any}("Elevation" => grid)
-place = joinpath(folder, "usgs", dataset)  # the folder of the product, which the Next Steps write to
+place = joinpath(folder, "usgs", tiles.dataset)  # the folder of the product, which the Next Steps write to
 println(product, ": ", size(grid, X), " x ", size(grid, Y), " cells from ", length(parts), " tile(s), ", count(ismissing, grid), " without data; elevation from ", minimum(skipmissing(grid)), " to ", maximum(skipmissing(grid)), " m")
 '''
 
@@ -725,9 +556,9 @@ models = ["find"]
 code = '''
 println(rpad("dataset", 22), rpad("scenes", 8), "first and last")
 for d in ("landsat_ot_c2_l2", "landsat_ot_c2_l1", "landsat_etm_c2_l2")
-	pages = search(d; most = 1000)
-	counts = query("SELECT count(DISTINCT r->>'entityId') AS n, min(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate')) AS t0, max(coalesce(r->>'/temporalCoverage/startDate', r->>'/temporalCoverage/StartDate')) AS t1 FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/data/results'), '[]') AS JSON[])) AS r FROM read_text($(repr(pages))))")
-	println(rpad(d, 22), rpad(only(counts.n), 8), only(counts.n) == 0 ? "" : "$(first(only(counts.t0), 10)) to $(first(only(counts.t1), 10))")
+	n = usgs_scenes(con, d; box = (west, south, east, north), days = (first_day, last_day), cloud = {{maxCloud}}, most = 1000, table = "counted")
+	t = only(query("SELECT CAST(CAST(min(acquired) AS DATE) AS VARCHAR) AS t0, CAST(CAST(max(acquired) AS DATE) AS VARCHAR) AS t1 FROM counted") |> Tables.rows)
+	println(rpad(d, 22), rpad(n, 8), n == 0 ? "" : "$(t.t0) to $(t.t1)")
 end
 '''
 

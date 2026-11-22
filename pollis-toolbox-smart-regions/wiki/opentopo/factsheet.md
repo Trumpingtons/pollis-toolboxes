@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Find the lidar surveys and elevation models over an area, download the elevation of the area, and look at it, check it, compare it and save it |
 | **Input** | An Area as west, south, east and north in degrees; the Data and Other Catalogues of Find Datasets; an Elevation Model or a Resolution; a model to Compare With |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`opentopography_catalog`, `opentopography_dem`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), with DuckDB's spatial extension |
 | **Tabs** | Find Datasets; Global DEM; USGS 3DEP |
 | **Account** | None for Find Datasets; an OpenTopography API key for Global DEM and USGS 3DEP, kept by Pollis with the key on the Powered by line |
 | **Output** | Find Datasets: the table `datasets`, one row per dataset with its name, source, format, dates, DOI and outline. Global DEM and USGS 3DEP: `elevation`, the elevation of the area in metres, and `path`, its file |

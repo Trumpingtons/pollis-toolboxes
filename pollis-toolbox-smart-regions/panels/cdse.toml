@@ -24,6 +24,10 @@ envVar = "CDSE_PASSWORD"
 prompt = "Copernicus Data Space password"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -359,7 +363,7 @@ models = ["s1"]
 [[codeBranches]]
 model = "find"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -368,34 +372,12 @@ folder = mkpath(expanduser(raw"{{folder}}"))  # where the Next Steps save their 
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
 area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
 collection, first_day, last_day = "{{collection}}", "{{firstDay}}", "{{lastDay}}"
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
-stac = "https://stac.dataspace.copernicus.eu/v1/search"  # the STAC catalogue of the Copernicus Data Space Ecosystem, searched without an account
-function search(collection; extra = "", most = 100)  # the scenes of a collection over the area and between the dates, page after page
-	url = "$(stac)?collections=$(collection)&bbox=$(west),$(south),$(east),$(north)&datetime=$(enc("$(first_day)T00:00:00Z/$(last_day)T23:59:59Z"))&limit=100$(extra)"
-	pages, files = mktempdir(), String[]
-	while url !== nothing && 100 * length(files) < most
-		push!(files, Downloads.download(url, joinpath(pages, "page-$(length(files) + 1).json")))
-		next = query("SELECT l->>'href' AS href FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/links'), '[]') AS JSON[])) AS l FROM read_text('$(files[end])')) WHERE l->>'rel' = 'next'").href
-		url = isempty(next) ? nothing : first(next)
-	end
-	return files
-end
-extra = ""
-{{?collection=sentinel-2-l2a|sentinel-2-l1c|sentinel-3-olci-2-lfr-ntc|sentinel-3-sl-2-lst-ntc}}extra = "&filter=$(enc("eo:cloud_cover <= {{maxCloud}}"))&filter-lang=cql2-text"  # scenes with at most this share of clouds
-files = search(collection; extra = extra, most = {{rows}})
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE scenes AS
-SELECT f->>'id' AS id, CAST(f->>'/properties/datetime' AS TIMESTAMP) AS acquired, TRY_CAST(f->>'/properties/eo:cloud_cover' AS DOUBLE) AS cloud,
-	f->>'/properties/platform' AS platform, f->>'/properties/grid:code' AS tile, f->>'/properties/sat:orbit_state' AS orbit,
-	ST_GeomFromGeoJSON(f->'geometry') AS geom, f->'assets' AS assets
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text($(repr(files))))
-QUALIFY row_number() OVER (PARTITION BY id) = 1
-""")  # one row per scene: its date, cloud cover, satellite, tile, orbit, outline and assets
-DBInterface.execute(con, "ALTER TABLE scenes ADD COLUMN covered DOUBLE")
-DBInterface.execute(con, "UPDATE scenes SET covered = round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1)")  # the share of the area each scene covers, in per cent
+cloud = nothing  # every scene, in the collections without a cloud cover
+{{?collection=sentinel-2-l2a|sentinel-2-l1c|sentinel-3-olci-2-lfr-ntc|sentinel-3-sl-2-lst-ntc}}cloud = {{maxCloud}}  # scenes with at most this share of clouds, in per cent
+copernicus_scenes(con, collection; box = (west, south, east, north), days = (first_day, last_day), cloud, most = {{rows}})  # the table scenes, from the STAC catalogue of the Copernicus Data Space, which needs no account
 DBInterface.execute(con, "DELETE FROM scenes WHERE id NOT IN (SELECT id FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC LIMIT {{rows}})")
 s = query("SELECT id, acquired, cloud, covered FROM scenes ORDER BY coalesce(cloud, 0), acquired DESC")
-isempty(s.id) && error("The catalogue has no scenes of $(collection) over the area from $(first_day) to $(last_day)$(isempty(extra) ? "" : " with at most {{maxCloud}}% of clouds"): widen the dates, the area or the cloud cover")
+isempty(s.id) && error("The catalogue has no scenes of $(collection) over the area from $(first_day) to $(last_day)$(cloud === nothing ? "" : " with at most $(cloud)% of clouds"): widen the dates, the area or the cloud cover")
 println(length(s.id), " scenes of ", collection, " over the area from ", first_day, " to ", last_day, ismissing(first(s.cloud)) ? ", the latest first:" : ", the least cloudy first:")
 for i in eachindex(s.id)
 	println(rpad(s.id[i], 66), " ", s.acquired[i], ismissing(s.cloud[i]) ? "" : "  cloud $(round(s.cloud[i]; digits = 1))%", "  covers $(s.covered[i])% of the area")
@@ -405,7 +387,7 @@ end
 [[codeBranches]]
 model = "s2"
 code = '''
-using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+using DuckDB, Tables, SmartRegions, Rasters, ArchGDAL
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -413,57 +395,27 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql) = Tables.columntable(DBInterface.execute(con, sql))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the bands are kept once downloaded, and the Next Steps save theirs
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
-first_day, last_day = "{{firstDay}}", "{{lastDay}}"
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
-scene = "{{scene}}"
-url = "https://stac.dataspace.copernicus.eu/v1/search?collections=sentinel-2-l2a&limit=100&" * (isempty(scene) ? "bbox=$(west),$(south),$(east),$(north)&datetime=$(enc("$(first_day)T00:00:00Z/$(last_day)T23:59:59Z"))&filter=$(enc("eo:cloud_cover <= {{maxCloud}}"))&filter-lang=cql2-text" : "ids=$(scene)")
-page = Downloads.download(url, joinpath(mktempdir(), "scenes.json"))  # the scenes of the catalogue, searched without an account
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE scenes AS
-SELECT f->>'id' AS id, CAST(f->>'/properties/datetime' AS TIMESTAMP) AS acquired, TRY_CAST(f->>'/properties/eo:cloud_cover' AS DOUBLE) AS cloud,
-	ST_GeomFromGeoJSON(f->'geometry') AS geom, f->'assets' AS assets
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text('$(page)'))
-""")
-pick = query("SELECT id, acquired, cloud, round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1) AS covered FROM scenes ORDER BY covered DESC, cloud, acquired DESC LIMIT 1")  # the least cloudy of the scenes that cover the most of the area
+first_day, last_day, scene = "{{firstDay}}", "{{lastDay}}", "{{scene}}"
+if isempty(scene)  # the scenes of the catalogue, which needs no account
+	copernicus_scenes(con, "sentinel-2-l2a"; box = (west, south, east, north), days = (first_day, last_day), cloud = {{maxCloud}})
+else
+	copernicus_scenes(con, "sentinel-2-l2a"; box = (west, south, east, north), ids = scene)
+end
+pick = query("SELECT id, acquired, cloud, covered FROM scenes ORDER BY covered DESC, cloud, acquired DESC LIMIT 1")  # the least cloudy of the scenes that cover the most of the area
 isempty(pick.id) && error(isempty(scene) ? "No Sentinel-2 Level-2A scene over the area from $(first_day) to $(last_day) has at most {{maxCloud}}% of clouds: widen the dates or the cloud cover" : "The catalogue has no Sentinel-2 Level-2A scene $(scene)")
 scene = only(pick.id)
 println("Scene ", scene, ", ", only(pick.acquired), ", cloud ", round(only(pick.cloud); digits = 1), "%, covering ", only(pick.covered), "% of the area")
 
-function token()  # an access token of the Copernicus Data Space Ecosystem, for the user's account
-	for v in ("CDSE_USERNAME", "CDSE_PASSWORD")
-		haskey(ENV, v) || error("Set the credentials of your Copernicus Data Space account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
-	end
-	out = IOBuffer()
-	r = Downloads.request("https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
-		input = IOBuffer("grant_type=password&client_id=cdse-public&username=$(enc(ENV["CDSE_USERNAME"]))&password=$(enc(ENV["CDSE_PASSWORD"]))"),
-		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
-	answer = String(take!(out))
-	r isa Downloads.Response && r.status == 200 || error("The Copernicus Data Space refused the account (HTTP $(r isa Downloads.Response ? r.status : r.message)): $(first(answer, 300))")
-	return match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1]
-end
-function download_once(href, path)  # a file of the download service, kept in the folder: a new token for each, as a token lasts minutes
-	isfile(path) && return path
-	Downloads.download(href, path * ".part"; headers = ["Authorization" => "Bearer $(token())"])
-	return mv(path * ".part", path)
-end
-
 chosen = strip.(split("{{bands}}", ","))
-known = query("SELECT unnest(json_keys(assets)) AS k FROM scenes WHERE id = '$(scene)'").k
-for b in chosen
-	b in known || error("The scene has no band $(b): its assets are $(join(sort(known), ", "))")
-end
 bands = Dict{String, Any}()  # each band, cut to the area: reflectance, or the classes of SCL
 crs = ""
 for b in chosen
-	a = query("SELECT assets->'$(b)'->'alternate'->'https'->>'href' AS href, assets->'$(b)'->>'proj:code' AS code, TRY_CAST(assets->'$(b)'->>'raster:scale' AS DOUBLE) AS scale, TRY_CAST(assets->'$(b)'->>'raster:offset' AS DOUBLE) AS offset, TRY_CAST(assets->'$(b)'->>'nodata' AS DOUBLE) AS nodata FROM scenes WHERE id = '$(scene)'")
-	path = download_once(only(a.href), joinpath(mkpath(joinpath(folder, "cdse", scene)), "$(b).jp2"))
-	global crs = only(a.code)  # the coordinate system of the tile, a zone of UTM
-	box = query("SELECT ST_XMin(g) AS x0, ST_YMin(g) AS y0, ST_XMax(g) AS x1, ST_YMax(g) AS y1 FROM (SELECT ST_Transform($(area), 'EPSG:4326', '$(crs)') AS g)")
-	cut = read(crop(Raster(path; lazy = true); to = Extent(X = (only(box.x0), only(box.x1)), Y = (only(box.y0), only(box.y1)))))  # the cells of the area only
-	scale, offset, nodata = only(a.scale), only(a.offset), only(a.nodata)
-	bands[b] = map(v -> ismissing(v) || (!ismissing(nodata) && v == nodata) ? missing : ismissing(scale) ? Int(v) : Float32(v * scale + coalesce(offset, 0.0)), cut)  # reflectance from the stored integers, by the catalogue's scale and offset
-	println(rpad(b, 9), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", path)
+	a = copernicus_band(con, scene, b; folder = joinpath(folder, "cdse"))  # downloaded once, with the account on the Powered by line
+	global crs = a.crs  # the coordinate system of the tile, a zone of UTM
+	x0, y0, x1, y1 = projected_box(con, (west, south, east, north), crs)
+	cut = read(crop(Raster(a.path; lazy = true); to = Extent(X = (x0, x1), Y = (y0, y1))))  # the cells of the area only
+	bands[b] = map(v -> ismissing(v) || (!ismissing(a.nodata) && v == a.nodata) ? missing : ismissing(a.scale) ? Int(v) : Float32(v * a.scale + coalesce(a.offset, 0.0)), cut)  # reflectance from the stored integers, by the catalogue's scale and offset
+	println(rpad(b, 9), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", a.path)
 end
 grid = bands[first(chosen)]  # the first band, for the Next Steps that read one
 '''
@@ -471,7 +423,7 @@ grid = bands[first(chosen)]  # the first band, for the Next Steps that read one
 [[codeBranches]]
 model = "s1"
 code = '''
-using DuckDB, Tables, Downloads, Rasters, ArchGDAL
+using DuckDB, Tables, SmartRegions, Rasters, ArchGDAL
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -479,54 +431,28 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql) = Tables.columntable(DBInterface.execute(con, sql))
 folder = mkpath(expanduser(raw"{{folder}}"))  # where the mosaics are kept once downloaded, and the Next Steps save theirs
 west, south, east, north = parse.(Float64, split("{{area}}", ","))  # the area, in degrees of longitude and latitude
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
-first_day, last_day = "{{firstDay}}", "{{lastDay}}"
-enc(s) = join(isletter(c) && isascii(c) || isdigit(c) || c in "-_.~," ? string(c) : join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in s)  # a value in the address of a request
-scene = "{{scene}}"
-url = "https://stac.dataspace.copernicus.eu/v1/search?collections=sentinel-1-global-mosaics&limit=100&" * (isempty(scene) ? "bbox=$(west),$(south),$(east),$(north)&datetime=$(enc("$(first_day)T00:00:00Z/$(last_day)T23:59:59Z"))" : "ids=$(scene)")
-page = Downloads.download(url, joinpath(mktempdir(), "mosaics.json"))  # the monthly mosaics of the catalogue, searched without an account
-DBInterface.execute(con, """
-CREATE OR REPLACE TABLE scenes AS
-SELECT f->>'id' AS id, CAST(f->>'/properties/start_datetime' AS TIMESTAMP) AS acquired, ST_GeomFromGeoJSON(f->'geometry') AS geom, f->'assets' AS assets
-FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text('$(page)'))
-""")
-pick = query("SELECT id, acquired, round(100 * ST_Area(ST_Intersection(geom, $(area))) / ST_Area($(area)), 1) AS covered FROM scenes ORDER BY covered DESC, acquired DESC LIMIT 1")  # the latest of the mosaics that cover the most of the area
+first_day, last_day, scene = "{{firstDay}}", "{{lastDay}}", "{{scene}}"
+if isempty(scene)  # the monthly mosaics of the catalogue, which needs no account
+	copernicus_scenes(con, "sentinel-1-global-mosaics"; box = (west, south, east, north), days = (first_day, last_day))
+else
+	copernicus_scenes(con, "sentinel-1-global-mosaics"; box = (west, south, east, north), ids = scene)
+end
+pick = query("SELECT id, acquired, covered FROM scenes ORDER BY covered DESC, acquired DESC LIMIT 1")  # the latest of the mosaics that cover the most of the area
 isempty(pick.id) && error(isempty(scene) ? "The catalogue has no Sentinel-1 monthly mosaic over the area from $(first_day) to $(last_day): widen the dates" : "The catalogue has no Sentinel-1 monthly mosaic $(scene)")
 scene = only(pick.id)
 println("Mosaic ", scene, ", the month from ", only(pick.acquired), ", covering ", only(pick.covered), "% of the area")
-
-function token()  # an access token of the Copernicus Data Space Ecosystem, for the user's account
-	for v in ("CDSE_USERNAME", "CDSE_PASSWORD")
-		haskey(ENV, v) || error("Set the credentials of your Copernicus Data Space account with the key on the Powered by line, or set ENV[\"$(v)\"]: see the Authentication wiki")
-	end
-	out = IOBuffer()
-	r = Downloads.request("https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"; method = "POST", output = out, throw = false,
-		input = IOBuffer("grant_type=password&client_id=cdse-public&username=$(enc(ENV["CDSE_USERNAME"]))&password=$(enc(ENV["CDSE_PASSWORD"]))"),
-		headers = ["Content-Type" => "application/x-www-form-urlencoded"])
-	answer = String(take!(out))
-	r isa Downloads.Response && r.status == 200 || error("The Copernicus Data Space refused the account (HTTP $(r isa Downloads.Response ? r.status : r.message)): $(first(answer, 300))")
-	return match(r"\"access_token\"\s*:\s*\"([^\"]+)\"", answer)[1]
-end
-function download_once(href, path)  # a file of the download service, kept in the folder: a new token for each, as a token lasts minutes
-	isfile(path) && return path
-	Downloads.download(href, path * ".part"; headers = ["Authorization" => "Bearer $(token())"])
-	return mv(path * ".part", path)
-end
 
 chosen = uppercase.(strip.(split("{{polarisations}}", ",")))
 bands = Dict{String, Any}()  # the backscatter of each polarisation, cut to the area
 crs = ""
 for b in chosen
 	b in ("VV", "VH") || error("The monthly mosaics of IW have the polarisations VV and VH, not $(b)")
-	a = query("SELECT assets->'$(b)'->'alternate'->'https'->>'href' AS href, assets->'$(b)'->>'proj:code' AS code, TRY_CAST(assets->'$(b)'->>'nodata' AS DOUBLE) AS nodata FROM scenes WHERE id = '$(scene)'")
-	ismissing(only(a.href)) && error("The mosaic $(scene) has no $(b)")
-	path = download_once(only(a.href), joinpath(mkpath(joinpath(folder, "cdse", scene)), "$(b).tif"))
-	global crs = only(a.code)  # the coordinate system of the tile, a zone of UTM
-	box = query("SELECT ST_XMin(g) AS x0, ST_YMin(g) AS y0, ST_XMax(g) AS x1, ST_YMax(g) AS y1 FROM (SELECT ST_Transform($(area), 'EPSG:4326', '$(crs)') AS g)")
-	cut = read(crop(Raster(path; lazy = true); to = Extent(X = (only(box.x0), only(box.x1)), Y = (only(box.y0), only(box.y1)))))  # the cells of the area only
-	nodata = only(a.nodata)
-	bands[b] = map(v -> ismissing(v) || (!ismissing(nodata) && v == nodata) || !isfinite(v) || v <= 0 ? missing : Float32(v), cut)  # the backscatter, missing where the mosaic has no observation
-	println(rpad(b, 4), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", path)
+	a = copernicus_band(con, scene, b; folder = joinpath(folder, "cdse"))  # downloaded once, with the account on the Powered by line
+	global crs = a.crs  # the coordinate system of the tile, a zone of UTM
+	x0, y0, x1, y1 = projected_box(con, (west, south, east, north), crs)
+	cut = read(crop(Raster(a.path; lazy = true); to = Extent(X = (x0, x1), Y = (y0, y1))))  # the cells of the area only
+	bands[b] = map(v -> ismissing(v) || (!ismissing(a.nodata) && v == a.nodata) || !isfinite(v) || v <= 0 ? missing : Float32(v), cut)  # the backscatter, missing where the mosaic has no observation
+	println(rpad(b, 4), size(cut, X), " x ", size(cut, Y), " cells, ", count(ismissing, bands[b]), " without data, from ", a.path)
 end
 grid = bands[first(chosen)]  # the first polarisation, for the Next Steps that read one
 '''
@@ -661,9 +587,9 @@ models = ["find"]
 code = '''
 println(rpad("collection", 30), rpad("scenes", 8), "first and last")
 for c in ("sentinel-2-l2a", "sentinel-1-grd", "sentinel-3-olci-2-lfr-ntc", "sentinel-5p-l2-no2-offl")
-	pages = search(c; most = 1000)
-	counts = query("SELECT count(DISTINCT f->>'id') AS n, min(f->>'/properties/datetime') AS t0, max(f->>'/properties/datetime') AS t1 FROM (SELECT unnest(CAST(coalesce(json_extract(content, '/features'), '[]') AS JSON[])) AS f FROM read_text($(repr(pages))))")
-	println(rpad(c, 30), rpad(only(counts.n), 8), only(counts.n) == 0 ? "" : "$(first(only(counts.t0), 10)) to $(first(only(counts.t1), 10))")
+	n = copernicus_scenes(con, c; box = (west, south, east, north), days = (first_day, last_day), most = 1000, table = "counted")
+	t = only(query("SELECT CAST(CAST(min(acquired) AS DATE) AS VARCHAR) AS t0, CAST(CAST(max(acquired) AS DATE) AS VARCHAR) AS t1 FROM counted") |> Tables.rows)
+	println(rpad(c, 30), rpad(n, 8), n == 0 ? "" : "$(t.t0) to $(t.t1)")
 end
 '''
 

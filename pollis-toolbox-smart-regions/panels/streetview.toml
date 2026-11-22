@@ -18,6 +18,10 @@ envVar = "MAPILLARY_ACCESS_TOKEN"
 prompt = "Mapillary client access token, from the developer dashboard of Mapillary"
 
 [[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
 name = "DuckDB.jl"
 github = "https://github.com/duckdb/DuckDB.jl"
 
@@ -289,7 +293,7 @@ models = ["byid"]
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, SmartRegions
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
@@ -297,58 +301,21 @@ DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as long
 query(sql, params = ()) = Tables.columntable(DBInterface.execute(con, sql, params))
 folder = mkpath(expanduser(raw"{{folder}}"))
 place = mkpath(joinpath(folder, "mapillary"))  # where the Next Steps save their files
-haskey(ENV, "MAPILLARY_ACCESS_TOKEN") || error("Set your Mapillary access token with the key on the Powered by line, or set ENV[\"MAPILLARY_ACCESS_TOKEN\"]: see the Access Token wiki")
-function mly_get(url, path)  # one request of the Mapillary API, written to path; stops with the API's message
-	part = path * ".part"
-	r = open(io -> Downloads.request(url; output = io, headers = ["Authorization" => "OAuth " * ENV["MAPILLARY_ACCESS_TOKEN"]], throw = false), part, "w")
-	r isa Downloads.Response || (rm(part; force = true); error("Mapillary could not be reached: $(r.message)"))
-	if r.status != 200
-		answer = read(part, String)
-		rm(part; force = true)
-		m = match(r"\"message\"\s*:\s*\"(.*?)\""s, answer)
-		error("Mapillary answered HTTP $(r.status): $(m === nothing ? first(answer, 300) : m[1])")
-	end
-	return mv(part, path; force = true)
-end
 name, lon, lat = "{{placeName}}", {{lon}}, {{lat}}  # the point, in degrees of longitude and latitude: replace it with your own place
-radius = {{radius}}  # how far from the point to look for images, in metres
-0 < radius <= 500 || error("The Search Radius is $(radius) m: give one above 0 and at most 500")
-fields = "id,captured_at,compass_angle,computed_compass_angle,geometry,computed_geometry,is_pano,camera_type,make,model,sequence,creator,width,height,thumb_1024_url,thumb_2048_url"
-function read_images(answer; list = true)  # the images of an answer of the API, as the table images, with their distance from the point
-	rows = list ? "unnest(CAST(coalesce(json_extract(content, '/data'), '[]') AS JSON[]))" : "CAST(content AS JSON)"
-	DBInterface.execute(con, """
-	CREATE OR REPLACE TABLE images AS
-	SELECT *, ST_Distance_Sphere(geom, ST_Point($(lon), $(lat))) AS metres FROM (
-		SELECT DISTINCT ON (id) x->>'id' AS id, x->>'sequence' AS sequence_id, epoch_ms(CAST(x->>'captured_at' AS BIGINT)) AS captured_at,
-			TRY_CAST(coalesce(x->>'computed_compass_angle', x->>'compass_angle') AS DOUBLE) AS compass_angle, coalesce(TRY_CAST(x->>'is_pano' AS BOOLEAN), false) AS is_pano,
-			x->>'camera_type' AS camera_type, x->>'make' AS make, x->>'model' AS camera_model, TRY_CAST(x->>'width' AS INTEGER) AS width, TRY_CAST(x->>'height' AS INTEGER) AS height,
-			x->'creator'->>'username' AS creator, x->>'thumb_1024_url' AS thumb_url, x->>'thumb_2048_url' AS large_url,
-			ST_GeomFromGeoJSON(coalesce(x->'computed_geometry', x->'geometry')) AS geom, ST_GeomFromGeoJSON(x->'geometry') AS camera_geom
-		FROM (SELECT $(rows) AS x FROM read_text(?)))
-	""", [answer])  # one row per image: its sequence, date, heading, panorama, camera, creator, thumbnails, and its computed and camera positions
-	rm(answer)
-end
-function nearby(filters = String[])  # the images within the radius of the point, from the image search over a box around it
-	dlon, dlat = radius / (111320 * cosd(lat)), radius / 110574  # the radius in degrees of longitude and latitude
-	read_images(mly_get("https://graph.mapillary.com/images?" * join(["fields=$(fields)"; "bbox=$(lon - dlon),$(lat - dlat),$(lon + dlon),$(lat + dlat)"; "limit=2000"; filters], "&"), tempname() * ".json"))
-	only(query("SELECT count(*) AS n FROM images").n) >= 2000 && println("The search returned 2,000 images, as many as Mapillary gives to one request: some within the radius may be missing, so make the Search Radius smaller")
-	DBInterface.execute(con, "DELETE FROM images WHERE metres > $(radius)")  # the corners of the box are farther than the radius
-end
-{{?model=nearest|mapview}} nearby()
-{{?model=pano}} nearby(["is_pano=true"])  # panoramas only, filtered by the API
-{{?model!=byid}} order = "{{pick}}" == "newest" ? "captured_at DESC" : "metres"  # the nearest image, or the newest within the radius
-{{?model=byid}} given = strip(raw"{{imageId}}")
-{{?model=byid}} link = match(r"pKey=(\d+)", given)  # a link of mapillary.com names its image with pKey
-{{?model=byid}} image = link !== nothing ? String(link[1]) : occursin(r"^\d+$", given) ? String(given) : given == "nearest" ? "" : error("Image ID or Link is neither the id of an image, nor a link of mapillary.com with pKey=, nor nearest")
-{{?model=byid}} isempty(image) ? nearby() : read_images(mly_get("https://graph.mapillary.com/$(image)?fields=$(fields)", tempname() * ".json"); list = false)  # nearest: the image nearest the point
-{{?model=byid}} order = "metres"
+radius = {{radius}}  # how far from the point to look for images, in metres, at most 500
+{{?model=nearest|mapview}}mapillary_near(con, lon, lat, radius)  # the table images: Mapillary's images within the radius, with their distance from the point, read with the access token on the Powered by line
+{{?model=pano}}mapillary_near(con, lon, lat, radius; pano = true)  # the table images: the panoramas within the radius, with their distance from the point, read with the access token on the Powered by line
+{{?model!=byid}}order = "{{pick}}" == "newest" ? "captured_at DESC" : "metres"  # the nearest image, or the newest within the radius
+{{?model=byid}}given = strip(raw"{{imageId}}")  # the id of an image, a link of mapillary.com with pKey=, or nearest
+{{?model=byid}}given == "nearest" ? mapillary_near(con, lon, lat, radius) : mapillary_image(con, given, lon, lat)  # the table images, read with the access token on the Powered by line
+{{?model=byid}}order = "metres"
 chosen = query("SELECT id, CAST(CAST(captured_at AS DATE) AS VARCHAR) AS day, round(metres, 1) AS metres, coalesce(CAST(round(compass_angle) AS VARCHAR) || ' degrees', 'unknown') AS heading, is_pano, coalesce(camera_type, 'unknown') AS camera FROM images ORDER BY $(order) LIMIT 1")
-{{?model!=pano}} isempty(chosen.id) && error("Mapillary has no image within $(radius) m of the point: make the Search Radius larger, or move the point onto a street")
-{{?model=pano}} isempty(chosen.id) && error("Mapillary has no panorama within $(radius) m of the point: make the Search Radius larger, or use Nearest Image")
+{{?model!=pano}}isempty(chosen.id) && error("Mapillary has no image within $(radius) m of the point: make the Search Radius larger, or move the point onto a street")
+{{?model=pano}}isempty(chosen.id) && error("Mapillary has no panorama within $(radius) m of the point: make the Search Radius larger, or use Nearest Image")
 image = chosen.id[1]  # the image the viewer opens, and the Next Steps look at
 println("Image ", image, ", captured ", chosen.day[1], ", ", chosen.metres[1], " m from the point, heading ", chosen.heading[1], chosen.is_pano[1] ? ", a panorama" : ", camera " * chosen.camera[1], "; ", only(query("SELECT count(*) AS n FROM images").n), " images in the table images")
-{{?model!=mapview}} display(Pollis.streetview(image; title = name))  # drag to look around; the arrows walk along the sequence
-{{?model=mapview}} display(Pollis.streetview(image; map = true, title = name))  # a click on the map opens the image there, and the marker follows the viewer
+{{?model!=mapview}}display(Pollis.streetview(image; title = name))  # drag to look around; the arrows walk along the sequence
+{{?model=mapview}}display(Pollis.streetview(image; map = true, title = name))  # a click on the map opens the image there, and the marker follows the viewer
 '''
 
 [[actionGroups]]

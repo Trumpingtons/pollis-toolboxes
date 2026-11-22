@@ -6,7 +6,7 @@
 |---|---|
 | **Purpose** | Find the scenes of a dataset over an area between two dates, download the bands of a Landsat scene or the elevation of the area, and look at them, check them and save them |
 | **Input** | An Area as west, south, east and north in degrees; the From and To dates; a Dataset and the Most Cloud; a Scene and the Bands; an Elevation Product |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), with DuckDB's spatial extension |
+| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl) (`usgs_scenes`, `usgs_bands`, `usgs_dem`, `projected_box`), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl), with DuckDB's spatial extension |
 | **Tabs** | Find Scenes; Landsat Download; Elevation |
 | **Account** | An account of the EROS Registration System with access to the M2M API and an application token, for every tab, kept by Pollis with the key on the Powered by line |
 | **Output** | Find Scenes: the table `scenes`, one row per scene with its identifiers, date, cloud cover and outline. Landsat Download and Elevation: `bands`, each band cut to the area, and `grid`, the first of them |
