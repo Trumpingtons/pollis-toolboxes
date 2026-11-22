@@ -183,15 +183,18 @@ models = ["geotiff"]
 model = "geotiff"
 code = '''
 using Rasters, ArchGDAL, Statistics
+using Rasters.Lookups: Intervals, Center, Points
 
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 path = joinpath(folder, "{{tiffFile}}")  # an absolute path is kept as it is
 {{?tiffFile=london-dem.tif}}# Example file: the Copernicus DEM GLO-30, the global surface model of the Copernicus programme in cells of about 30 m, buildings and trees included, over west and central London, read from the Cloud-Optimised GeoTIFF of its tile on AWS and written to london-dem.tif unless the folder has one already. Replace "london-dem.tif" with your own GeoTIFF.
 {{?tiffFile=london-dem.tif}}isfile(path) || write(path, read(Raster("/vsicurl/https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N51_00_W001_00_DEM/Copernicus_DSM_COG_10_N51_00_W001_00_DEM.tif"; lazy = true)[X(-0.6 .. 0.0), Y(51.3 .. 51.7)]); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))  # only the cells of the window are read
 
+ArchGDAL.setconfigoption("GTIFF_POINT_GEO_IGNORE", "TRUE")  # a GeoTIFF that records its cells as points, as the Copernicus DEM does: GDAL gives the points themselves, not the corners of cells around them
 r = Raster(path; lazy = true)  # the file opened: its cells are read only when used
 hasdim(r, Band) && (r = r[Band({{band}})])  # one band of a multiband file
 grid = read(r)  # the band in memory, missing where the file has no data
+Rasters.Lookups.sampling(lookup(grid, X)) isa Points && (grid = set(grid, X => Intervals(Center()), Y => Intervals(Center())))  # each point the centre of its cell, as GDAL and terra take it
 file_crs, transform, nodata = ArchGDAL.read(ds -> (ArchGDAL.getproj(ds), ArchGDAL.getgeotransform(ds), ArchGDAL.getnodatavalue(ArchGDAL.getband(ds, {{band}}))), path)  # the coordinate system as WKT, the geotransform and the no-data value
 fill_value = convert(nonmissingtype(eltype(grid)), something(nodata, -9999))  # the value written for missing cells: the file's no-data value
 println(size(grid, X), " x ", size(grid, Y), " cells of ", transform[2], " by ", abs(transform[6]), ", ", count(ismissing, grid), " missing; values from ", minimum(skipmissing(grid)), " to ", maximum(skipmissing(grid)))
