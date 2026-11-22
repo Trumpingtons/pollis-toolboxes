@@ -365,14 +365,14 @@ models = ["mounds", "pits", "shape"]
 [[inputs]]
 id = "zoomCentre"
 label = "Zoom Centre"
-tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on a Place and Profile Through a Place look: the default is the Wormwood Hill tumulus, in British National Grid."
+tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on the Place, on the maps of Zoom and Pan, and Profile Through a Place look: the default is the Wormwood Hill tumulus, in British National Grid."
 default = "549716, 252899"
 newRow = true
 
 [[inputs]]
 id = "zoomSize"
 label = "Zoom Size (m)"
-tooltip = "The width of the square Zoom on a Place shows, and the length of the line Profile Through a Place follows, in metres."
+tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, and the length of the line Profile Through a Place follows, in metres."
 default = "300"
 
 [[codeBranches]]
@@ -402,22 +402,14 @@ id = "visualise"
 label = "Visualise"
 
 [[actionGroups.actions]]
-id = "show-candidates"
-label = "Candidates on the Image"
-desc = "The local relief model in grey from -0.5 to 0.5 m beside Esri's aerial and satellite imagery of the same ground, with the outline of each candidate in yellow: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
-code = '''
-Pollis.browse(terrain_maps("Candidate Features", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels))
-'''
-
-[[actionGroups.actions]]
 id = "zoom"
-label = "Zoom on a Place"
-desc = "The same maps, opened on a square of the Zoom Size around the Zoom Centre, at one scale: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
+label = "Zoom and Pan"
+desc = "The local relief model in grey from -0.5 to 0.5 m beside Esri's aerial and satellite imagery of the same ground, with the outline of each candidate in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
 println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " candidates within ", d, " m of ", x0, ", ", y0)
-Pollis.browse(terrain_maps("Candidate Features, Zoom on a Place", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels, centre = (x0, y0), width = 2d))
+Pollis.browse(terrain_maps("Candidate Features", "Local Relief Model" => (lrm, -0.5, 0.5); labels = found.labels, centre = (x0, y0), width = 2d))
 '''
 
 [[actionGroups]]

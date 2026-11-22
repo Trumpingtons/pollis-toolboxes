@@ -339,14 +339,14 @@ newRow = true
 [[inputs]]
 id = "zoomCentre"
 label = "Zoom Centre"
-tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on a Place and Profile Through a Place look: the default is the centre of Wandlebury Ring, in British National Grid."
+tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on the Place, on the maps of Zoom and Pan, and Profile Through a Place look: the default is the centre of Wandlebury Ring, in British National Grid."
 default = "549401, 253423"
 newRow = true
 
 [[inputs]]
 id = "zoomSize"
 label = "Zoom Size (m)"
-tooltip = "The width of the square Zoom on a Place shows, and the length of the line Profile Through a Place follows, in metres."
+tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, and the length of the line Profile Through a Place follows, in metres."
 default = "600"
 
 [[codeBranches]]
@@ -376,29 +376,16 @@ id = "visualise"
 label = "Visualise"
 
 [[actionGroups.actions]]
-id = "show-image"
-label = "Show the Image"
-desc = "The result in grey, stretched from the 2% to the 98% quantile (the layered image from 0 to 1), beside Esri's aerial and satellite imagery of the same ground: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
+id = "zoom"
+label = "Zoom and Pan"
+desc = "The result in grey, stretched from the 2% to the 98% quantile (the layered image from 0 to 1), beside Esri's aerial and satellite imagery of the same ground, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 lo, hi = quantile(collect(skipmissing(result)), [0.02, 0.98])
 {{?model=vat}}lo, hi = 0.0, 1.0
 {{?model=shade}}{{?shadeKind=slope}}lo, hi = hi, lo  # steep ground dark
-Pollis.browse(terrain_maps("Relief Visualisation, {{model}}", "Relief Visualisation" => (result, lo, hi)))
-'''
-
-[[actionGroups.actions]]
-id = "zoom"
-label = "Zoom on a Place"
-desc = "The same maps, opened on a square of the Zoom Size around the Zoom Centre, with the grey stretched over that square: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
-code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
-part = result[X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d)]
-lo, hi = quantile(collect(skipmissing(part)), [0.02, 0.98])
-{{?model=vat}}lo, hi = 0.0, 1.0
-{{?model=shade}}{{?shadeKind=slope}}lo, hi = hi, lo
-println(size(part, X), " x ", size(part, Y), " cells around ", x0, ", ", y0)
-Pollis.browse(terrain_maps("Relief Visualisation, {{model}}, Zoom on a Place", "Relief Visualisation" => (result, lo, hi); centre = (x0, y0), width = 2d))
+Pollis.browse(terrain_maps("Relief Visualisation, {{model}}", "Relief Visualisation" => (result, lo, hi); centre = (x0, y0), width = 2d))
 '''
 
 [[actionGroups]]

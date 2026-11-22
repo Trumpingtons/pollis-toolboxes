@@ -14,7 +14,7 @@ Two features become one candidate when the cells between them pass the rule too.
 
 ## One Feature Split Into Several Candidates
 
-A feature becomes several candidates when part of it fails the rule. A ditch crossed by a gap, a bank cut by a track, or a ring ditch filled in places breaks into short regions, each with its own `id`. A mound with two summits fills as one region in the Mounds tab, but can form two regions in Threshold and Shape when the Threshold is above the ground between the summits. A lower Threshold or Minimum Height joins the pieces, at the cost of more noise. Candidates on the Image and Zoom on a Place show the outlines of the regions over the local relief model, where a row of small regions along a line shows a feature that was split.
+A feature becomes several candidates when part of it fails the rule. A ditch crossed by a gap, a bank cut by a track, or a ring ditch filled in places breaks into short regions, each with its own `id`. A mound with two summits fills as one region in the Mounds tab, but can form two regions in Threshold and Shape when the Threshold is above the ground between the summits. A lower Threshold or Minimum Height joins the pieces, at the cost of more noise. Zoom and Pan shows the outlines of the regions over the local relief model, where a row of small regions along a line shows a feature that was split.
 
 ## Candidates That Are Not Archaeological
 

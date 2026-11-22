@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-geoprocessing",
   "displayName": "Geoprocessing Toolbox",
   "description": "Pollis Geoprocessing Toolbox: calculations on rasters and elevation models in Julia. Computes local, focal and zonal operations on rasters, resamples them and puts polygons onto a grid with Rasters.jl and Stencils.jl, and computes the slope, aspect, hillshade, curvature, relief indices, upslope area and Topographic Wetness and Stream Power indices of an elevation model with Geomorphometry.jl and Stencils.jl, each replicated with R's terra, MultiscaleDTM or WhiteboxTools. For archaeological prospection, computes the local relief model, sky-view factor, openness, shaded relief and the layered image (VAT) of a lidar terrain model, replicated with RVT.",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",

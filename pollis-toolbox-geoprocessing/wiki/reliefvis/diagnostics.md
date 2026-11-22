@@ -10,7 +10,7 @@ A terrain model may lack cells: water bodies where the laser returned nothing, t
 
 ## Spikes, Pits and Objects Left in the Terrain Model
 
-The filtering that builds a bare-earth terrain model can leave cells too high, where part of a building, a vehicle or dense vegetation was taken for ground, or too low, where a pulse returned from below the surface. Every visualisation turns such a cell into a small, sharp feature, which can look like a post or a pit. Zoom on a Place shows such a form enlarged, where a single cell standing out from all its neighbours is easy to tell from a feature that spans many cells. Isolated spikes are usually errors; a ring or a line of them follows a real form.
+The filtering that builds a bare-earth terrain model can leave cells too high, where part of a building, a vehicle or dense vegetation was taken for ground, or too low, where a pulse returned from below the surface. Every visualisation turns such a cell into a small, sharp feature, which can look like a post or a pit. Zoom on the Place, on the maps of Zoom and Pan, shows such a form enlarged, where a single cell standing out from all its neighbours is easy to tell from a feature that spans many cells. Isolated spikes are usually errors; a ring or a line of them follows a real form.
 
 ## Seams, Stripes and Triangles Made by Processing
 

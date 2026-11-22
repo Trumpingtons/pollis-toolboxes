@@ -6,7 +6,7 @@ The Threshold and Shape tab, `find_regions` of SmartRegions.jl, marks every cell
 
 ## How Regions Are Joined Through Eight Neighbours
 
-A region is a group of marked cells that touch, through a side or a corner: each cell has eight neighbours. Joining through corners keeps a narrow diagonal bank or ditch, one cell wide, as one region, where joining through sides alone would break it into single cells. It also joins two features that meet at one corner, and two mounds a cell apart diagonally count as one. `label_regions` of SmartRegions.jl numbers the regions from 1 in the order it meets them, scanning the grid, and gives 0 to the cells outside every region. The numbers are the `labels` that the panel returns as a `Raster`, and that Candidates on the Image and Zoom on a Place outline in yellow.
+A region is a group of marked cells that touch, through a side or a corner: each cell has eight neighbours. Joining through corners keeps a narrow diagonal bank or ditch, one cell wide, as one region, where joining through sides alone would break it into single cells. It also joins two features that meet at one corner, and two mounds a cell apart diagonally count as one. `label_regions` of SmartRegions.jl numbers the regions from 1 in the order it meets them, scanning the grid, and gives 0 to the cells outside every region. The numbers are the `labels` that the panel returns as a `Raster`, and that Zoom and Pan outlines in yellow.
 
 ## How Area, Length and Roundness Are Measured
 

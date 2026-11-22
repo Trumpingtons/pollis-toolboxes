@@ -320,40 +320,31 @@ default = "0"
 id = "look"
 title = "Look at the Features"
 intro = "See the features on the image the model reads, on the probability map and on imagery of the same ground, side by side, whole or around a place. The imagery is asked from Esri's server, which learns where the terrain model is."
-code = '''
-# the maps the features are drawn on, each in grey from 0 to 1
-shown_maps = ("Features on the Image" => image, "Probability on the Image" => probability);
-'''
 
 [[steps.inputs]]
 id = "zoomCentre"
 label = "Zoom Centre"
-tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on a Place looks: the default is the Wormwood Hill tumulus, in British National Grid."
+tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on the Place, on the maps of Zoom and Pan, looks: the default is the Wormwood Hill tumulus, in British National Grid."
 default = "549716, 252899"
 
 [[steps.inputs]]
 id = "zoomSize"
 label = "Zoom Size (m)"
-tooltip = "The width of the square Zoom on a Place opens on, in metres."
+tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, in metres."
 default = "300"
 
 [[steps.actions]]
-id = "show-features"
-label = "Features on Both Maps"
-desc = "The image the model reads and the probability of a feature side by side with Esri's aerial and satellite imagery of the same ground, with each feature outlined in yellow: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
-code = '''
-Pollis.browse(terrain_maps("Learned Detection in Lidar", shown_maps...; labels = found.labels))
-'''
-
-[[steps.actions]]
 id = "zoom"
-label = "Zoom on a Place"
-desc = "The same maps, opened on a square of the Zoom Size around the Zoom Centre, at one scale: drag and scroll to move and zoom them together, with a scale bar and N, E, S and W"
+label = "Zoom and Pan"
+desc = "The image the model reads and the probability of a feature, as separate maps, side by side with Esri's aerial and satellite imagery of the same ground, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
 println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " features within ", d, " m of ", x0, ", ", y0)
-Pollis.browse(terrain_maps("Learned Detection in Lidar, Zoom on a Place", shown_maps...; labels = found.labels, centre = (x0, y0), width = 2d))
+Pollis.browse(terrain_maps("Learned Detection in Lidar",
+	"Image the Model Reads" => image,
+	"Probability of a Feature" => probability;
+	labels = found.labels, centre = (x0, y0), width = 2d))
 '''
 
 [[steps]]

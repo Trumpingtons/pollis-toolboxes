@@ -14,7 +14,7 @@ The Trend Radius input gives the radius of the window, in metres; the window is 
 
 ## Reading the Values of the Local Relief Model
 
-Most of a landscape lies within a few centimetres of its trend, so the values of a local relief model gather tightly around zero, with long tails where the earthworks, buildings and gullies are. Show the Image stretches the image from the 2% to the 98% quantile, so that the contrast is spent on the common values rather than on a few extreme cells. A fixed stretch is better for comparing areas: the ADAF tool stretches the simple local relief model from −0.5 to 0.5 m before its models see it ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). Summary of the Result prints the quantiles, and Profile Through a Place the values along a line, where a bank rises above zero and a ditch sinks below it.
+Most of a landscape lies within a few centimetres of its trend, so the values of a local relief model gather tightly around zero, with long tails where the earthworks, buildings and gullies are. Zoom and Pan stretches the image from the 2% to the 98% quantile, so that the contrast is spent on the common values rather than on a few extreme cells. A fixed stretch is better for comparing areas: the ADAF tool stretches the simple local relief model from −0.5 to 0.5 m before its models see it ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). Summary of the Result prints the quantiles, and Profile Through a Place the values along a line, where a bank rises above zero and a ditch sinks below it.
 
 ## How the Local Relief Model Is Computed
 
