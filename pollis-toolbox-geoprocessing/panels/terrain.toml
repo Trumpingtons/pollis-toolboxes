@@ -1,0 +1,950 @@
+# Terrain and Elevation Analysis: slope, aspect, hillshade, curvature, relief indices, flow and wetness of an elevation model, with Geomorphometry.jl, Stencils.jl and Rasters.jl
+
+[meta]
+title = "Terrain and Elevation Analysis"
+viewType = "pollis.terrain"
+defaultModel = "slope"
+decisionFirstColumn = "Measure"
+
+[[packages]]
+name = "Geomorphometry.jl"
+github = "https://github.com/Deltares/Geomorphometry.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "Stencils.jl"
+github = "https://github.com/rafaqz/Stencils.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["DataStructures.jl", "DuckDB.jl", "ECharts.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "terrain/factsheet.md"
+bundled = true
+description = "One-page reference: the five tabs, the functions that compute them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "terrain/overview.md"
+bundled = true
+description = "Land surface parameters from an elevation model: local, regional and hydrological measures"
+
+[[wikis]]
+name = "Diagnostics"
+file = "terrain/diagnostics.md"
+bundled = true
+description = "Cell size and units, the sea and missing cells, edges, noise of a surface model, depressions and flats"
+
+[[wikis]]
+name = "Decision Guide"
+file = "terrain/decision-guide.md"
+bundled = true
+description = "Which measure answers which question, and which method or window suits which elevation model"
+
+[[wikis]]
+separator = true
+label = "Measures"
+
+[[wikis]]
+name = "Slope and Aspect"
+file = "terrain/slope-aspect.md"
+bundled = true
+
+[[wikis]]
+name = "Hillshade"
+file = "terrain/hillshade.md"
+bundled = true
+
+[[wikis]]
+name = "Curvature"
+file = "terrain/curvature.md"
+bundled = true
+
+[[wikis]]
+name = "Relief Indices"
+file = "terrain/relief.md"
+bundled = true
+
+[[wikis]]
+name = "Flow and Wetness"
+file = "terrain/flow-wetness.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "PS2026a"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Sch2026c"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "HBBCD2020a"
+
+[[references]]
+key = "IMLM2023a"
+
+[[references]]
+key = "Lin2016a"
+
+[[references]]
+key = "WB2019a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "HR2009a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "Hor1981a"
+
+[[references]]
+key = "ZT1987a"
+
+[[references]]
+key = "Mar1992a"
+
+[[references]]
+key = "MEJ2020a"
+
+[[references]]
+key = "RDE1999a"
+
+[[references]]
+key = "WOBGG2007a"
+
+[[references]]
+key = "BK1979a"
+
+[[references]]
+key = "MGL1991a"
+
+[[references]]
+key = "Tar1997a"
+
+[[references]]
+key = "BLM2014a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "ESAA2022a"
+
+[[faq]]
+question = "What can be computed from an elevation model?"
+answer = '''
+An elevation model gives the height of the ground in each cell of a grid. From the heights of a cell and its neighbours come the land surface parameters: slope and aspect, the shading of the ground under a light, the curvature of the surface, indices of how rugged it is, and, following the water downhill, the area that drains through each cell and how wet the ground tends to be.
+
+The five tabs compute these in turn, from the same elevation model.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Why must the elevation model be in metres?"
+answer = '''
+Slope is a rise over a distance, so the heights and the cell size must be in the same unit. In a grid of longitude and latitude, a cell is a fraction of a degree wide, and a degree is about 111 km north to south but less east to west away from the equator. Geomorphometry.jl converts such cells to metres approximately; a grid reprojected to a projected coordinate system, as the example is, avoids the approximation.
+
+Grid and Cell Size prints the coordinate system and the size of a cell in metres.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "What is the difference between profile and tangential curvature?"
+answer = '''
+Profile curvature measures how the slope changes along the line of steepest descent: negative where the ground becomes less steep downhill, as at the foot of a slope, and positive where it steepens, as below a crest. Tangential curvature measures the bending across the slope: negative in hollows and valleys, where water converges, and positive on spurs and ridges, where it diverges.
+'''
+wiki = "Curvature"
+
+[[faq]]
+question = "What does the Topographic Wetness Index say?"
+answer = '''
+The Topographic Wetness Index is the logarithm of the area that drains through a cell, per metre of contour, divided by the tangent of its slope. It is high where much water arrives and the ground is gentle, as in valley bottoms, and low on steep ground near ridges. It ranks places by their tendency to be wet; it is not a measure of soil moisture.
+'''
+wiki = "Flow and Wetness"
+
+[[faq]]
+question = "Why are depressions filled before the flow is followed?"
+answer = '''
+An elevation model has small pits, most of them errors of measurement, where water would stop. Filling raises each depression to the level at which it would spill, and a tiny rise from cell to cell across the filled area gives the water a way out, so that the flow from every cell reaches the edge of the grid.
+
+Depressions Filled counts the cells raised and the largest rise.
+'''
+wiki = "Flow and Wetness"
+hidden = true
+
+[[faq]]
+question = "Which slope method should I use?"
+answer = '''
+Horn's method weights the eight neighbours of a cell and smooths the noise of an elevation model; it is the default of GDAL and terra. Zevenbergen and Thorne's method uses only the four neighbours that share a side, follows the surface more closely and is more sensitive to noise. The two differ little on a smooth surface and most on rough or noisy ground.
+
+Slope Methods Compared prints how far apart they are.
+'''
+wiki = "Slope and Aspect"
+hidden = true
+
+[[faq]]
+question = "What is the Terrain Ruggedness Index?"
+answer = '''
+The Terrain Ruggedness Index of Riley, DeGloria and Elliot is the square root of the sum of the squared differences in elevation between a cell and its eight neighbours, in metres. It grows with the relief around the cell, whatever its direction, and is near zero on flat ground.
+'''
+wiki = "Relief Indices"
+hidden = true
+
+[[models]]
+id = "slope"
+label = "Slope and Aspect"
+
+[[models]]
+id = "hillshade"
+label = "Hillshade"
+
+[[models]]
+id = "curvature"
+label = "Curvature"
+
+[[models]]
+id = "relief"
+label = "Relief Indices"
+
+[[models]]
+id = "flow"
+label = "Flow and Wetness"
+
+[[bullets]]
+text = "Slope and Aspect"
+detail = "How steep the ground is, in degrees, and which way it faces, by Horn's or Zevenbergen and Thorne's method, with the share of the land in classes of slope"
+
+[[bullets]]
+text = "Hillshade"
+detail = "The ground lit by the sun from a direction and an elevation, or from several directions at once, for a relief map"
+
+[[bullets]]
+text = "Curvature"
+detail = "How the surface bends along the slope (profile) and across it (tangential), from a quadratic fitted in a window around each cell"
+
+[[bullets]]
+text = "Relief Indices"
+detail = "How rugged the ground is around each cell: Terrain Ruggedness Index, Topographic Position Index and roughness"
+
+[[bullets]]
+text = "Flow and Wetness"
+detail = "The area that drains through each cell, by D-infinity after the depressions are filled, and the Topographic Wetness and Stream Power indices"
+
+[[decisionRows]]
+task = "Slope and Aspect"
+context = "Steepness, facing"
+purpose = "Where building, cycling or farming is easy or hard, and which slopes face the sun"
+
+[[decisionRows]]
+task = "Hillshade"
+context = "Seeing the relief"
+purpose = "A backdrop that shows ridges and valleys under other maps"
+
+[[decisionRows]]
+task = "Curvature"
+context = "Shape of the slope"
+purpose = "Where water and soil converge or spread, crests and the feet of slopes"
+
+[[decisionRows]]
+task = "Relief Indices"
+context = "Ruggedness"
+purpose = "How uneven the ground is around each place, ridges and valleys"
+
+[[decisionRows]]
+task = "Flow and Wetness"
+context = "Where water goes"
+purpose = "Drainage paths, streams and the places most likely to be wet"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. Save the Result as Cloud-Optimised GeoTIFF writes there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "demFile"
+label = "Elevation File"
+tooltip = "A GeoTIFF of elevation in metres, in the folder above, or an absolute path. A projected coordinate system, in metres, is best. With the default, hong-kong-dem.tif, the example first reads the Copernicus DEM GLO-30 over Hong Kong Island, Kowloon and the hills of the New Territories from its Cloud-Optimised GeoTIFF on AWS, and reprojects it to UTM zone 50N in 30 m cells, unless the folder has a hong-kong-dem.tif already."
+default = "hong-kong-dem.tif"
+
+[[inputs]]
+id = "seaLevel"
+label = "Sea at or Below"
+tooltip = "Cells at or below this elevation, in metres, are taken as sea and left out of the results; the Copernicus DEM records the sea as 0. -Inf keeps every cell. The flow is followed over every cell."
+default = "0"
+
+[[inputs]]
+id = "slopeMethod"
+label = "Method"
+kind = "select"
+tooltip = "Horn: the gradient from all eight neighbours, weighted, as GDAL and terra compute by default. Zevenbergen and Thorne: from the four neighbours that share a side."
+default = "Horn"
+models = ["slope"]
+newRow = true
+
+[[inputs.options]]
+value = "Horn"
+label = "Horn"
+
+[[inputs.options]]
+value = "ZevenbergenThorne"
+label = "Zevenbergen and Thorne"
+
+[[inputs]]
+id = "slopeBreaks"
+label = "Slope Classes"
+tooltip = "The limits of the classes of slope, in degrees, from low to high: each class holds the slopes from one limit up to, but not including, the next."
+default = "0, 5, 10, 15, 30, 90"
+models = ["slope"]
+
+[[inputs]]
+id = "light"
+label = "Light"
+kind = "select"
+tooltip = "One Direction: the sun from the azimuth below. Several Directions: light from 225, 270, 315 and 360 degrees combined, which shows ridges whatever their direction."
+default = "single"
+models = ["hillshade"]
+newRow = true
+
+[[inputs.options]]
+value = "single"
+label = "One Direction"
+
+[[inputs.options]]
+value = "multi"
+label = "Several Directions"
+
+[[inputs]]
+id = "azimuth"
+label = "Sun Azimuth"
+tooltip = "The direction the light comes from, in degrees clockwise from north: 315 is the north-west, the convention of relief maps. Used with One Direction."
+default = "315"
+models = ["hillshade"]
+
+[[inputs]]
+id = "sunElevation"
+label = "Sun Elevation"
+tooltip = "The height of the sun above the horizon, in degrees: 45 by convention; lower values lengthen the shadows."
+default = "45"
+models = ["hillshade"]
+
+[[inputs]]
+id = "curvatureKind"
+label = "Curvature"
+kind = "select"
+tooltip = "Profile: along the line of steepest descent, negative where the slope eases downhill. Tangential: across the slope, negative in hollows where water converges. Both in 1/m."
+default = "profile"
+models = ["curvature"]
+newRow = true
+
+[[inputs.options]]
+value = "profile"
+label = "Profile"
+
+[[inputs.options]]
+value = "tangential"
+label = "Tangential"
+
+[[inputs]]
+id = "curvRadius"
+label = "Radius in Cells"
+tooltip = "The window of the quadratic fitted around each cell: 1 gives 3 x 3 cells, 2 gives 5 x 5. A larger window follows broader forms and smooths the noise."
+default = "1"
+models = ["curvature"]
+
+[[inputs]]
+id = "reliefIndex"
+label = "Index"
+kind = "select"
+tooltip = "Terrain Ruggedness Index: the root of the summed squared differences from the eight neighbours. Topographic Position Index: the cell less the mean of its neighbours. Roughness: the largest difference from a neighbour. All in metres."
+default = "tri"
+models = ["relief"]
+newRow = true
+
+[[inputs.options]]
+value = "tri"
+label = "Terrain Ruggedness Index"
+
+[[inputs.options]]
+value = "tpi"
+label = "Topographic Position Index"
+
+[[inputs.options]]
+value = "roughness"
+label = "Roughness"
+
+[[inputs]]
+id = "flowResult"
+label = "Result"
+kind = "select"
+tooltip = "Upslope Area: the area that drains through each cell, in square kilometres. Wetness Index: ln(a / tan b). Stream Power Index: ln(a tan b). a is the upslope area per metre of contour, b the slope."
+default = "upslope"
+models = ["flow"]
+newRow = true
+
+[[inputs.options]]
+value = "upslope"
+label = "Upslope Area"
+
+[[inputs.options]]
+value = "wetness"
+label = "Topographic Wetness Index"
+
+[[inputs.options]]
+value = "streampower"
+label = "Stream Power Index"
+
+[[inputs]]
+id = "streamArea"
+label = "Stream from (km&sup2;)"
+tooltip = "The upslope area, in square kilometres, from which a cell is taken as part of a stream, in Streams on a Map and Thresholds Compared."
+default = "0.5"
+models = ["flow"]
+
+[[codeBranches]]
+model = "*"
+code = '''
+using Rasters, ArchGDAL, Geomorphometry, Statistics
+using Geomorphometry: slope  # by name: ECharts.jl, which plots the result, exports a slope too
+using Rasters.Lookups: Intervals, Center, Points
+{{?model=curvature}}using Stencils
+{{?model=flow}}using DataStructures: PriorityQueue
+
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+dem_path = joinpath(folder, "{{demFile}}")  # an absolute path is kept as it is
+ArchGDAL.setconfigoption("GTIFF_POINT_GEO_IGNORE", "TRUE")  # a GeoTIFF that records its cells as points, as the Copernicus DEM does: GDAL gives the points themselves, not the corners of cells around them
+{{?demFile=hong-kong-dem.tif}}# Example file: the Copernicus DEM GLO-30 over Hong Kong Island, Kowloon and the New Territories, read from the Cloud-Optimised GeoTIFF of its tile on AWS and reprojected to UTM zone 50N in 30 m cells, unless the folder has hong-kong-dem.tif already. Replace "hong-kong-dem.tif" with your own GeoTIFF.
+{{?demFile=hong-kong-dem.tif}}if !isfile(dem_path)
+{{?demFile=hong-kong-dem.tif}}	tile = read(Raster("/vsicurl/https://copernicus-dem-30m.s3.amazonaws.com/Copernicus_DSM_COG_10_N22_00_E114_00_DEM/Copernicus_DSM_COG_10_N22_00_E114_00_DEM.tif"; lazy = true)[X(114.05 .. 114.35), Y(22.2 .. 22.45)])  # 1 arc second cells, in longitude and latitude
+{{?demFile=hong-kong-dem.tif}}	tile = set(tile, X => Intervals(Center()), Y => Intervals(Center()))  # each point the centre of its cell
+{{?demFile=hong-kong-dem.tif}}	utm = resample(tile; crs = EPSG(32650), res = 30, method = :bilinear)  # UTM zone 50N, 30 m cells
+{{?demFile=hong-kong-dem.tif}}	write(dem_path, utm[X(196500 .. 226600), Y(2458100 .. 2484900)]; driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))  # the box that lies wholly inside the tile
+{{?demFile=hong-kong-dem.tif}}end
+dem = read(Raster(dem_path; lazy = true))  # the elevation in memory
+Rasters.Lookups.sampling(lookup(dem, X)) isa Points && (dem = set(dem, X => Intervals(Center()), Y => Intervals(Center())))  # each point the centre of its cell, as GDAL and terra take it
+dem = replace_missing(dem, NaN32)  # Geomorphometry.jl computes on real numbers: missing cells become NaN
+cs = Geomorphometry.cellsize(dem)  # the size of a cell east and north, in metres, with the sign of each axis
+land = isfinite.(parent(dem)) .& (parent(dem) .> {{seaLevel}})  # the cells kept in the results: not missing, and above the sea,
+land[[1, end], :] .= false; land[:, [1, end]] .= false  # and not on the edge of the grid, where the 3 x 3 cells around a cell reach past it
+function on_land(values)  # a result on the grid of the elevation, missing off land and where it is undefined
+	x = Float32.(coalesce.(parent(values), NaN32))
+	rebuild(dem; data = ifelse.(land .& isfinite.(x), x, missing), missingval = missing)
+end
+println(size(dem, X), " x ", size(dem, Y), " cells of ", round(abs(cs[1]), digits = 2), " by ", round(abs(cs[2]), digits = 2), " m; ", count(land), " on land, from ", round(minimum(parent(dem)[land]), digits = 1), " to ", round(maximum(parent(dem)[land]), digits = 1), " m")
+{{?model=slope}}
+{{?model=slope}}# Slope and aspect: how steep the ground is, in degrees, and the direction it faces, in degrees clockwise from north
+{{?model=slope}}slope_deg = on_land(slope(dem; method = {{slopeMethod}}()))
+{{?model=slope}}aspect_deg = on_land(aspect(dem; method = {{slopeMethod}}()))  # missing on flat ground, which faces no direction
+{{?model=slope}}result = slope_deg
+{{?model=slope}}breaks = Float64[{{slopeBreaks}}]  # the limits of the classes, in degrees
+{{?model=slope}}v = collect(skipmissing(slope_deg))
+{{?model=slope}}km2 = abs(cs[1] * cs[2]) / 1e6  # the area of a cell, in square kilometres
+{{?model=slope}}println("Slope on land: mean ", round(mean(v), digits = 2), ", median ", round(median(v), digits = 2), ", 95% below ", round(quantile(v, 0.95), digits = 2), " degrees")
+{{?model=slope}}[(slope = "$(breaks[k]) to $(breaks[k + 1]) degrees", share = round(count(x -> breaks[k] <= x < breaks[k + 1], v) / length(v), digits = 4), km2 = round(count(x -> breaks[k] <= x < breaks[k + 1], v) * km2, digits = 2)) for k in 1:length(breaks) - 1]
+{{?model=hillshade}}
+{{?model=hillshade}}# Hillshade: the brightness of the ground under a distant light, from 0 in full shadow to 255 where the ground faces the light
+{{?model=hillshade}}{{?light=single}}shade = hillshade(dem; azimuth = {{azimuth}}, zenith = 90 - {{sunElevation}})  # zenith: the angle of the sun from the vertical
+{{?model=hillshade}}{{?light=multi}}shade = multihillshade(dem; zenith = 90 - {{sunElevation}})  # light from 225, 270, 315 and 360 degrees, combined (Mark 1992)
+{{?model=hillshade}}result = on_land(shade)
+{{?model=hillshade}}v = collect(skipmissing(result))
+{{?model=hillshade}}println("Brightness on land: mean ", round(mean(v), digits = 1), "; in deep shadow (below 64) ", round(100 * count(<(64), v) / length(v), digits = 2), "%, brightly lit (above 191) ", round(100 * count(>(191), v) / length(v), digits = 2), "%")
+{{?model=curvature}}
+{{?model=curvature}}# Curvature: a quadratic z = a x^2 + b y^2 + c x y + d x + e y + f fitted by least squares to the cells of a window around each cell, x east and y north in metres
+{{?model=curvature}}window = Window({{curvRadius}})  # Window(1): 3 x 3 cells
+{{?model=curvature}}offs = Stencils.offsets(window)  # the column and row of each cell of the window, from the centre
+{{?model=curvature}}xs, ys = [o[1] * cs[1] for o in offs], [o[2] * cs[2] for o in offs]  # east and north of the centre, in metres
+{{?model=curvature}}weights(t) = (t .- mean(t)) ./ sum(abs2, t .- mean(t))  # on a full square window the six terms are orthogonal once centred, so each coefficient is a weighted sum of the cells
+{{?model=curvature}}wa, wb, wc, wd, we = weights(xs .^ 2), weights(ys .^ 2), weights(xs .* ys), weights(xs), weights(ys)
+{{?model=curvature}}function curvatures(z)  # profile and tangential curvature (Minar, Evans and Jenco 2020), in 1/m, positive where the surface is convex
+{{?model=curvature}}	a, b, c, d, e = sum(wa .* z), sum(wb .* z), sum(wc .* z), sum(wd .* z), sum(we .* z)
+{{?model=curvature}}	p = d^2 + e^2  # the squared gradient
+{{?model=curvature}}	p == 0 && return (0.0, 0.0)  # flat ground: no direction to curve along
+{{?model=curvature}}	(-2 * (a * d^2 + c * d * e + b * e^2) / (p * (1 + p)^1.5), -2 * (a * e^2 - c * d * e + b * d^2) / (p * sqrt(1 + p)))
+{{?model=curvature}}end
+{{?model=curvature}}k = mapstencil(s -> curvatures(collect(s)), window, Float64.(parent(dem)); boundary = Remove(NaN))  # NaN where the window reaches past the edge
+{{?model=curvature}}profile = on_land(first.(k))
+{{?model=curvature}}tangential = on_land(last.(k))
+{{?model=curvature}}result = {{curvatureKind}}
+{{?model=curvature}}v = collect(skipmissing(result))
+{{?model=curvature}}println("{{curvatureKind}} curvature on land, 1/m: 5% ", round(quantile(v, 0.05), sigdigits = 4), ", median ", round(median(v), sigdigits = 4), ", 95% ", round(quantile(v, 0.95), sigdigits = 4), "; convex ", round(100 * count(>(0), v) / length(v), digits = 2), "%, concave ", round(100 * count(<(0), v) / length(v), digits = 2), "%")
+{{?model=relief}}
+{{?model=relief}}# Relief indices: how uneven the ground is in the 3 x 3 cells around each cell, in metres
+{{?model=relief}}{{?reliefIndex=tri}}result = on_land(terrain_ruggedness_index(dem))  # Riley, DeGloria and Elliot (1999): the root of the summed squared differences from the eight neighbours
+{{?model=relief}}{{?reliefIndex=tpi}}result = on_land(topographic_position_index(dem))  # the cell less the mean of its eight neighbours: positive on crests, negative in valleys
+{{?model=relief}}{{?reliefIndex=roughness}}result = on_land(roughness(dem))  # the largest difference between the cell and a neighbour
+{{?model=relief}}v = collect(skipmissing(result))
+{{?model=relief}}println("{{reliefIndex}} on land, m: mean ", round(mean(v), digits = 3), ", 5% ", round(quantile(v, 0.05), digits = 3), ", median ", round(median(v), digits = 3), ", 95% ", round(quantile(v, 0.95), digits = 3), ", largest ", round(maximum(v), digits = 2))
+{{?model=flow}}
+{{?model=flow}}# Depressions filled by Priority-Flood with a tiny rise from cell to cell (Barnes, Lehman and Mulla 2014), so that water from every cell reaches the edge of the grid or a missing cell
+{{?model=flow}}function fill_depressions(dem)
+{{?model=flow}}	z = Float64.(parent(dem))
+{{?model=flow}}	gap = .!isfinite.(z)
+{{?model=flow}}	z[gap] .= minimum(z[.!gap]) - 1  # missing cells, below every other, take the water of the cells around them
+{{?model=flow}}	nx, ny = size(z)
+{{?model=flow}}	done = falses(nx, ny)
+{{?model=flow}}	open = PriorityQueue{CartesianIndex{2}, Float64}()  # the cells to visit, lowest first
+{{?model=flow}}	pit = CartesianIndex{2}[]  # cells raised, visited before the others
+{{?model=flow}}	for c in CartesianIndices(z)
+{{?model=flow}}		(gap[c] || c[1] in (1, nx) || c[2] in (1, ny)) && (push!(open, c => z[c]); done[c] = true)
+{{?model=flow}}	end
+{{?model=flow}}	while !(isempty(pit) && isempty(open))
+{{?model=flow}}		c = isempty(pit) ? first(popfirst!(open)) : popfirst!(pit)
+{{?model=flow}}		for n in CartesianIndices((max(1, c[1] - 1):min(nx, c[1] + 1), max(1, c[2] - 1):min(ny, c[2] + 1)))
+{{?model=flow}}			done[n] && continue
+{{?model=flow}}			done[n] = true
+{{?model=flow}}			if z[n] <= nextfloat(z[c])  # in a depression or on a flat: raised just above the cell it drains to
+{{?model=flow}}				z[n] = nextfloat(z[c])
+{{?model=flow}}				push!(pit, n)
+{{?model=flow}}			else
+{{?model=flow}}				push!(open, n => z[n])
+{{?model=flow}}			end
+{{?model=flow}}		end
+{{?model=flow}}	end
+{{?model=flow}}	z
+{{?model=flow}}end
+{{?model=flow}}# D-infinity (Tarboton 1997): of the eight triangles around a cell, each between a side neighbour and the corner beside it, the water leaves down the steepest, shared between its two cells by the angle of the flow
+{{?model=flow}}function dinf_accumulation(z, h)
+{{?model=flow}}	sides = ((1, 0), (0, -1), (0, -1), (-1, 0), (-1, 0), (0, 1), (0, 1), (1, 0))
+{{?model=flow}}	corners = ((1, -1), (1, -1), (-1, -1), (-1, -1), (-1, 1), (-1, 1), (1, 1), (1, 1))
+{{?model=flow}}	acc = ones(size(z))  # each cell drains itself
+{{?model=flow}}	for k in sortperm(vec(z); rev = true)  # from the highest cell down, so that a cell has all its water when it passes it on
+{{?model=flow}}		i, j = Tuple(CartesianIndices(z)[k])
+{{?model=flow}}		best, to = 0.0, nothing
+{{?model=flow}}		for (s, c) in zip(sides, corners)
+{{?model=flow}}			(checkbounds(Bool, z, i + s[1], j + s[2]) && checkbounds(Bool, z, i + c[1], j + c[2])) || continue
+{{?model=flow}}			s1, s2 = (z[i, j] - z[i + s[1], j + s[2]]) / h, (z[i + s[1], j + s[2]] - z[i + c[1], j + c[2]]) / h
+{{?model=flow}}			r, g = atan(s2, s1), hypot(s1, s2)  # the angle of the steepest descent on the triangle from its side, and its gradient
+{{?model=flow}}			r < 0 && ((r, g) = (0.0, s1))  # the steepest descent leaves the triangle: along its side
+{{?model=flow}}			r > pi / 4 && ((r, g) = (pi / 4, (z[i, j] - z[i + c[1], j + c[2]]) / (h * sqrt(2))))  # or along its diagonal
+{{?model=flow}}			g > best && ((best, to) = (g, (s, c, r / (pi / 4))))
+{{?model=flow}}		end
+{{?model=flow}}		to === nothing && continue  # no lower neighbour: the water leaves the grid here
+{{?model=flow}}		(s, c, p) = to
+{{?model=flow}}		acc[i + s[1], j + s[2]] += (1 - p) * acc[i, j]
+{{?model=flow}}		acc[i + c[1], j + c[2]] += p * acc[i, j]
+{{?model=flow}}	end
+{{?model=flow}}	acc
+{{?model=flow}}end
+{{?model=flow}}filled = fill_depressions(dem)
+{{?model=flow}}h = abs(cs[1])  # the width of a cell, in metres
+{{?model=flow}}cells_up = dinf_accumulation(filled, h)  # the cells that drain through each cell, itself included
+{{?model=flow}}sca = cells_up .* h  # the specific catchment area: upslope area per metre of contour, in metres
+{{?model=flow}}tanb = tand.(parent(slope(dem)))  # the tangent of the slope, Horn's method
+{{?model=flow}}upslope = on_land(cells_up .* h^2 ./ 1e6)  # the upslope area, in square kilometres
+{{?model=flow}}wetness = on_land(log.(sca ./ tanb))  # ln(a / tan b) (Beven and Kirkby 1979); undefined on flat ground
+{{?model=flow}}streampower = on_land(log.(sca .* tanb))  # ln(a tan b) (Moore, Grayson and Ladson 1991); undefined on flat ground
+{{?model=flow}}result = {{flowResult}}
+{{?model=flow}}v = collect(skipmissing(result))
+{{?model=flow}}println("Largest upslope area on land ", round(maximum(skipmissing(upslope)), digits = 2), " km2; land cells draining at least {{streamArea}} km2: ", count(x -> !ismissing(x) && x >= {{streamArea}}, upslope))
+{{?model=flow}}println("{{flowResult}} on land: 5% ", round(quantile(v, 0.05), sigdigits = 4), ", median ", round(median(v), sigdigits = 4), ", 95% ", round(quantile(v, 0.95), sigdigits = 4))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "plot-result"
+label = "Plot the Result"
+desc = "The result as a heat map drawn with ECharts, north up, at most 200 cells a side (larger grids averaged over blocks of cells), coloured from the 2% to the 98% quantile"
+code = '''
+using ECharts
+
+f = max(1, cld(max(size(result, X), size(result, Y)), 200))  # at most 200 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, result, f; skipmissingval = true) : result, (X, Y))
+north_first = first(lookup(small, Y)) > last(lookup(small, Y))
+nx, ny = size(small)
+heat = [[i - 1, (north_first ? ny - j : j - 1), round(Float64(small[i, j]), sigdigits = 4)] for i in 1:nx, j in 1:ny if !ismissing(small[i, j])]  # column, row from the south, value
+lo, hi = quantile(collect(skipmissing(small)), [0.02, 0.98])
+colours = ["#313695", "#74add1", "#ffffbf", "#f46d43", "#a50026"]
+{{?model=hillshade}}colours = ["#000000", "#ffffff"]  # shadow to light
+{{?model=curvature}}lo, hi = -max(abs(lo), abs(hi)), max(abs(lo), abs(hi))  # centred on 0: concave blue, convex red
+{{?model=relief}}{{?reliefIndex=tpi}}lo, hi = -max(abs(lo), abs(hi)), max(abs(lo), abs(hi))  # centred on 0: valleys blue, crests red
+EChart(ec_width = 760, ec_height = round(Int, 60 + 680 * ny / nx), title = [ECharts.Title(text = "{{model}}")], tooltip = ECharts.Tooltip(),
+	xAxis = [ECharts.Axis(_type = "category", data = string.(round.(lookup(small, X), digits = 1)), name = "x")],
+	yAxis = [ECharts.Axis(_type = "category", data = string.(round.(north_first ? reverse(lookup(small, Y)) : lookup(small, Y), digits = 1)), name = "y")],
+	visualMap = ECharts.VisualMap(min = lo, max = hi, calculable = true, orient = "vertical", right = "1%", top = "middle", inRange = Dict("color" => colours)),
+	series = [ECharts.HeatmapSeries(name = "Value", data = heat)])
+'''
+
+[[actionGroups.actions]]
+id = "map-result"
+label = "Show on a Map"
+desc = "The result on an OpenStreetMap base map in Pollis's map view, at most 80 cells a side (larger grids averaged over blocks of cells); click a cell for its value"
+code = '''
+using DuckDB
+
+f = max(1, cld(max(size(result, X), size(result, Y)), 80))  # at most 80 cells a side
+small = permutedims(f > 1 ? Rasters.aggregate(mean, result, f; skipmissingval = true) : result, (X, Y))
+edges(d) = [(min(lo, hi), max(lo, hi)) for (lo, hi) in Rasters.intervalbounds(small, d)]  # each cell's two edges
+xe, ye = edges(X), edges(Y)
+rows = ["($(round(Float64(small[i, j]), sigdigits = 4)), $(xe[i][1]), $(ye[j][1]), $(xe[i][2]), $(ye[j][2]))" for i in axes(small, 1), j in axes(small, 2) if !ismissing(small[i, j])]
+db = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(db, "LOAD spatial")
+DBInterface.execute(db, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
+file = joinpath(mktempdir(), "cells.geojson")
+DBInterface.execute(db, "COPY (SELECT value, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), '$(convert(String, convert(WellKnownText, crs(dem))))', 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(value, x0, y0, x1, y1)) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(file; name = "{{model}}", column = "value", opacity = 0.7)))
+'''
+
+[[actionGroups.actions]]
+id = "map-streams"
+label = "Streams on a Map"
+desc = "The cells on land whose upslope area reaches the Stream from input, coloured by that area, on an OpenStreetMap base map in Pollis's map view"
+models = ["flow"]
+code = '''
+using DuckDB
+
+xb, yb = Rasters.intervalbounds(dem, X), Rasters.intervalbounds(dem, Y)
+rows = ["($(round(Float64(upslope[i, j]), digits = 3)), $(minimum(xb[i])), $(minimum(yb[j])), $(maximum(xb[i])), $(maximum(yb[j])))" for i in axes(upslope, 1), j in axes(upslope, 2) if !ismissing(upslope[i, j]) && upslope[i, j] >= {{streamArea}}]
+println(length(rows), " stream cells")
+db = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(db, "LOAD spatial")
+DBInterface.execute(db, "SET geometry_always_xy = true")
+file = joinpath(mktempdir(), "streams.geojson")
+DBInterface.execute(db, "COPY (SELECT km2, ST_Transform(ST_MakeEnvelope(x0, y0, x1, y1), '$(convert(String, convert(WellKnownText, crs(dem))))', 'EPSG:4326') AS geom FROM (VALUES $(join(rows, ", "))) t(km2, x0, y0, x1, y1)) TO '$(file)' (FORMAT GDAL, DRIVER 'GeoJSON')")
+display(Pollis.webmap(Pollis.layer(file; name = "Streams (upslope km2)", column = "km2", opacity = 0.9)))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "grid"
+label = "Grid and Cell Size"
+desc = "The coordinate system, the size of the grid and of a cell in metres, and its extent: slope and the other measures need heights and distances in the same unit"
+code = '''
+wkt = convert(String, convert(WellKnownText, crs(dem)))
+m = match(r"^(\w+)\[\"([^\"]+)\"", wkt)
+geographic = m !== nothing && m[1] in ("GEOGCRS", "GEOGCS")
+println("Coordinate system: ", m === nothing ? "none recorded" : m[2], geographic ? " (longitude and latitude: cell sizes in metres are approximate)" : "")
+println(size(dem, X), " x ", size(dem, Y), " cells of ", round(abs(cs[1]), sigdigits = 6), " by ", round(abs(cs[2]), sigdigits = 6), " m")
+println("x from ", round.(Rasters.bounds(dem, X), digits = 3), ", y from ", round.(Rasters.bounds(dem, Y), digits = 3))
+'''
+
+[[actionGroups.actions]]
+id = "cells"
+label = "Land, Sea and Missing Cells"
+desc = "How many cells are missing in the file, how many are taken as sea, and how many are on land, where the results are kept"
+code = '''
+z = parent(dem)
+gap = count(!isfinite, z)
+sea = count(x -> isfinite(x) && x <= {{seaLevel}}, z)
+println("Missing ", gap, ", sea (at or below {{seaLevel}} m) ", sea, ", land away from the edge ", count(land), " of ", length(z), " cells")
+println("Cells of the result with a value: ", count(!ismissing, result))
+'''
+
+[[actionGroups.actions]]
+id = "depressions"
+label = "Depressions Filled"
+desc = "How many cells the filling raised, and by how much, beside filldepressions of Geomorphometry.jl, which raises the depressions to the same level without the tiny rise"
+models = ["flow"]
+code = '''
+raised = filled .- parent(dem)
+println(count(>(1e-6), raised), " cells raised by more than a micrometre, by up to ", round(maximum(raised), digits = 3), " m; ", count(r -> 0 < r <= 1e-6, raised), " by less, across flats")
+println("Largest difference from filldepressions of Geomorphometry.jl: ", maximum(abs.(filled .- filldepressions(parent(dem)))), " m")
+'''
+
+[[actionGroups.actions]]
+id = "flats"
+label = "Flat Cells"
+desc = "How many cells on land have a slope of 0, where aspect, curvature, wetness and stream power are undefined"
+models = ["slope", "curvature", "flow"]
+code = '''
+flat = count(x -> x == 0, parent(slope(dem))[land])
+println(flat, " of ", count(land), " cells on land are flat (", round(100 * flat / count(land), digits = 3), "%)")
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "terra-slope"
+label = "Replicate with terra"
+desc = "Slope by Horn's and by Zevenbergen and Thorne's method, and aspect, on the cells on land away from the edge, recomputed beside the values of R's terra 1.9.60 (terrain with neighbors = 8 and 4) on the example file"
+models = ["slope"]
+when = "demFile=hong-kong-dem.tif"
+code = '''
+# terra 1.9.60, on hong-kong-dem.tif: terrain(dem, c("slope", "aspect"), neighbors = 8, unit = "degrees"), terrain(dem, "slope", neighbors = 4); cells above 0 m not on the edge; picks by column and row, north first
+terra_cells = 523352
+terra_slope, terra_slope_zt = 16.05923055, 16.41254096
+terra_aspect_sloping = 180.0291271
+terra_picks = [(300, 100) => (18.80866923, 18.87722078, 72.38577495), (200, 200) => (14.95337425, 15.19189993, 271.7453469), (600, 400) => (19.87256625, 19.89118675, 173.0126327), (500, 700) => (20.60685264, 21.99476938, 143.8019083), (800, 500) => (20.5635657, 21.56041526, 114.1074236)]
+nx, ny = size(dem)
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+inner = [CartesianIndex(i, j) for i in 2:nx - 1, j in 2:ny - 1 if dem[i, j] > 0]
+sh, sz, ah = parent(slope(dem; method = Horn())), parent(slope(dem; method = ZevenbergenThorne())), parent(aspect(dem; method = Horn()))
+println("Cells: Julia ", length(inner), ", terra ", terra_cells)
+println("Mean slope, Horn: Julia ", round(mean(Float64(sh[c]) for c in inner), digits = 8), ", terra ", terra_slope)
+println("Mean slope, Zevenbergen and Thorne: Julia ", round(mean(Float64(sz[c]) for c in inner), digits = 8), ", terra ", terra_slope_zt)
+println("Mean aspect where the slope is at least 1 degree: Julia ", round(mean(Float64(ah[c]) for c in inner if sh[c] >= 1), digits = 6), ", terra ", terra_aspect_sloping)
+for ((col, row), (s8, s4, a)) in terra_picks
+	j = north_first ? row : ny + 1 - row
+	println("Column ", col, ", row ", row, ": slope Julia ", round(sh[col, j], digits = 5), " and ", round(sz[col, j], digits = 5), ", terra ", round(s8, digits = 5), " and ", round(s4, digits = 5), "; aspect Julia ", round(ah[col, j], digits = 4), ", terra ", round(a, digits = 4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-hillshade"
+label = "Replicate with terra"
+desc = "The hillshade with the sun at 315 and 45 degrees, on the cells on land away from the edge, recomputed beside the values of R's terra 1.9.60 (shade of the slope and aspect, times 255) on the example file"
+models = ["hillshade"]
+when = "demFile=hong-kong-dem.tif"
+code = '''
+# terra 1.9.60, on hong-kong-dem.tif: 255 * shade(slope, aspect, angle = 45, direction = 315), slope and aspect from terrain(dem, neighbors = 8, unit = "radians"); Geomorphometry.jl rounds to whole numbers from 0 to 255
+terra_mean = 170.4954708
+terra_picks = [(300, 100) => 143.9430796, (200, 200) => 208.0921144, (600, 400) => 121.2832718, (500, 700) => 106.061223, (800, 500) => 109.653447]
+nx, ny = size(dem)
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+inner = [CartesianIndex(i, j) for i in 2:nx - 1, j in 2:ny - 1 if dem[i, j] > 0]
+hs = parent(hillshade(dem; azimuth = 315, zenith = 45))
+println("Mean: Julia ", round(mean(Float64(hs[c]) for c in inner), digits = 7), ", terra ", terra_mean)
+for ((col, row), value) in terra_picks
+	println("Column ", col, ", row ", row, ": Julia ", Int(hs[col, north_first ? row : ny + 1 - row]), ", terra ", value)
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-curvature"
+label = "Replicate with MultiscaleDTM"
+desc = "Profile and tangential curvature from the quadratic fitted in 3 x 3 and 5 x 5 cells, on the cells on land away from the edge, recomputed beside the values of R's MultiscaleDTM 1.0.1 (Qfit, profc and planc) on the example file"
+models = ["curvature"]
+when = "demFile=hong-kong-dem.tif"
+code = '''
+# MultiscaleDTM 1.0.1, on hong-kong-dem.tif: Qfit(dem, w = c(3, 3) and c(5, 5), metrics = c("profc", "planc"), na.rm = FALSE); planc is the tangential (normal contour) curvature; cells above 0 m, 2 cells from the edge
+qfit = [1 => (-0.0002618022556, 0.000344624238), 2 => (-0.0001909913065, 0.000280748486)]
+qfit_picks = [(300, 100) => (-0.002842436473, -0.0005610958568), (200, 200) => (6.667101347e-5, -0.005296483013), (600, 400) => (0.0005436893895, 0.004150576163), (500, 700) => (-0.009668934527, -0.001936987095), (800, 500) => (0.004164334326, 0.009315485354)]
+nx, ny = size(dem)
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+inner = [CartesianIndex(i, j) for i in 3:nx - 2, j in 3:ny - 2 if dem[i, j] > 0]
+fit(r) = (o = Stencils.offsets(Window(r)); x = [p[1] * cs[1] for p in o]; y = [p[2] * cs[2] for p in o];
+	w = (weights(x .^ 2), weights(y .^ 2), weights(x .* y), weights(x), weights(y));
+	mapstencil(s -> (z = collect(s); (a, b, c, d, e) = map(t -> sum(t .* z), w); p = d^2 + e^2; p == 0 ? (0.0, 0.0) : (-2 * (a * d^2 + c * d * e + b * e^2) / (p * (1 + p)^1.5), -2 * (a * e^2 - c * d * e + b * d^2) / (p * sqrt(1 + p)))), Window(r), Float64.(parent(dem)); boundary = Remove(NaN)))
+for (r, (pm, tm)) in qfit
+	q = fit(r)
+	println(2r + 1, " x ", 2r + 1, " cells, mean profile: Julia ", round(mean(first(q[c]) for c in inner), sigdigits = 10), ", MultiscaleDTM ", pm, "; mean tangential: Julia ", round(mean(last(q[c]) for c in inner), sigdigits = 10), ", MultiscaleDTM ", tm)
+	r == 1 && for ((col, row), (pv, tv)) in qfit_picks
+		v = q[col, north_first ? row : ny + 1 - row]
+		println("    column ", col, ", row ", row, ": profile Julia ", round(v[1], sigdigits = 10), ", MultiscaleDTM ", pv, "; tangential Julia ", round(v[2], sigdigits = 10), ", MultiscaleDTM ", tv)
+	end
+end
+'''
+
+[[actionGroups.actions]]
+id = "terra-relief"
+label = "Replicate with terra"
+desc = "The Terrain Ruggedness Index, the Topographic Position Index and the range of the 3 x 3 window, on the cells on land away from the edge, recomputed beside the values of R's terra 1.9.60 (terrain with TRIriley, TPI and roughness) on the example file"
+models = ["relief"]
+when = "demFile=hong-kong-dem.tif"
+code = '''
+# terra 1.9.60, on hong-kong-dem.tif: terrain(dem, "TRIriley"), terrain(dem, "TPI"), terrain(dem, "roughness"); terra's roughness is the largest less the smallest cell of the window
+terra_means = (tri = 23.74733089, tpi = 0.02754182132, range = 23.57342754)
+terra_picks = [(300, 100) => (25.7412635, -1.834098816, 25.92272949), (200, 200) => (21.42862658, -1.768119812, 22.30001831), (600, 400) => (27.18645192, 1.575962067, 25.9883728), (500, 700) => (32.51704432, -5.67089653, 29.57081604), (800, 500) => (31.44854244, 5.223248482, 30.16107941)]
+using Stencils
+nx, ny = size(dem)
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+inner = [CartesianIndex(i, j) for i in 2:nx - 1, j in 2:ny - 1 if dem[i, j] > 0]
+tri, tpi = parent(terrain_ruggedness_index(dem)), parent(topographic_position_index(dem))
+range3 = mapstencil(v -> maximum(v) - minimum(v), Window(1), parent(dem); boundary = Remove(NaN32))
+println("Mean TRI: Julia ", round(mean(Float64(tri[c]) for c in inner), digits = 8), ", terra ", terra_means.tri)
+println("Mean TPI: Julia ", round(mean(Float64(tpi[c]) for c in inner), digits = 8), ", terra ", terra_means.tpi)
+println("Mean range of the window: Julia ", round(mean(Float64(range3[c]) for c in inner), digits = 8), ", terra roughness ", terra_means.range)
+for ((col, row), (a, b, c)) in terra_picks
+	j = north_first ? row : ny + 1 - row
+	println("Column ", col, ", row ", row, ": TRI ", round(tri[col, j], digits = 4), " and ", round(a, digits = 4), ", TPI ", round(tpi[col, j], digits = 4), " and ", round(b, digits = 4), ", range ", round(range3[col, j], digits = 4), " and ", round(c, digits = 4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "whitebox-flow"
+label = "Replicate with WhiteboxTools"
+desc = "The cells draining through each cell by D-infinity, and the Topographic Wetness Index, on the cells on land away from the edge, recomputed beside the values of WhiteboxTools 2.4.0 through R's whitebox 2.4.3 (DInfFlowAccumulation and WetnessIndex) on the filled example file"
+models = ["flow"]
+when = "demFile=hong-kong-dem.tif"
+code = '''
+# WhiteboxTools 2.4.0, on the surface of fill_depressions(dem) written to a GeoTIFF: wbt_d_inf_flow_accumulation(out_type = "cells" and "sca"), wbt_wetness_index(sca, slope) with the slope of terra's terrain(dem, neighbors = 8); cells above 0 m not on the edge, for the wetness index those whose slope is not 0
+wbt_means = (cells = 75.13652151, wetness = 6.416673397)
+wbt_picks = [(300, 100) => (3.442762389, 5.714528084), (200, 200) => (13.50005454, 7.324108601), (600, 400) => (1.961915148, 5.092740536), (500, 700) => (6.341705446, 6.226480007), (800, 500) => (1.0, 4.38162756)]
+nx, ny = size(dem)
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+inner = [CartesianIndex(i, j) for i in 2:nx - 1, j in 2:ny - 1 if dem[i, j] > 0]
+twi = log.(sca ./ tanb)
+println("Mean cells draining through a cell: Julia ", round(mean(cells_up[c] for c in inner), digits = 6), ", WhiteboxTools ", wbt_means.cells)
+println("Mean wetness index, where the slope is not 0: Julia ", round(mean(twi[c] for c in inner if isfinite(twi[c])), digits = 6), ", WhiteboxTools ", wbt_means.wetness)
+for ((col, row), (n, w)) in wbt_picks
+	j = north_first ? row : ny + 1 - row
+	println("Column ", col, ", row ", row, ": cells Julia ", round(cells_up[col, j], digits = 4), ", WhiteboxTools ", round(n, digits = 4), "; wetness Julia ", round(twi[col, j], digits = 4), ", WhiteboxTools ", round(w, digits = 4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "slope-methods"
+label = "Slope Methods Compared"
+desc = "Slope by Horn's method beside Zevenbergen and Thorne's, on land: how far apart they are, and where"
+models = ["slope"]
+code = '''
+h8, z4 = on_land(slope(dem; method = Horn())), on_land(slope(dem; method = ZevenbergenThorne()))
+d = collect(skipmissing(z4 .- h8))
+println("Zevenbergen and Thorne less Horn, degrees: mean ", round(mean(d), digits = 4), ", mean absolute ", round(mean(abs, d), digits = 4), ", 1% ", round(quantile(d, 0.01), digits = 3), ", 99% ", round(quantile(d, 0.99), digits = 3))
+println("Mean slope: Horn ", round(mean(skipmissing(h8)), digits = 4), ", Zevenbergen and Thorne ", round(mean(skipmissing(z4)), digits = 4))
+'''
+
+[[actionGroups.actions]]
+id = "sun-compared"
+label = "Light Directions Compared"
+desc = "The mean brightness on land with the sun from the north-west, north-east, south-east and south-west, and with light from several directions: which way the slopes face"
+models = ["hillshade"]
+code = '''
+for az in (315, 45, 135, 225)
+	println("Sun from ", az, " degrees: mean ", round(mean(skipmissing(on_land(hillshade(dem; azimuth = az, zenith = 90 - {{sunElevation}})))), digits = 2))
+end
+println("Several directions: mean ", round(mean(skipmissing(on_land(multihillshade(dem; zenith = 90 - {{sunElevation}})))), digits = 2))
+'''
+
+[[actionGroups.actions]]
+id = "windows-compared"
+label = "Window Sizes Compared"
+desc = "The curvature from windows of 3 x 3, 5 x 5 and 7 x 7 cells: how its spread narrows as the window grows and smooths the surface"
+models = ["curvature"]
+code = '''
+for r in 1:3
+	o = Stencils.offsets(Window(r))
+	x, y = [p[1] * cs[1] for p in o], [p[2] * cs[2] for p in o]
+	w = (weights(x .^ 2), weights(y .^ 2), weights(x .* y), weights(x), weights(y))
+	q = mapstencil(s -> (z = collect(s); (a, b, c, d, e) = map(t -> sum(t .* z), w); p = d^2 + e^2; p == 0 ? (0.0, 0.0) : (-2 * (a * d^2 + c * d * e + b * e^2) / (p * (1 + p)^1.5), -2 * (a * e^2 - c * d * e + b * d^2) / (p * sqrt(1 + p)))), Window(r), Float64.(parent(dem)); boundary = Remove(NaN))
+	v = collect(skipmissing(on_land(("{{curvatureKind}}" == "profile" ? first : last).(q))))
+	println(2r + 1, " x ", 2r + 1, " cells: standard deviation ", round(std(v), sigdigits = 4), ", 5% to 95% ", round.(quantile(v, [0.05, 0.95]), sigdigits = 4), " 1/m")
+end
+'''
+
+[[actionGroups.actions]]
+id = "indices-compared"
+label = "Indices Compared"
+desc = "The correlations, over the cells on land, of the Terrain Ruggedness Index, the Topographic Position Index, roughness and slope"
+models = ["relief"]
+code = '''
+cols = (TRI = terrain_ruggedness_index(dem), TPI = topographic_position_index(dem), roughness = roughness(dem), slope = slope(dem))
+vals = [Float64.(parent(r)[land]) for r in values(cols)]
+ok = reduce(.&, [isfinite.(v) for v in vals])
+names_ = collect(keys(cols))
+for a in 1:length(vals), b in a + 1:length(vals)
+	println(rpad(string(names_[a], " and ", names_[b]), 24), round(cor(vals[a][ok], vals[b][ok]), digits = 4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "thresholds"
+label = "Thresholds Compared"
+desc = "How many cells on land, and what length of stream, the upslope areas of 0.1, 0.5, 1 and 5 km2 give as thresholds of a stream"
+models = ["flow"]
+code = '''
+for t in (0.1, 0.5, 1.0, 5.0)
+	n = count(x -> !ismissing(x) && x >= t, upslope)
+	println("From ", t, " km2: ", n, " cells, about ", round(n * h / 1000, digits = 1), " km of stream")
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "result-summary"
+label = "Summary of the Result"
+desc = "The mean, standard deviation and quantiles of the cells of the result on land"
+code = '''
+v = Float64.(collect(skipmissing(result)))
+println("Cells with a value: ", length(v), " of ", length(result))
+println("Mean ", round(mean(v), sigdigits = 5), ", standard deviation ", round(std(v), sigdigits = 5))
+println("Quantiles 0, 5, 25, 50, 75, 95, 100%: ", join(round.(quantile(v, [0.0, 0.05, 0.25, 0.5, 0.75, 0.95, 1.0]), sigdigits = 5), ", "))
+'''
+
+[[actionGroups.actions]]
+id = "aspect-directions"
+label = "Aspect by Direction"
+desc = "The share of the land facing each of the eight directions of the compass, and the mean slope of each"
+models = ["slope"]
+code = '''
+dirs = ["north", "north-east", "east", "south-east", "south", "south-west", "west", "north-west"]
+sector(a) = mod(round(Int, a / 45), 8) + 1  # 0 degrees is north, 45 north-east
+cells = [(sector(a), s) for (a, s) in zip(aspect_deg, slope_deg) if !ismissing(a) && !ismissing(s)]
+[(facing = dirs[k], share = round(count(c -> c[1] == k, cells) / length(cells), digits = 4), mean_slope = round(mean(c[2] for c in cells if c[1] == k), digits = 2)) for k in 1:8]
+'''
+
+[[actionGroups.actions]]
+id = "convex-concave"
+label = "Convex and Concave Ground"
+desc = "The share of the land where the surface is convex, concave or close to flat in both directions: crests and spurs, hollows and the feet of slopes, and plain slopes"
+models = ["curvature"]
+code = '''
+t = quantile(abs.(collect(skipmissing(profile))), 0.25)  # close to flat: within the smallest quarter of the profile curvatures
+classes = Dict{String, Int}()
+for (p, q) in zip(profile, tangential)
+	(ismissing(p) || ismissing(q)) && continue
+	key = string(abs(p) < t ? "plain" : p > 0 ? "convex" : "concave", " along, ", abs(q) < t ? "plain" : q > 0 ? "convex" : "concave", " across")
+	classes[key] = get(classes, key, 0) + 1
+end
+total = sum(values(classes))
+[(form = k, share = round(n / total, digits = 4)) for (k, n) in sort(collect(classes); by = last, rev = true)]
+'''
+
+[[actionGroups.actions]]
+id = "extremes"
+label = "Highest Values"
+desc = "The ten cells on land with the highest values of the result, with their coordinates and elevation"
+models = ["relief", "flow"]
+code = '''
+idx = sort([c for c in CartesianIndices(result) if !ismissing(result[c])]; by = c -> result[c], rev = true)[1:10]
+xs, ys = lookup(dem, X), lookup(dem, Y)
+[(x = round(xs[c[1]], digits = 1), y = round(ys[c[2]], digits = 1), elevation = round(dem[c], digits = 1), value = round(result[c], sigdigits = 5)) for c in idx]
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-result"
+label = "Save the Result as Cloud-Optimised GeoTIFF"
+desc = "Write the result to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression"
+code = '''
+out = joinpath(folder, "terrain-{{model}}.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, Float32.(coalesce.(result, NaN32)); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = NaN32)  # missing cells written as NaN
+	println("Wrote ", out)
+end
+'''

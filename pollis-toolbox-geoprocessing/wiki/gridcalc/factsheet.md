@@ -1,6 +1,6 @@
 # Grid Calculations — Factsheet
 
-**Map algebra** computes new grids of cells from existing ones: cell by cell, over a window around each cell, or within areas ([Tomlin (1990)](#ref-Tom1990a)). The Grid Calculations panel of the Smart Regions Toolbox computes the three kinds of operation, and moves values between grids by resampling and rasterizing, with Rasters.jl and Stencils.jl ([Schouten (2026a)](#ref-Sch2026a); [Schouten (2026c)](#ref-Sch2026c)).
+**Map algebra** computes new grids of cells from existing ones: cell by cell, over a window around each cell, or within areas ([Tomlin (1990)](#ref-Tom1990a)). The Grid Calculations panel of the Geoprocessing Toolbox computes the three kinds of operation, and moves values between grids by resampling and rasterizing, with Rasters.jl and Stencils.jl ([Schouten (2026a)](#ref-Sch2026a); [Schouten (2026c)](#ref-Sch2026c)).
 
 | Item | Grid Calculations panel |
 |---|---|

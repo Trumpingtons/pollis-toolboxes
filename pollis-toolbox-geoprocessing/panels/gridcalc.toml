@@ -252,7 +252,7 @@ chooseFolder = false
 [[inputs]]
 id = "demFile"
 label = "Elevation File"
-tooltip = "A GeoTIFF of one band of continuous values, in the folder above, or an absolute path. With the default, london-dem.tif, the example first reads the Copernicus DEM GLO-30 over west and central London, about 30 m cells, from its Cloud-Optimised GeoTIFF on AWS, unless the folder has a london-dem.tif already: the file of the Raster Files panel."
+tooltip = "A GeoTIFF of one band of continuous values, in the folder above, or an absolute path. With the default, london-dem.tif, the example first reads the Copernicus DEM GLO-30 over west and central London, about 30 m cells, from its Cloud-Optimised GeoTIFF on AWS, unless the folder has a london-dem.tif already: the file of the Raster Files panel of the Smart Regions Toolbox."
 default = "london-dem.tif"
 
 [[inputs]]
@@ -265,7 +265,7 @@ models = ["local", "zonal", "resample"]
 [[inputs]]
 id = "zonesFile"
 label = "Areas File"
-tooltip = "The areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, london-msoa.gpkg, the example first downloads the middle layer super output areas (MSOAs) of London with the percentage of households without a car or van in the Census 2021 (no_car), unless the folder has a london-msoa.gpkg already: the file of the Spatial Autocorrelation panel."
+tooltip = "The areas, as polygons: GeoPackage (its first layer), GeoJSON, Shapefile, FlatGeobuf or KML, in the folder above, or an absolute path. With the default, london-msoa.gpkg, the example first downloads the middle layer super output areas (MSOAs) of London with the percentage of households without a car or van in the Census 2021 (no_car), unless the folder has a london-msoa.gpkg already: the file of the Spatial Autocorrelation panel of the Spatial Econometrics Toolbox."
 default = "london-msoa.gpkg"
 models = ["zonal", "rasterize"]
 
@@ -525,7 +525,7 @@ Rasters.Lookups.sampling(lookup(dem, X)) isa Points && (dem = set(dem, X => Inte
 {{?model=local|zonal|resample}}{{?coverFile=london-worldcover.tif}}isfile(cover_path) || write(cover_path, read(Raster("/vsicurl/https://esa-worldcover.s3.eu-central-1.amazonaws.com/v200/2021/map/ESA_WorldCover_10m_2021_v200_N51W003_Map.tif"; lazy = true)[X(-0.3 .. 0.0), Y(51.4 .. 51.6)]); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"))
 {{?model=local|zonal|resample}}cover = read(Raster(cover_path; lazy = true))  # the land cover in memory, missing where the file has no data
 {{?model=zonal|rasterize}}con = DBInterface.connect(DuckDB.DB)  # an in-memory database: the file stays where it is
-{{?model=zonal|rasterize}}DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Smart Regions Toolbox installs
+{{?model=zonal|rasterize}}DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the Geoprocessing Toolbox installs
 {{?model=zonal|rasterize}}DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude in every transform
 {{?model=zonal|rasterize}}zones_path = joinpath(folder, "{{zonesFile}}")
 {{?model=zonal|rasterize}}{{?zonesFile=london-msoa.gpkg}}# Example file: the middle layer super output areas (MSOAs) of London, boundaries of the Office for National Statistics, with no_car, the percentage of households without a car or van in the Census 2021 (table TS045, through Nomis), written to london-msoa.gpkg unless the folder has one already. Replace "london-msoa.gpkg" with your own file.
