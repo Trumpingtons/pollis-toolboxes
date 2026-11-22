@@ -41,7 +41,7 @@
             "id": "candidates", "command": "pollis.geoprocessing.candidates", "title": "Candidate Features", "submenu": "archaeology", "group": "1_archaeology", "order": 2, "data": "panels/candidates.toml", "defaultModel": "mounds", "decisionFirstColumn": "Method"
           },
           {
-            "id": "learnedlidar", "command": "pollis.geoprocessing.learnedlidar", "title": "Learned Detection in Lidar", "submenu": "archaeology", "group": "1_archaeology", "order": 3, "data": "panels/learnedlidar.toml", "defaultModel": "adaf", "decisionFirstColumn": "Method"
+            "id": "learnedlidar", "command": "pollis.geoprocessing.learnedlidar", "title": "Learned Detection in Lidar", "submenu": "archaeology", "group": "1_archaeology", "order": 3, "data": "panels/learnedlidar.toml"
           }
         ],
         "planned": [

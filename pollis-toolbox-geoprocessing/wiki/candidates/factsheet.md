@@ -28,9 +28,9 @@ Every tab first computes `lrm`, the local relief model, with `local_relief`, the
 |---|---|---|
 | Visualise | Candidates on the Image, Zoom on a Place | The local relief model in grey from −0.5 to 0.5 m, with each candidate outlined in yellow, whole or enlarged around the Zoom Centre |
 | Interpret | Highest Candidates | The 15 candidates highest above or deepest below their surroundings, or with the best scores |
-| Interpret | Candidates and Scheduled Monuments | The scheduled monuments of England in the area, the candidates inside each, and the candidates outside them all |
+| Interpret | Candidates and Scheduled Monuments | The scheduled monuments of England in the area, the candidates that meet each, and those that meet none |
 | Interpret | Profile Through a Place | The height, the local relief and the candidate at points along a line from west to east |
-| Export | Save the Candidates as GeoPackage | The candidates as points with their measures, in the coordinate system of the terrain model |
+| Export | Save the Candidates as GeoPackage | The outline of each candidate with its measures, in the coordinate system of the terrain model |
 
 ## What a Candidate of the Candidate Features Panel Records
 

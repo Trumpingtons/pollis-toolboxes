@@ -1,47 +1,55 @@
 # Learned Detection in Lidar — Factsheet
 
-**Learned detection** applies neural networks trained on labelled lidar data to find archaeological features in a terrain model. The Learned Detection in Lidar panel of the Geoprocessing Toolbox applies the published segmentation models of ADAF, the Automatic Detection of Archaeological Features tool, in Julia ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a); [Kostovska, Kocev, Čož, Kokalj, Curran and Corns (2025)](#ref-KKCKC...2025a)). SmartRegions.jl builds the network with NNlib.jl and reads ADAF's weights with Pickle.jl, on a grid read with Rasters.jl and ArchGDAL.jl ([FluxML Contributors (2026)](#ref-FMLC2026a); [Pickle.jl Contributors (2026)](#ref-PJC2026a); [Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a); [GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026a)).
+**Learned detection** applies neural networks trained on labelled lidar data to find archaeological features in a terrain model. The Learned Detection in Lidar panel of the Geoprocessing Toolbox applies the published segmentation models of ADAF, the Automatic Detection of Archaeological Features tool, in Julia, in eight steps ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a); [Kostovska, Kocev, Čož, Kokalj, Curran and Corns (2025)](#ref-KKCKC...2025a)). ArchaeologicalDetection.jl builds the network with NNlib.jl and reads ADAF's weights with Pickle.jl, on a grid read with Rasters.jl and ArchGDAL.jl ([FluxML Contributors (2026)](#ref-FMLC2026a); [Pickle.jl Contributors (2026)](#ref-PJC2026a); [Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a); [GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026a)).
 
 | Item | Learned Detection in Lidar panel |
 |---|---|
 | **Purpose** | Apply trained models to a lidar terrain model to find archaeological features of the kinds they learned |
 | **Input** | A GeoTIFF of a bare-earth terrain model in metres, in a projected coordinate system with square cells; best at 0.5 m |
-| **Core packages** | [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl), [NNlib.jl](https://github.com/FluxML/NNlib.jl), [Pickle.jl](https://github.com/chengchingwen/Pickle.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl) |
-| **Tabs** | Apply ADAF |
-| **Output** | `probability`, a `Raster` from 0 to 1 on the grid of the terrain model, and `found`, with `candidates`, one named tuple for each feature, and `labels`, a `Raster` of the feature each cell belongs to |
+| **Core packages** | [ArchaeologicalDetection.jl](https://github.com/Trumpingtons/ArchaeologicalDetection.jl), [SmartRegions.jl](https://github.com/Trumpingtons/SmartRegions.jl), [NNlib.jl](https://github.com/FluxML/NNlib.jl), [Pickle.jl](https://github.com/chengchingwen/Pickle.jl), [Rasters.jl](https://github.com/rafaqz/Rasters.jl), [ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl) |
+| **Steps** | Terrain Model; Trained Network Model; Input Image; Run the Network; Save the Network's Output; Compute the Features; Look at the Features; Save Features |
+| **Output** | `probability`, a `Raster` from 0 to 1 on the grid of the terrain model; `candidates`, one named tuple for each feature, ranked by probability; `found.labels`, a `Raster` of the feature each cell belongs to; and their files: a Cloud-Optimised GeoTIFF and a GeoPackage |
 | **Key choices** | The model, the threshold, the minimum area and the minimum roundness |
 
-## What the Apply ADAF Tab Computes
+## How Learned Detection in Lidar Computes the Probability Map
 
-| Step | SmartRegions.jl function | Computation |
+| Step | Function | Computation |
 |---|---|---|
-| Model | `adaf_weights`, `adaf_model` | One of ADAF's four segmentation models, downloaded once from Zenodo and read into an HRNet built with NNlib.jl |
-| Input | `adaf_input` | The simple local relief model with a radius of 10 cells or 10 m, clipped to −0.5 to 0.5 m and stretched onto 0 to 1 |
-| Probability | `adaf_probability` | The network on tiles of 1024 by 1024 cells from the north-west corner, with a sigmoid on its output |
-| Features | `adaf_features` | The cells at or above the Threshold, without the 8 cells along each tile's edges, joined through their sides, with area, roundness and highest probability |
+| 1. Terrain Model | `Raster` | The terrain model read, with its coordinate system, grid and cell size checked |
+| 2. Trained Network Model | `adaf_weights`, `adaf_model` | One of ADAF's four segmentation models, downloaded once from Zenodo and read into an HRNet built with NNlib.jl |
+| 3. Input Image | `adaf_input` | The simple local relief model with a radius of 10 cells or 10 m, clipped to −0.5 to 0.5 m and stretched onto 0 to 1 |
+| 4. Run the Network | `adaf_probability` | The network on tiles of 1024 by 1024 cells from the north-west corner, with a sigmoid on its output |
 
 The network is that of AiTLAS, the toolbox that runs ADAF's models, on the HRNet backbone of PyTorch Image Models ([Dimitrovski, Kitanovski, Panov, Kostovska, Simidjievski and Kocev (2023)](#ref-DKPKS...2023a); [Wightman (2019)](#ref-Wig2019a)).
 
-## What the Next Steps of the Learned Detection in Lidar Panel Do
+## How Learned Detection in Lidar Computes, Shows and Saves Its Results
 
-| Group | Action | What it shows |
+| Step | Function | Computation |
 |---|---|---|
-| Visualise | Features on the Image, Probability on the Image, Zoom on a Place | The local relief the model reads, or the probability, in grey, with each feature outlined in yellow, whole or enlarged around the Zoom Centre |
-| Interpret | Most Probable Features | The 15 features of highest probability |
-| Interpret | Features and Scheduled Monuments | The scheduled monuments of England in the area, the features inside each, and the features outside them all |
-| Export | Save the Features as GeoPackage, Save the Probability as Cloud-Optimised GeoTIFF | The features as points with their measures, and the probability map, in the coordinate system of the terrain model |
+| 5. Save the Network's Output | `write` | The probability map, before any threshold, as a Cloud-Optimised GeoTIFF |
+| 6. Compute the Features | `adaf_features` | The cells at or above the Threshold, without the 8 cells along each tile's edges, joined through their sides, filtered by the Minimum Area and the Minimum Roundness, ranked by highest probability |
+| 7. Look at the Features | `picture`, written in the step | Features on the Image, Probability on the Image and Zoom on a Place: the local relief the model reads, or the probability, in grey, with each feature outlined in yellow |
+| 8. Save Features | `save_candidates` | The outline of each feature with its measures, as a GeoPackage in the coordinate system of the terrain model |
 
-## What a Feature of Apply ADAF Records
+## How the Steps of Learned Detection in Lidar Run
+
+Each step of Learned Detection in Lidar has its inputs and its code, and the code of a step uses the results of the steps before it. Julia REPL first runs the earlier steps that have not run in the session as they are now, starting from the first one that changed. A new Threshold therefore runs Compute the Features again and leaves the network's probability map as it is, while a new Terrain Model runs every step from the first. Looking at the results and saving them are run only when asked. Editor, Notebook and Pluto receive the code of all the earlier steps, then that of the step.
+
+## What the Next Step of the Learned Detection in Lidar Panel Does
+
+Interpret has one action, Features and Scheduled Monuments, for a terrain model in England. It reads the scheduled monuments within the area from Historic England's National Heritage List for England ([Historic England (2026)](#ref-HE2026a)). It lists each monument with the number of features that meet it, and counts the features that meet no monument. A monument that no feature meets is a form the model missed. A feature that meets no monument is a place to check, since it may be an unrecorded site or a false alarm.
+
+## What a Feature of Learned Detection in Lidar Records
 
 Each feature is a named tuple. `id` numbers it, and `x` and `y` give its centre in the coordinates of the terrain model. `area` is in square units of the coordinates. `roundness` is ADAF's measure: 4π times the area over the squared perimeter of the convex hull. `probability` is the highest probability of a cell within the feature. Features at or below the Minimum Area or the Minimum Roundness are left out, as ADAF leaves them out.
 
-## How Long Apply ADAF Takes
+## How Long Learned Detection in Lidar Takes
 
 The first run downloads the chosen model, about 860 MB, to the adaf folder within the Folder, and later runs read it from there. Loading the model and compiling the network take about a minute in a new Julia session. The network then runs on the processor, tile by tile, each tile of 1024 by 1024 cells taking several seconds to tens of seconds, depending on the computer. ADAF's authors report under a minute for one square kilometre at 0.5 m on a laptop without a graphics processor ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)).
 
 ## Where the Example Data of the Learned Detection in Lidar Panel Comes From
 
-With the default Terrain Model, the Example Code downloads a 1 m terrain model from the Web Coverage Service of the Environment Agency's LIDAR Composite DTM, unless the folder already holds the file ([Environment Agency (2022)](#ref-EA2022a)). Its resolution is half that of ADAF's training data. Features and Scheduled Monuments reads the boundaries of scheduled monuments from Historic England's open web service, for any terrain model in England ([Historic England (2026)](#ref-HE2026a)).
+With the default file, Step 1, Terrain Model, downloads a 1 m terrain model from the Web Coverage Service of the Environment Agency's LIDAR Composite DTM, unless the folder already holds the file ([Environment Agency (2022)](#ref-EA2022a)). Its resolution is half that of ADAF's training data. Features and Scheduled Monuments reads the boundaries of scheduled monuments from Historic England's open web service, for any terrain model in England ([Historic England (2026)](#ref-HE2026a)).
 
 ## References
 

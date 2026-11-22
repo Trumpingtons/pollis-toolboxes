@@ -22,7 +22,7 @@ Learned detection trains a model, usually a convolutional neural network, on exa
 
 ## From Candidates to Known Sites
 
-A list of candidates becomes useful when it is set beside what is already known. In England, the National Heritage List for England records the scheduled monuments, with their boundaries, and Historic England serves them openly on the web ([Historic England (2026)](#ref-HE2026a)). Candidates and Scheduled Monuments counts the candidates inside each monument and those outside every monument. A monument with no candidate inside shows a form the rules miss. A candidate outside every monument is either an unrecorded feature or a false alarm. Only records, older maps and visits to the ground tell the two apart. Save the Candidates as GeoPackage writes the list for a GIS, where each candidate can be checked against those sources.
+A list of candidates becomes useful when it is set beside what is already known. In England, the National Heritage List for England records the scheduled monuments, with their boundaries, and Historic England serves them openly on the web ([Historic England (2026)](#ref-HE2026a)). Candidates and Scheduled Monuments counts the candidates whose outlines meet each monument and those that meet none. A monument that no candidate meets shows a form the rules miss. A candidate that meets no monument is either an unrecorded feature or a false alarm. Only records, older maps and visits to the ground tell the two apart. Save the Candidates as GeoPackage writes the list for a GIS, where each candidate can be checked against those sources.
 
 ## References
 

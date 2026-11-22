@@ -155,7 +155,7 @@ hidden = true
 [[faq]]
 question = "How are candidates checked against known sites?"
 answer = '''
-Candidates and Scheduled Monuments reads the scheduled monuments of the National Heritage List for England within the terrain model from Historic England's open web service, and counts for each monument the candidates inside its boundary, and the candidates outside every monument. A monument with no candidate shows what the rules miss; candidates outside are either unknown features or false alarms, which only the records and the ground can tell apart.
+Candidates and Scheduled Monuments reads the scheduled monuments of the National Heritage List for England within the terrain model from Historic England's open web service, and counts for each monument the candidates whose outlines meet its boundary, and the candidates that meet none. A monument with no candidate shows what the rules miss; candidates that meet no monument are either unknown features or false alarms, which only the records and the ground can tell apart.
 '''
 wiki = "Diagnostics"
 hidden = true
@@ -457,17 +457,17 @@ code = '''
 [[actionGroups.actions]]
 id = "monuments"
 label = "Candidates and Scheduled Monuments"
-desc = "The scheduled monuments of Historic England's National Heritage List for England within the terrain model, from its open web service, with the candidates inside each and the candidates outside every monument (in England only)"
+desc = "The scheduled monuments of Historic England's National Heritage List for England within the terrain model, from its open web service, with the candidates that meet each and the candidates that meet none (in England only)"
 code = '''
 using DuckDB
 con = DBInterface.connect(DuckDB.DB)
 DBInterface.execute(con, "LOAD spatial")
 scheduled_monuments(con, dem)  # the table monuments, in the coordinates of the terrain model
-candidates_table(con, candidates; crs = dem)  # the table candidates, a point at each
-inside = [(list_entry = r.list_entry, name = r.name, candidates = r.n) for r in DBInterface.execute(con, "SELECT m.list_entry, m.name, count(c.id) AS n FROM monuments m LEFT JOIN candidates c ON ST_Contains(m.geom, c.geom) GROUP BY ALL ORDER BY n DESC")]
-outside = only(DBInterface.execute(con, "SELECT count(*) AS n FROM candidates c WHERE NOT EXISTS (SELECT 1 FROM monuments m WHERE ST_Contains(m.geom, c.geom))")).n
-println(length(inside), " scheduled monuments in the area, ", count(r -> r.candidates > 0, inside), " with a candidate inside; ", outside, " of ", length(candidates), " candidates outside every monument")
-inside
+candidates_table(con, candidates; crs = dem, labels = found.labels)  # the table candidates, the outline of each
+met = [(list_entry = r.list_entry, name = r.name, candidates = r.n) for r in DBInterface.execute(con, "SELECT m.list_entry, m.name, count(c.id) AS n FROM monuments m LEFT JOIN candidates c ON ST_Intersects(m.geom, c.geom) GROUP BY ALL ORDER BY n DESC")]
+apart = only(DBInterface.execute(con, "SELECT count(*) AS n FROM candidates c WHERE NOT EXISTS (SELECT 1 FROM monuments m WHERE ST_Intersects(m.geom, c.geom))")).n
+println(length(met), " scheduled monuments in the area, ", count(r -> r.candidates > 0, met), " met by a candidate; ", apart, " of ", length(candidates), " candidates meet no monument")
+met
 '''
 
 [[actionGroups.actions]]
@@ -487,11 +487,11 @@ label = "Export"
 [[actionGroups.actions]]
 id = "save-candidates"
 label = "Save the Candidates as GeoPackage"
-desc = "Write the candidates as points with their measures to a GeoPackage in the folder of the files, to open in a GIS beside the terrain model"
+desc = "Write the candidates as outlines with their measures to a GeoPackage in the folder of the files, to open in a GIS beside the terrain model"
 code = '''
 using DuckDB
 con = DBInterface.connect(DuckDB.DB)
 DBInterface.execute(con, "LOAD spatial")
-out = save_candidates(con, candidates, joinpath(folder, "candidates-{{model}}.gpkg"); crs = dem)
+out = save_candidates(con, candidates, joinpath(folder, "candidates-{{model}}.gpkg"); crs = dem, labels = found.labels)
 println("Wrote ", length(candidates), " candidates to ", out)
 '''
