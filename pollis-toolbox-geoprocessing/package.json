@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-geoprocessing",
   "displayName": "Geoprocessing Toolbox",
-  "description": "Pollis Geoprocessing Toolbox: calculations on rasters and elevation models in Julia. Computes local, focal and zonal operations on rasters, resamples them and puts polygons onto a grid with Rasters.jl and Stencils.jl, and computes the slope, aspect, hillshade, curvature, relief indices, upslope area and Topographic Wetness and Stream Power indices of an elevation model with Geomorphometry.jl and Stencils.jl, each replicated with R's terra, MultiscaleDTM or WhiteboxTools.",
-  "version": "0.1.1",
+  "description": "Pollis Geoprocessing Toolbox: calculations on rasters and elevation models in Julia. Computes local, focal and zonal operations on rasters, resamples them and puts polygons onto a grid with Rasters.jl and Stencils.jl, and computes the slope, aspect, hillshade, curvature, relief indices, upslope area and Topographic Wetness and Stream Power indices of an elevation model with Geomorphometry.jl and Stencils.jl, each replicated with R's terra, MultiscaleDTM or WhiteboxTools. For archaeological prospection, computes the local relief model, sky-view factor, openness, shaded relief and the layered image (VAT) of a lidar terrain model, replicated with RVT.",
+  "version": "0.1.2",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -24,7 +24,8 @@
         "duckdbExtensions": ["spatial"],
         "submenus": [
           { "id": "satelliteIndicators", "title": "Satellite Indicators", "group": "2_imagery", "order": 1 },
-          { "id": "lidar", "title": "Lidar and 3D Scans", "group": "2_imagery", "order": 2 }
+          { "id": "lidar", "title": "Lidar and 3D Scans", "group": "2_imagery", "order": 2 },
+          { "id": "archaeology", "title": "Archaeological Prospection", "group": "2_imagery", "order": 3 }
         ],
         "panels": [
           {
@@ -32,6 +33,9 @@
           },
           {
             "id": "terrain", "command": "pollis.geoprocessing.terrain", "title": "Terrain and Elevation Analysis", "group": "1_rasters", "order": 2, "data": "panels/terrain.toml", "defaultModel": "slope", "decisionFirstColumn": "Measure"
+          },
+          {
+            "id": "reliefvis", "command": "pollis.geoprocessing.reliefvis", "title": "Relief Visualisation", "submenu": "archaeology", "group": "1_archaeology", "order": 1, "data": "panels/reliefvis.toml", "defaultModel": "lrm", "decisionFirstColumn": "Visualisation"
           }
         ],
         "planned": [
@@ -45,7 +49,9 @@
           { "title": "Building Extraction and 3D City Models", "submenu": "lidar", "group": "1_lidar", "order": 2 },
           { "title": "Tree and Canopy Metrics", "submenu": "lidar", "group": "1_lidar", "order": 3 },
           { "title": "Change Between Surveys", "submenu": "lidar", "group": "1_lidar", "order": 4 },
-          { "title": "Archaeological Feature Detection", "submenu": "lidar", "group": "1_lidar", "order": 5 },
+          { "title": "Candidate Features", "submenu": "archaeology", "group": "1_archaeology", "order": 2 },
+          { "title": "Learned Detection", "submenu": "archaeology", "group": "1_archaeology", "order": 3 },
+          { "title": "Settlement Mounds from Satellite Images", "submenu": "archaeology", "group": "1_archaeology", "order": 4 },
           { "title": "Coordinate Transformations and Projections", "group": "3_coordinates", "order": 1 },
           { "title": "Spatial Indexing", "group": "3_coordinates", "order": 2 }
         ]

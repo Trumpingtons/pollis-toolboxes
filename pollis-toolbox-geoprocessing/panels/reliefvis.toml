@@ -1,0 +1,761 @@
+# Relief Visualisation: the local relief model, sky-view factor and openness, shaded relief and the layered image (VAT) of a lidar terrain model, for archaeological prospection, with Geomorphometry.jl, Stencils.jl and Rasters.jl
+
+[meta]
+title = "Relief Visualisation"
+viewType = "pollis.reliefvis"
+defaultModel = "lrm"
+decisionFirstColumn = "Visualisation"
+
+[[packages]]
+name = "Geomorphometry.jl"
+github = "https://github.com/Deltares/Geomorphometry.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "Stencils.jl"
+github = "https://github.com/rafaqz/Stencils.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["DuckDB.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "reliefvis/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the code that computes them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "reliefvis/overview.md"
+bundled = true
+description = "Why archaeologists look at a lidar terrain model through visualisations, and what each brings out"
+
+[[wikis]]
+name = "Diagnostics"
+file = "reliefvis/diagnostics.md"
+bundled = true
+description = "Cell size, gaps and edges, artefacts of the terrain model, and features that are modern"
+
+[[wikis]]
+name = "Decision Guide"
+file = "reliefvis/decision-guide.md"
+bundled = true
+description = "Which visualisation suits which feature and landscape, and how to choose the radii"
+
+[[wikis]]
+separator = true
+label = "Visualisations"
+
+[[wikis]]
+name = "Local Relief Model"
+file = "reliefvis/local-relief.md"
+bundled = true
+
+[[wikis]]
+name = "Sky-View Factor and Openness"
+file = "reliefvis/sky-view-openness.md"
+bundled = true
+
+[[wikis]]
+name = "Shaded Relief"
+file = "reliefvis/shaded-relief.md"
+bundled = true
+
+[[wikis]]
+name = "Layered Image"
+file = "reliefvis/layered-image.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "PS2026a"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Sch2026c"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "ZRCUL2025a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "KH2017a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "DAC2008a"
+
+[[references]]
+key = "Hes2010a"
+
+[[references]]
+key = "ZOK2011a"
+
+[[references]]
+key = "YSP2002a"
+
+[[references]]
+key = "KS2019a"
+
+[[references]]
+key = "Hor1981a"
+
+[[references]]
+key = "ZT1987a"
+
+[[references]]
+key = "Mar1992a"
+
+[[references]]
+key = "CCCKK2026a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "EA2022a"
+
+[[references]]
+key = "HE2026a"
+
+[[faq]]
+question = "Why look at a lidar terrain model through visualisations?"
+answer = '''
+Earthworks such as burial mounds, banks, ditches and old field boundaries often rise or sink only a few tens of centimetres, on hills and valleys tens of metres high. A map of the heights shows the hills, not the earthworks. Visualisations remove the broad shape of the land, or measure how open each place is to the sky, so that the small forms stand out.
+
+The four tabs compute the visualisations archaeologists use most, from the same terrain model.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "What does the local relief model show?"
+answer = '''
+The local relief model is the terrain model less its mean over a window around each cell: the broad shape of the land, the trend, is removed and the small forms are left, in metres. Banks and mounds come out positive, ditches and pits negative. The window should be larger than the features sought: a radius of 20 m suits mounds and ditches up to about 30 m across.
+'''
+wiki = "Local Relief Model"
+
+[[faq]]
+question = "What is the difference between the sky-view factor and openness?"
+answer = '''
+Both look along 16 directions for the highest horizon within a search radius. The sky-view factor is the share of the sky seen from a cell, from 0 to 1: it is 1 on flat ground and on crests, and drops in ditches and hollows. Positive openness is the mean angle from the zenith to the horizon, in degrees: it is above 90 on crests and banks and below 90 in ditches, so it brings out both. Negative openness is the same angle seen from below the surface, high in ditches.
+'''
+wiki = "Sky-View Factor and Openness"
+
+[[faq]]
+question = "What is the layered image?"
+answer = '''
+The layered image is the Visualization for Archaeological Topography (VAT) of Kokalj and Somrak: a hillshade, with the slope, positive openness and sky-view factor blended over it, each stretched to a fixed range. It shows small features on flat and on steep ground at once, which no single visualisation does.
+'''
+wiki = "Layered Image"
+
+[[faq]]
+question = "Why does the layered image differ from RVT's?"
+answer = '''
+The Visualization for Archaeological Topography blends positive openness over the hillshade and slope with an opacity of 50%. The blend function of RVT 2.2.3 writes the overlay into the image below it, so its layered image applies the openness at full strength. The Openness Overlay input sets the opacity: 50 follows the published combination, 100 reproduces RVT's image, as Replicate with RVT shows.
+'''
+wiki = "Layered Image"
+hidden = true
+
+[[faq]]
+question = "How large should the search radius be?"
+answer = '''
+The search radius of the sky-view factor and openness sets the size of the features that stand out: a horizon farther away than the radius is not seen. A radius of about 10 m suits ditches, banks and mounds a few metres to 20 m across; a larger radius brings out broader forms and darkens valleys. Search Radii Compared prints how the results change with the radius.
+'''
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "Is everything the visualisations show archaeological?"
+answer = '''
+No. Drainage ditches, field drains, tracks, quarries, bomb craters, tree throws and the edges of modern fields also stand out, and errors of the terrain model, such as the seams between surveys or buildings and vegetation left in it, can look like earthworks. A feature found in a visualisation is a place to check against maps, records and the ground.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[models]]
+id = "lrm"
+label = "Local Relief Model"
+
+[[models]]
+id = "sky"
+label = "Sky-View and Openness"
+
+[[models]]
+id = "shade"
+label = "Shaded Relief"
+
+[[models]]
+id = "vat"
+label = "Layered Image"
+
+[[bullets]]
+text = "Local Relief Model"
+detail = "The terrain model less its mean in a window around each cell: banks and mounds positive, ditches and pits negative, in metres"
+
+[[bullets]]
+text = "Sky-View and Openness"
+detail = "How much of the sky each cell sees, and the mean angle to its horizon seen from above or below, within a search radius"
+
+[[bullets]]
+text = "Shaded Relief"
+detail = "Hillshade from one direction, multidirectional hillshade, or slope, the familiar views of a terrain model"
+
+[[bullets]]
+text = "Layered Image"
+detail = "Hillshade, slope, positive openness and sky-view factor blended into one image: the Visualization for Archaeological Topography"
+
+[[decisionRows]]
+task = "Local Relief Model"
+context = "Heights of features"
+purpose = "Measure how high a bank or how deep a ditch is, and map features on any slope"
+
+[[decisionRows]]
+task = "Sky-View and Openness"
+context = "Shape, any direction"
+purpose = "Bring out ditches, banks and mounds whatever their direction, without a light"
+
+[[decisionRows]]
+task = "Shaded Relief"
+context = "Familiar view"
+purpose = "See the landscape as a relief map, and check features against a light"
+
+[[decisionRows]]
+task = "Layered Image"
+context = "One image for all"
+purpose = "Map features on flat and steep ground at once, on screen or in the field"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. The Export steps write there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "demFile"
+label = "Terrain Model"
+tooltip = "A GeoTIFF of a bare-earth terrain model in metres, in the folder above, or an absolute path, in a projected coordinate system with square cells. With the default, wandlebury-dtm.tif, the example first reads the Environment Agency's 1 m lidar terrain model of 2 x 2 km around Wandlebury Ring, south-east of Cambridge, from its Web Coverage Service, unless the folder has wandlebury-dtm.tif already."
+default = "wandlebury-dtm.tif"
+
+[[inputs]]
+id = "trendRadius"
+label = "Trend Radius (m)"
+tooltip = "The radius of the window whose mean height is the trend, in metres: the local relief model keeps forms smaller than about one and a half times this. RVT takes 10 to 50 cells; 20 m suits mounds and ditches."
+default = "20"
+models = ["lrm"]
+newRow = true
+
+[[inputs]]
+id = "skyMeasure"
+label = "Measure"
+kind = "select"
+tooltip = "Sky-View Factor: the share of the sky seen, 0 to 1. Positive Openness: the mean angle from the zenith to the horizon, high on crests and banks. Negative Openness: the same seen from below, high in ditches and pits."
+default = "svf"
+models = ["sky"]
+newRow = true
+
+[[inputs.options]]
+value = "svf"
+label = "Sky-View Factor"
+
+[[inputs.options]]
+value = "positive"
+label = "Positive Openness"
+
+[[inputs.options]]
+value = "negative"
+label = "Negative Openness"
+
+[[inputs]]
+id = "searchRadius"
+label = "Search Radius (m)"
+tooltip = "How far, in metres, the horizon is looked for in each direction: about 10 m suits ditches, banks and mounds; a larger radius brings out broader forms."
+default = "10"
+models = ["sky", "vat"]
+
+[[inputs]]
+id = "directions"
+label = "Directions"
+tooltip = "The number of directions in which the horizon is looked for, spread evenly around the compass: 16 as in RVT; 8 is faster and coarser, 32 smoother."
+default = "16"
+models = ["sky", "vat"]
+
+[[inputs]]
+id = "shadeKind"
+label = "Shading"
+kind = "select"
+tooltip = "Hillshade: the ground lit from the azimuth and elevation below. Several Directions: Mark's multidirectional hillshade, lit from 225, 270, 315 and 360 degrees. Slope: the steepness in degrees, steep ground dark when shown."
+default = "hillshade"
+models = ["shade"]
+newRow = true
+
+[[inputs.options]]
+value = "hillshade"
+label = "Hillshade"
+
+[[inputs.options]]
+value = "multi"
+label = "Several Directions"
+
+[[inputs.options]]
+value = "slope"
+label = "Slope"
+
+[[inputs]]
+id = "azimuth"
+label = "Sun Azimuth"
+tooltip = "The direction the light comes from, in degrees clockwise from north: 315, the north-west, by convention. Used by Hillshade."
+default = "315"
+models = ["shade"]
+
+[[inputs]]
+id = "sunElevation"
+label = "Sun Elevation"
+tooltip = "The height of the light above the horizon, in degrees: 35, as RVT and the layered image take it; lower values lengthen the shadows of small features."
+default = "35"
+models = ["shade"]
+
+[[inputs]]
+id = "overlayOpacity"
+label = "Openness Overlay (%)"
+tooltip = "The opacity of positive openness blended over the hillshade and slope: 50, as Kokalj and Somrak combine it; 100 gives the image RVT 2.2.3 renders."
+default = "50"
+models = ["vat"]
+newRow = true
+
+[[inputs]]
+id = "zoomCentre"
+label = "Zoom Centre"
+tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on a Place and Profile Through a Place look: the default is the centre of Wandlebury Ring, in British National Grid."
+default = "549401, 253423"
+newRow = true
+
+[[inputs]]
+id = "zoomSize"
+label = "Zoom Size (m)"
+tooltip = "The width of the square Zoom on a Place shows, and the length of the line Profile Through a Place follows, in metres."
+default = "600"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using Rasters, ArchGDAL, Geomorphometry, Statistics
+using Geomorphometry: slope
+{{?demFile=wandlebury-dtm.tif}}using Downloads: download
+
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+dem_path = joinpath(folder, "{{demFile}}")  # an absolute path is kept as it is
+{{?demFile=wandlebury-dtm.tif}}# Example file: the Environment Agency's 1 m lidar terrain model (LIDAR Composite DTM) of 2 x 2 km around Wandlebury Ring, an Iron Age hillfort 5 km south-east of Cambridge, in British National Grid, read from its Web Coverage Service unless the folder has wandlebury-dtm.tif already. Replace "wandlebury-dtm.tif" with your own GeoTIFF.
+{{?demFile=wandlebury-dtm.tif}}if !isfile(dem_path)
+{{?demFile=wandlebury-dtm.tif}}	wcs = "https://environment.data.gov.uk/spatialdata/lidar-composite-digital-terrain-model-dtm-1m/wcs"
+{{?demFile=wandlebury-dtm.tif}}	coverage = "13787b9a-26a4-4775-8523-806d13af58fc__Lidar_Composite_Elevation_DTM_1m"
+{{?demFile=wandlebury-dtm.tif}}	download("$(wcs)?service=WCS&version=2.0.1&request=GetCoverage&CoverageId=$(coverage)&format=image%2Fgeotiff&subset=E%28548400%2C550400%29&subset=N%28252400%2C254400%29", dem_path)  # eastings 548400 to 550400, northings 252400 to 254400
+{{?demFile=wandlebury-dtm.tif}}end
+dem = replace_missing(read(Raster(dem_path; lazy = true)), NaN32)  # missing cells become NaN
+cs = Geomorphometry.cellsize(dem)  # the size of a cell east and north, in metres, with the sign of each axis
+h = abs(cs[1])  # the width of a cell, in metres
+z = Float64.(parent(dem))
+function on_grid(values, margin)  # a result on the grid of the terrain model, missing within margin cells of the edge and where it is undefined
+	x = Float64.(coalesce.(values, NaN))
+	keep = falses(size(x)); keep[margin + 1:end - margin, margin + 1:end - margin] .= true
+	rebuild(dem; data = ifelse.(keep .& isfinite.(x), x, missing), missingval = missing)
+end
+{{?model=lrm|sky}}function box_mean(z, r)  # the mean of the (2r + 1) x (2r + 1) cells around each cell, from summed-area tables, as RVT computes it; NaN within r cells of the edge
+{{?model=lrm|sky}}	ok = isfinite.(z)
+{{?model=lrm|sky}}	z0 = mean(z[ok])  # heights less their mean, so the sums stay small and exact
+{{?model=lrm|sky}}	S, C = zeros(size(z) .+ 1), zeros(size(z) .+ 1)
+{{?model=lrm|sky}}	S[2:end, 2:end] = cumsum(cumsum(ifelse.(ok, z .- z0, 0.0); dims = 1); dims = 2)
+{{?model=lrm|sky}}	C[2:end, 2:end] = cumsum(cumsum(Float64.(ok); dims = 1); dims = 2)
+{{?model=lrm|sky}}	box(T, i, j) = T[i + r + 1, j + r + 1] - T[i - r, j + r + 1] - T[i + r + 1, j - r] + T[i - r, j - r]
+{{?model=lrm|sky}}	out = fill(NaN, size(z))
+{{?model=lrm|sky}}	for j in r + 1:size(z, 2) - r, i in r + 1:size(z, 1) - r
+{{?model=lrm|sky}}		out[i, j] = z0 + box(S, i, j) / box(C, i, j)  # missing cells left out of the mean
+{{?model=lrm|sky}}	end
+{{?model=lrm|sky}}	out
+{{?model=lrm|sky}}end
+println(size(dem, X), " x ", size(dem, Y), " cells of ", round(h, digits = 2), " m; heights from ", round(minimum(filter(isfinite, z)), digits = 2), " to ", round(maximum(filter(isfinite, z)), digits = 2), " m")
+{{?model=lrm}}
+{{?model=lrm}}# Local relief model (Hesse 2010): the terrain model less its mean height in a square window of radius r cells, the trend
+{{?model=lrm}}r = round(Int, {{trendRadius}} / h)  # the radius of the window, in cells
+{{?model=lrm}}trend = box_mean(z, r)  # the mean of (2r + 1) x (2r + 1) cells: the broad shape of the land
+{{?model=lrm}}result = on_grid(z .- trend, r)  # in metres: banks and mounds above the trend, ditches and pits below
+{{?model=lrm}}v = collect(skipmissing(result))
+{{?model=lrm}}println("Local relief, m: 1% ", round(quantile(v, 0.01), digits = 3), ", median ", round(median(v), digits = 3), ", 99% ", round(quantile(v, 0.99), digits = 3), "; more than 0.25 m above the trend ", round(100 * count(>(0.25), v) / length(v), digits = 2), "%, below ", round(100 * count(<(-0.25), v) / length(v), digits = 2), "%")
+{{?model=sky|vat}}
+{{?model=sky|vat}}# The horizon in each direction (Zaksek, Ostir and Kokalj 2011): the steepest rise to any cell within the search radius, sampled at whole cells as RVT does
+{{?model=sky|vat}}R = round(Int, {{searchRadius}} / h)  # the search radius, in cells
+{{?model=sky|vat}}function horizon_offsets(ndir, rmax)  # for each direction, the cells along it, nearest first
+{{?model=sky|vat}}	map(0:ndir - 1) do k
+{{?model=sky|vat}}		a = 2pi * k / ndir
+{{?model=sky|vat}}		cells = unique([(round(Int, cos(a) * q), round(Int, sin(a) * q)) for q in 1:1 / 3:rmax])
+{{?model=sky|vat}}		sort(cells; by = c -> hypot(c...))
+{{?model=sky|vat}}	end
+{{?model=sky|vat}}end
+{{?model=sky|vat}}function horizon_angles(z, rmax, ndir, h)  # the elevation angle of the horizon, in radians, for each cell and direction
+{{?model=sky|vat}}	dirs = horizon_offsets(ndir, rmax)
+{{?model=sky|vat}}	angles = fill(NaN, size(z)..., ndir)
+{{?model=sky|vat}}	for (k, cells) in enumerate(dirs), j in rmax + 1:size(z, 2) - rmax, i in rmax + 1:size(z, 1) - rmax
+{{?model=sky|vat}}		steepest = -Inf
+{{?model=sky|vat}}		for (di, dj) in cells
+{{?model=sky|vat}}			steepest = max(steepest, (z[i - di, j - dj] - z[i, j]) / (h * hypot(di, dj)))
+{{?model=sky|vat}}		end
+{{?model=sky|vat}}		angles[i, j, k] = atan(steepest)
+{{?model=sky|vat}}	end
+{{?model=sky|vat}}	angles
+{{?model=sky|vat}}end
+{{?model=sky|vat}}above = horizon_angles(z, R, {{directions}}, h)
+{{?model=sky|vat}}svf = on_grid(dropdims(mean(1 .- sin.(max.(above, 0)); dims = 3); dims = 3), R)  # the share of the sky seen: 1 on open ground, lower in ditches and hollows
+{{?model=sky|vat}}positive = on_grid(90 .- rad2deg.(dropdims(mean(above; dims = 3); dims = 3)), R)  # positive openness (Yokoyama, Shirasawa and Pike 2002), degrees: above 90 on crests and banks
+{{?model=sky}}negative = on_grid(90 .- rad2deg.(dropdims(mean(horizon_angles(-z, R, {{directions}}, h); dims = 3); dims = 3)), R)  # negative openness: the same from below, high in ditches and pits
+{{?model=sky}}result = {{skyMeasure}}
+{{?model=sky}}v = collect(skipmissing(result))
+{{?model=sky}}println("{{skyMeasure}}: 1% ", round(quantile(v, 0.01), digits = 4), ", median ", round(median(v), digits = 4), ", 99% ", round(quantile(v, 0.99), digits = 4))
+{{?model=shade|vat}}
+{{?model=shade|vat}}# Slope and aspect from the four neighbours that share a side (Zevenbergen and Thorne 1987), as RVT computes them
+{{?model=shade|vat}}s = parent(slope(dem; method = ZevenbergenThorne()))  # degrees
+{{?model=shade|vat}}a = replace(parent(aspect(dem; method = ZevenbergenThorne())), NaN => 0.0)  # degrees clockwise from north; flat ground faces no way, and its shade does not depend on it
+{{?model=shade|vat}}shade(azimuth, elevation) = max.(cosd(90 - elevation) .* cosd.(s) .+ sind(90 - elevation) .* sind.(s) .* cosd.(azimuth .- a), 0)  # the cosine of the angle between the light and the perpendicular to the ground (Horn 1981)
+{{?model=shade}}{{?shadeKind=hillshade}}result = on_grid(shade({{azimuth}}, {{sunElevation}}), 1)  # 0 in shadow to 1 facing the light
+{{?model=shade}}{{?shadeKind=multi}}result = on_grid(parent(multihillshade(dem; zenith = 90 - {{sunElevation}})) ./ 255, 1)  # Mark (1992): lights from 225, 270, 315 and 360 degrees, each weighting the ground that faces it
+{{?model=shade}}{{?shadeKind=slope}}result = on_grid(s, 1)  # degrees
+{{?model=shade}}v = collect(skipmissing(result))
+{{?model=shade}}println("{{shadeKind}}: 1% ", round(quantile(v, 0.01), digits = 4), ", median ", round(median(v), digits = 4), ", 99% ", round(quantile(v, 0.99), digits = 4))
+{{?model=vat}}
+{{?model=vat}}# Layered image, the Visualization for Archaeological Topography (Kokalj and Somrak 2019), built from the bottom up, each layer stretched to a fixed range
+{{?model=vat}}stretch(x, lo, hi) = clamp.((coalesce.(x, NaN) .- lo) ./ (hi - lo), 0, 1)
+{{?model=vat}}overlay(top, base) = ifelse.(base .> 0.5, 1 .- 2 .* (1 .- base) .* (1 .- top), 2 .* base .* top)
+{{?model=vat}}image = shade(315, 35)  # hillshade, the sun at 315 and 35 degrees
+{{?model=vat}}image = 0.5 .* (1 .- stretch(s, 0, 50)) .+ 0.5 .* image  # slope, 0 to 50 degrees, steep ground dark, at 50%
+{{?model=vat}}w = {{overlayOpacity}} / 100
+{{?model=vat}}image = w .* overlay(stretch(parent(positive), 68, 93), image) .+ (1 - w) .* image  # positive openness, 68 to 93 degrees, by overlay
+{{?model=vat}}image = 0.25 .* stretch(parent(svf), 0.7, 1) .* image .+ 0.75 .* image  # sky-view factor, 0.7 to 1, by multiply at 25%
+{{?model=vat}}result = on_grid(image, R)  # 0 dark to 1 light
+{{?model=vat}}v = collect(skipmissing(result))
+{{?model=vat}}println("Layered image: 1% ", round(quantile(v, 0.01), digits = 4), ", median ", round(median(v), digits = 4), ", 99% ", round(quantile(v, 0.99), digits = 4))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-image"
+label = "Show the Image"
+desc = "The result as a grey image at full resolution, one pixel a cell, north up, stretched from the 2% to the 98% quantile (the layered image from 0 to 1)"
+code = '''
+lo, hi = quantile(collect(skipmissing(result)), [0.02, 0.98])
+{{?model=vat}}lo, hi = 0.0, 1.0
+{{?model=shade}}{{?shadeKind=slope}}lo, hi = hi, lo  # steep ground dark
+grey = [ismissing(x) ? 0x00 : round(UInt8, 255 * clamp((x - lo) / (hi - lo), 0, 1)) for x in parent(result)]
+first(lookup(result, Y)) < last(lookup(result, Y)) && (grey = reverse(grey; dims = 2))  # the first row of the image is the north
+png = joinpath(mktempdir(), "{{model}}.png")
+ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(grey, 1), height = size(grey, 2), nbands = 1, dtype = UInt8) do mem
+	ArchGDAL.write!(mem, grey, 1)
+	ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
+end
+display(MIME("image/png"), read(png))
+'''
+
+[[actionGroups.actions]]
+id = "zoom"
+label = "Zoom on a Place"
+desc = "The result in a square of the Zoom Size around the Zoom Centre, enlarged so that each cell is several pixels, stretched over the square itself"
+code = '''
+x0, y0 = {{zoomCentre}}
+d = {{zoomSize}} / 2
+part = result[X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d)]
+v = collect(skipmissing(part))
+lo, hi = quantile(v, [0.02, 0.98])
+{{?model=vat}}lo, hi = 0.0, 1.0
+{{?model=shade}}{{?shadeKind=slope}}lo, hi = hi, lo
+k = max(1, fld(800, max(size(part)...)))  # pixels a cell, for an image about 800 pixels wide
+grey = [ismissing(x) ? 0x00 : round(UInt8, 255 * clamp((x - lo) / (hi - lo), 0, 1)) for x in parent(part)]
+first(lookup(part, Y)) < last(lookup(part, Y)) && (grey = reverse(grey; dims = 2))
+grey = repeat(grey; inner = (k, k))
+png = joinpath(mktempdir(), "{{model}}-zoom.png")
+ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(grey, 1), height = size(grey, 2), nbands = 1, dtype = UInt8) do mem
+	ArchGDAL.write!(mem, grey, 1)
+	ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
+end
+println(size(part, X), " x ", size(part, Y), " cells around ", x0, ", ", y0, ", ", k, " pixels a cell")
+display(MIME("image/png"), read(png))
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "grid"
+label = "Grid and Cell Size"
+desc = "The coordinate system, the size of the grid and of a cell, and its extent: the radii in metres become whole cells, and the cells must be square"
+code = '''
+wkt = convert(String, convert(WellKnownText, crs(dem)))
+m = match(r"^(\w+)\[\"([^\"]+)\"", wkt)
+println("Coordinate system: ", m === nothing ? "none recorded" : m[2])
+println(size(dem, X), " x ", size(dem, Y), " cells of ", round(abs(cs[1]), sigdigits = 6), " by ", round(abs(cs[2]), sigdigits = 6), abs(abs(cs[1]) - abs(cs[2])) > 1e-6 * h ? " (not square: the radii follow the width)" : "", " m")
+println("x from ", round.(Rasters.bounds(dem, X), digits = 2), ", y from ", round.(Rasters.bounds(dem, Y), digits = 2))
+'''
+
+[[actionGroups.actions]]
+id = "cells"
+label = "Missing and Edge Cells"
+desc = "How many cells the terrain model lacks, and how many near the edge are left out, where the window or the search radius reaches past the grid"
+code = '''
+println("Missing in the file: ", count(!isfinite, z), " of ", length(z), " cells")
+println("With a result: ", count(!ismissing, result), "; left out near the edge or undefined: ", count(ismissing, result))
+'''
+
+[[actionGroups.actions]]
+id = "spikes"
+label = "Spikes and Pits"
+desc = "Cells that differ by more than half a metre from the median of their eight neighbours: errors of the terrain model, or objects left in it, which every visualisation shows as features"
+code = '''
+using Stencils
+dev = z .- mapstencil(v -> median(filter(isfinite, collect(v))), Window(1), z)
+dev[[1, end], :] .= NaN; dev[:, [1, end]] .= NaN  # the cells on the edge have fewer than eight neighbours
+odd =findall(x -> isfinite(x) && abs(x) > 0.5, dev)
+println(length(odd), " cells differ from their neighbours' median by more than 0.5 m (", count(c -> dev[c] > 0, odd), " up, ", count(c -> dev[c] < 0, odd), " down)")
+xs, ys = lookup(dem, X), lookup(dem, Y)
+[(x = round(xs[c[1]], digits = 1), y = round(ys[c[2]], digits = 1), height = round(z[c], digits = 2), difference = round(dev[c], digits = 2)) for c in first(sort(odd; by = c -> -abs(dev[c])), 10)]
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "rvt-lrm"
+label = "Replicate with RVT"
+desc = "The local relief model with a trend radius of 20 cells, on the cells 30 or more from the edge, recomputed beside the values of RVT 2.2.3 (rvt.vis.slrm) on the example file"
+models = ["lrm"]
+when = "demFile=wandlebury-dtm.tif"
+code = '''
+# RVT 2.2.3, on wandlebury-dtm.tif: rvt.vis.slrm(dem, radius_cell = 20); picks by column and row, north first
+rvt_mean = 0.002576409141
+rvt_picks = [(1001, 977) => 0.2306365967, (1151, 977) => -1.328811646, (500, 700) => -0.1400108337, (300, 1500) => 1.587459564, (1700, 400) => -0.1993141174]
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+local_relief = z .- box_mean(z, 20)
+println("Mean: Julia ", round(mean(local_relief[31:end - 30, 31:end - 30]), sigdigits = 10), ", RVT ", rvt_mean)
+for ((col, row), value) in rvt_picks
+	println("Column ", col, ", row ", row, ": Julia ", round(local_relief[col, north_first ? row : size(z, 2) + 1 - row], sigdigits = 10), ", RVT ", value)
+end
+'''
+
+[[actionGroups.actions]]
+id = "rvt-sky"
+label = "Replicate with RVT"
+desc = "The sky-view factor and positive and negative openness, 16 directions within 10 cells, on the cells 30 or more from the edge, recomputed beside the values of RVT 2.2.3 (rvt.vis.sky_view_factor) on the example file"
+models = ["sky"]
+when = "demFile=wandlebury-dtm.tif"
+code = '''
+# RVT 2.2.3, on wandlebury-dtm.tif: rvt.vis.sky_view_factor(dem, 1, compute_svf = True, compute_opns = True, svf_n_dir = 16, svf_r_max = 10, svf_noise = 0), and the openness of -dem; picks by column and row, north first
+rvt_means = (svf = 0.9696801728, positive = 88.86785196, negative = 88.86833858)
+rvt_picks = [(1001, 977) => (0.9168566988, 85.22770133, 88.48121903), (1151, 977) => (0.7511883682, 75.67715043, 86.66654637), (500, 700) => (0.9601995991, 88.6889735, 87.24744717), (300, 1500) => (0.9706688733, 91.60700599, 78.73350991), (1700, 400) => (0.9768538766, 89.00737205, 89.2249914)]
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+up, down = horizon_angles(z, 10, 16, h), horizon_angles(-z, 10, 16, h)
+sv = dropdims(mean(1 .- sin.(max.(up, 0)); dims = 3); dims = 3)
+po, no = (90 .- rad2deg.(dropdims(mean(t; dims = 3); dims = 3)) for t in (up, down))
+inner(x) = mean(x[31:end - 30, 31:end - 30])
+println("Mean sky-view factor: Julia ", round(inner(sv), sigdigits = 10), ", RVT ", rvt_means.svf)
+println("Mean positive openness: Julia ", round(inner(po), sigdigits = 10), ", RVT ", rvt_means.positive)
+println("Mean negative openness: Julia ", round(inner(no), sigdigits = 10), ", RVT ", rvt_means.negative)
+for ((col, row), (a, b, c)) in rvt_picks
+	j = north_first ? row : size(z, 2) + 1 - row
+	println("Column ", col, ", row ", row, ": sky-view ", round(sv[col, j], digits = 8), " and ", a, "; positive ", round(po[col, j], digits = 6), " and ", b, "; negative ", round(no[col, j], digits = 6), " and ", c)
+end
+'''
+
+[[actionGroups.actions]]
+id = "rvt-shade"
+label = "Replicate with RVT"
+desc = "The slope and the hillshade with the sun at 315 and 35 degrees, on the cells 30 or more from the edge, recomputed beside the values of RVT 2.2.3 (rvt.vis.slope_aspect and rvt.vis.hillshade) on the example file"
+models = ["shade"]
+when = "demFile=wandlebury-dtm.tif"
+code = '''
+# RVT 2.2.3, on wandlebury-dtm.tif: rvt.vis.slope_aspect(dem, 1, 1, output_units = "degree"), rvt.vis.hillshade(dem, 1, 1, sun_azimuth = 315, sun_elevation = 35); picks by column and row, north first
+rvt_means = (slope = 3.560528755, hillshade = 0.5673369998)
+rvt_picks = [(1001, 977) => (6.506587029, 0.6375008186), (1151, 977) => (24.06962204, 0.7000824985), (500, 700) => (4.830256939, 0.5651895972), (300, 1500) => (9.599437714, 0.4807349535), (1700, 400) => (3.014106274, 0.5889788473)]
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+hs = shade(315, 35)
+println("Mean slope: Julia ", round(mean(s[31:end - 30, 31:end - 30]), sigdigits = 10), ", RVT ", rvt_means.slope)
+println("Mean hillshade: Julia ", round(mean(hs[31:end - 30, 31:end - 30]), sigdigits = 10), ", RVT ", rvt_means.hillshade)
+for ((col, row), (a, b)) in rvt_picks
+	j = north_first ? row : size(z, 2) + 1 - row
+	println("Column ", col, ", row ", row, ": slope ", round(s[col, j], digits = 6), " and ", a, "; hillshade ", round(hs[col, j], digits = 8), " and ", b)
+end
+'''
+
+[[actionGroups.actions]]
+id = "rvt-vat"
+label = "Replicate with RVT"
+desc = "The layered image with the Openness Overlay input and with 100%, on the cells 30 or more from the edge, beside the values of RVT 2.2.3's VAT (rvt.blend, render_all_images) on the example file"
+models = ["vat"]
+when = "demFile=wandlebury-dtm.tif"
+code = '''
+# RVT 2.2.3, on wandlebury-dtm.tif: BlenderCombination with sky-view factor (0.7 to 1, multiply, 25%), positive openness (68 to 93, overlay, 50%), slope (0 to 50, luminosity, 50%), hillshade (0 to 1, normal, 100%); render_all_images()
+rvt_mean = 0.8923535943
+rvt_picks = [(1001, 977) => 0.7881704569, (1151, 977) => 0.3635278344, (500, 700) => 0.8782345057, (300, 1500) => 0.9368951917, (1700, 400) => 0.9068938494]
+north_first = first(lookup(dem, Y)) > last(lookup(dem, Y))
+function layered(w)
+	img = shade(315, 35)
+	img = 0.5 .* (1 .- stretch(s, 0, 50)) .+ 0.5 .* img
+	img = w .* overlay(stretch(parent(positive), 68, 93), img) .+ (1 - w) .* img
+	0.25 .* stretch(parent(svf), 0.7, 1) .* img .+ 0.75 .* img
+end
+own, full = layered({{overlayOpacity}} / 100), layered(1.0)
+both = {{overlayOpacity}} != 100  # the layered image of the panel beside that with 100%, unless they are the same
+println("Mean: Julia with {{overlayOpacity}}% ", round(mean(own[31:end - 30, 31:end - 30]), sigdigits = 10), both ? string(", with 100% ", round(mean(full[31:end - 30, 31:end - 30]), sigdigits = 10)) : "", ", RVT ", rvt_mean)
+for ((col, row), value) in rvt_picks
+	j = north_first ? row : size(z, 2) + 1 - row
+	println("Column ", col, ", row ", row, ": Julia ", round(own[col, j], digits = 8), both ? string(" and ", round(full[col, j], digits = 8)) : "", ", RVT ", value)
+end
+'''
+
+[[actionGroups.actions]]
+id = "radii"
+label = "Trend Radii Compared"
+desc = "The local relief model with trend radii of 10, 20 and 40 m: its spread, and the share of the ground more than 0.25 m above or below the trend"
+models = ["lrm"]
+code = '''
+for m in (10, 20, 40)
+	q = round(Int, m / h)
+	v = collect(skipmissing(on_grid(z .- box_mean(z, q), div(40, round(Int, h)))))
+	println(m, " m: standard deviation ", round(std(v), digits = 3), " m; above 0.25 m ", round(100 * count(>(0.25), v) / length(v), digits = 2), "%, below -0.25 m ", round(100 * count(<(-0.25), v) / length(v), digits = 2), "%")
+end
+'''
+
+[[actionGroups.actions]]
+id = "search"
+label = "Search Radii Compared"
+desc = "The sky-view factor and positive openness with search radii of 5, 10 and 20 m: their means and the share of the ground that sees less than 95% of the sky"
+models = ["sky"]
+code = '''
+for m in (5, 10, 20)
+	q = round(Int, m / h)
+	t = horizon_angles(z, q, {{directions}}, h)
+	margin = round(Int, 20 / h)
+	sv = collect(skipmissing(on_grid(dropdims(mean(1 .- sin.(max.(t, 0)); dims = 3); dims = 3), margin)))
+	po = collect(skipmissing(on_grid(90 .- rad2deg.(dropdims(mean(t; dims = 3); dims = 3)), margin)))
+	println(m, " m: mean sky-view ", round(mean(sv), digits = 4), ", below 0.95 ", round(100 * count(<(0.95), sv) / length(sv), digits = 2), "%; mean positive openness ", round(mean(po), digits = 3), " degrees")
+end
+'''
+
+[[actionGroups.actions]]
+id = "measures"
+label = "Measures Compared"
+desc = "The correlations, over the cells with every value, of the sky-view factor, positive and negative openness and the local relief model with a trend radius of 20 m"
+models = ["sky"]
+code = '''
+lr = z .- box_mean(z, round(Int, 20 / h))
+cols = (sky_view = parent(svf), positive = parent(positive), negative = parent(negative), local_relief = lr)
+ok = reduce(.&, [.!ismissing.(c) .& isfinite.(coalesce.(c, NaN)) for c in values(cols)])
+vals = [Float64.(c[ok]) for c in values(cols)]
+names_ = collect(keys(cols))
+for i in 1:length(vals), j in i + 1:length(vals)
+	println(rpad(string(names_[i], " and ", names_[j]), 32), round(cor(vals[i], vals[j]), digits = 4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "lights"
+label = "Light Directions Compared"
+desc = "The hillshade with the sun from the north-west, north-east, south-east and south-west: the mean brightness, and the share of the ground in deep shadow, where features facing away from the light disappear"
+models = ["shade"]
+code = '''
+for az in (315, 45, 135, 225)
+	v = collect(skipmissing(on_grid(shade(az, {{sunElevation}}), 1)))
+	println("Sun from ", az, " degrees: mean ", round(mean(v), digits = 4), ", in deep shadow (below 0.2) ", round(100 * count(<(0.2), v) / length(v), digits = 3), "%")
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "result-summary"
+label = "Summary of the Result"
+desc = "The mean, standard deviation and quantiles of the result"
+code = '''
+v = collect(skipmissing(result))
+println("Cells with a value: ", length(v), " of ", length(result))
+println("Mean ", round(mean(v), sigdigits = 5), ", standard deviation ", round(std(v), sigdigits = 5))
+println("Quantiles 0, 1, 25, 50, 75, 99, 100%: ", join(round.(quantile(v, [0.0, 0.01, 0.25, 0.5, 0.75, 0.99, 1.0]), sigdigits = 5), ", "))
+'''
+
+[[actionGroups.actions]]
+id = "profile"
+label = "Profile Through a Place"
+desc = "The height and the result along a line from west to east through the Zoom Centre, as long as the Zoom Size, every 10 m: a bank rises and a ditch sinks across it"
+code = '''
+x0, y0 = {{zoomCentre}}
+d = {{zoomSize}} / 2
+[(x = round(x, digits = 1), height = round(dem[X(Near(x)), Y(Near(y0))], digits = 2), value = (r = result[X(Near(x)), Y(Near(y0))]; ismissing(r) ? missing : round(r, sigdigits = 4))) for x in x0 - d:10:x0 + d]
+'''
+
+[[actionGroups.actions]]
+id = "monuments"
+label = "Scheduled Monuments in the Area"
+desc = "The scheduled monuments of Historic England's National Heritage List for England within the terrain model, from its open web service: the sites already known, to set the features beside (in England only)"
+code = '''
+using DuckDB
+using Downloads: download
+wkt = convert(String, convert(WellKnownText, crs(dem)))
+(x1, x2), (y1, y2) = Rasters.bounds(dem, X), Rasters.bounds(dem, Y)
+db = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(db, "LOAD spatial")
+DBInterface.execute(db, "SET geometry_always_xy = true")
+box = only(DBInterface.execute(db, "SELECT ST_XMin(b), ST_YMin(b), ST_XMax(b), ST_YMax(b) FROM (SELECT ST_Extent(ST_Transform(ST_MakeEnvelope($x1, $y1, $x2, $y2), '$(wkt)', 'EPSG:4326')) AS b)"))
+query = "https://services-eu1.arcgis.com/ZOdPfBS3aqqDYPUQ/arcgis/rest/services/National_Heritage_List_for_England_NHLE_v02_VIEW/FeatureServer/6/query?where=1%3D1&geometry=$(box[1]),$(box[2]),$(box[3]),$(box[4])&geometryType=esriGeometryEnvelope&inSR=4326&spatialRel=esriSpatialRelIntersects&outFields=ListEntry,Name,area_ha&outSR=4326&f=geojson"
+file = joinpath(mktempdir(), "monuments.geojson")
+download(query, file)
+monuments = [(list_entry = r.ListEntry, name = r.Name, hectares = round(r.area_ha, digits = 2)) for r in DBInterface.execute(db, "SELECT ListEntry, Name, area_ha FROM ST_Read('$(file)') ORDER BY area_ha DESC")]
+println(length(monuments), " scheduled monuments in the area")
+monuments
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-result"
+label = "Save the Result as Cloud-Optimised GeoTIFF"
+desc = "Write the result to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression, to open in a GIS beside other layers"
+code = '''
+out = joinpath(folder, "reliefvis-{{model}}.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, Float32.(coalesce.(result, NaN32)); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = NaN32)  # missing cells written as NaN
+	println("Wrote ", out)
+end
+'''
