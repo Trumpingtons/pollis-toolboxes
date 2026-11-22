@@ -87,7 +87,7 @@ label = "Software"
 key = "Sch2026a"
 
 [[references]]
-key = "Sch2026b"
+key = "Sch2026c"
 
 [[references]]
 key = "Ng2026a"
@@ -102,7 +102,7 @@ key = "RM2026a"
 key = "DDBL2026b"
 
 [[references]]
-key = "Hij2026a"
+key = "HBBCD2020a"
 
 [[references]]
 separator = true
@@ -119,7 +119,7 @@ label = "Data"
 key = "ESAA2022a"
 
 [[references]]
-key = "ZWVL...2022a"
+key = "ZVDDB...2022a"
 
 [[faq]]
 question = "What are local, focal and zonal operations?"
@@ -511,6 +511,7 @@ using Rasters.Lookups: Intervals, Center, Points
 {{?model=local}}import Proj  # for the areas of the cells on the sphere
 {{?model=focal}}using Stencils
 {{?model=zonal|rasterize}}using DuckDB, Tables, Downloads
+{{?model=rasterize}}using Rasters.Lookups: order, ReverseOrdered
 
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 dem_path = joinpath(folder, "{{demFile}}")  # an absolute path is kept as it is
@@ -580,11 +581,16 @@ Rasters.Lookups.sampling(lookup(dem, X)) isa Points && (dem = set(dem, X => Inte
 {{?model=rasterize}}
 {{?model=rasterize}}# Rasterize: the areas onto a grid of blocks of {{factor}} x {{factor}} cells of the elevation
 {{?model=rasterize}}grid = Rasters.aggregate(mean, dem, {{factor}})
-{{?model=rasterize}}t = Tables.columntable(DBInterface.execute(con, "SELECT \"{{valueColumn}}\"::DOUBLE AS value, ST_AsWKB(geom) AS wkb FROM areas WHERE \"{{valueColumn}}\" IS NOT NULL"))
+{{?model=rasterize}}(xa, xb), (ya, yb) = Rasters.bounds(grid, X), Rasters.bounds(grid, Y)  # the edges of the grid
+{{?model=rasterize}}t = Tables.columntable(DBInterface.execute(con, "SELECT \"{{valueColumn}}\"::DOUBLE AS value, ST_AsWKB(geom) AS wkb FROM areas WHERE \"{{valueColumn}}\" IS NOT NULL AND ST_Intersects(geom, ST_MakeEnvelope($xa, $ya, $xb, $yb))"))  # the areas that reach the grid
 {{?model=rasterize}}geoms = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in t.wkb]
-{{?model=rasterize}}{{?rasterizeMethod=value}}result = rasterize(last, geoms; to = grid, fill = t.value, missingval = missing, progress = false)  # each cell takes the value of the area its centre lies in
-{{?model=rasterize}}{{?rasterizeMethod=coverage}}result = coverage(union, geoms; to = grid, progress = false)  # the share of each cell inside the areas, from 0 to 1
-{{?model=rasterize}}println(size(result, X), " x ", size(result, Y), " cells, ", count(!ismissing, result), " with a value; from ", round(minimum(skipmissing(result)), digits = 3), " to ", round(maximum(skipmissing(result)), digits = 3))
+{{?model=rasterize}}# The share of each cell of grid g inside the areas, from 0 to 1. Rasters.jl 0.15 places these shares one row off on a grid whose rows run from north to south, as in most GeoTIFFs, so on such a grid they are computed with the rows turned, then turned back
+{{?model=rasterize}}covered(geoms, g) = coverage(union, geoms; to = g, progress = false, verbose = false)
+{{?model=rasterize}}cell_cover(geoms, g) = rebuild(order(lookup(g, Y)) isa ReverseOrdered ? reverse(covered(geoms, reverse(g; dims = Y)); dims = Y) : covered(geoms, g); missingval = nothing)  # a share of 0 is a value, not a missing cell
+{{?model=rasterize}}{{?rasterizeMethod=value}}result = rasterize(last, geoms; to = grid, fill = t.value, missingval = missing, progress = false, verbose = false)  # each cell takes the value of the area its centre lies in
+{{?model=rasterize}}{{?rasterizeMethod=coverage}}result = cell_cover(geoms, grid)  # the share of each cell inside the areas, from 0 to 1
+{{?model=rasterize}}{{?rasterizeMethod=value}}println(size(result, X), " x ", size(result, Y), " cells, ", count(!ismissing, result), " with a value; from ", round(minimum(skipmissing(result)), digits = 3), " to ", round(maximum(skipmissing(result)), digits = 3))
+{{?model=rasterize}}{{?rasterizeMethod=coverage}}println(size(result, X), " x ", size(result, Y), " cells, ", count(>(0), result), " covered in part or whole, ", count(x -> 0 < x < 1, result), " of them in part")
 '''
 
 [[actionGroups]]
@@ -792,6 +798,7 @@ cm = collect(skipmissing(resample(cover; to = a, method = :mode)))
 for (k, s) in terra_mode_shares
 	println("Class ", k, " by mode: Julia ", round(count(==(k), cm) / length(cm), digits = 8), ", terra ", s)
 end
+println("Both put the land cover onto the blocks with GDAL's warper: terra with GDAL 3.8.5, Rasters.jl with GDAL ", ArchGDAL.GDAL.gdalversioninfo("RELEASE_NAME"))
 '''
 
 [[actionGroups.actions]]
@@ -804,11 +811,12 @@ code = '''
 # terra 1.9.60 on the 143 x 144 complete blocks of aggregate(dem, 10): rasterize(v, a, field = "no_car"), rasterize(v, a, cover = TRUE)
 terra_value_cells, terra_value_mean = 11997, 34.35269732
 terra_coverage_sum, terra_coverage_cells = 11997.62973, 12349
-z = Tables.columntable(DBInterface.execute(con, "SELECT no_car::DOUBLE AS value, ST_AsWKB(geom) AS wkb FROM areas WHERE no_car IS NOT NULL"))
-g = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in z.wkb]
 a = Rasters.aggregate(mean, dem, 10)
-rv = rasterize(last, g; to = a, fill = z.value, missingval = missing, progress = false)
-rc = coverage(union, g; to = a, progress = false)
+(xa, xb), (ya, yb) = Rasters.bounds(a, X), Rasters.bounds(a, Y)
+z = Tables.columntable(DBInterface.execute(con, "SELECT no_car::DOUBLE AS value, ST_AsWKB(geom) AS wkb FROM areas WHERE no_car IS NOT NULL AND ST_Intersects(geom, ST_MakeEnvelope($xa, $ya, $xb, $yb))"))
+g = [ArchGDAL.fromWKB(Vector{UInt8}(w)) for w in z.wkb]
+rv = rasterize(last, g; to = a, fill = z.value, missingval = missing, progress = false, verbose = false)
+rc = cell_cover(g, a)
 println("Grid: Julia ", size(a, X), " x ", size(a, Y), ", terra 143 x 144")
 println("Cells with a value: Julia ", count(!ismissing, rv), ", terra ", terra_value_cells, "; mean value: Julia ", round(mean(skipmissing(rv)), digits = 8), ", terra ", terra_value_mean)
 println("Coverage: sum Julia ", round(sum(skipmissing(rc)), digits = 5), ", terra ", terra_coverage_sum, "; cells covered in part or whole: Julia ", count(x -> !ismissing(x) && x > 0, rc), ", terra ", terra_coverage_cells)
@@ -860,8 +868,8 @@ label = "Value and Coverage"
 desc = "The cells that take an area's value beside the share of each cell the areas cover: cells along the boundary of the areas, covered only in part"
 models = ["rasterize"]
 code = '''
-rv = rasterize(last, geoms; to = grid, fill = t.value, missingval = missing, progress = false)
-rc = coverage(union, geoms; to = grid, progress = false)
+rv = rasterize(last, geoms; to = grid, fill = t.value, missingval = missing, progress = false, verbose = false)
+rc = cell_cover(geoms, grid)
 part = count(x -> !ismissing(x) && 0 < x < 1, rc)
 println("Cells with a value at their centre: ", count(!ismissing, rv), "; cells covered in part or whole: ", count(x -> !ismissing(x) && x > 0, rc), ", of them in part: ", part)
 '''
