@@ -30,7 +30,7 @@ Inverse distance weighting needs no variogram, gives an estimate at once, and su
 
 ## When the Kriging Panel Is Not the Tool
 
-Kriging estimates a variable measured at points of a continuous surface. A value attached to areas, such as a rate per municipality or a count per grid cell, is lattice data, whose spatial autocorrelation the Spatial Autocorrelation panel of the Smart Regions Toolbox tests ([Cressie (1993)](#ref-Cre1993a)). Stations in longitude and latitude must first be moved into a coordinate system in metres, the Metric Coordinate System input, as distances in degrees are not the same east to west as north to south. A variable far from normal, such as a strongly skewed concentration, is usually transformed before Gaussian simulation, and the realisations transformed back ([Goovaerts (1997)](#ref-Goo1997a)).
+Kriging estimates a variable measured at points of a continuous surface. A value attached to areas, such as a rate per municipality or a count per grid cell, is lattice data, whose spatial autocorrelation the Spatial Autocorrelation panel of the Spatial Econometrics Toolbox tests ([Cressie (1993)](#ref-Cre1993a)). Stations in longitude and latitude must first be moved into a coordinate system in metres, the Metric Coordinate System input, as distances in degrees are not the same east to west as north to south. A variable far from normal, such as a strongly skewed concentration, is usually transformed before Gaussian simulation, and the realisations transformed back ([Goovaerts (1997)](#ref-Goo1997a)).
 
 ## References
 

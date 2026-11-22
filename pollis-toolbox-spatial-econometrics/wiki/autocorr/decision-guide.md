@@ -34,7 +34,7 @@ With R permutations, no pseudo p-value falls below `1 / (R + 1)`, so an adjusted
 
 ## When the Spatial Autocorrelation Panel Is Not the Tool
 
-Moran's I and the local statistics of the Spatial Autocorrelation panel take one value per area. Measurements at scattered points of a continuous surface, such as air quality at monitoring stations or soil samples, are geostatistical data, which the variogram describes and kriging interpolates: the Kriging panel of the Smart Regions Toolbox handles them ([Cressie (1993)](#ref-Cre1993a)). A variable whose spatial autocorrelation comes from a covariate, such as altitude or population density, is better studied through the residuals of a model that includes the covariate, since the spatial autocorrelation of the variable itself then mixes the two.
+Moran's I and the local statistics of the Spatial Autocorrelation panel take one value per area. Measurements at scattered points of a continuous surface, such as air quality at monitoring stations or soil samples, are geostatistical data, which the variogram describes and kriging interpolates: the Kriging panel of the Spatial Econometrics Toolbox handles them ([Cressie (1993)](#ref-Cre1993a)). A variable whose spatial autocorrelation comes from a covariate, such as altitude or population density, is better studied through the residuals of a model that includes the covariate, since the spatial autocorrelation of the variable itself then mixes the two.
 
 ## References
 

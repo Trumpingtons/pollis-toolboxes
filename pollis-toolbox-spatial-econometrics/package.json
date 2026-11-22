@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-spatial-econometrics",
   "displayName": "Spatial Econometrics Toolbox",
-  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, spatial discrete choice, spatial interaction models of flows, spatial panel data, spatio-temporal forecasting, spatial causal inference, shift-share designs, regionalisation with spatial regimes, and standard errors robust to spatial correlation.",
-  "version": "0.1.12",
+  "description": "Pollis Spatial Econometrics Toolbox: regression models for data on regions, municipalities and other areas, where each area's outcome depends on its neighbours. Spatial lag and error models, geographically weighted regression, spatial discrete choice, spatial interaction models of flows, spatial panel data, spatio-temporal forecasting, spatial causal inference, shift-share designs, regionalisation with spatial regimes, spatial autocorrelation with Moran's I and Local Moran (LISA), kriging of a value measured at stations, and standard errors robust to spatial correlation.",
+  "version": "0.1.13",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -120,10 +120,30 @@
             "decisionFirstColumn": "Model"
           },
           {
+            "id": "autocorr",
+            "command": "pollis.spatialEconometrics.autocorr",
+            "title": "Spatial Autocorrelation",
+            "group": "4_dependence",
+            "order": 1,
+            "data": "panels/autocorr.toml",
+            "defaultModel": "global",
+            "decisionFirstColumn": "Statistic"
+          },
+          {
+            "id": "kriging",
+            "command": "pollis.spatialEconometrics.kriging",
+            "title": "Kriging",
+            "group": "4_dependence",
+            "order": 2,
+            "data": "panels/kriging.toml",
+            "defaultModel": "variogram",
+            "decisionFirstColumn": "Method"
+          },
+          {
             "id": "sprobust",
             "command": "pollis.spatialEconometrics.sprobust",
             "title": "Spatial Correlation Robust Inference",
-            "group": "4_inference",
+            "group": "5_inference",
             "order": 1,
             "data": "panels/sprobust.toml",
             "defaultModel": "conley",

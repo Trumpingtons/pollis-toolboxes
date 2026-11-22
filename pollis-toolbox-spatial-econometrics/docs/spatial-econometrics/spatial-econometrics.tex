@@ -2,7 +2,7 @@
 % Compile with: julia -e 'using PollisTeX; display(compile("spatial-econometrics.tex"))'
 \input{vignette_style}
 \renewcommand{\vignetteauthor}{Pollis}
-\renewcommand{\vignettedate}{19 November 2026}
+\renewcommand{\vignettedate}{22 November 2026}
 \renewcommand{\vignettelicense}{AGPL-3.0}
 
 \begin{document}
@@ -11,7 +11,7 @@
   {Spatial Econometrics Toolbox}
   {What its panels are for, and when to use each.}
 
-Installing the toolbox adds the submenu \menupath{Extend \gt Spatial Econometrics}, with these panels. Each has an example you can edit and run, and actions on its results. All of them run on \package{SpatialEconometrics}{https://github.com/randsley/SpatialEconometrics.jl} and read area files, such as GeoPackage, GeoJSON or Shapefile, through the spatial extension of \package{DuckDB}{https://github.com/duckdb/duckdb}.
+Installing the toolbox adds the submenu \menupath{Extend \gt Spatial Econometrics}, with these panels. Each has an example you can edit and run, and actions on its results. The regression panels run on \package{SpatialEconometrics}{https://github.com/randsley/SpatialEconometrics.jl}, Spatial Autocorrelation on \package{SpatialDependence}{https://github.com/javierbarbero/SpatialDependence.jl} and Kriging on \package{GeoStats}{https://github.com/JuliaEarth/GeoStats.jl}. All of them read area or station files, such as GeoPackage, GeoJSON or Shapefile, through the spatial extension of \package{DuckDB}{https://github.com/duckdb/duckdb}.
 
 \medskip
 {\small
@@ -27,6 +27,8 @@ Spatio-Temporal Forecasting & You want forecasts of areas observed over many per
 Spatial Causal Inference & You want the effect of a policy on the areas under it and on the areas around them. \\
 Shift-Share Designs & Areas differ in how much a common set of shocks reaches them, through their shares in the shocks. \\
 Regionalisation and Spatial Regimes & You want contiguous regions alike inside, or coefficients that differ from one region to another. \\
+Spatial Autocorrelation & You want to know whether a value is alike in neighbouring areas, and where its clusters are. \\
+Kriging & A value measured at stations, such as air pollution, is wanted everywhere in a region. \\
 Spatial Correlation Robust Inference & You want standard errors of a regression that allow for correlation between nearby areas. \\\bottomrule
 \end{tabularx}}
 
@@ -87,6 +89,12 @@ Shift-Share IV estimates the effect of a change, such as the growth of imports i
 \nmsection{Regionalisation and Spatial Regimes}
 SKATER Regions groups the areas into a chosen number of contiguous regions, alike inside in the variables chosen, by cutting a minimum spanning tree of neighbouring areas (\nmcite{assuncao2006}{Assun\c{c}\~{a}o, Neves, C\^{a}mara and Freitas 2006}). Regimes, OLS gives each regime its own intercept and slopes, with the test of \nmcite{chow1960}{Chow (1960)} that the split is needed. Regimes, Spatial Lag adds a spatial lag of the outcome with one rho shared by the regimes, since ignoring spatial dependence invalidates the usual tests of equal coefficients (\nmcite{anselin1990}{Anselin 1990}). The regimes come from a column, such as a city and its suburbs, or from SKATER; regions found from the data make the Chow test too optimistic, and the Bootstrap Chow Test repeats the search on data with no regimes. The actions test which coefficients differ, choose the number of regions, and compare the regimes with a single model and with geographically weighted regression. The Replicate step sets the regime spatial lag model beside PySAL's spreg on the Baltimore house prices of \nmcite{dubin1992}{Dubin (1992)}.
 
+\nmsection{Spatial Autocorrelation}
+Global Moran's I tests whether a value of a set of areas is alike in neighbouring areas over the whole map, clustered, dispersed or random (\nmcite{moran1950}{Moran 1950}), beside Geary's c, built on the squared differences between neighbours (\nmcite{geary1954}{Geary 1954}). Local Moran (LISA) splits Moran's I into a statistic for each area, which finds the clusters of high or low values and the areas that stand out from their neighbours (\nmcite{anselin1995}{Anselin 1995}). The neighbours come from queen or rook contiguity or the k nearest centroids, found with SQL, and the p-values from random permutations of the values. The actions map the values and the local p-values, draw the Moran scatterplot, check the neighbours of each area, compare the weights, Moran's I with Geary's c, adjustments of the local p-values for many tests (\nmcite{benjamini1995}{Benjamini and Hochberg 1995}) and Local Moran with Getis-Ord Gi*, and save the results as GeoParquet.
+
+\nmsection{Kriging}
+Kriging estimates a variable that exists everywhere in a region, such as air pollution, from its values at a set of stations (\nmcite{krige1951}{Krige 1951}), weighting them by a variogram, a model of how far apart two stations must be before their values are unrelated (\nmcite{matheron1963}{Matheron 1963}; \nmcite{cressie1993}{Cressie 1993}). Variogram fits that model, which the other tabs use. Ordinary Kriging maps the value with a constant mean, and Universal Kriging one that rises or falls steadily across the area, each with the standard deviation of every estimate. Inverse Distance weights the stations by a power of their distance, with no model (\nmcite{shepard1968}{Shepard 1968}): a quick map and a baseline. Gaussian Simulation draws maps that honour the stations, for the probability of exceeding a threshold and the variability that kriging smooths out. The actions map the stations, the variogram and the kriging standard deviation, check directional variograms and leave-one-out cross-validation, give the estimate at a location, compare variogram models and kriging with inverse distance, show the nugget, sill and range and the kriging weights of the nearest stations, and save the estimates as GeoParquet.
+
 \nmsection{Spatial Correlation Robust Inference}
 Least squares, with the coefficients' standard errors corrected for correlation between the areas' errors rather than the dependence modelled. Conley Spatial HAC allows for correlation between areas closer than a cutoff, weighted by a kernel of the distance (\nmcite{conley1999}{Conley 1999}), as \nmcite{newey1987}{Newey and West (1987)} do over time. Cluster-Robust allows for any correlation inside groups of areas, given many groups (\nmcite{cameron2015}{Cameron and Miller 2015}). Driscoll--Kraay, for panels with many periods, allows for any correlation between areas in the same period (\nmcite{driscoll1998}{Driscoll and Kraay 1998}). The actions show the residuals' correlation by distance, the standard errors across cutoffs, kernels, cluster levels and lags, and all the estimators side by side. The Replicate steps set the standard errors beside the test data of \nmcite{petersen2009}{Petersen (2009)}, R's plm and fixest.
 
@@ -98,8 +106,10 @@ Least squares, with the coefficients' standard errors corrected for correlation 
 \nmref{albert1993}{Albert, J. H. and Chib, S. (1993). Bayesian analysis of binary and polychotomous response data. \emph{Journal of the American Statistical Association} 88(422), 669--679. \nmdoi{10.1080/01621459.1993.10476321}}
 \nmref{anselin1988}{Anselin, L. (1988). \emph{Spatial Econometrics: Methods and Models}. Springer Netherlands. \nmdoi{10.1007/978-94-015-7799-1}}
 \nmref{anselin1990}{Anselin, L. (1990). Spatial dependence and spatial structural instability in applied regression analysis. \emph{Journal of Regional Science} 30(2), 185--207. \nmdoi{10.1111/j.1467-9787.1990.tb00092.x}}
+\nmref{anselin1995}{Anselin, L. (1995). Local indicators of spatial association---LISA. \emph{Geographical Analysis} 27(2), 93--115. \nmdoi{10.1111/j.1538-4632.1995.tb00338.x}}
 \nmref{assuncao2006}{Assun\c{c}\~{a}o, R. M., Neves, M. C., C\^{a}mara, G. and Freitas, C. da C. (2006). Efficient regionalization techniques for socio-economic geographical units using minimum spanning trees. \emph{International Journal of Geographical Information Science} 20(7), 797--811. \nmdoi{10.1080/13658810600665111}}
 \nmref{autor2013}{Autor, D. H., Dorn, D. and Hanson, G. H. (2013). The China syndrome: local labor market effects of import competition in the United States. \emph{American Economic Review} 103(6), 2121--2168. \nmdoi{10.1257/aer.103.6.2121}}
+\nmref{benjamini1995}{Benjamini, Y. and Hochberg, Y. (1995). Controlling the false discovery rate: a practical and powerful approach to multiple testing. \emph{Journal of the Royal Statistical Society Series B: Statistical Methodology} 57(1), 289--300. \nmdoi{10.1111/j.2517-6161.1995.tb02031.x}}
 \nmref{bivand2015}{Bivand, R. and Piras, G. (2015). Comparing implementations of estimation methods for spatial econometrics. \emph{Journal of Statistical Software} 63(18). \nmdoi{10.18637/jss.v063.i18}}
 \nmref{borusyak2022}{Borusyak, K., Hull, P. and Jaravel, X. (2022). Quasi-experimental shift-share research designs. \emph{The Review of Economic Studies} 89(1), 181--213. \nmdoi{10.1093/restud/rdab030}}
 \nmref{brunsdon1996}{Brunsdon, C., Fotheringham, A. S. and Charlton, M. E. (1996). Geographically weighted regression: a method for exploring spatial nonstationarity. \emph{Geographical Analysis} 28(4), 281--298. \nmdoi{10.1111/j.1538-4632.1996.tb00936.x}}
@@ -107,6 +117,7 @@ Least squares, with the coefficients' standard errors corrected for correlation 
 \nmref{cameron2015}{Cameron, A. C. and Miller, D. L. (2015). A practitioner's guide to cluster-robust inference. \emph{Journal of Human Resources} 50(2), 317--372. \nmdoi{10.3368/jhr.50.2.317}}
 \nmref{chow1960}{Chow, G. C. (1960). Tests of equality between sets of coefficients in two linear regressions. \emph{Econometrica} 28(3), 591--605. \nmdoi{10.2307/1910133}}
 \nmref{conley1999}{Conley, T. G. (1999). GMM estimation with cross sectional dependence. \emph{Journal of Econometrics} 92(1), 1--45. \nmdoi{10.1016/S0304-4076(98)00084-0}}
+\nmref{cressie1993}{Cressie, N. A. C. (1993). \emph{Statistics for Spatial Data}, revised edition. John Wiley \& Sons. \nmdoi{10.1002/9781119115151}}
 \nmref{dasilva2016}{da Silva, A. R. and Fotheringham, A. S. (2016). The multiple testing issue in geographically weighted regression. \emph{Geographical Analysis} 48(3), 233--247. \nmdoi{10.1111/gean.12084}}
 \nmref{delgado2015}{Delgado, M. S. and Florax, R. J. G. M. (2015). Difference-in-differences techniques for spatial data: local autocorrelation and spatial interaction. \emph{Economics Letters} 137, 123--126. \nmdoi{10.1016/j.econlet.2015.10.035}}
 \nmref{digiacinto2010}{Di Giacinto, V. (2010). On vector autoregressive modeling in space and time. \emph{Journal of Geographical Systems} 12(2), 125--154. \nmdoi{10.1007/s10109-010-0116-6}}
@@ -115,13 +126,17 @@ Least squares, with the coefficients' standard errors corrected for correlation 
 \nmref{elhorst2014}{Elhorst, J. P. (2014). \emph{Spatial Econometrics: From Cross-Sectional Data to Spatial Panels}. Springer Berlin Heidelberg. \nmdoi{10.1007/978-3-642-40340-8}}
 \nmref{flowerdew1982}{Flowerdew, R. and Aitkin, M. (1982). A method of fitting the gravity model based on the Poisson distribution. \emph{Journal of Regional Science} 22(2), 191--202. \nmdoi{10.1111/j.1467-9787.1982.tb00744.x}}
 \nmref{fotheringham2017}{Fotheringham, A. S., Yang, W. and Kang, W. (2017). Multiscale geographically weighted regression (MGWR). \emph{Annals of the American Association of Geographers} 107(6), 1247--1265. \nmdoi{10.1080/24694452.2017.1352480}}
+\nmref{geary1954}{Geary, R. C. (1954). The contiguity ratio and statistical mapping. \emph{The Incorporated Statistician} 5(3), 115. \nmdoi{10.2307/2986645}}
 \nmref{goldsmith2020}{Goldsmith-Pinkham, P., Sorkin, I. and Swift, H. (2020). Bartik instruments: what, when, why, and how. \emph{American Economic Review} 110(8), 2586--2624. \nmdoi{10.1257/aer.20181047}}
 \nmref{hurvich1998}{Hurvich, C. M., Simonoff, J. S. and Tsai, C.-L. (1998). Smoothing parameter selection in nonparametric regression using an improved Akaike information criterion. \emph{Journal of the Royal Statistical Society Series B} 60(2), 271--293. \nmdoi{10.1111/1467-9868.00125}}
 \nmref{klier2008}{Klier, T. and McMillen, D. P. (2008). Clustering of auto supplier plants in the United States: generalized method of moments spatial logit for large samples. \emph{Journal of Business \& Economic Statistics} 26(4), 460--471. \nmdoi{10.1198/073500107000000188}}
+\nmref{krige1951}{Krige, D. G. (1951). A statistical approach to some basic mine valuation problems on the Witwatersrand. \emph{Journal of the Chemical, Metallurgical and Mining Society of South Africa} 52(6), 119--139.}
 \nmref{lee2010}{Lee, L.-f. and Yu, J. (2010). Estimation of spatial autoregressive panel data models with fixed effects. \emph{Journal of Econometrics} 154(2), 165--185. \nmdoi{10.1016/j.jeconom.2009.08.001}}
 \nmref{lesage2009}{LeSage, J. and Pace, R. K. (2009). \emph{Introduction to Spatial Econometrics}. Chapman and Hall/CRC. \nmdoi{10.1201/9781420064254}}
 \nmref{lesage2011}{LeSage, J. P., Pace, R. K., Lam, N., Campanella, R. and Liu, X. (2011). New Orleans business recovery in the aftermath of Hurricane Katrina. \emph{Journal of the Royal Statistical Society Series A} 174(4), 1007--1027. \nmdoi{10.1111/j.1467-985X.2011.00712.x}}
+\nmref{matheron1963}{Matheron, G. (1963). Principles of geostatistics. \emph{Economic Geology} 58(8), 1246--1266. \nmdoi{10.2113/gsecongeo.58.8.1246}}
 \nmref{millo2012}{Millo, G. and Piras, G. (2012). splm: spatial panel data models in R. \emph{Journal of Statistical Software} 47(1), 1--38. \nmdoi{10.18637/jss.v047.i01}}
+\nmref{moran1950}{Moran, P. A. P. (1950). Notes on continuous stochastic phenomena. \emph{Biometrika} 37(1--2), 17--23. \nmdoi{10.1093/biomet/37.1-2.17}}
 \nmref{newey1987}{Newey, W. K. and West, K. D. (1987). A simple, positive semi-definite, heteroskedasticity and autocorrelation consistent covariance matrix. \emph{Econometrica} 55(3), 703--708. \nmdoi{10.2307/1913610}}
 \nmref{oshan2016}{Oshan, T. M. (2016). A primer for working with the Spatial Interaction modeling (SpInt) module in the Python Spatial Analysis Library (PySAL). \emph{REGION} 3(2), R11--R23. \nmdoi{10.18335/region.v3i2.175}}
 \nmref{oshan2019}{Oshan, T. M., Li, Z., Kang, W., Wolf, L. J. and Fotheringham, A. S. (2019). mgwr: a Python implementation of multiscale geographically weighted regression for investigating process spatial heterogeneity and scale. \emph{ISPRS International Journal of Geo-Information} 8(6), 269. \nmdoi{10.3390/ijgi8060269}}
@@ -129,6 +144,7 @@ Least squares, with the coefficients' standard errors corrected for correlation 
 \nmref{petersen2009}{Petersen, M. A. (2009). Estimating standard errors in finance panel data sets: comparing approaches. \emph{The Review of Financial Studies} 22(1), 435--480. \nmdoi{10.1093/rfs/hhn053}}
 \nmref{pfeifer1980}{Pfeifer, P. E. and Deutsch, S. J. (1980). A three-stage iterative procedure for space-time modeling. \emph{Technometrics} 22(1), 35--47. \nmdoi{10.2307/1268381}}
 \nmref{santossilva2006}{Santos Silva, J. M. C. and Tenreyro, S. (2006). The log of gravity. \emph{The Review of Economics and Statistics} 88(4), 641--658. \nmdoi{10.1162/rest.88.4.641}}
+\nmref{shepard1968}{Shepard, D. (1968). A two-dimensional interpolation function for irregularly-spaced data. In \emph{Proceedings of the 1968 23rd ACM National Conference}, 517--524. \nmdoi{10.1145/800186.810616}}
 \nmref{wilson1971}{Wilson, A. G. (1971). A family of spatial interaction models, and associated developments. \emph{Environment and Planning A} 3(1), 1--32. \nmdoi{10.1068/a030001}}
 \nmref{yu2008}{Yu, J., de Jong, R. and Lee, L.-f. (2008). Quasi-maximum likelihood estimators for spatial dynamic panel data with fixed effects when both n and T are large. \emph{Journal of Econometrics} 146(1), 118--134. \nmdoi{10.1016/j.jeconom.2008.08.002}}
 }
