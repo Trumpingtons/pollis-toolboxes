@@ -1,0 +1,40 @@
+{
+  "name": "pollis-toolbox-historical-geography-and-archaeology",
+  "displayName": "Historical Geography and Archaeology Toolbox",
+  "description": "Pollis Historical Geography and Archaeology Toolbox: the past on the map, for historians, archaeologists, heritage officers, museums, and the municipalities and regions with history attached. Maps the borders of states with a year slider, from Cliopatria, the world maps of historical-basemaps and CShapes 2.0, and tells which states held a place over the centuries.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Other"],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "historical-geography-and-archaeology",
+        "title": "Historical Geography and Archaeology",
+        "order": 1,
+        "duckdbExtensions": ["spatial"],
+        "panels": [
+          {
+            "id": "histborders", "command": "pollis.historicalGeography.histborders", "title": "Historical Borders", "group": "1_history", "order": 1, "data": "panels/histborders.toml", "defaultModel": "cliopatria", "decisionFirstColumn": "Source"
+          }
+        ],
+        "planned": [
+          { "title": "Old Maps", "group": "1_history", "order": 2 },
+          { "title": "Historical Populations", "group": "1_history", "order": 3 },
+          { "title": "Historical Episodes", "group": "2_episodes", "order": 1 },
+          { "title": "Sites and Monuments", "group": "3_archaeology", "order": 1 },
+          { "title": "Landscape Analysis", "group": "3_archaeology", "order": 2 }
+        ]
+      }
+    ]
+  }
+}

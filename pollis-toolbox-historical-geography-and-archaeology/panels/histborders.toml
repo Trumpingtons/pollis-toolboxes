@@ -1,0 +1,440 @@
+# Historical Borders: the borders of states over the centuries, from Cliopatria, historical-basemaps and CShapes 2.0,
+# read with DuckDB's spatial extension and drawn on a map with a year slider
+
+[meta]
+title = "Historical Borders"
+viewType = "pollis.histborders"
+defaultModel = "cliopatria"
+decisionFirstColumn = "Source"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[models]]
+id = "cliopatria"
+label = "Cliopatria"
+
+[[models]]
+id = "basemaps"
+label = "Historical Basemaps"
+
+[[models]]
+id = "cshapes"
+label = "CShapes 2.0"
+
+[[wikis]]
+name = "Factsheet"
+file = "histborders/factsheet.md"
+bundled = true
+description = "One-page reference: the sources, the inputs, the table of borders, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "histborders/overview.md"
+bundled = true
+description = "What a map of the borders of the past shows, and how to read the year slider"
+
+[[wikis]]
+name = "Diagnostics"
+file = "histborders/diagnostics.md"
+bundled = true
+description = "Years between recorded changes, territory drawn twice, approximate borders, names"
+
+[[wikis]]
+name = "Decision Guide"
+file = "histborders/decision-guide.md"
+bundled = true
+description = "Which source for which period and question, Realms or Their Parts, which Box"
+
+[[wikis]]
+separator = true
+label = "Sources"
+
+[[wikis]]
+name = "Cliopatria"
+file = "histborders/cliopatria.md"
+bundled = true
+description = "The polities of the world from 3400 BCE to 2024, by ranges of years"
+
+[[wikis]]
+name = "Historical Basemaps"
+file = "histborders/historical-basemaps.md"
+bundled = true
+description = "World maps at chosen years, with the precision of their borders"
+
+[[wikis]]
+name = "CShapes 2.0"
+file = "histborders/cshapes.md"
+bundled = true
+description = "States and dependencies from 1886 to 2019, with dates of change"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "Ero2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "BMTCB...2025a"
+
+[[references]]
+key = "SGRWC...2022a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "Our2026b"
+
+[[faq]]
+question = "Why does the map stay the same for several years when I move the slider?"
+answer = "The slider moves year by year, and each source records borders at its own years. Cliopatria gives each shape a range of years, sampled at varying steps; Historical Basemaps has maps at chosen years, each shown until the next; CShapes 2.0 dates each change from 1886.\n\nThe map names the last year in which a border changes in the source, and Years of Change lists those years by century."
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Should I choose Realms or Their Parts?"
+answer = "Choose Realms for a map of kingdoms, empires and other states, each drawn once as a whole: a kingdom stands for the duchies and counties Cliopatria places inside it.\n\nChoose Their Parts for those duchies, counties and other members, drawn separately. The two levels are never drawn together, as they cover the same land."
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I find which states ruled my town over the centuries?"
+answer = "Give the town's longitude and latitude as Place, set From and Until, run the Example Code and then History of a Place. The action lists, in order, each state whose territory holds the point and the years for which the source has it.\n\nRead the years as those of the source: near a border, or in years between two recorded shapes, check a history of the region."
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Which source should I use for the twentieth century?"
+answer = "CShapes 2.0, which maps independent states and dependencies from 1886 to 2019 with the dates on which their borders change. The Historical Borders panel shows a shape for a year when it is in force on 31 December of that year.\n\nFor the years after 2019, choose Cliopatria, whose records run to 2024."
+wiki = "CShapes 2.0"
+
+[[faq]]
+question = "What does a border precision of 1 mean in Historical Basemaps?"
+answer = "BORDERPRECISION 1 means an approximate border, 2 a moderately precise one, and 3 a border determined by international law."
+wiki = "Historical Basemaps"
+hidden = true
+
+[[faq]]
+question = "From which year does CShapes 2.0 have borders?"
+answer = "CShapes 2.0 has borders from 1886 to 2019. An earlier From is moved to 1886."
+wiki = "CShapes 2.0"
+hidden = true
+
+[[faq]]
+question = "Are Cliopatria's relations between polities, such as personal unions, drawn as states?"
+answer = "No. The Historical Borders panel leaves out the rows of type RELATION, such as personal unions, vassalages, alliances and allegiances, and keeps the rows of type POLITY."
+wiki = "Cliopatria"
+hidden = true
+
+[[bullets]]
+text = "A Year Slider"
+detail = "The states of an area on a map, year by year: move the slider or press Play, and point at a state for its name and years"
+
+[[bullets]]
+text = "Recorded Years"
+detail = "A map changes only in the years in which its source records a change, which the map names as the slider moves"
+
+[[bullets]]
+text = "Cliopatria"
+detail = "The polities of the world from 3400 BCE to 2024 by ranges of years, as realms or as their parts"
+
+[[bullets]]
+text = "Historical Basemaps"
+detail = "World maps at chosen years, each shown until the next, as a second opinion on a period"
+
+[[bullets]]
+text = "CShapes 2.0"
+detail = "States and dependencies from 1886 to 2019, with the dates of each change of border"
+
+[[decisionRows]]
+task = "Cliopatria"
+context = "Any century"
+purpose = "Follow realms over the centuries, and find who held a place"
+
+[[decisionRows]]
+task = "Historical Basemaps"
+context = "Snapshot years"
+purpose = "See the map of a well-known year, such as 1492 or 1815, and check another source"
+
+[[decisionRows]]
+task = "CShapes 2.0"
+context = "From 1886"
+purpose = "Follow states and dependencies through dated changes of border"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the files of the sources are kept once downloaded, and where Export saves: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "box"
+label = "Box"
+tooltip = "The area mapped, as west, south, east, north in degrees. The default is Europe."
+default = "-12, 34, 45, 72"
+
+[[inputs]]
+id = "units"
+label = "Units"
+kind = "select"
+default = "realms"
+tooltip = "Realms: each kingdom, empire or other state once, as a whole. Their Parts: the members Cliopatria places inside them."
+models = ["cliopatria"]
+
+[[inputs.options]]
+value = "realms"
+label = "Realms"
+
+[[inputs.options]]
+value = "parts"
+label = "Their Parts"
+
+[[inputs]]
+id = "since"
+label = "From"
+tooltip = "The first year of the slider. Cliopatria starts in 3400 BCE (written -3400), Historical Basemaps in the year 100 here, CShapes 2.0 in 1886."
+default = "1300"
+newRow = true
+
+[[inputs]]
+id = "upto"
+label = "Until"
+tooltip = "The last year of the slider. Cliopatria ends in 2024, Historical Basemaps in 2010, CShapes 2.0 in 2019."
+default = "2024"
+
+[[inputs]]
+id = "year"
+label = "Year"
+tooltip = "The year the slider opens on, and the year of the Next Steps. A year outside the source is moved to its first or last."
+default = "1500"
+
+[[inputs]]
+id = "other"
+label = "Other Year"
+tooltip = "The year that Two Years sets beside Year."
+default = "1914"
+
+[[inputs]]
+id = "place"
+label = "Place"
+tooltip = "A point as longitude, latitude, for History of a Place. The default is Bologna."
+default = "11.3426, 44.4938"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, Downloads
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the sources' files are kept
+west, south, east, north = parse.(Float64, split("{{box}}", ","))
+since, upto = {{since}}, {{upto}}
+
+function kept(url, name)  # a file downloaded once, then read from the folder
+	path = joinpath(folder, name)
+	isfile(path) || mv(Downloads.download(url), path)
+	return path
+end
+
+{{?model=cliopatria}}source = "Cliopatria 0.2.1"
+{{?model=cliopatria}}archive = kept("https://github.com/Seshat-Global-History-Databank/cliopatria/raw/v0.2.1/cliopatria.geojson.zip", "cliopatria-0.2.1.geojson.zip")  # 46 MB
+{{?model=cliopatria}}{{?units=realms}}level = "coalesce(MemberOf, '') = ''"  # the polities inside no other: a kingdom once, as a whole
+{{?model=cliopatria}}{{?units=parts}}level = "Name NOT LIKE '(%'"  # without the wholes, whose names are in parentheses
+{{?model=cliopatria}}records = """SELECT CASE WHEN Name LIKE '(%' THEN substr(Name, 2, length(Name) - 2) ELSE Name END AS name, FromYear AS starts, ToYear AS ends, geom
+{{?model=cliopatria}}	FROM ST_Read('/vsizip/$(quoted(archive))/cliopatria_polities_only_v021.geojson') WHERE Type = 'POLITY' AND $(level)"""
+{{?model=basemaps}}source = "Historical Basemaps"
+{{?model=basemaps}}commit = "4b5039e50d8d2464b065bd76ad6086cd4597108d"  # the version of 2 November 2026
+{{?model=basemaps}}maps = [100:100:1200; 1279; 1300; 1400; 1492; 1500; 1530; 1600; 1650; 1700; 1715; 1783; 1800; 1815; 1878; 1880; 1900; 1914; 1920; 1930; 1938; 1945; 1960; 1994; 2000; 2010]
+{{?model=basemaps}}spans = [(y, i < length(maps) ? maps[i + 1] - 1 : y) for (i, y) in enumerate(maps)]  # each map is shown until the next
+{{?model=basemaps}}wanted = [span for span in spans if span[1] <= upto && span[2] >= since]
+{{?model=basemaps}}isempty(wanted) && error("Historical Basemaps has maps from 100 to 2010 here")
+{{?model=basemaps}}paths = [kept("https://raw.githubusercontent.com/aourednik/historical-basemaps/$(commit)/geojson/world_$(a).geojson", "historical-basemaps-$(first(commit, 7))-$(a).geojson") for (a, _) in wanted]
+{{?model=basemaps}}records = join(["SELECT NAME AS name, $(a) AS starts, $(b) AS ends, geom FROM ST_Read('$(quoted(path))') WHERE NAME IS NOT NULL" for ((a, b), path) in zip(wanted, paths)], " UNION ALL ")
+{{?model=cshapes}}source = "CShapes 2.0"
+{{?model=cshapes}}path = kept("https://icr.ethz.ch/data/cshapes/CShapes-2.0.geojson", "CShapes-2.0.geojson")  # 25 MB
+{{?model=cshapes}}records = """SELECT cntry_name AS name, gwsyear AS starts, CASE WHEN gwemonth = 12 AND gweday = 31 THEN gweyear ELSE gweyear - 1 END AS ends, geom
+{{?model=cshapes}}	FROM ST_Read('$(quoted(path))')"""  # in a year, the borders in force on 31 December
+
+area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
+DBInterface.execute(con, """CREATE OR REPLACE TABLE borders AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM (
+	SELECT name, greatest(starts, $(since)) AS starts, least(ends, $(upto)) AS ends, ST_CollectionExtract(ST_Intersection(ST_MakeValid(geom), $(area)), 3) AS geom
+	FROM ($(records)) WHERE ends >= starts AND starts <= $(upto) AND ends >= $(since) AND ST_Intersects(ST_MakeValid(geom), $(area))
+) WHERE NOT ST_IsEmpty(geom)""")  # the shapes in the box, and their km² there
+span = rows("SELECT min(starts) AS low, max(ends) AS high FROM borders")
+span.low[1] === missing && error("$(source) has no borders in this Box between $(since) and $(upto)")
+since, upto = Int(span.low[1]), Int(span.high[1])
+changes = Int.(rows("SELECT y FROM (SELECT starts AS y FROM borders UNION SELECT ends + 1 FROM borders WHERE ends < $(upto)) ORDER BY y").y)
+year = clamp({{year}}, since, upto)
+
+# the map: every shape with its years, simplified for drawing, of which the slider shows those of one year
+shapes = tempname() * ".geojson"
+DBInterface.execute(con, """COPY (SELECT * FROM (SELECT name, starts, ends,
+	ST_CollectionExtract(ST_MakeValid(ST_ReducePrecision(ST_SimplifyPreserveTopology(geom, 0.02), 0.01)), 3) AS geom FROM borders) WHERE NOT ST_IsEmpty(geom))
+	TO '$(quoted(shapes))' (FORMAT GDAL, DRIVER 'GeoJSON')""")
+states = Pollis.layer(shapes; name = "States", column = "name", opacity = 0.75, years = ("starts", "ends"))
+println(source, ": ", length(changes), " years of change from ", since, " to ", upto, "; the slider opens on ", year)
+display(Pollis.webmap(states; title = "Historical Borders: $(source)", year, labels = false))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "map-of-year"
+label = "Map of the Year"
+desc = "The states of Year on an OpenStreetMap base map in Pollis's map view, with the Place marked; click a state for its name, years and area"
+code = '''
+lon, lat = parse.(Float64, split("{{place}}", ","))
+dir = mktempdir()
+DBInterface.execute(con, "COPY (SELECT name, starts, ends, round(km2) AS km2, geom FROM borders WHERE starts <= $(year) AND ends >= $(year)) TO '$(quoted(joinpath(dir, "year.geojson")))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+marker = """{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Place"},"geometry":{"type":"Point","coordinates":[$(lon),$(lat)] } }]}"""
+display(Pollis.webmap(Pollis.layer(joinpath(dir, "year.geojson"); name = "$(source), $(year)", column = "name"),
+	Pollis.layer(marker; name = "Place", color = "#d62728"); title = "$(source), $(year)"))
+'''
+
+[[actionGroups.actions]]
+id = "states-over-time"
+label = "States Over Time"
+desc = "How many states the source has in the Box in each year, as a line drawn with ECharts"
+code = '''
+using ECharts
+
+d = rows("SELECT y.y, count(DISTINCT b.name) AS n FROM (SELECT unnest(range($(since), $(upto) + 1)) AS y) y LEFT JOIN borders b ON y.y BETWEEN b.starts AND b.ends GROUP BY y.y ORDER BY y.y")
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "States in the Box, $(source)")],
+	xAxis = [ECharts.Axis(_type = "category", data = string.(d.y))], yAxis = [ECharts.Axis(_type = "value", name = "states")],
+	series = [ECharts.XYSeries(name = "states", _type = "line", data = Int.(d.n))])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "years-of-change"
+label = "Years of Change"
+desc = "The years in which the source changes a border in the Box, by century: between them the map stays the same"
+code = '''
+for century in sort(unique(fld.(changes, 100)))
+	recorded = [y for y in changes if fld(y, 100) == century]
+	println(rpad(string(100century, " to ", 100century + 99), 16), lpad(length(recorded), 3), ": ", join(recorded, ", "))
+end
+'''
+
+[[actionGroups.actions]]
+id = "overlaps"
+label = "Overlapping States"
+desc = "The pairs of states that the source draws on the same land in Year, by the area they share"
+code = '''
+o = rows("""SELECT * FROM (SELECT a.name AS one, b.name AS two, ST_Area_Spheroid(ST_CollectionExtract(ST_Intersection(a.geom, b.geom), 3)) / 1e6 AS km2
+	FROM borders a JOIN borders b ON a.name < b.name AND ST_Intersects(a.geom, b.geom)
+	WHERE $(year) BETWEEN a.starts AND a.ends AND $(year) BETWEEN b.starts AND b.ends) WHERE km2 >= 100 ORDER BY km2 DESC""")
+println("Pairs of states sharing at least 100 km² in ", year, ": ", length(o.one))
+for i in eachindex(o.one)[1:min(end, 20)]
+	println("  ", o.one[i], " and ", o.two[i], ": ", round(Int, o.km2[i]), " km²")
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "two-years"
+label = "Two Years"
+desc = "Year beside Other Year: each state's area in the Box in both, the largest changes first"
+code = '''
+second = clamp({{other}}, since, upto)
+second == year && error("Year and Other Year are both $(year) within $(source): choose two different years")
+held(y) = "(SELECT name, sum(km2) AS km2 FROM borders WHERE $(y) BETWEEN starts AND ends GROUP BY name)"
+c = rows("""SELECT coalesce(a.name, b.name) AS name, round(coalesce(a.km2, 0))::BIGINT AS one, round(coalesce(b.km2, 0))::BIGINT AS two
+	FROM $(held(year)) a FULL JOIN $(held(second)) b ON a.name = b.name ORDER BY abs(coalesce(b.km2, 0) - coalesce(a.km2, 0)) DESC LIMIT 30""")
+w = maximum(length, c.name; init = 5) + 2
+println(rpad("state", w), lpad("$(year), km²", 16), lpad("$(second), km²", 16))
+for i in eachindex(c.name)
+	println(rpad(c.name[i], w), lpad(c.one[i], 16), lpad(c.two[i], 16))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "history-of-place"
+label = "History of a Place"
+desc = "The states whose territory holds the Place, in order, with the years the source gives each"
+code = '''
+lon, lat = parse.(Float64, split("{{place}}", ","))
+h = rows("""SELECT name, min(starts) AS starts, max(ends) AS ends FROM (
+		SELECT *, sum(fresh) OVER (PARTITION BY name ORDER BY starts, ends) AS run FROM (
+			SELECT name, starts, ends, CASE WHEN starts <= lag(ends) OVER (PARTITION BY name ORDER BY starts, ends) + 1 THEN 0 ELSE 1 END AS fresh
+			FROM borders WHERE ST_Intersects(geom, ST_Point($(lon), $(lat)))))
+	GROUP BY name, run ORDER BY starts, ends""")
+println("The place at ", lon, ", ", lat, " in ", source, ", ", since, " to ", upto, ":")
+isempty(h.name) && println("  no state of the source holds it: is it inside the Box?")
+for i in eachindex(h.name)
+	println("  ", rpad(string(h.starts[i], " to ", h.ends[i]), 16), h.name[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "states-of-year"
+label = "States of the Year"
+desc = "Every state of Year in the Box, by the area it has there, with the years of the shape shown"
+code = '''
+s = rows("SELECT name, round(sum(km2))::BIGINT AS km2, min(starts) AS starts, max(ends) AS ends FROM borders WHERE $(year) BETWEEN starts AND ends GROUP BY name ORDER BY km2 DESC")
+println(source, ", ", year, ": ", length(s.name), " states in the Box")
+w = maximum(length, s.name; init = 5) + 2
+for i in eachindex(s.name)
+	println(rpad(s.name[i], w), lpad(s.km2[i], 10), " km²  shape of ", s.starts[i], " to ", s.ends[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Every shape in the Box with its years and area, as a GeoParquet file in the Folder"
+code = '''
+kind = "{{model}}"
+{{?model=cliopatria}}kind *= "-{{units}}"
+out = joinpath(folder, "historical-borders-$(kind)-$(join((west, south, east, north), "_"))-$(since)-$(upto).parquet")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY borders TO '$(quoted(out))' (FORMAT parquet)")  # DuckDB writes GeoParquet metadata
+	println("Wrote ", out)
+end
+'''
