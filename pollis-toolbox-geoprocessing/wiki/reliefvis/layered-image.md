@@ -21,7 +21,7 @@ A layer is blended with the image built from the layers below it, and the opacit
 
 ## The Openness Overlay Input and RVT 2.2.3
 
-Kokalj and Somrak (2019) blend positive openness by overlay at an opacity of 50% ([Kokalj and Somrak (2019)](#ref-KS2019a)). In RVT 2.2.3, the overlay function writes its result into the image below before the opacity is applied, so mixing the two at 50% mixes the overlay result with itself, and the openness reaches the image at full strength ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a)). The Openness Overlay input of the Layered Image tab sets the opacity: 50 follows the published combination, and 100 gives the image RVT 2.2.3 renders. Replicate with RVT prints the layered image at the chosen opacity and at 100% beside RVT's values, where the second agrees with RVT.
+Kokalj and Somrak (2019) blend positive openness by overlay at an opacity of 50% ([Kokalj and Somrak (2019)](#ref-KS2019a)). In RVT 2.2.3, the overlay function writes its result into the image below before the opacity is applied, so mixing the two at 50% mixes the overlay result with itself, and the openness reaches the image at full strength ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a)). The Openness Overlay input of the Layered Image tab sets the opacity: 50 follows the published combination, and 100 gives the image RVT 2.2.3 renders.
 
 ## When the Layered Image Helps
 

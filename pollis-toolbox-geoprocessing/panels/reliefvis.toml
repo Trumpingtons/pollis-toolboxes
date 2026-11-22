@@ -75,13 +75,7 @@ separator = true
 label = "Software"
 
 [[references]]
-key = "PS2026a"
-
-[[references]]
 key = "Sch2026a"
-
-[[references]]
-key = "Sch2026c"
 
 [[references]]
 key = "Ng2026a"
@@ -173,7 +167,7 @@ wiki = "Layered Image"
 [[faq]]
 question = "Why does the layered image differ from RVT's?"
 answer = '''
-The Visualization for Archaeological Topography blends positive openness over the hillshade and slope with an opacity of 50%. The blend function of RVT 2.2.3 writes the overlay into the image below it, so its layered image applies the openness at full strength. The Openness Overlay input sets the opacity: 50 follows the published combination, 100 reproduces RVT's image, as Replicate with RVT shows.
+The Visualization for Archaeological Topography blends positive openness over the hillshade and slope with an opacity of 50%. The blend function of RVT 2.2.3 writes the overlay into the image below it, so its layered image applies the openness at full strength. The Openness Overlay input sets the opacity: 50 follows the published combination, 100 reproduces RVT's image.
 '''
 wiki = "Layered Image"
 hidden = true
@@ -181,7 +175,7 @@ hidden = true
 [[faq]]
 question = "How large should the search radius be?"
 answer = '''
-The search radius of the sky-view factor and openness sets the size of the features that stand out: a horizon farther away than the radius is not seen. A radius of about 10 m suits ditches, banks and mounds a few metres to 20 m across; a larger radius brings out broader forms and darkens valleys. Search Radii Compared prints how the results change with the radius.
+The search radius of the sky-view factor and openness sets the size of the features that stand out: a horizon farther away than the radius is not seen. A radius of about 10 m suits ditches, banks and mounds a few metres to 20 m across; a larger radius brings out broader forms and darkens valleys.
 '''
 wiki = "Decision Guide"
 hidden = true

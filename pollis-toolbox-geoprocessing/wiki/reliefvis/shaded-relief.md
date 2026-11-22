@@ -6,7 +6,7 @@ The Shaded Relief tab of the Relief Visualisation panel lights the terrain model
 
 ## Why One Light Hides Features
 
-A hillshade shows best the features that run across the light: one side of a bank faces the sun and is bright, the other faces away and is dark, and the pair of tones draws the bank. A bank that runs towards the sun has its two sides lit alike and almost vanishes. Devereux, Amable and Crow (2008) showed that the features an interpreter maps from a hillshade change with the direction of the light ([Devereux, Amable and Crow (2008)](#ref-DAC2008a)). Low suns make the effect stronger, since they lengthen the shadows of small forms. Light Directions Compared prints the mean brightness and the share of the ground in deep shadow under lights from the north-west, north-east, south-east and south-west.
+A hillshade shows best the features that run across the light: one side of a bank faces the sun and is bright, the other faces away and is dark, and the pair of tones draws the bank. A bank that runs towards the sun has its two sides lit alike and almost vanishes. Devereux, Amable and Crow (2008) showed that the features an interpreter maps from a hillshade change with the direction of the light ([Devereux, Amable and Crow (2008)](#ref-DAC2008a)). Low suns make the effect stronger, since they lengthen the shadows of small forms. A second hillshade with the Sun Azimuth turned by 90 degrees shows the features that the first light hid.
 
 ## The Sun Azimuth and Sun Elevation Inputs
 
@@ -14,7 +14,7 @@ The Sun Azimuth input is the direction the light comes from, in degrees clockwis
 
 ## The Several Directions Choice
 
-The Several Directions choice of the Shading input lights the ground from more than one direction at once. It uses `multihillshade` of Geomorphometry.jl, which follows Mark (1992): lights from 225, 270, 315 and 360 degrees, each weighted by how much the cell faces it, so that every cell is lit mostly from the direction that shows its slope best ([Pronk and Schouten (2026)](#ref-PS2026a); [Mark (1992)](#ref-Mar1992a)). Linear features of any direction keep some contrast, and the image keeps the familiar look of a relief map. RVT's own multiple hillshading takes 16 directions at an elevation of 35 degrees ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a)), a different method from Mark's.
+The Several Directions choice of the Shading input lights the ground from more than one direction at once. It calls `shaded_relief` of SmartRegions.jl with four azimuths, which follows Mark (1992): lights from 225, 270, 315 and 360 degrees, each weighted by how much the cell faces it, so that every cell is lit mostly from the direction that shows its slope best ([Mark (1992)](#ref-Mar1992a)). Linear features of any direction keep some contrast, and the image keeps the familiar look of a relief map. RVT's own multiple hillshading takes 16 directions at an elevation of 35 degrees ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a)), a different method from Mark's.
 
 ## Slope as a Visualisation
 
@@ -29,8 +29,6 @@ The Slope choice of the Shading input shows the steepness of each cell, in degre
 <a id="ref-KS2019a"></a>Kokalj, Ž. and Somrak, M. (2019). Why not a single image? Combining visualizations to facilitate fieldwork and on-screen mapping. *Remote Sensing* 11(7), 747. [doi:10.3390/rs11070747](https://doi.org/10.3390/rs11070747)
 
 <a id="ref-Mar1992a"></a>Mark, R. K. (1992). Multidirectional, oblique-weighted, shaded-relief image of the Island of Hawaii. U.S. Geological Survey Open-File Report 92-422. [doi:10.3133/ofr92422](https://doi.org/10.3133/ofr92422)
-
-<a id="ref-PS2026a"></a>Pronk, M. and Schouten, R. (2026). Geomorphometry.jl: analyzing and visualizing the shape of the Earth in Julia. *Journal of Open Source Software* 11(122), 10395. [doi:10.21105/joss.10395](https://doi.org/10.21105/joss.10395)
 
 <a id="ref-ZRCUL2025a"></a>ZRC SAZU and University of Ljubljana (UL FGG) (2025). RVT: Relief Visualization Toolbox in Python (rvt-py), version 2.2.3. [github.com/EarthObservation/RVT_py](https://github.com/EarthObservation/RVT_py)
 

@@ -14,7 +14,7 @@ Positive openness is the mean, over the directions, of the angle between the zen
 
 ## What Negative Openness Measures
 
-Negative openness looks at the surface from below: it is the mean angle between the nadir and the horizon seen from beneath the ground ([Yokoyama, Shirasawa and Pike (2002)](#ref-YSP2002a)). It equals the positive openness of the terrain model turned upside down, which is how the Relief Visualisation panel computes it, with the heights negated. Negative openness is high in ditches, pits and hollow ways and low on banks and crests, the mirror of positive openness, so that the two together tell raised from sunken features. Measures Compared prints the correlations of the sky-view factor, both openness measures and the local relief model.
+Negative openness looks at the surface from below: it is the mean angle between the nadir and the horizon seen from beneath the ground ([Yokoyama, Shirasawa and Pike (2002)](#ref-YSP2002a)). It equals the positive openness of the terrain model turned upside down, which is how the Relief Visualisation panel computes it, with the heights negated. Negative openness is high in ditches, pits and hollow ways and low on banks and crests, the mirror of positive openness, so that the two together tell raised from sunken features.
 
 ## The Search Radius and the Number of Directions
 
@@ -22,11 +22,9 @@ The search radius limits how far the horizon is sought: a hill beyond it casts n
 
 ## How the Panel Follows RVT's Sampling of the Horizon
 
-RVT samples each direction at distances from one cell to the search radius in steps of a third of a cell, rounds each point to the nearest whole cell and keeps each cell once ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a)). The Sky-View and Openness tab uses the same points, which is why Replicate with RVT agrees with RVT's values to many digits. `sky_view_factor` of Geomorphometry.jl computes a different quantity, the mean of the squared cosine of the horizon angle with no search radius, which is a measure of the sky seen over the whole grid rather than within a radius ([Pronk and Schouten (2026)](#ref-PS2026a)); the panel therefore computes the horizon itself.
+RVT samples each direction at distances from one cell to the search radius in steps of a third of a cell, rounds each point to the nearest whole cell and keeps each cell once ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a)). `sky_view_factor` and `openness` of SmartRegions.jl, which the Sky-View and Openness tab calls, sample the same points. The cells within one search radius of the edge of the grid have too short a line in some directions, and are left out of the result.
 
 ## References
-
-<a id="ref-PS2026a"></a>Pronk, M. and Schouten, R. (2026). Geomorphometry.jl: analyzing and visualizing the shape of the Earth in Julia. *Journal of Open Source Software* 11(122), 10395. [doi:10.21105/joss.10395](https://doi.org/10.21105/joss.10395)
 
 <a id="ref-YSP2002a"></a>Yokoyama, R., Shirasawa, M. and Pike, R. J. (2002). Visualizing topography by openness: a new application of image processing to digital elevation models. *Photogrammetric Engineering and Remote Sensing* 68(3), 257–265.
 
