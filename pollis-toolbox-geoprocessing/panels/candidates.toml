@@ -6,7 +6,7 @@ viewType = "pollis.candidates"
 defaultModel = "mounds"
 decisionFirstColumn = "Method"
 
-# The user's keys for the imagery of Google and Esri, kept by Pollis in Secret Storage and set in the Julia REPL; either may be left empty
+# The user's keys for the imagery of Google and Esri, kept by Pollis in Secret Storage for every panel and set in the Julia REPL; either may be left unset
 [apiKey]
 label = "Imagery"
 noun = "keys"
@@ -14,12 +14,14 @@ noun = "keys"
 [[apiKey.fields]]
 name = "googleMapsKey"
 envVar = "GOOGLE_MAPS_API_KEY"
-prompt = "Google Maps key, for Google's satellite imagery (press Enter to leave it empty)"
+label = "Google Maps key"
+prompt = "Google Maps key, for Google's satellite imagery"
 
 [[apiKey.fields]]
 name = "arcgisKey"
 envVar = "ARCGIS_API_KEY"
-prompt = "ArcGIS Location Platform API key, for Esri's World Imagery (press Enter to leave it empty)"
+label = "ArcGIS key"
+prompt = "ArcGIS Location Platform API key, for Esri's World Imagery"
 
 [[packages]]
 name = "SmartRegions.jl"
