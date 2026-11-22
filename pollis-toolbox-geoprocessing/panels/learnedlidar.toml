@@ -1,0 +1,370 @@
+# Learned Detection in Lidar: trained neural networks applied to lidar terrain models to find archaeological features, starting with the published models of ADAF (HRNet segmentation of all archaeology, barrows, enclosures and ringforts) run in Julia with SmartRegions.jl, NNlib.jl and Pickle.jl
+
+[meta]
+title = "Learned Detection in Lidar"
+viewType = "pollis.learnedlidar"
+defaultModel = "adaf"
+decisionFirstColumn = "Method"
+
+[[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
+name = "NNlib.jl"
+github = "https://github.com/FluxML/NNlib.jl"
+
+[[packages]]
+name = "Pickle.jl"
+github = "https://github.com/chengchingwen/Pickle.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["DuckDB.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "learnedlidar/factsheet.md"
+bundled = true
+description = "One-page reference: the tab, the code that computes it, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "learnedlidar/overview.md"
+bundled = true
+description = "What learned detection is, what a trained model knows, and where it stands beside rule-based detection"
+
+[[wikis]]
+name = "Diagnostics"
+file = "learnedlidar/diagnostics.md"
+bundled = true
+description = "No features, too many features, features cut at the seams of the tiles, and models applied far from where they were trained"
+
+[[wikis]]
+name = "Decision Guide"
+file = "learnedlidar/decision-guide.md"
+bundled = true
+description = "Which model to apply, and how to set the threshold, the minimum area and the minimum roundness"
+
+[[wikis]]
+separator = true
+label = "Methods"
+
+[[wikis]]
+name = "ADAF Models"
+file = "learnedlidar/adaf.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "FMLC2026a"
+
+[[references]]
+key = "PJC2026a"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Wig2019a"
+
+[[references]]
+key = "DKPKS...2023a"
+
+[[references]]
+key = "ZRCUL2025a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "KH2017a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "CCCKK2026a"
+
+[[references]]
+key = "WSCJD...2021a"
+
+[[references]]
+key = "Hes2010a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "KKCKC...2025a"
+
+[[references]]
+key = "EA2022a"
+
+[[references]]
+key = "HE2026a"
+
+[[faq]]
+question = "What does Apply ADAF compute?"
+answer = '''
+Apply ADAF runs one of the trained segmentation models of ADAF, the Automatic Detection of Archaeological Features tool, over a lidar terrain model. The model reads the simple local relief model of the terrain, stretched from -0.5 to 0.5 m, and gives at each cell the probability that it belongs to an archaeological feature of its kind. Cells with a probability at least the Threshold are joined into features, each with its area, its roundness and its highest probability.
+'''
+wiki = "ADAF Models"
+
+[[faq]]
+question = "Where were ADAF's models trained, and does that matter?"
+answer = '''
+ADAF's models were trained on airborne laser scanning data of Ireland, labelled by experts with barrows, enclosures and ringforts. A trained model recognises the forms it was shown, at the resolution and in the landscapes it was shown them. Applied elsewhere, it finds features of similar form and misses others: an ADAF model knows nothing of tells, terraces or mudbrick walls. Its detections are places to check, like the candidates of rule-based detection.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Is the Julia model the same as ADAF's?"
+answer = '''
+The network of Apply ADAF is the HRNet of AiTLAS, the toolbox ADAF runs, rewritten in Julia with NNlib.jl and loaded with ADAF's own trained weights. On a tile of 1024 by 1024 cells of a lidar terrain model, its probabilities differ from those of the PyTorch model by less than 0.0001 at every cell, and the same cells reach a probability of 0.5.
+'''
+wiki = "ADAF Models"
+
+[[faq]]
+question = "Why are there gaps along straight lines in the features?"
+answer = '''
+ADAF runs its model on tiles of 1024 by 1024 cells, from the north-west corner of the terrain model, and leaves out the 8 cells along the edges of each tile when it draws the features, where the model sees too little around a cell. Apply ADAF does the same, so a feature that crosses the edge of a tile is cut along it, or split into two. The probability map has no such gaps.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "How long does Apply ADAF take?"
+answer = '''
+The first run downloads the model, about 860 MB, once. The network then runs on the processor, one tile of 1024 by 1024 cells at a time, each taking several seconds: a terrain model of 2 by 2 km at 1 m has four tiles. Loading the model and compiling the code add a minute or so to the first run of a session.
+'''
+wiki = "Factsheet"
+hidden = true
+
+[[models]]
+id = "adaf"
+label = "Apply ADAF"
+
+[[bullets]]
+text = "Apply ADAF"
+detail = "The trained HRNet models of ADAF, for all archaeology, barrows, enclosures or ringforts, applied to the local relief model; the probability at each cell, and the features above a threshold"
+
+[[decisionRows]]
+task = "Apply ADAF"
+context = "A published model"
+purpose = "A first look for features of the kinds ADAF was trained on, with no training and no labels"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. ADAF's models are kept in its adaf folder, and the Export steps write there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "demFile"
+label = "Terrain Model"
+tooltip = "A GeoTIFF of a bare-earth terrain model in metres, in the folder above, or an absolute path, in a projected coordinate system with square cells. With the default, wandlebury-dtm.tif, the example first reads the Environment Agency's 1 m lidar terrain model of 2 x 2 km south-east of Cambridge from its Web Coverage Service, unless the folder has the file already."
+default = "wandlebury-dtm.tif"
+
+[[inputs]]
+id = "feature"
+label = "Model"
+kind = "select"
+tooltip = "The ADAF model to apply, each trained on lidar of Ireland to find one kind of feature: All Archaeology, any of the three; Barrows; Enclosures; Ringforts. Each is about 860 MB, downloaded once."
+default = "all"
+newRow = true
+
+[[inputs.options]]
+value = "all"
+label = "All Archaeology"
+
+[[inputs.options]]
+value = "barrow"
+label = "Barrows"
+
+[[inputs.options]]
+value = "enclosure"
+label = "Enclosures"
+
+[[inputs.options]]
+value = "ringfort"
+label = "Ringforts"
+
+[[inputs]]
+id = "threshold"
+label = "Threshold"
+tooltip = "The probability, from 0 to 1, a cell must reach to belong to a feature. ADAF's default is 0.5."
+default = "0.5"
+
+[[inputs]]
+id = "minArea"
+label = "Minimum Area (m²)"
+tooltip = "Features of this area or less are left out, in square metres. 0 keeps every feature, as ADAF does by default."
+default = "0"
+newRow = true
+
+[[inputs]]
+id = "minRoundness"
+label = "Minimum Roundness"
+tooltip = "Features of this roundness or less are left out: 4 pi times the area over the squared perimeter of the convex hull, 1 for a circle and 0.785 for a square. 0 keeps every feature, as ADAF does by default."
+default = "0"
+
+[[inputs]]
+id = "zoomCentre"
+label = "Zoom Centre"
+tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on a Place looks: the default is the Wormwood Hill tumulus, in British National Grid."
+default = "549716, 252899"
+newRow = true
+
+[[inputs]]
+id = "zoomSize"
+label = "Zoom Size (m)"
+tooltip = "The width of the square Zoom on a Place shows, in metres."
+default = "300"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using SmartRegions, NNlib, Pickle, Rasters, ArchGDAL
+{{?demFile=wandlebury-dtm.tif}}using Downloads: download
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+dem_path = joinpath(folder, "{{demFile}}")  # an absolute path is kept as it is
+{{?demFile=wandlebury-dtm.tif}}# Example file: the Environment Agency's 1 m lidar terrain model of 2 x 2 km south-east of Cambridge, from its Web Coverage Service. Replace "wandlebury-dtm.tif" with your own GeoTIFF.
+{{?demFile=wandlebury-dtm.tif}}isfile(dem_path) || download("https://environment.data.gov.uk/spatialdata/lidar-composite-digital-terrain-model-dtm-1m/wcs?service=WCS&version=2.0.1&request=GetCoverage&CoverageId=13787b9a-26a4-4775-8523-806d13af58fc__Lidar_Composite_Elevation_DTM_1m&format=image%2Fgeotiff&subset=E%28548400%2C550400%29&subset=N%28252400%2C254400%29", dem_path)
+dem = replace_missing(read(Raster(dem_path; lazy = true)), NaN32)
+model = adaf_model(adaf_weights(folder; feature = :{{feature}}))  # ADAF's trained model, downloaded once (about 860 MB)
+probability = adaf_probability(model, dem)  # the probability of a feature at each cell, tile by tile: several seconds a tile
+found = adaf_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}})
+candidates = found.candidates
+println(length(candidates), " features")
+candidates
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-features"
+label = "Features on the Image"
+desc = "The image the model reads, the local relief from -0.5 to 0.5 m in grey, north up, with the outline of each feature in yellow"
+code = '''
+function picture(image, labels, k)  # an image from 0 to 1 in grey, k pixels a cell, with the features outlined in yellow
+	g = [ismissing(v) || !isfinite(v) ? 0x00 : round(UInt8, 255 * clamp(v, 0, 1)) for v in parent(image)]
+	L = parent(labels)
+	n, m = size(L)
+	edge = [L[i, j] > 0 && any(L[a, b] != L[i, j] for a in max(1, i - 1):min(n, i + 1), b in max(1, j - 1):min(m, j + 1)) for i in 1:n, j in 1:m]
+	bands = [ifelse.(edge, c, g) for c in (0xe8, 0xa3, 0x3d)]
+	bands = [repeat(b; inner = (k, k)) for b in bands]
+	first(lookup(image, Y)) < last(lookup(image, Y)) && (bands = [reverse(b; dims = 2) for b in bands])  # the first row of the image is the north
+	png = joinpath(mktempdir(), "features.png")
+	ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(bands[1], 1), height = size(bands[1], 2), nbands = 3, dtype = UInt8) do mem
+		foreach(b -> ArchGDAL.write!(mem, bands[b], b), 1:3)
+		ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
+	end
+	display(MIME("image/png"), read(png))
+end
+image = adaf_input(dem)
+picture(image, found.labels, 1)
+'''
+
+[[actionGroups.actions]]
+id = "show-probability"
+label = "Probability on the Image"
+desc = "The probability of a feature at each cell in grey, from black at 0 to white at 1, north up, with the outline of each feature in yellow (run Features on the Image first)"
+code = '''
+picture(probability, found.labels, 1)
+'''
+
+[[actionGroups.actions]]
+id = "zoom"
+label = "Zoom on a Place"
+desc = "The image the model reads in a square of the Zoom Size around the Zoom Centre, enlarged so that each cell is several pixels, with the features in yellow (run Features on the Image first)"
+code = '''
+x0, y0 = {{zoomCentre}}
+d = {{zoomSize}} / 2
+around = (X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d))
+k = max(1, fld(800, size(image[around...], X)))  # pixels a cell, for an image about 800 pixels wide
+println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " features within ", d, " m of ", x0, ", ", y0)
+picture(image[around...], found.labels[around...], k)
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "most-probable"
+label = "Most Probable Features"
+desc = "The 15 features of highest probability, with their position, area and roundness"
+code = '''
+sort(candidates; by = c -> -c.probability)[1:min(15, end)]
+'''
+
+[[actionGroups.actions]]
+id = "monuments"
+label = "Features and Scheduled Monuments"
+desc = "The scheduled monuments of Historic England's National Heritage List for England within the terrain model, from its open web service, with the features inside each and the features outside every monument (in England only)"
+code = '''
+using DuckDB
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+scheduled_monuments(con, dem)  # the table monuments, in the coordinates of the terrain model
+candidates_table(con, candidates; crs = dem)  # the table candidates, a point at each feature
+inside = [(list_entry = r.list_entry, name = r.name, features = r.n) for r in DBInterface.execute(con, "SELECT m.list_entry, m.name, count(c.id) AS n FROM monuments m LEFT JOIN candidates c ON ST_Contains(m.geom, c.geom) GROUP BY ALL ORDER BY n DESC")]
+outside = only(DBInterface.execute(con, "SELECT count(*) AS n FROM candidates c WHERE NOT EXISTS (SELECT 1 FROM monuments m WHERE ST_Contains(m.geom, c.geom))")).n
+println(length(inside), " scheduled monuments in the area, ", count(r -> r.features > 0, inside), " with a feature inside; ", outside, " of ", length(candidates), " features outside every monument")
+inside
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-features"
+label = "Save the Features as GeoPackage"
+desc = "Write the features as points with their measures to a GeoPackage in the folder of the files, to open in a GIS beside the terrain model"
+code = '''
+using DuckDB
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+out = save_candidates(con, candidates, joinpath(folder, "adaf-{{feature}}.gpkg"); crs = dem)
+println("Wrote ", length(candidates), " features to ", out)
+'''
+
+[[actionGroups.actions]]
+id = "save-probability"
+label = "Save the Probability as Cloud-Optimised GeoTIFF"
+desc = "Write the probability map to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression, to open in a GIS beside other layers"
+code = '''
+out = joinpath(folder, "adaf-{{feature}}.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, Float32.(coalesce.(probability, NaN32)); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = NaN32)  # missing cells written as NaN
+	println("Wrote ", out)
+end
+'''

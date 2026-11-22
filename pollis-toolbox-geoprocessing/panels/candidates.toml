@@ -1,0 +1,497 @@
+# Candidate Features: places in a lidar terrain model shaped like earthworks (mounds, pits, ring ditches, banks and ditches), found by inverse depression analysis, depression filling, template matching, or a threshold with shape rules, for archaeological prospection, with SmartRegions.jl and Rasters.jl
+
+[meta]
+title = "Candidate Features"
+viewType = "pollis.candidates"
+defaultModel = "mounds"
+decisionFirstColumn = "Method"
+
+[[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["DuckDB.jl"]
+
+[[wikis]]
+name = "Factsheet"
+file = "candidates/factsheet.md"
+bundled = true
+description = "One-page reference: the four tabs, the code that computes them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "candidates/overview.md"
+bundled = true
+description = "What a candidate is, how rule-based detection works, and where it stands beside learned detection"
+
+[[wikis]]
+name = "Diagnostics"
+file = "candidates/diagnostics.md"
+bundled = true
+description = "Too many or too few candidates, features merged or split, and candidates that are not archaeological"
+
+[[wikis]]
+name = "Decision Guide"
+file = "candidates/decision-guide.md"
+bundled = true
+description = "Which method suits which feature and terrain, and how to set the thresholds"
+
+[[wikis]]
+separator = true
+label = "Methods"
+
+[[wikis]]
+name = "Depressions: Mounds and Pits"
+file = "candidates/depressions.md"
+bundled = true
+
+[[wikis]]
+name = "Template Matching"
+file = "candidates/template-matching.md"
+bundled = true
+
+[[wikis]]
+name = "Threshold and Shape"
+file = "candidates/threshold-shape.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "ZRCUL2025a"
+
+[[references]]
+separator = true
+label = "Textbooks"
+
+[[references]]
+key = "KH2017a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "TP2012a"
+
+[[references]]
+key = "FHBCK2016a"
+
+[[references]]
+key = "DSL2019a"
+
+[[references]]
+key = "DLS2019a"
+
+[[references]]
+key = "BLM2014a"
+
+[[references]]
+key = "Hes2010a"
+
+[[references]]
+key = "CCCKK2026a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "EA2022a"
+
+[[references]]
+key = "HE2026a"
+
+[[faq]]
+question = "What is a candidate feature?"
+answer = '''
+A candidate feature is a place in a terrain model whose shape matches a rule for an earthwork: a mound, a pit, a ring ditch, a bank or a ditch. Each candidate has a position, an area, a height or depth and a measure of shape. A candidate is not a site: drains, quarries, tree throws and errors of the terrain model match the same rules, so every candidate is a place to check against maps, records and the ground.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "How does inverse depression analysis find mounds?"
+answer = '''
+Turned upside down, a mound becomes a depression. Inverse depression analysis negates the surface, fills every depression up to the height at which it would spill, and takes the depth of the filling as the height of the mound. The regions higher than the Minimum Height are kept when their area and roundness lie within the limits. The same filling on the surface the right way up finds pits and hollows.
+'''
+wiki = "Depressions: Mounds and Pits"
+
+[[faq]]
+question = "What does template matching measure?"
+answer = '''
+Template matching slides a small model of a feature, here a half-dome for a mound, its negative for a pit, or a ditch around a ring, over the local relief model, and computes at each cell the normalised cross-correlation between the model and the ground around the cell. The score runs from -1 to 1 and does not depend on the height of the feature, only on its shape. Templates of several radii are tried, and the best score is kept.
+'''
+wiki = "Template Matching"
+
+[[faq]]
+question = "Why search the local relief model rather than the terrain model?"
+answer = '''
+A mound on a hilltop, or a pit on a slope, is part of a larger landform. On the terrain model itself, the filling of the upside-down hill swallows the mound, and the filling of a valley swallows the pit. The local relief model removes the landform first, so that the filling and the thresholds see the feature alone. The Surface input keeps the terrain model as an option, as inverse depression analysis was first used on flat ground.
+'''
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "How are candidates checked against known sites?"
+answer = '''
+Candidates and Scheduled Monuments reads the scheduled monuments of the National Heritage List for England within the terrain model from Historic England's open web service, and counts for each monument the candidates inside its boundary, and the candidates outside every monument. A monument with no candidate shows what the rules miss; candidates outside are either unknown features or false alarms, which only the records and the ground can tell apart.
+'''
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "What does the roundness of a candidate measure?"
+answer = '''
+Roundness is the ratio of the short to the long axis of the ellipse with the same second moments as the cells of the candidate: 1 for a circle, near 0 for a long, thin region. Mounds, pits and barrows are round; banks, ditches and hollow ways are long. The Minimum Roundness input of the depression tabs, and the Shape input of Threshold and Shape, use it to keep one kind or the other.
+'''
+wiki = "Threshold and Shape"
+hidden = true
+
+[[models]]
+id = "mounds"
+label = "Mounds"
+
+[[models]]
+id = "pits"
+label = "Pits and Hollows"
+
+[[models]]
+id = "template"
+label = "Template Matching"
+
+[[models]]
+id = "shape"
+label = "Threshold and Shape"
+
+[[bullets]]
+text = "Mounds"
+detail = "Inverse depression analysis: the surface turned upside down and its depressions filled; the regions higher than a minimum, of the right area and roundness"
+
+[[bullets]]
+text = "Pits and Hollows"
+detail = "The depressions of the surface filled to their spill height; the regions deeper than a minimum, of the right area and roundness"
+
+[[bullets]]
+text = "Template Matching"
+detail = "The local relief model correlated with a half-dome, a pit or a ring ditch of several radii; the places that score above a minimum"
+
+[[bullets]]
+text = "Threshold and Shape"
+detail = "The ground more than a threshold above or below the trend, in regions kept by area and by shape, round or long"
+
+[[decisionRows]]
+task = "Mounds"
+context = "Raised, closed forms"
+purpose = "Barrows, mounds and spoil heaps of any size, with their height above the ground they stand on"
+
+[[decisionRows]]
+task = "Pits and Hollows"
+context = "Sunken, closed forms"
+purpose = "Pits, hollows, kilns and shafts, with their depth below the rim"
+
+[[decisionRows]]
+task = "Template Matching"
+context = "A known shape"
+purpose = "Features of one shape and size, such as pits or ring ditches, scored by how closely they match"
+
+[[decisionRows]]
+task = "Threshold and Shape"
+context = "Long features"
+purpose = "Banks, ditches and hollow ways as well as round features, from one threshold on the local relief"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. The Export steps write there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "demFile"
+label = "Terrain Model"
+tooltip = "A GeoTIFF of a bare-earth terrain model in metres, in the folder above, or an absolute path, in a projected coordinate system with square cells. With the default, wandlebury-dtm.tif, the example first reads the Environment Agency's 1 m lidar terrain model of 2 x 2 km south-east of Cambridge from its Web Coverage Service, unless the folder has the file already."
+default = "wandlebury-dtm.tif"
+
+[[inputs]]
+id = "trendRadius"
+label = "Trend Radius (m)"
+tooltip = "The radius of the window whose mean height is the trend of the local relief model, in metres: forms wider than about twice this are taken as landform. Template Matching and Threshold and Shape search the local relief model; the depression tabs search it when Surface is Local Relief Model."
+default = "20"
+newRow = true
+
+[[inputs]]
+id = "surface"
+label = "Surface"
+kind = "select"
+tooltip = "Local Relief Model: the depressions are sought after the landform is removed, so that mounds on hills and pits on slopes are found. Terrain Model: the heights themselves, as inverse depression analysis was first used on flat ground."
+default = "lrm"
+models = ["mounds", "pits"]
+
+[[inputs.options]]
+value = "lrm"
+label = "Local Relief Model"
+
+[[inputs.options]]
+value = "dtm"
+label = "Terrain Model"
+
+[[inputs]]
+id = "minHeight"
+label = "Minimum Height (m)"
+tooltip = "The height of a mound above its spill level, or the depth of a pit below it, that a cell must exceed to belong to a candidate, in metres."
+default = "0.2"
+models = ["mounds", "pits"]
+newRow = true
+
+[[inputs]]
+id = "minRoundness"
+label = "Minimum Roundness"
+tooltip = "The ratio of the short to the long axis that a candidate must reach, from 0 to 1: 1 is a circle. 0.5 keeps forms up to twice as long as they are wide."
+default = "0.5"
+models = ["mounds", "pits"]
+
+[[inputs]]
+id = "templateShape"
+label = "Template"
+kind = "select"
+tooltip = "Mound: a half-dome within a flat ring. Pit: the same, sunken. Ring Ditch: a ditch around a ring, with level ground inside and out."
+default = "mound"
+models = ["template"]
+newRow = true
+
+[[inputs.options]]
+value = "mound"
+label = "Mound"
+
+[[inputs.options]]
+value = "pit"
+label = "Pit"
+
+[[inputs.options]]
+value = "ring"
+label = "Ring Ditch"
+
+[[inputs]]
+id = "radii"
+label = "Radii (m)"
+tooltip = "The radii of the templates, in metres, separated by commas: each cell keeps the radius that matches best."
+default = "3, 5, 8, 12"
+models = ["template"]
+
+[[inputs]]
+id = "minScore"
+label = "Minimum Score"
+tooltip = "The normalised cross-correlation a place must reach to be a candidate, from -1 to 1. Ring ditches score lower than mounds and pits: try 0.5."
+default = "0.7"
+models = ["template"]
+
+[[inputs]]
+id = "side"
+label = "Side"
+kind = "select"
+tooltip = "Raised: the ground more than the threshold above the trend. Sunken: more than the threshold below it."
+default = "raised"
+models = ["shape"]
+newRow = true
+
+[[inputs.options]]
+value = "raised"
+label = "Raised"
+
+[[inputs.options]]
+value = "sunken"
+label = "Sunken"
+
+[[inputs]]
+id = "threshold"
+label = "Threshold (m)"
+tooltip = "How far above or below the trend, in metres, the ground must lie to belong to a region."
+default = "0.25"
+models = ["shape"]
+
+[[inputs]]
+id = "shapeKind"
+label = "Shape"
+kind = "select"
+tooltip = "Round: roundness of at least 0.5, for mounds, pits and enclosures. Long: roundness of at most 0.25, for banks, ditches and hollow ways. Any: every region within the areas."
+default = "round"
+models = ["shape"]
+
+[[inputs.options]]
+value = "round"
+label = "Round"
+
+[[inputs.options]]
+value = "long"
+label = "Long"
+
+[[inputs.options]]
+value = "any"
+label = "Any"
+
+[[inputs]]
+id = "minArea"
+label = "Minimum Area (m²)"
+tooltip = "The smallest area a candidate may have, in square metres: smaller regions are usually noise of the terrain model."
+default = "20"
+models = ["mounds", "pits", "shape"]
+newRow = true
+
+[[inputs]]
+id = "maxArea"
+label = "Maximum Area (m²)"
+tooltip = "The largest area a candidate may have, in square metres: larger regions are usually landforms."
+default = "5000"
+models = ["mounds", "pits", "shape"]
+
+[[inputs]]
+id = "zoomCentre"
+label = "Zoom Centre"
+tooltip = "A point, as x, y in the coordinates of the terrain model, around which Zoom on a Place and Profile Through a Place look: the default is the Wormwood Hill tumulus, in British National Grid."
+default = "549716, 252899"
+newRow = true
+
+[[inputs]]
+id = "zoomSize"
+label = "Zoom Size (m)"
+tooltip = "The width of the square Zoom on a Place shows, and the length of the line Profile Through a Place follows, in metres."
+default = "300"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using SmartRegions, Rasters, ArchGDAL
+{{?demFile=wandlebury-dtm.tif}}using Downloads: download
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+dem_path = joinpath(folder, "{{demFile}}")  # an absolute path is kept as it is
+{{?demFile=wandlebury-dtm.tif}}# Example file: the Environment Agency's 1 m lidar terrain model of 2 x 2 km south-east of Cambridge, from its Web Coverage Service. Replace "wandlebury-dtm.tif" with your own GeoTIFF.
+{{?demFile=wandlebury-dtm.tif}}isfile(dem_path) || download("https://environment.data.gov.uk/spatialdata/lidar-composite-digital-terrain-model-dtm-1m/wcs?service=WCS&version=2.0.1&request=GetCoverage&CoverageId=13787b9a-26a4-4775-8523-806d13af58fc__Lidar_Composite_Elevation_DTM_1m&format=image%2Fgeotiff&subset=E%28548400%2C550400%29&subset=N%28252400%2C254400%29", dem_path)
+dem = replace_missing(read(Raster(dem_path; lazy = true)), NaN32)
+lrm = local_relief(dem; radius = {{trendRadius}})  # the local relief model, in metres: the heights less their mean within the trend radius
+{{?model=mounds}}{{?surface=lrm}}found = find_mounds(lrm; min_height = {{minHeight}}, area = ({{minArea}}, {{maxArea}}), min_roundness = {{minRoundness}})  # inverse depression analysis
+{{?model=mounds}}{{?surface=dtm}}found = find_mounds(dem; min_height = {{minHeight}}, area = ({{minArea}}, {{maxArea}}), min_roundness = {{minRoundness}})  # inverse depression analysis
+{{?model=pits}}{{?surface=lrm}}found = find_pits(lrm; min_depth = {{minHeight}}, area = ({{minArea}}, {{maxArea}}), min_roundness = {{minRoundness}})  # depression filling
+{{?model=pits}}{{?surface=dtm}}found = find_pits(dem; min_depth = {{minHeight}}, area = ({{minArea}}, {{maxArea}}), min_roundness = {{minRoundness}})  # depression filling
+{{?model=template}}found = find_templates(lrm; shape = :{{templateShape}}, radii = [{{radii}}], min_score = {{minScore}})  # template matching
+{{?model=shape}}found = find_regions(lrm; threshold = {{threshold}}, side = :{{side}}, shape = :{{shapeKind}}, area = ({{minArea}}, {{maxArea}}))  # threshold and shape
+candidates = found.candidates
+println(length(candidates), " candidates")
+candidates
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "show-candidates"
+label = "Candidates on the Image"
+desc = "The local relief model as a grey image, from -0.5 to 0.5 m, north up, with the outline of each candidate in yellow"
+code = '''
+function picture(lrm, labels, k)  # the local relief model in grey, k pixels a cell, with the candidates outlined in yellow
+	g = [ismissing(v) ? 0x00 : round(UInt8, 255 * clamp(v + 0.5, 0, 1)) for v in parent(lrm)]
+	L = parent(labels)
+	n, m = size(L)
+	edge = [L[i, j] > 0 && any(L[a, b] != L[i, j] for a in max(1, i - 1):min(n, i + 1), b in max(1, j - 1):min(m, j + 1)) for i in 1:n, j in 1:m]
+	bands = [ifelse.(edge, c, g) for c in (0xe8, 0xa3, 0x3d)]
+	bands = [repeat(b; inner = (k, k)) for b in bands]
+	first(lookup(lrm, Y)) < last(lookup(lrm, Y)) && (bands = [reverse(b; dims = 2) for b in bands])  # the first row of the image is the north
+	png = joinpath(mktempdir(), "candidates.png")
+	ArchGDAL.create(ArchGDAL.getdriver("MEM"); width = size(bands[1], 1), height = size(bands[1], 2), nbands = 3, dtype = UInt8) do mem
+		foreach(b -> ArchGDAL.write!(mem, bands[b], b), 1:3)
+		ArchGDAL.destroy(ArchGDAL.unsafe_copy(mem; filename = png, driver = ArchGDAL.getdriver("PNG")))
+	end
+	display(MIME("image/png"), read(png))
+end
+picture(lrm, found.labels, 1)
+'''
+
+[[actionGroups.actions]]
+id = "zoom"
+label = "Zoom on a Place"
+desc = "The candidates in a square of the Zoom Size around the Zoom Centre, enlarged so that each cell is several pixels"
+code = '''
+x0, y0 = {{zoomCentre}}
+d = {{zoomSize}} / 2
+around = (X(x0 - d .. x0 + d), Y(y0 - d .. y0 + d))
+k = max(1, fld(800, size(lrm[around...], X)))  # pixels a cell, for an image about 800 pixels wide
+println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " candidates within ", d, " m of ", x0, ", ", y0)
+picture(lrm[around...], found.labels[around...], k)
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "highest"
+label = "Highest Candidates"
+desc = "The 15 candidates highest above or deepest below their surroundings (the best scores, for Template Matching), with their position, size and shape"
+code = '''
+{{?model=template}}sort(candidates; by = c -> -c.score)[1:min(15, end)]
+{{?model=mounds|pits|shape}}sort(candidates; by = c -> -abs(c.height))[1:min(15, end)]
+'''
+
+[[actionGroups.actions]]
+id = "monuments"
+label = "Candidates and Scheduled Monuments"
+desc = "The scheduled monuments of Historic England's National Heritage List for England within the terrain model, from its open web service, with the candidates inside each and the candidates outside every monument (in England only)"
+code = '''
+using DuckDB
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+scheduled_monuments(con, dem)  # the table monuments, in the coordinates of the terrain model
+candidates_table(con, candidates; crs = dem)  # the table candidates, a point at each
+inside = [(list_entry = r.list_entry, name = r.name, candidates = r.n) for r in DBInterface.execute(con, "SELECT m.list_entry, m.name, count(c.id) AS n FROM monuments m LEFT JOIN candidates c ON ST_Contains(m.geom, c.geom) GROUP BY ALL ORDER BY n DESC")]
+outside = only(DBInterface.execute(con, "SELECT count(*) AS n FROM candidates c WHERE NOT EXISTS (SELECT 1 FROM monuments m WHERE ST_Contains(m.geom, c.geom))")).n
+println(length(inside), " scheduled monuments in the area, ", count(r -> r.candidates > 0, inside), " with a candidate inside; ", outside, " of ", length(candidates), " candidates outside every monument")
+inside
+'''
+
+[[actionGroups.actions]]
+id = "profile"
+label = "Profile Through a Place"
+desc = "The height and the local relief along a line from west to east through the Zoom Centre, as long as the Zoom Size, every 5 m, with the candidate each point lies in (0 for none)"
+code = '''
+x0, y0 = {{zoomCentre}}
+at(r, x) = r[X(Near(x)), Y(Near(y0))]
+[(x = x, height = round(at(dem, x), digits = 2), local_relief = round(coalesce(at(lrm, x), NaN), digits = 2), candidate = at(found.labels, x)) for x in x0 - {{zoomSize}} / 2:5:x0 + {{zoomSize}} / 2]
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-candidates"
+label = "Save the Candidates as GeoPackage"
+desc = "Write the candidates as points with their measures to a GeoPackage in the folder of the files, to open in a GIS beside the terrain model"
+code = '''
+using DuckDB
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+out = save_candidates(con, candidates, joinpath(folder, "candidates-{{model}}.gpkg"); crs = dem)
+println("Wrote ", length(candidates), " candidates to ", out)
+'''
