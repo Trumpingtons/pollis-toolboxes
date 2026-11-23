@@ -1,8 +1,8 @@
 {
   "name": "pollis-toolbox-historical-geography-and-archaeology",
   "displayName": "Historical Geography and Archaeology Toolbox",
-  "description": "Pollis Historical Geography and Archaeology Toolbox: the past on the map, for historians, archaeologists, heritage officers, museums, and the municipalities and regions with history attached. Maps the borders of states with a year slider, from Cliopatria, the world maps of historical-basemaps and CShapes 2.0, and tells which states held a place over the centuries.",
-  "version": "0.1.0",
+  "description": "Pollis Historical Geography and Archaeology Toolbox: the past on the map, for historians, archaeologists, heritage officers, museums, and the municipalities and regions with history attached. Maps the borders of states with a year slider, from Cliopatria, the world maps of historical-basemaps and CShapes 2.0, and tells which states held a place over the centuries. For archaeological prospection, shows lidar terrain models as relief images, finds the places shaped like earthworks, and applies the trained models of ADAF to them.",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -22,17 +22,30 @@
         "title": "Historical Geography and Archaeology",
         "order": 1,
         "duckdbExtensions": ["spatial"],
+        "submenus": [
+          { "id": "archaeology", "title": "Archaeological Prospection", "group": "3_archaeology", "order": 1 }
+        ],
         "panels": [
           {
             "id": "histborders", "command": "pollis.historicalGeography.histborders", "title": "Historical Borders", "group": "1_history", "order": 1, "data": "panels/histborders.toml", "defaultModel": "cliopatria", "decisionFirstColumn": "Source"
+          },
+          {
+            "id": "reliefvis", "command": "pollis.historicalGeography.reliefvis", "title": "Relief Visualisation", "submenu": "archaeology", "group": "1_archaeology", "order": 1, "data": "panels/reliefvis.toml", "defaultModel": "lrm", "decisionFirstColumn": "Visualisation"
+          },
+          {
+            "id": "candidates", "command": "pollis.historicalGeography.candidates", "title": "Candidate Features", "submenu": "archaeology", "group": "1_archaeology", "order": 2, "data": "panels/candidates.toml", "defaultModel": "mounds", "decisionFirstColumn": "Method"
+          },
+          {
+            "id": "learnedlidar", "command": "pollis.historicalGeography.learnedlidar", "title": "Learned Detection in Lidar", "submenu": "archaeology", "group": "1_archaeology", "order": 3, "data": "panels/learnedlidar.toml"
           }
         ],
         "planned": [
           { "title": "Old Maps", "group": "1_history", "order": 2 },
           { "title": "Historical Populations", "group": "1_history", "order": 3 },
           { "title": "Historical Episodes", "group": "2_episodes", "order": 1 },
-          { "title": "Sites and Monuments", "group": "3_archaeology", "order": 1 },
-          { "title": "Landscape Analysis", "group": "3_archaeology", "order": 2 }
+          { "title": "Learned Detection in Satellite Images", "submenu": "archaeology", "group": "1_archaeology", "order": 4 },
+          { "title": "Sites and Monuments", "group": "3_archaeology", "order": 2 },
+          { "title": "Landscape Analysis", "group": "3_archaeology", "order": 3 }
         ]
       }
     ]

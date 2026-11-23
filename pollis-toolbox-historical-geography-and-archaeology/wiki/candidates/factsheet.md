@@ -1,6 +1,6 @@
 # Candidate Features — Factsheet
 
-**Candidate features** are places in a lidar terrain model whose shape matches a rule for an earthwork: a mound, a pit, a ring ditch, a bank or a ditch. The Candidate Features panel of the Geoprocessing Toolbox finds them by four rule-based methods: inverse depression analysis, depression filling, template matching, and a threshold with rules of shape ([Freeland, Heung, Burley, Clark and Knudby (2016)](#ref-FHBCK2016a); [Trier and Pilø (2012)](#ref-TP2012a); [Davis, Lipo and Sanger (2019)](#ref-DLS2019a)). The methods are functions of SmartRegions.jl, run on a grid read with Rasters.jl and ArchGDAL.jl ([Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a); [GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026a)).
+**Candidate features** are places in a lidar terrain model whose shape matches a rule for an earthwork: a mound, a pit, a ring ditch, a bank or a ditch. The Candidate Features panel of the Historical Geography and Archaeology Toolbox finds them by four rule-based methods: inverse depression analysis, depression filling, template matching, and a threshold with rules of shape ([Freeland, Heung, Burley, Clark and Knudby (2016)](#ref-FHBCK2016a); [Trier and Pilø (2012)](#ref-TP2012a); [Davis, Lipo and Sanger (2019)](#ref-DLS2019a)). The methods are functions of SmartRegions.jl, run on a grid read with Rasters.jl and ArchGDAL.jl ([Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a); [GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026a)).
 
 | Item | Candidate Features panel |
 |---|---|
