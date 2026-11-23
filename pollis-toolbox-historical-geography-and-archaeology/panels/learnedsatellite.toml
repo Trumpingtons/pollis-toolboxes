@@ -1,0 +1,435 @@
+# Learned Detection in Satellite Images: a random forest trained on known sites in a multitemporal Sentinel-2 composite, after Orengo and 6 coauthors (2020), run in Julia with ArchaeologicalDetection.jl and DecisionTree.jl, the scenes read from Earth Search with ArchGDAL.jl and Rasters.jl, and SmartRegions.jl for the outlines and the scheduled monuments
+
+[meta]
+title = "Learned Detection in Satellite Images"
+viewType = "pollis.learnedsatellite"
+style = "timeArrow"
+intro = "Find archaeological sites in satellite images with a model trained on sites already known, from the scenes of Sentinel-2 to the features saved for a GIS. A step first runs the steps before it that have not run in the Julia REPL as they are now, so a new threshold does not train the model again."
+
+# The user's keys for the imagery of Google and Esri, kept by Pollis in Secret Storage for every panel and set in the Julia REPL; either may be left unset
+[apiKey]
+label = "Imagery"
+noun = "keys"
+
+[[apiKey.fields]]
+name = "googleMapsKey"
+envVar = "GOOGLE_MAPS_API_KEY"
+label = "Google Maps key"
+prompt = "Google Maps key, for Google's satellite imagery"
+
+[[apiKey.fields]]
+name = "arcgisKey"
+envVar = "ARCGIS_API_KEY"
+label = "ArcGIS key"
+prompt = "ArcGIS Location Platform API key, for Esri's World Imagery"
+
+[[packages]]
+name = "ArchaeologicalDetection.jl"
+github = "https://github.com/Trumpingtons/ArchaeologicalDetection.jl"
+
+[[packages]]
+name = "DecisionTree.jl"
+github = "https://github.com/JuliaAI/DecisionTree.jl"
+
+[[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+[[wikis]]
+name = "Factsheet"
+file = "learnedsatellite/factsheet.md"
+bundled = true
+description = "One-page reference: the nine steps, the code that computes them, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "learnedsatellite/overview.md"
+bundled = true
+description = "What a model trained on known sites learns from a multitemporal composite, and what it cannot see at 10 m"
+
+[[wikis]]
+name = "Diagnostics"
+file = "learnedsatellite/diagnostics.md"
+bundled = true
+description = "No features, features everywhere, features only at the known sites, cells missing from the composite"
+
+[[wikis]]
+name = "Decision Guide"
+file = "learnedsatellite/decision-guide.md"
+bundled = true
+description = "Which years and clouds, which known sites, how many negatives and how far, and how to set the threshold"
+
+[[wikis]]
+separator = true
+label = "Methods"
+
+[[wikis]]
+name = "Random Forest on Sentinel-2"
+file = "learnedsatellite/random-forest.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "JAIC2026a"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "OCGLG...2020a"
+
+[[references]]
+key = "Bre2001a"
+
+[[references]]
+key = "DDCCF...2012a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "E2026a"
+
+[[references]]
+key = "HE2026a"
+
+[[faq]]
+question = "What does Learned Detection in Satellite Images compute?"
+answer = '''
+Learned Detection in Satellite Images makes a multitemporal composite of Sentinel-2, the mean reflectance of many scenes in ten bands at 10 m, each scene without its cloudy cells. A random forest of 128 trees then learns to tell the cells of known sites from cells away from them, and gives at every cell the share of its trees that vote for a site. Cells with a probability above the Threshold are joined into features, each with its area, its roundness and its highest probability.
+'''
+wiki = "Random Forest on Sentinel-2"
+
+[[faq]]
+question = "What kind of sites can a Sentinel-2 composite show?"
+answer = '''
+A Sentinel-2 composite has cells of 10 m, so a site must be large, covering many cells, as the mounds of Orengo and 6 coauthors (2020) in Cholistan did, from under 5 ha to over 30 ha, or as hillforts do. The random forest sees no form at all: it learns the reflectance of the ground of the known sites, their soil, moisture and vegetation over the years. It finds ground like theirs, which may be a site or may be a field, a quarry or a village.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Does Learned Detection in Satellite Images use a model trained by someone else?"
+answer = '''
+No. The random forest of Learned Detection in Satellite Images is trained each time on the known sites of Step 3, in the area of Step 1, as Orengo and 6 coauthors (2020) trained theirs on the mounds already known in Cholistan. It knows only what those sites look like in that composite, and is not carried to another area: there, it is trained again on sites known there.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "How does the composite of Learned Detection in Satellite Images leave out clouds?"
+right = "Each scene's cells that its scene classification marks as cloud, cloud shadow or cirrus are left out of the mean"
+wrong = ["Scenes with any cloud over the area are left out whole", "The median of the scenes is taken, which ignores clouds", "Clouds are removed by a neural network before the mean is taken", "Only the clearest scene of each year is used", "Cells brighter than a threshold in the blue band are left out"]
+explanation = "Sentinel-2 Level-2A comes with a scene classification: Step 2 leaves out of each scene the cells it marks as no data, saturated, cloud shadow, cloud of medium or high probability, or thin cirrus, and takes the mean of the rest. Step 1 also leaves out scenes with more clouds than the Maximum Cloud over the whole scene."
+wiki = "Random Forest on Sentinel-2"
+hidden = true
+
+[[faq]]
+question = "How long does Learned Detection in Satellite Images take on the example?"
+right = "Several minutes for the composite, read once and saved, then seconds to train and run the random forest"
+wrong = ["A few seconds for the composite, then hours to train the random forest", "About an hour for the composite, then hours to train the random forest", "A few seconds for everything, as the composite is downloaded ready-made", "About a minute to download a trained model, then seconds a tile", "A few minutes for each step, every time any input changes"]
+explanation = "Step 2 reads only the cells of the area from each scene, a few seconds a scene, several at once when the Julia REPL has several threads: for the example, several minutes. It saves the composite to a GeoTIFF and reads it from there afterwards. Training the forest and running it take seconds to tens of seconds."
+wiki = "Factsheet"
+hidden = true
+
+[[steps]]
+id = "area"
+title = "Area and Scenes"
+intro = "Choose the area and the years, and find the scenes of Sentinel-2 Level-2A over it in Earth Search's catalogue, which needs no account."
+code = '''
+using ArchaeologicalDetection, SmartRegions, Rasters, ArchGDAL
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+box = ({{box}})  # west, south, east, north, in degrees
+scenes = sentinel_scenes(box; years = {{firstYear}}:{{lastYear}}, cloud = {{cloud}})
+println(length(scenes), " scenes with at most {{cloud}}% clouds, from ", minimum(s -> s.acquired, scenes)[1:10], " to ", maximum(s -> s.acquired, scenes)[1:10])
+'''
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. The composite and the known sites are kept there, and Steps 5 and 8 write there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps.inputs]]
+id = "box"
+label = "Area (W, S, E, N)"
+tooltip = "The area, as west, south, east, north in degrees of longitude and latitude. The default is the Berkshire Downs, south-west of Oxford, 18 by 11 km, with four hillforts. Each scene is read for this area only, so a larger area takes longer."
+default = "-1.66, 51.52, -1.40, 51.62"
+
+[[steps.inputs]]
+id = "firstYear"
+label = "First Year"
+tooltip = "The first year of the scenes. Earth Search's Level-2A goes back to 2015, with most scenes from 2017."
+default = "2024"
+
+[[steps.inputs]]
+id = "lastYear"
+label = "Last Year"
+tooltip = "The last year of the scenes. More years give more scenes, so a steadier mean, and take longer to read."
+default = "2025"
+
+[[steps.inputs]]
+id = "cloud"
+label = "Maximum Cloud (%)"
+tooltip = "Scenes with more clouds than this share, over the whole scene, are left out. The clouds of the scenes kept are left out cell by cell in Step 2."
+default = "20"
+
+[[steps]]
+id = "composite"
+title = "Sentinel-2 Composite"
+intro = "Make the multitemporal composite: at every cell of 10 m, the mean reflectance of each of ten bands over the scenes where the cell is clear. Only the cells of the area are read from each scene, a few seconds a scene, several scenes at once when the Julia REPL has several threads. The composite is saved, and read from the file afterwards."
+code = '''
+composite = sentinel_composite(scenes, box; path = joinpath(folder, "{{compositeFile}}"))  # read from the file when it is there
+'''
+
+[[steps.inputs]]
+id = "compositeFile"
+label = "Composite File"
+tooltip = "The GeoTIFF the composite is saved to, in the folder, or an absolute path. When the file is there, it is read and the scenes are not: give another name for another area or other years."
+default = "berkshire-downs-sentinel2.tif"
+
+[[steps.sections]]
+heading = "The Ten Bands"
+items = ["Blue (B2), green (B3), red (B4) and near infrared (B8), in cells of 10 m.", "Three red edge bands (B5, B6, B7), the narrow near infrared (B8A) and two short-wave infrared bands (B11, B12), in cells of 20 m, each 10 m cell taking the value of the nearest.", "Cells marked in a scene as cloud, cloud shadow, cirrus, saturated or no data are left out of that scene's part of the mean."]
+
+[[steps]]
+id = "sites"
+title = "Known Sites"
+intro = "Mark the cells of the composite that are known sites, from a file of polygons, or of points and lines with a radius. These cells teach the model what a site looks like in this composite."
+code = '''
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}using DuckDB
+sites_path = joinpath(folder, "{{sitesFile}}")  # an absolute path is kept as it is
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}# Example file: the hillforts among Historic England's scheduled monuments in the area, from its open web service. Replace "berkshire-downs-hillforts.gpkg" with your own file of known sites.
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}if !isfile(sites_path)
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}	con = DBInterface.connect(DuckDB.DB)
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}	DBInterface.execute(con, "LOAD spatial")
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}	scheduled_monuments(con, box; crs = "EPSG:4326")
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}	DBInterface.execute(con, "COPY (SELECT list_entry, name, geom FROM monuments WHERE name ILIKE '%hillfort%' OR name ILIKE '%promontory fort%') TO '$(sites_path)' WITH (FORMAT GDAL, DRIVER 'GPKG', SRS 'EPSG:4326')")
+{{?sitesFile=berkshire-downs-hillforts.gpkg}}end
+sites = site_cells(composite, sites_path; radius = {{radius}})
+println(count(sites), " cells of known sites")
+'''
+
+[[steps.inputs]]
+id = "sitesFile"
+label = "Known Sites"
+tooltip = "A vector file of known sites (a GeoPackage, GeoJSON or Shapefile, in any coordinate system), in the folder, or an absolute path. With the default, berkshire-downs-hillforts.gpkg, the code first writes the hillforts among Historic England's scheduled monuments in the area, unless the folder has the file already."
+default = "berkshire-downs-hillforts.gpkg"
+
+[[steps.inputs]]
+id = "radius"
+label = "Radius (m)"
+tooltip = "Cells within this distance of a feature of the file are sites too, in metres: for points and lines, the size of a site. 0 takes the polygons as they are, and each point or line as half a cell."
+default = "0"
+
+[[steps]]
+id = "train"
+title = "Train the Random Forest"
+intro = "Train a random forest of 128 trees, as Orengo and 6 coauthors (2020) did, on the cells of the known sites and on cells drawn at random away from them. Each tree takes half the cells, drawn with replacement, and at each split the square root of the number of bands, as Earth Engine's random forest does by default."
+code = '''
+model = forest_model(composite, sites; trees = {{trees}}, negatives = {{negatives}}, distance = {{distance}})
+println("Trained on ", model.positives, " cells of known sites and ", model.negatives, " cells at least {{distance}} m from them")
+'''
+
+[[steps.inputs]]
+id = "trees"
+label = "Trees"
+tooltip = "The number of trees of the random forest: 128 in Orengo and 6 coauthors (2020). More trees give smoother probabilities and take longer."
+default = "128"
+
+[[steps.inputs]]
+id = "negatives"
+label = "Negatives per Site Cell"
+tooltip = "How many cells away from the sites are drawn for each cell of a site, as the examples of what is not a site."
+default = "10"
+
+[[steps.inputs]]
+id = "distance"
+label = "Distance from Sites (m)"
+tooltip = "The negatives are drawn at least this far from every known site, in metres, so that the edges of a site, and the ground just around it, are not taught as not a site."
+default = "500"
+
+[[steps]]
+id = "run"
+title = "Run the Random Forest"
+intro = "Run the random forest over every cell of the composite: the share of its 128 trees that vote for a site is the probability of a site at that cell."
+code = '''
+probability = forest_probability(model, composite)  # the share of the trees that vote for a site, at each cell
+'''
+
+[[steps]]
+id = "save-output"
+title = "Save the Model's Output"
+intro = "Save the probability map before any threshold is applied, so that the threshold can be changed later without training or running the model again, as a Cloud-Optimised GeoTIFF."
+
+[[steps.actions]]
+id = "save-probability"
+label = "Probability Map as Cloud-Optimised GeoTIFF"
+desc = "Write the probability map to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression, to open in a GIS beside other layers"
+code = '''
+out = joinpath(folder, "forest-probability.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, Float32.(coalesce.(probability, NaN32)); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = NaN32)  # missing cells written as NaN
+	println("Wrote ", out)
+end
+'''
+
+[[steps]]
+id = "features"
+title = "Compute the Features"
+intro = "The cells at or above the threshold are joined into regions through the sides of the cells. The minimum area and the minimum roundness then filter the regions, which are ranked by their highest probability."
+code = '''
+found = forest_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}});
+candidates = sort(found.candidates; by = c -> -c.probability);  # the features, ranked by their highest probability
+println(length(candidates), " features")
+candidates[1:min(15, end)]  # the first 15
+'''
+
+[[steps.inputs]]
+id = "threshold"
+label = "Threshold"
+tooltip = "The probability, from 0 to 1, a cell must reach to belong to a feature: 0.55 in Orengo and 6 coauthors (2020), as a compromise between finding small or partly covered sites and leaving out scattered cells."
+default = "0.55"
+
+[[steps.inputs]]
+id = "minArea"
+label = "Minimum Area (m²)"
+tooltip = "Features of this area or less are left out, in square metres: a cell is 100 m². 0 keeps every feature, single cells too."
+default = "0"
+
+[[steps.inputs]]
+id = "minRoundness"
+label = "Minimum Roundness"
+tooltip = "Features of this roundness or less are left out: 4 pi times the area over the squared perimeter of the convex hull, 1 for a circle and 0.785 for a square. 0 keeps every feature."
+default = "0"
+
+[[steps]]
+id = "look"
+title = "Look at the Features"
+intro = "See the features on the probability map and on two bands of the composite, beside imagery of the same ground, whole or around a place. The imagery is asked from the server of the source Imagery names, which learns where the area is."
+
+[[steps.inputs]]
+id = "zoomCentre"
+label = "Zoom Centre"
+tooltip = "A point, as x, y in the coordinates of the composite (the UTM zone of the centre of the area), around which Zoom on the Place, on the maps of Zoom and Pan, looks: the default is Uffington Castle, in UTM zone 30 north."
+default = "598983, 5715126"
+
+[[steps.inputs]]
+id = "zoomSize"
+label = "Zoom Size (m)"
+tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, in metres."
+default = "1500"
+
+[[steps.inputs]]
+id = "imagery"
+label = "Imagery"
+kind = "select"
+tooltip = "The imagery beside the maps. Automatic takes Google when a Google Maps key is set, otherwise Esri when an ArcGIS key is set, otherwise Sentinel-2: the keys are set on the Powered by line. Google and Esri need the user's own key and come under their terms, which are the user's to follow; EOX's Sentinel-2 cloudless of 2016 needs no key and is open (CC BY 4.0), but in cells of 10 m. The server of the imagery learns where the area is."
+default = "auto"
+
+[[steps.inputs.options]]
+value = "auto"
+label = "Automatic"
+
+[[steps.inputs.options]]
+value = "google"
+label = "Google Satellite (Your Key)"
+
+[[steps.inputs.options]]
+value = "esri"
+label = "Esri World Imagery (Your Key)"
+
+[[steps.inputs.options]]
+value = "sentinel"
+label = "Sentinel-2 Cloudless, 10 m"
+
+[[steps.inputs.options]]
+value = "none"
+label = "None"
+
+[[steps.actions]]
+id = "zoom"
+label = "Zoom and Pan"
+desc = "The probability of a site, the near infrared (B8) and the short-wave infrared (B11) of the composite, as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
+code = '''
+x0, y0 = {{zoomCentre}}
+d = {{zoomSize}} / 2
+println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " features within ", d, " m of ", x0, ", ", y0)
+Pollis.browse(terrain_maps("Learned Detection in Satellite Images",
+	"Probability of a Site" => probability,
+	"Near Infrared (B8)" => (composite[Band(7)], 0.1, 0.4),
+	"Short-Wave Infrared (B11)" => (composite[Band(9)], 0.1, 0.35);
+	labels = found.labels, centre = (x0, y0), width = 2d, imagery = :{{imagery}}))
+'''
+
+[[steps]]
+id = "save"
+title = "Save Features"
+intro = "Write the features for a GIS: the outline of each, with its area, its roundness and its probability."
+
+[[steps.actions]]
+id = "save-features"
+label = "Features as GeoPackage"
+desc = "Write the features as outlines with their measures to a GeoPackage in the folder of the files, to open in a GIS beside the composite"
+code = '''
+using DuckDB
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+out = save_candidates(con, candidates, joinpath(folder, "forest-features.gpkg"); crs = probability, labels = found.labels)
+println("Wrote ", length(candidates), " features to ", out)
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "known"
+label = "Features and Known Sites"
+desc = "Which known sites a feature meets, and how many features meet none: the features away from the known sites are the new candidates, those on them only show that the model learned its training cells"
+code = '''
+met = Set(parent(found.labels)[parent(sites) .& (parent(found.labels) .> 0)])  # the features with a cell on a known site
+away = filter(c -> !(c.id in met), candidates)
+println(length(candidates) - length(away), " of ", length(candidates), " features meet a known site; ", length(away), " meet none")
+away[1:min(15, end)]  # the first 15 features away from the known sites, by probability
+'''
+
+[[actionGroups.actions]]
+id = "monuments"
+label = "Features and Scheduled Monuments"
+desc = "The scheduled monuments of Historic England's National Heritage List for England within the area, from its open web service, with the features that meet each and the features that meet none (in England only)"
+code = '''
+using DuckDB
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "LOAD spatial")
+scheduled_monuments(con, probability)  # the table monuments, in the coordinates of the composite
+candidates_table(con, candidates; crs = probability, labels = found.labels)  # the table candidates, the outline of each feature
+met = [(list_entry = r.list_entry, name = r.name, features = r.n) for r in DBInterface.execute(con, "SELECT m.list_entry, m.name, count(c.id) AS n FROM monuments m LEFT JOIN candidates c ON ST_Intersects(m.geom, c.geom) GROUP BY ALL ORDER BY n DESC")]
+apart = only(DBInterface.execute(con, "SELECT count(*) AS n FROM candidates c WHERE NOT EXISTS (SELECT 1 FROM monuments m WHERE ST_Intersects(m.geom, c.geom))")).n
+println(length(met), " scheduled monuments in the area, ", count(r -> r.features > 0, met), " met by a feature; ", apart, " of ", length(candidates), " features meet no monument")
+met
+'''
