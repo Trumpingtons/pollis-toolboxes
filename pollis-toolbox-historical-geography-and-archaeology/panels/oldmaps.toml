@@ -1,0 +1,698 @@
+# Old Maps: old maps set beside today's map of the same place: the maps of France that IGN serves as tiles, the maps
+# that Allmaps holds georeferenced, and famous maps of the world in the images their libraries publish
+
+[meta]
+title = "Old Maps"
+viewType = "pollis.oldmaps"
+defaultModel = "france"
+decisionFirstColumn = "Tab"
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+[[models]]
+id = "france"
+label = "Maps of France"
+
+[[models]]
+id = "allmaps"
+label = "Georeferenced Maps"
+
+[[models]]
+id = "famous"
+label = "Famous Maps"
+
+[[wikis]]
+name = "Factsheet"
+file = "oldmaps/factsheet.md"
+bundled = true
+description = "One-page reference: the tabs, the inputs, the swipe, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "oldmaps/overview.md"
+bundled = true
+description = "What setting an old map beside today's shows, and how to read the swipe"
+
+[[wikis]]
+name = "Diagnostics"
+file = "oldmaps/diagnostics.md"
+bundled = true
+description = "Enlarged tiles, missing titles and years, the region of a famous map"
+
+[[wikis]]
+name = "Decision Guide"
+file = "oldmaps/decision-guide.md"
+bundled = true
+description = "Which tab for which place and question, which map of today, which zoom"
+
+[[wikis]]
+separator = true
+label = "Sources"
+
+[[wikis]]
+name = "Maps of France"
+file = "oldmaps/maps-of-france.md"
+bundled = true
+description = "The map of Cassini, the map of the état-major and aerial photographs, served by IGN"
+
+[[wikis]]
+name = "Georeferenced Maps"
+file = "oldmaps/georeferenced-maps.md"
+bundled = true
+description = "The maps of libraries that Allmaps holds georeferenced, found by place"
+
+[[wikis]]
+name = "Famous Maps"
+file = "oldmaps/famous-maps.md"
+bundled = true
+description = "Eight famous maps of the world, their libraries and the terms of their images"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "All2026a"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "Ero2026a"
+
+[[references]]
+separator = true
+label = "Standards"
+
+[[references]]
+key = "IIIFC2023a"
+
+[[references]]
+key = "ACSSW2020a"
+
+[[references]]
+key = "ACSSW2020b"
+
+[[references]]
+key = "OGC2019a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "IGN2026a"
+
+[[references]]
+key = "ANIGN2025a"
+
+[[references]]
+key = "ANIGN2025b"
+
+[[references]]
+key = "Mer1569a"
+
+[[references]]
+key = "ON2026a"
+
+[[references]]
+key = "WC2026a"
+
+[[faq]]
+question = "How do I compare an old map with today's map of the same place?"
+answer = "Give the place as longitude, latitude in Place, choose a tab and run the Example Code. The old map is drawn on the left of a line across the map and today's map on its right; drag the line, or move it with the arrow keys, to uncover one or the other, while moving and zooming both together.\n\nOld Map Over Today draws the old map half transparent over today's instead, which shows where streets and rivers have moved."
+wiki = "Overview"
+
+[[faq]]
+question = "Why does Georeferenced Maps find maps of a whole country when I look for a town?"
+answer = "Allmaps returns every georeferenced map that covers the Place, whatever its scale, so maps of a region, a country or a continent that include the town are found too. Largest keeps the maps that cover at most that many km²: 1,000 km² leaves mostly plans of towns and their surroundings.\n\nMap Outlines draws the outline of every map found, coloured by its year, to see which maps cover what."
+wiki = "Georeferenced Maps"
+
+[[faq]]
+question = "Why are the famous maps not swiped over today's map?"
+answer = "The Famous Maps are images without coordinates: none of the eight is georeferenced, so they cannot be laid on today's map. The Famous Maps tab sets the image on the left, where it can be moved and enlarged on its own, and today's map of the region it shows on the right, with that region outlined."
+wiki = "Famous Maps"
+
+[[faq]]
+question = "Can I use the map of Cassini in my own work?"
+answer = "IGN publishes the two copies of the map of Cassini under the Licence Ouverte: they may be reused freely and at no cost, for any purpose including commercial, provided the data are not altered and every redistribution names the source that the metadata give. The Maps of France tab shows that source on the map, and Save as GeoTIFF saves the tiles of the Place."
+wiki = "Maps of France"
+
+[[faq]]
+question = "Between which years was the map of Cassini made?"
+right = "Between 1756 and 1815, by the Cassini family of cartographers"
+wrong = ["Between 1820 and 1866, together with the map of the état-major", "Between 1818 and 1824, at 1:10,000 for the surroundings of Paris", "In 1950, as IGN's first map of France at 1:50,000", "Between 1950 and 1965, from aerial photographs taken by IGN"]
+explanation = "IGN's metadata date the map of Cassini to 1756 to 1815; the map of the état-major is of 1820 to 1866."
+wiki = "Maps of France"
+hidden = true
+
+[[faq]]
+question = "Which copy of the map of Cassini did the Archives nationales scan?"
+right = "The copy commissioned by the King"
+wrong = ["The copy said to have been made for Marie-Antoinette", "The copy of the Bibliothèque nationale de France", "A copy printed for the surroundings of Paris", "A copy held by the University Library of Basel"]
+explanation = "The Archives nationales scanned the King's copy; the copy said to have been made for Marie-Antoinette was scanned by the Bibliothèque nationale de France."
+wiki = "Maps of France"
+hidden = true
+
+[[faq]]
+question = "Where does the Georeferenced Maps tab take the year of a map from?"
+right = "From the IIIF manifest of the map, its navDate or a metadata entry named as a date"
+wrong = ["From the Allmaps API, which gives the year of each map it lists", "From the area of the map, by Allmaps' scale", "From the date on which the map was georeferenced in Allmaps Editor", "From the title, as the first number in it"]
+explanation = "Allmaps gives no year; the tab reads each map's IIIF manifest, where navDate or a metadata entry may give one."
+wiki = "Georeferenced Maps"
+hidden = true
+
+[[faq]]
+question = "What does Largest leave out in the Georeferenced Maps tab?"
+right = "The maps that cover more than Largest km²"
+wrong = ["The maps with fewer than Largest ground control points", "The maps made before the year Largest", "The maps whose image is wider than Largest pixels", "The maps more than Largest km from the Place"]
+explanation = "Largest is an area: maps covering more km² than it, such as maps of whole countries, are left out."
+wiki = "Georeferenced Maps"
+hidden = true
+
+[[faq]]
+question = "Which library holds the Tabula Peutingeriana that the Famous Maps tab shows?"
+right = "The Austrian National Library, in Vienna"
+wrong = ["The Library of Congress, in Washington", "The University Library of Basel", "The Biblioteca Nazionale Marciana, in Venice", "The Bibliothèque nationale de France, in Paris"]
+explanation = "The Tabula Peutingeriana is Cod. 324 of the Austrian National Library."
+wiki = "Famous Maps"
+hidden = true
+
+[[faq]]
+question = "Is the image of a famous map placed on today's coordinates?"
+right = "No: it stands beside today's map of its region"
+wrong = ["Yes: Allmaps warps it onto today's map", "Yes: its corners are placed on the region's box", "Yes: the swipe lays it over today's map", "Yes: Save as GeoTIFF gives it coordinates"]
+explanation = "None of the famous maps is georeferenced: the image has no coordinates, so it is shown beside today's map."
+wiki = "Famous Maps"
+hidden = true
+
+[[bullets]]
+text = "A Swipe"
+detail = "The old map on the left of a line, today's on the right: drag the line across the map, which both move and zoom together"
+
+[[bullets]]
+text = "Maps of France"
+detail = "The map of Cassini, the map of the état-major and aerial photographs from 1950, beside today's Plan IGN or aerial photographs"
+
+[[bullets]]
+text = "Georeferenced Maps"
+detail = "The maps of libraries the world over that Allmaps holds georeferenced and that cover a place, with their titles and years"
+
+[[bullets]]
+text = "Famous Maps"
+detail = "Eight famous maps of the world, from the Tabula Peutingeriana to the Tasman map, beside today's map of their region"
+
+[[bullets]]
+text = "Terms of Reuse"
+detail = "Each map shows its source and the terms under which its library or IGN publishes it"
+
+[[decisionRows]]
+task = "Maps of France"
+context = "A place in France"
+purpose = "Set the map of Cassini, of the état-major or old aerial photographs over today's map"
+
+[[decisionRows]]
+task = "Georeferenced Maps"
+context = "Anywhere"
+purpose = "Find the old maps of a place held in libraries, and swipe one over today's map"
+
+[[decisionRows]]
+task = "Famous Maps"
+context = "The world"
+purpose = "Read a famous map beside today's map of the region it shows"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the lists of maps found are kept, and where Export saves: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "place"
+label = "Place"
+tooltip = "The centre of the map, as longitude, latitude. The default is Paris; for Maps of France, a place in France."
+default = "2.3364, 48.8606"
+models = ["france", "allmaps"]
+
+[[inputs]]
+id = "zoom"
+label = "Zoom"
+tooltip = "The zoom the map opens on, from 0 (the world) to about 18 (a street). An old map is enlarged beyond its last zoom with tiles."
+default = "13"
+models = ["france", "allmaps"]
+
+[[inputs]]
+id = "old"
+label = "Old Map"
+kind = "select"
+default = "cassini"
+tooltip = "The old map of France drawn on the left of the line, as IGN serves it."
+models = ["france"]
+
+[[inputs.options]]
+value = "cassini"
+label = "Cassini, Copy of Marie-Antoinette"
+
+[[inputs.options]]
+value = "cassini_king"
+label = "Cassini, Copy of the King"
+
+[[inputs.options]]
+value = "etatmajor"
+label = "État-Major, 1820-1866"
+
+[[inputs.options]]
+value = "etatmajor_paris"
+label = "État-Major of Paris, 1818-1824"
+
+[[inputs.options]]
+value = "scan50_1950"
+label = "Map of 1950"
+
+[[inputs.options]]
+value = "photos_1950"
+label = "Aerial Photographs, 1950-1965"
+
+[[inputs.options]]
+value = "photos_1965"
+label = "Aerial Photographs, 1965-1980"
+
+[[inputs.options]]
+value = "photos_1980"
+label = "Aerial Photographs, 1980-1995"
+
+[[inputs]]
+id = "today"
+label = "Map of Today"
+kind = "select"
+default = "photos"
+tooltip = "The map drawn on the right of the line: IGN's aerial photographs or Plan IGN, or the OpenStreetMap base map alone."
+models = ["france"]
+
+[[inputs.options]]
+value = "photos"
+label = "Aerial Photographs"
+
+[[inputs.options]]
+value = "plan"
+label = "Plan IGN"
+
+[[inputs.options]]
+value = "osm"
+label = "OpenStreetMap"
+
+[[inputs]]
+id = "other"
+label = "Other Old Map"
+kind = "select"
+default = "etatmajor"
+tooltip = "The old map that Two Old Maps draws on the right of the line, beside Old Map."
+models = ["france"]
+
+[[inputs.options]]
+value = "cassini"
+label = "Cassini, Copy of Marie-Antoinette"
+
+[[inputs.options]]
+value = "cassini_king"
+label = "Cassini, Copy of the King"
+
+[[inputs.options]]
+value = "etatmajor"
+label = "État-Major, 1820-1866"
+
+[[inputs.options]]
+value = "etatmajor_paris"
+label = "État-Major of Paris, 1818-1824"
+
+[[inputs.options]]
+value = "scan50_1950"
+label = "Map of 1950"
+
+[[inputs.options]]
+value = "photos_1950"
+label = "Aerial Photographs, 1950-1965"
+
+[[inputs.options]]
+value = "photos_1965"
+label = "Aerial Photographs, 1965-1980"
+
+[[inputs.options]]
+value = "photos_1980"
+label = "Aerial Photographs, 1980-1995"
+
+[[inputs]]
+id = "largest"
+label = "Largest"
+tooltip = "The largest area a map may cover, in km²: maps of whole regions or countries that also cover the Place are left out."
+default = "1000"
+models = ["allmaps"]
+
+[[inputs]]
+id = "pick"
+label = "Map Number"
+tooltip = "The map of the list drawn on the left of the line: the list runs from the oldest map with a year, and maps without a year come last."
+default = "1"
+models = ["allmaps"]
+
+[[inputs]]
+id = "second"
+label = "Other Map Number"
+tooltip = "The map of the list that Two Maps of the Place draws on the right of the line, beside Map Number."
+default = "2"
+models = ["allmaps"]
+
+[[inputs]]
+id = "year"
+label = "Year of Borders"
+tooltip = "The year whose borders, from Cliopatria, Borders over the Map draws: for Georeferenced Maps, used when the map has no year."
+default = "1789"
+models = ["france", "allmaps"]
+
+[[inputs]]
+id = "famous"
+label = "Famous Map"
+kind = "select"
+default = "waldseemuller"
+tooltip = "The famous map shown on the left, beside today's map of its region."
+models = ["famous"]
+
+[[inputs.options]]
+value = "peutinger"
+label = "Tabula Peutingeriana, 1200-1220"
+
+[[inputs.options]]
+value = "catalan"
+label = "Catalan Atlas, 1375"
+
+[[inputs.options]]
+value = "framauro"
+label = "Fra Mauro, 1459"
+
+[[inputs.options]]
+value = "cantino"
+label = "Cantino Planisphere, 1502"
+
+[[inputs.options]]
+value = "waldseemuller"
+label = "Waldseemüller, 1507"
+
+[[inputs.options]]
+value = "mercator"
+label = "Mercator, 1569"
+
+[[inputs.options]]
+value = "gerritsz"
+label = "Hessel Gerritsz, 1627"
+
+[[inputs.options]]
+value = "tasman"
+label = "Tasman Map, 1644"
+
+[[codeBranches]]
+model = "france"
+code = '''
+using HistoricalGeography
+
+lon, lat = parse.(Float64, split("{{place}}", ","))  # the centre of the map
+zoom = {{zoom}}
+folder = mkpath(expanduser(raw"{{folder}}"))
+
+# an old map of France that IGN serves as tiles: its title, years, tile address, zooms and the source it names
+old = ign_layer(:{{old}})
+println(old.title, ", ", old.years, ": tiles from zoom ", old.minzoom, " to ", old.maxzoom)
+layers = [Pollis.tiles(old.url; name = "$(old.title), $(old.years)", attribution = old.attribution, maxzoom = old.maxzoom, side = "left")]
+{{?today!=osm}}today = ign_layer(:{{today}})
+{{?today!=osm}}push!(layers, Pollis.tiles(today.url; name = today.title, attribution = today.attribution, maxzoom = today.maxzoom, side = "right"))
+
+# the old map on the left of the line, today's on the right: drag the line to uncover one or the other
+display(Pollis.webmap(layers...; center = (lon, lat), zoom, title = "Old Maps: $(old.title)", labels = "{{today}}" == "osm"))
+'''
+
+[[codeBranches]]
+model = "allmaps"
+code = '''
+using DuckDB, Tables, HistoricalGeography
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+lon, lat = parse.(Float64, split("{{place}}", ","))  # the centre of the map
+zoom = {{zoom}}
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the list of maps and the manifests read are kept
+
+# the georeferenced maps of Allmaps that cover the Place, each of at most Largest km², as the table maps:
+# id, title, year, library, km2, tiles, image, manifest, editor and geom (the outline of the map)
+n = allmaps(con; at = (lon, lat), largest = {{largest}}, folder)
+m = rows("SELECT id, title, year, library, km2, tiles, editor FROM maps ORDER BY year NULLS LAST, km2")  # the oldest map with a year first
+println(n, " maps of Allmaps cover the Place:")
+for i in eachindex(m.id)[1:min(end, 30)]
+	println(lpad(i, 3), "  ", rpad(coalesce(m.year[i], "none"), 6), rpad(first(m.title[i], 60), 62), m.library[i], ", ", m.km2[i], " km²")
+end
+pick = clamp({{pick}}, 1, n)
+named(i) = string(isempty(m.title[i]) ? "Map $(m.id[i])" : m.title[i], ismissing(m.year[i]) ? "" : ", $(m.year[i])")
+
+# the map warped by Allmaps on the left of the line, today's map on the right
+display(Pollis.webmap(Pollis.tiles(m.tiles[pick]; name = named(pick), attribution = "Allmaps; $(m.library[pick])", side = "left");
+	center = (lon, lat), zoom, title = "Old Maps: $(named(pick))"))
+println("Map ", pick, " in Allmaps Editor: ", m.editor[pick])
+'''
+
+[[codeBranches]]
+model = "famous"
+code = '''
+using HistoricalGeography
+
+folder = mkpath(expanduser(raw"{{folder}}"))
+f = famous_map(:{{famous}})  # title, year, author, library, image, page, terms, the region it shows and a note
+println(f.title, ", ", f.year, ", by ", f.author, "; ", f.library)
+println("Image: ", f.page, " (", f.terms, ")")
+isempty(f.note) || println("Shown: ", f.note)
+
+# the region of the map on today's coordinates, outlined on today's map
+region = """{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Region of the map"},"geometry":{"type":"Polygon",
+	"coordinates":[[[$(f.west),$(f.south)],[$(f.east),$(f.south)],[$(f.east),$(f.north)],[$(f.west),$(f.north)],[$(f.west),$(f.south)]]]}}]}"""
+
+# the old map on the left, which moves and enlarges on its own, and today's map of its region on the right
+display(Pollis.webmap(Pollis.layer(region; name = "Region of the map", color = "#d62728", opacity = 0.05);
+	beside = Pollis.picture(f.image; name = "$(f.title), $(f.year)", attribution = "$(f.library); $(f.terms)"), title = "Old Maps: $(f.title)"))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "overlay"
+label = "Old Map Over Today"
+desc = "The old map half transparent over today's map, without the line, to see where streets, rivers and coasts have moved"
+models = ["france", "allmaps"]
+code = '''
+{{?model=france}}top = Pollis.tiles(old.url; name = "$(old.title), $(old.years)", attribution = old.attribution, maxzoom = old.maxzoom, opacity = 0.5)
+{{?model=allmaps}}top = Pollis.tiles(m.tiles[pick]; name = named(pick), attribution = "Allmaps; $(m.library[pick])", opacity = 0.5)
+display(Pollis.webmap(top; style = "liberty", center = (lon, lat), zoom, title = "Old Map Over Today"))
+'''
+
+[[actionGroups.actions]]
+id = "outlines"
+label = "Map Outlines"
+desc = "The outline of every map found, coloured by its year: click one for its title, library and area"
+models = ["allmaps"]
+code = '''
+outlines = joinpath(mktempdir(), "outlines.geojson")
+DBInterface.execute(con, "COPY (SELECT title, year, library, km2, id, geom FROM maps) TO '$(quoted(outlines))' (FORMAT GDAL, DRIVER 'GeoJSON')")
+marker = """{"type":"FeatureCollection","features":[{"type":"Feature","properties":{"name":"Place"},"geometry":{"type":"Point","coordinates":[$(lon),$(lat)]}}]}"""
+display(Pollis.webmap(Pollis.layer(outlines; name = "Maps of Allmaps", column = "year", opacity = 0.15),
+	Pollis.layer(marker; name = "Place", color = "#d62728"); title = "Outlines of the Maps Found"))
+'''
+
+[[actionGroups.actions]]
+id = "full-image"
+label = "Whole Image"
+desc = "The image of the famous map alone, at its full size, in Pollis's browser"
+models = ["famous"]
+code = '''
+Pollis.browse(f.image)
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "zooms"
+label = "Zooms of the Maps"
+desc = "The zooms at which IGN has tiles of each map of France: beyond its last zoom a map is enlarged, not more detailed"
+models = ["france"]
+code = '''
+l = ign_layers()
+println(rpad("map", 52), rpad("years", 12), "zooms")
+for i in eachindex(l.id)
+	println(rpad(l.title[i], 52), rpad(l.years[i], 12), l.minzoom[i], " to ", l.maxzoom[i], l.id[i] == old.id ? "  (Old Map)" : "")
+end
+zoom > old.maxzoom && println("\nZoom ", zoom, " is beyond the last zoom of ", old.title, ", ", old.maxzoom, ": its tiles are enlarged.")
+zoom < old.minzoom && println("\nZoom ", zoom, " is below the first zoom of ", old.title, ", ", old.minzoom, ": zoom in to see it.")
+'''
+
+[[actionGroups.actions]]
+id = "missing"
+label = "Missing Titles and Years"
+desc = "How many maps found have no title or no year, library by library"
+models = ["allmaps"]
+code = '''
+g = rows("""SELECT coalesce(nullif(library, ''), '(no library given)') AS library, count(*) AS maps,
+	count(*) FILTER (WHERE title = '') AS untitled, count(*) FILTER (WHERE year IS NULL) AS undated FROM maps GROUP BY 1 ORDER BY maps DESC""")
+println(rpad("library", 48), lpad("maps", 6), lpad("no title", 10), lpad("no year", 9))
+for i in eachindex(g.library)
+	println(rpad(first(g.library[i], 46), 48), lpad(g.maps[i], 6), lpad(g.untitled[i], 10), lpad(g.undated[i], 9))
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "two-old-maps"
+label = "Two Old Maps"
+desc = "Old Map on the left of the line and Other Old Map on its right, such as Cassini beside the état-major"
+models = ["france"]
+code = '''
+other = ign_layer(:{{other}})
+other.id == old.id && error("Old Map and Other Old Map are both $(old.title): choose two different maps")
+display(Pollis.webmap(Pollis.tiles(old.url; name = "$(old.title), $(old.years)", attribution = old.attribution, maxzoom = old.maxzoom, side = "left"),
+	Pollis.tiles(other.url; name = "$(other.title), $(other.years)", attribution = other.attribution, maxzoom = other.maxzoom, side = "right");
+	center = (lon, lat), zoom, title = "$(old.title) and $(other.title)", labels = false))
+'''
+
+[[actionGroups.actions]]
+id = "two-maps"
+label = "Two Maps of the Place"
+desc = "Map Number on the left of the line and Other Map Number on its right, both warped by Allmaps"
+models = ["allmaps"]
+code = '''
+second = clamp({{second}}, 1, n)
+second == pick && error("Map Number and Other Map Number are both $(pick): choose two different maps")
+display(Pollis.webmap(Pollis.tiles(m.tiles[pick]; name = named(pick), attribution = "Allmaps; $(m.library[pick])", side = "left"),
+	Pollis.tiles(m.tiles[second]; name = named(second), attribution = "Allmaps; $(m.library[second])", side = "right");
+	center = (lon, lat), zoom, title = "$(named(pick)) and $(named(second))"))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "borders-over-map"
+label = "Borders over the Map"
+desc = "The borders of the states of Cliopatria in the year of the map, or Year of Borders, drawn over the old map"
+models = ["france", "allmaps"]
+code = '''
+using DuckDB
+b = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(b, "LOAD spatial")
+DBInterface.execute(b, "SET geometry_always_xy = true")
+{{?model=france}}when = {{year}}
+{{?model=allmaps}}when = coalesce(m.year[pick], {{year}})
+reach = 360 / 2^zoom * 8  # a box some screens wide around the Place
+historical_borders(b, :cliopatria; folder, box = (lon - reach, lat - reach / 2, lon + reach, lat + reach / 2), since = when, upto = when)
+{{?model=france}}under = Pollis.tiles(old.url; name = "$(old.title), $(old.years)", attribution = old.attribution, maxzoom = old.maxzoom)
+{{?model=allmaps}}under = Pollis.tiles(m.tiles[pick]; name = named(pick), attribution = "Allmaps; $(m.library[pick])")
+display(Pollis.webmap(under, Pollis.layer(borders_geojson(b); name = "Cliopatria, $(when)", column = "name", opacity = 0.1);
+	center = (lon, lat), zoom = max(zoom - 3, 4), title = "Borders of $(when) over the Old Map", labels = false))
+'''
+
+[[actionGroups.actions]]
+id = "libraries"
+label = "Libraries of the Maps"
+desc = "The libraries whose maps cover the Place, with how many, their years and the smallest area"
+models = ["allmaps"]
+code = '''
+g = rows("""SELECT coalesce(nullif(library, ''), '(no library given)') AS library, count(*) AS maps, min(year) AS first, max(year) AS last,
+	min(km2) AS smallest FROM maps GROUP BY 1 ORDER BY maps DESC""")
+for i in eachindex(g.library)
+	years = ismissing(g.first[i]) ? "no years" : "$(g.first[i]) to $(g.last[i])"
+	println(rpad(first(g.library[i], 46), 48), lpad(g.maps[i], 4), " maps, ", years, ", the smallest of ", g.smallest[i], " km²")
+end
+'''
+
+[[actionGroups.actions]]
+id = "famous-list"
+label = "The Famous Maps"
+desc = "The eight famous maps in order of year, with the library that holds each and the terms of its image"
+models = ["famous"]
+code = '''
+all = famous_maps()
+for i in sortperm(all.year)
+	println(all.year[i], "  ", rpad(all.title[i], 58), all.library[i])
+	println("      ", all.terms[i], ": ", all.page[i])
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geotiff"
+label = "Save as GeoTIFF"
+desc = "The old map around the Place, at Zoom, as a GeoTIFF in Web Mercator in the Folder, for a GIS"
+models = ["france", "allmaps"]
+code = '''
+using ArchGDAL
+reach = 360 / 2^zoom * 2  # four tiles wide around the Place
+box = (lon - reach, lat - reach / 2, lon + reach, lat + reach / 2)
+{{?model=france}}url, name = old.url, "ign-$(old.id)"
+{{?model=allmaps}}url, name = m.tiles[pick], "allmaps-$(m.id[pick])"
+out = joinpath(folder, "old-map-$(name)-$(lon)_$(lat)-z$(zoom).tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	save_geotiff(url, box; zoom, path = out)  # GDAL reads the tiles and writes red, green, blue and alpha bands
+	println("Wrote ", out)
+{{?model=france}}	println("Source to name: ", old.attribution)
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-image"
+label = "Save the Image"
+desc = "The image of the famous map as a JPEG in the Folder, with the terms under which it is published"
+models = ["famous"]
+code = '''
+using Downloads
+out = joinpath(folder, "famous-map-$(f.id).jpg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	Downloads.download(f.image, out; headers = ["User-Agent" => "HistoricalGeography.jl (https://pollis.org)"])
+	println("Wrote ", out, "\nTerms: ", f.terms, "; ", f.library, "; ", f.page)
+end
+'''
