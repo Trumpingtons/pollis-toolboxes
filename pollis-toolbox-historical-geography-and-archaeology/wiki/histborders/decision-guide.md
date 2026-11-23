@@ -22,7 +22,7 @@ For the history of a town or region, set Place to its longitude and latitude, an
 
 ## How Should I Cite a Map Made With Historical Borders?
 
-A map made with Historical Borders should name the dataset, its version and the year shown. The Cliopatria tab reads version 0.2.1 of Cliopatria, whose paper is the work to cite ([Bennett and 12 coauthors (2025)](#ref-BMTCB...2025a)). The Historical Basemaps tab reads a fixed commit of the historical-basemaps repository, named in the Example Code ([Ourednik (2026)](#ref-Our2026b)). The CShapes 2.0 tab reads the file CShapes-2.0 from ETH Zurich, described in the paper of its authors ([Schvitz, Girardin, Rüegger, Weidmann, Cederman and Gleditsch (2022)](#ref-SGRWC...2022a)). The map's attribution also names OpenFreeMap and OpenStreetMap for the land beneath. Saying whether Realms or Their Parts was chosen lets a reader repeat the map.
+A map made with Historical Borders should name the dataset, its version and the year shown. The Cliopatria tab reads version 0.2.1 of Cliopatria, whose paper is the work to cite ([Bennett and 12 coauthors (2025)](#ref-BMTCB...2025a)). The Historical Basemaps tab reads a fixed commit of the historical-basemaps repository, named in the documentation of `historical_basemaps` in HistoricalGeography.jl ([Ourednik (2026)](#ref-Our2026b)). The CShapes 2.0 tab reads the file CShapes-2.0 from ETH Zurich, described in the paper of its authors ([Schvitz, Girardin, Rüegger, Weidmann, Cederman and Gleditsch (2022)](#ref-SGRWC...2022a)). The map's attribution also names OpenFreeMap and OpenStreetMap for the land beneath. Saying whether Realms or Their Parts was chosen lets a reader repeat the map.
 
 ## References
 

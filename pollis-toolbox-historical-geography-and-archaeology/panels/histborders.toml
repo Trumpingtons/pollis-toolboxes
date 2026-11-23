@@ -1,11 +1,15 @@
 # Historical Borders: the borders of states over the centuries, from Cliopatria, historical-basemaps and CShapes 2.0,
-# read with DuckDB's spatial extension and drawn on a map with a year slider
+# read with DuckDB's spatial extension through HistoricalGeography.jl and drawn on a map with a year slider
 
 [meta]
 title = "Historical Borders"
 viewType = "pollis.histborders"
 defaultModel = "cliopatria"
 decisionFirstColumn = "Source"
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -247,58 +251,25 @@ default = "11.3426, 44.4938"
 [[codeBranches]]
 model = "*"
 code = '''
-using DuckDB, Tables, Downloads
+using DuckDB, Tables, HistoricalGeography
 
 con = DBInterface.connect(DuckDB.DB)  # an in-memory database
 DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
 DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
 rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
 quoted(text) = replace(text, "'" => "''")
-folder = mkpath(expanduser(raw"{{folder}}"))  # where the sources' files are kept
-west, south, east, north = parse.(Float64, split("{{box}}", ","))
-since, upto = {{since}}, {{upto}}
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the sources' files are kept once downloaded
+box = ({{box}})  # west, south, east, north, in degrees
 
-function kept(url, name)  # a file downloaded once, then read from the folder
-	path = joinpath(folder, name)
-	isfile(path) || mv(Downloads.download(url), path)
-	return path
-end
-
-{{?model=cliopatria}}source = "Cliopatria 0.2.1"
-{{?model=cliopatria}}archive = kept("https://github.com/Seshat-Global-History-Databank/cliopatria/raw/v0.2.1/cliopatria.geojson.zip", "cliopatria-0.2.1.geojson.zip")  # 46 MB
-{{?model=cliopatria}}{{?units=realms}}level = "coalesce(MemberOf, '') = ''"  # the polities inside no other: a kingdom once, as a whole
-{{?model=cliopatria}}{{?units=parts}}level = "Name NOT LIKE '(%'"  # without the wholes, whose names are in parentheses
-{{?model=cliopatria}}records = """SELECT CASE WHEN Name LIKE '(%' THEN substr(Name, 2, length(Name) - 2) ELSE Name END AS name, FromYear AS starts, ToYear AS ends, geom
-{{?model=cliopatria}}	FROM ST_Read('/vsizip/$(quoted(archive))/cliopatria_polities_only_v021.geojson') WHERE Type = 'POLITY' AND $(level)"""
-{{?model=basemaps}}source = "Historical Basemaps"
-{{?model=basemaps}}commit = "4b5039e50d8d2464b065bd76ad6086cd4597108d"  # the version of 2 November 2026
-{{?model=basemaps}}maps = [100:100:1200; 1279; 1300; 1400; 1492; 1500; 1530; 1600; 1650; 1700; 1715; 1783; 1800; 1815; 1878; 1880; 1900; 1914; 1920; 1930; 1938; 1945; 1960; 1994; 2000; 2010]
-{{?model=basemaps}}spans = [(y, i < length(maps) ? maps[i + 1] - 1 : y) for (i, y) in enumerate(maps)]  # each map is shown until the next
-{{?model=basemaps}}wanted = [span for span in spans if span[1] <= upto && span[2] >= since]
-{{?model=basemaps}}isempty(wanted) && error("Historical Basemaps has maps from 100 to 2010 here")
-{{?model=basemaps}}paths = [kept("https://raw.githubusercontent.com/aourednik/historical-basemaps/$(commit)/geojson/world_$(a).geojson", "historical-basemaps-$(first(commit, 7))-$(a).geojson") for (a, _) in wanted]
-{{?model=basemaps}}records = join(["SELECT NAME AS name, $(a) AS starts, $(b) AS ends, geom FROM ST_Read('$(quoted(path))') WHERE NAME IS NOT NULL" for ((a, b), path) in zip(wanted, paths)], " UNION ALL ")
-{{?model=cshapes}}source = "CShapes 2.0"
-{{?model=cshapes}}path = kept("https://icr.ethz.ch/data/cshapes/CShapes-2.0.geojson", "CShapes-2.0.geojson")  # 25 MB
-{{?model=cshapes}}records = """SELECT cntry_name AS name, gwsyear AS starts, CASE WHEN gwemonth = 12 AND gweday = 31 THEN gweyear ELSE gweyear - 1 END AS ends, geom
-{{?model=cshapes}}	FROM ST_Read('$(quoted(path))')"""  # in a year, the borders in force on 31 December
-
-area = "ST_MakeEnvelope($(west), $(south), $(east), $(north))"
-DBInterface.execute(con, """CREATE OR REPLACE TABLE borders AS SELECT *, ST_Area_Spheroid(geom) / 1e6 AS km2 FROM (
-	SELECT name, greatest(starts, $(since)) AS starts, least(ends, $(upto)) AS ends, ST_CollectionExtract(ST_Intersection(ST_MakeValid(geom), $(area)), 3) AS geom
-	FROM ($(records)) WHERE ends >= starts AND starts <= $(upto) AND ends >= $(since) AND ST_Intersects(ST_MakeValid(geom), $(area))
-) WHERE NOT ST_IsEmpty(geom)""")  # the shapes in the box, and their km² there
-span = rows("SELECT min(starts) AS low, max(ends) AS high FROM borders")
-span.low[1] === missing && error("$(source) has no borders in this Box between $(since) and $(upto)")
-since, upto = Int(span.low[1]), Int(span.high[1])
-changes = Int.(rows("SELECT y FROM (SELECT starts AS y FROM borders UNION SELECT ends + 1 FROM borders WHERE ends < $(upto)) ORDER BY y").y)
+# the borders of the source in the Box, from From to Until, as the table borders: name, starts, ends, geom and km2, the area in the Box
+{{?model=cliopatria}}b = historical_borders(con, :cliopatria; folder, box, since = {{since}}, upto = {{upto}}, units = :{{units}})
+{{?model=basemaps}}b = historical_borders(con, :basemaps; folder, box, since = {{since}}, upto = {{upto}})
+{{?model=cshapes}}b = historical_borders(con, :cshapes; folder, box, since = {{since}}, upto = {{upto}})
+source, since, upto, changes = b.source, b.since, b.upto, b.changes  # the years with borders in the Box, and those in which one changes
 year = clamp({{year}}, since, upto)
 
 # the map: every shape with its years, simplified for drawing, of which the slider shows those of one year
-shapes = tempname() * ".geojson"
-DBInterface.execute(con, """COPY (SELECT * FROM (SELECT name, starts, ends,
-	ST_CollectionExtract(ST_MakeValid(ST_ReducePrecision(ST_SimplifyPreserveTopology(geom, 0.02), 0.01)), 3) AS geom FROM borders) WHERE NOT ST_IsEmpty(geom))
-	TO '$(quoted(shapes))' (FORMAT GDAL, DRIVER 'GeoJSON')""")
+shapes = borders_geojson(con)
 println(source, ": ", length(changes), " years of change from ", since, " to ", upto, "; the slider opens on ", year)
 display(Pollis.webmap(Pollis.layer(shapes; name = "States", column = "name", opacity = 0.75, years = ("starts", "ends"));
 	title = "Historical Borders: $(source)", year, labels = false))
@@ -430,7 +401,7 @@ desc = "Every shape in the Box with its years and area, as a GeoParquet file in 
 code = '''
 kind = "{{model}}"
 {{?model=cliopatria}}kind *= "-{{units}}"
-out = joinpath(folder, "historical-borders-$(kind)-$(join((west, south, east, north), "_"))-$(since)-$(upto).parquet")
+out = joinpath(folder, "historical-borders-$(kind)-$(join(box, "_"))-$(since)-$(upto).parquet")
 if isfile(out)
 	println(out, " is there already: rename or move it first")
 else

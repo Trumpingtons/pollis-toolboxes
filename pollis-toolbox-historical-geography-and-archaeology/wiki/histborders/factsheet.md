@@ -7,7 +7,7 @@
 | **Purpose** | See how the states of an area change over the centuries, and which states held a place |
 | **Tabs** | Cliopatria; Historical Basemaps; CShapes 2.0 |
 | **Inputs** | Folder; Box; Units (Cliopatria); From; Until; Year; Other Year; Place |
-| **Core packages** | [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension |
+| **Core packages** | [HistoricalGeography.jl](https://github.com/Trumpingtons/HistoricalGeography.jl), [DuckDB.jl](https://github.com/duckdb/DuckDB.jl), [Tables.jl](https://github.com/JuliaData/Tables.jl), with DuckDB's spatial extension |
 | **Output** | A map with a year slider, and the table `borders`: one row per shape, with `name`, `starts`, `ends`, `km2` and `geom` |
 | **Needs** | An Internet connection for the first download and for the base map; no account or key |
 
@@ -26,6 +26,10 @@
 ## What Is in the Table of Borders?
 
 The table `borders` of the Historical Borders panel has one row for each shape of a state in the Box. The columns `starts` and `ends` are the first and last year in which the shape is shown, both included, cut to From and Until. The column `km2` is the area of the shape inside the Box, in square kilometres on the WGS 84 ellipsoid, so a state that reaches beyond the Box has only part of its area there. The geometry `geom` keeps the detail of the source. Only the copy drawn under the year slider is simplified, to keep the map quick ([DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
+
+## Which Functions of HistoricalGeography.jl Does Historical Borders Call?
+
+The Example Code of Historical Borders makes the table `borders` with `historical_borders(con, source; folder, box, since, upto, units)` of HistoricalGeography.jl, where `source` is `:cliopatria`, `:basemaps` or `:cshapes`. The function downloads the files of the source once into the Folder, keeps the shapes that lie in the Box between From and Until, cuts them to the Box and adds their area, and returns the name of the source, the first and last years with borders in the Box, and the years in which a border changes there. `borders_geojson(con)` then writes every shape with its years, simplified for drawing, as the GeoJSON file under the year slider. The SQL that reads each source on its own comes from `cliopatria(; folder, units)`, `historical_basemaps(; folder, since, upto)` and `cshapes(; folder)`, and `basemap_years()` lists the years of the maps of historical-basemaps.
 
 ## What Do the Next Steps of Historical Borders Do?
 
