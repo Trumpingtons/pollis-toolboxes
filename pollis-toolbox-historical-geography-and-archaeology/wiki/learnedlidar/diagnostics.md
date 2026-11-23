@@ -10,7 +10,7 @@ Many small features scattered over the area are the usual output of a model appl
 
 ## Features Cut Along Straight Lines
 
-The probability map is computed on tiles of 1024 by 1024 cells, counted from the north-west corner of the terrain model, and ADAF leaves out the 8 cells along each edge of a tile when it draws features ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). A feature crossing the edge of a tile is therefore cut along a straight line, or split into two features, each smaller and less round than the whole. Compute the Features does the same, so that its features match ADAF's. The probability map has no such gaps. A terrain model whose area of interest lies away from the edges of the tiles avoids the problem, as does thresholding the saved probability map in a GIS.
+The probability map is computed on tiles of 1024 by 1024 cells, counted from the north-west corner of the terrain model, and for an HRNet model ADAF leaves out the 8 cells along each edge of a tile when it draws features ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). A feature crossing the edge of a tile is therefore cut along a straight line, or split into two features, each smaller and less round than the whole. Compute the Features does the same, so that its features match ADAF's. The probability map has no such gaps. A terrain model whose area of interest lies away from the edges of the tiles avoids the problem, as does thresholding the saved probability map in a GIS.
 
 ## Features Near the Edge or a Gap of the Terrain Model
 

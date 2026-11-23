@@ -1,4 +1,4 @@
-# Learned Detection in Lidar: trained neural networks applied to lidar terrain models to find archaeological features, starting with the published models of ADAF (HRNet segmentation of all archaeology, barrows, enclosures and ringforts) run in Julia with ArchaeologicalDetection.jl, NNlib.jl and Pickle.jl, and SmartRegions.jl for their outlines and the scheduled monuments
+# Learned Detection in Lidar: trained neural networks applied to lidar terrain models to find archaeological features, starting with the published models of ADAF (HRNet segmentation and Faster R-CNN object detection of all archaeology, barrows, enclosures and ringforts) run in Julia with ArchaeologicalDetection.jl, NNlib.jl and Pickle.jl, and SmartRegions.jl for their outlines and the scheduled monuments
 
 [meta]
 title = "Learned Detection in Lidar"
@@ -129,6 +129,15 @@ key = "WSCJD...2021a"
 key = "Hes2010a"
 
 [[references]]
+key = "RHGS2017a"
+
+[[references]]
+key = "HZRS2016a"
+
+[[references]]
+key = "LDGHH...2017a"
+
+[[references]]
 separator = true
 label = "Data"
 
@@ -144,7 +153,7 @@ key = "HE2026a"
 [[faq]]
 question = "What does Learned Detection in Lidar compute?"
 answer = '''
-Learned Detection in Lidar runs one of the trained segmentation models of ADAF, the Automatic Detection of Archaeological Features tool, over a lidar terrain model. The model reads the Input Image of Step 3, the simple local relief model of the terrain, stretched from -0.5 to 0.5 m, and gives at each cell the probability that it belongs to an archaeological feature of its kind. In Step 6, cells with a probability at least the Threshold are joined into features, each with its area, its roundness and its highest probability.
+Learned Detection in Lidar runs one of the trained models of ADAF, the Automatic Detection of Archaeological Features tool, over a lidar terrain model. The model reads the Input Image of Step 3, the simple local relief model of the terrain, stretched from -0.5 to 0.5 m. An HRNet segmentation model gives at each cell the probability that it belongs to an archaeological feature of its kind; a Faster R-CNN object detection model gives boxes with scores, and each cell takes the score of the best box over it. In Step 6, cells with a probability at least the Threshold are joined into features, each with its area, its roundness and its highest probability.
 '''
 wiki = "ADAF Models"
 
@@ -158,7 +167,7 @@ wiki = "Overview"
 [[faq]]
 question = "Is the Julia model the same as ADAF's?"
 answer = '''
-The segmentation network of Learned Detection in Lidar is the HRNet of AiTLAS, the toolbox ADAF runs, rewritten in Julia in ArchaeologicalDetection.jl with NNlib.jl and loaded with ADAF's own trained weights. On a tile of 1024 by 1024 cells of a lidar terrain model, its probabilities differ from those of the PyTorch model by less than 0.0001 at every cell, and the same cells reach a probability of 0.5.
+The segmentation network of Learned Detection in Lidar is the HRNet of AiTLAS, the toolbox ADAF runs, rewritten in Julia in ArchaeologicalDetection.jl with NNlib.jl and loaded with ADAF's own trained weights. On a tile of 1024 by 1024 cells of a lidar terrain model, its probabilities differ from those of the PyTorch model by less than 0.0001 at every cell, and the same cells reach a probability of 0.5. The object detection network is torchvision's Faster R-CNN, rewritten in the same way: on the same tile, it finds the same boxes as torchvision, their sides within 0.0001 cells and their scores within 0.00001.
 '''
 wiki = "ADAF Models"
 
@@ -166,7 +175,7 @@ wiki = "ADAF Models"
 question = "Why are there gaps along straight lines in the features of Learned Detection in Lidar?"
 right = "The 8 cells along each edge of a tile are left out of the features"
 wrong = ["The 16 cells along each edge of a tile are left out of the features", "The 10 cells along each edge of a tile are left out of the probability map", "The 8 cells along each edge of a tile are left out of the input image", "Each tile has a threshold of its own, set from its highest probability", "Features that cross the edge of a tile are removed whole"]
-explanation = "Compute the Features, Step 6, leaves out the 8 cells along each edge of a tile of 1024 by 1024 cells, as ADAF does, so a feature that crosses an edge is cut or split. The probability map has no such gaps."
+explanation = "For an HRNet model, Compute the Features, Step 6, leaves out the 8 cells along each edge of a tile of 1024 by 1024 cells, as ADAF does, so a feature that crosses an edge is cut or split. The probability map has no such gaps, and a Faster R-CNN model leaves no cells out."
 wiki = "Diagnostics"
 hidden = true
 
@@ -217,16 +226,20 @@ default = "wandlebury-dtm.tif"
 [[steps]]
 id = "network"
 title = "Trained Network Model"
-intro = "Choose one of ADAF's trained models. Four are HRNet segmentation models and four are Faster R-CNN object detection models, each for one class: all archaeology, barrows, enclosures or ringforts. Those listed greyed cannot be chosen."
+intro = "Choose one of ADAF's trained models. Four are HRNet segmentation models and four are Faster R-CNN object detection models, each for one class: all archaeology, barrows, enclosures or ringforts."
 code = '''
-model = adaf_model(adaf_weights(folder; feature = :{{feature}}));  # ADAF's trained model, downloaded once (about 860 MB)
+{{?feature=all|barrow|enclosure|ringfort}}model = adaf_model(adaf_weights(folder; feature = :{{feature}}));  # ADAF's trained HRNet model, downloaded once (about 860 MB)
+{{?feature=fasterrcnn-all}}model = adaf_model(adaf_weights(folder; feature = :all, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
+{{?feature=fasterrcnn-barrow}}model = adaf_model(adaf_weights(folder; feature = :barrow, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
+{{?feature=fasterrcnn-enclosure}}model = adaf_model(adaf_weights(folder; feature = :enclosure, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
+{{?feature=fasterrcnn-ringfort}}model = adaf_model(adaf_weights(folder; feature = :ringfort, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
 '''
 
 [[steps.inputs]]
 id = "feature"
 label = "Trained Network Model"
 kind = "select"
-tooltip = "Each model was trained by ADAF's authors on lidar of Ireland to find one class: All Archaeology is any of barrows, enclosures and ringforts. An HRNet model is about 860 MB, downloaded once."
+tooltip = "Each model was trained by ADAF's authors on lidar of Ireland to find one class: All Archaeology is any of barrows, enclosures and ringforts. An HRNet model is about 860 MB and a Faster R-CNN model about 520 MB, each downloaded once."
 default = "all"
 
 [[steps.inputs.options]]
@@ -248,22 +261,18 @@ label = "HRNet Segmentation: Ringforts"
 [[steps.inputs.options]]
 value = "fasterrcnn-all"
 label = "Faster R-CNN Object Detection: All Archaeology"
-disabled = true
 
 [[steps.inputs.options]]
 value = "fasterrcnn-barrow"
 label = "Faster R-CNN Object Detection: Barrows"
-disabled = true
 
 [[steps.inputs.options]]
 value = "fasterrcnn-enclosure"
 label = "Faster R-CNN Object Detection: Enclosures"
-disabled = true
 
 [[steps.inputs.options]]
 value = "fasterrcnn-ringfort"
 label = "Faster R-CNN Object Detection: Ringforts"
-disabled = true
 
 [[steps]]
 id = "image"
@@ -276,19 +285,20 @@ image = adaf_input(dem)
 [[steps]]
 id = "run"
 title = "Run the Network"
-intro = "The network reads the input image on tiles of 1024 by 1024 cells, from the north-west corner. Each tile takes several seconds."
+intro = "The network reads the input image on tiles of 1024 by 1024 cells, from the north-west corner. Each tile takes several seconds with HRNet, and about 40 seconds with Faster R-CNN."
 code = '''
-probability = adaf_probability(model, dem)  # the probability of a feature at each cell, tile by tile
+{{?feature=all|barrow|enclosure|ringfort}}probability = adaf_probability(model, dem)  # the probability of a feature at each cell, tile by tile
+{{?feature=fasterrcnn-all|fasterrcnn-barrow|fasterrcnn-enclosure|fasterrcnn-ringfort}}probability = adaf_probability(model, dem)  # the score of the best box over each cell, tile by tile
 '''
 
 [[steps.sections]]
 heading = "What the Network Gives"
-items = ["An HRNet model gives a probability map: the probability of a feature at each cell.", "A Faster R-CNN model gives boxes, each with a label and a score."]
+items = ["An HRNet model gives a probability map: the probability of a feature at each cell.", "A Faster R-CNN model gives boxes, each with a score. Each cell takes the score of the best box over it, so the cells at or above a threshold are those of the boxes."]
 
 [[steps]]
 id = "save-output"
 title = "Save the Network's Output"
-intro = "Save what the network gives before any threshold is applied, so that the threshold can be changed later without running the network again. For HRNet, that is the probability map, as a Cloud-Optimised GeoTIFF."
+intro = "Save what the network gives before any threshold is applied, so that the threshold can be changed later without running the network again. That is the probability map, or for Faster R-CNN the map of the scores of the boxes, as a Cloud-Optimised GeoTIFF."
 
 [[steps.actions]]
 id = "save-probability"
@@ -307,9 +317,10 @@ end
 [[steps]]
 id = "features"
 title = "Compute the Features"
-intro = "For HRNet, the cells at or above the threshold are joined into regions. The minimum area and the minimum roundness then filter the regions, which are ranked by their highest probability."
+intro = "The cells at or above the threshold are joined into regions: for HRNet, without the 8 cells along the edges of each tile, as ADAF does; for Faster R-CNN, the boxes, overlapping ones joined. The minimum area and the minimum roundness then filter the regions, which are ranked by their highest probability or score."
 code = '''
-found = adaf_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}});
+{{?feature=all|barrow|enclosure|ringfort}}found = adaf_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}});
+{{?feature=fasterrcnn-all|fasterrcnn-barrow|fasterrcnn-enclosure|fasterrcnn-ringfort}}found = adaf_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}}, margin = 0);  # boxes: no cells left out along the edges of the tiles
 candidates = sort(found.candidates; by = c -> -c.probability);  # the features, ranked by their highest probability
 println(length(candidates), " features")
 candidates[1:min(15, end)]  # the first 15
@@ -318,7 +329,7 @@ candidates[1:min(15, end)]  # the first 15
 [[steps.inputs]]
 id = "threshold"
 label = "Threshold"
-tooltip = "The probability, from 0 to 1, a cell must reach to belong to a feature. ADAF's default is 0.5."
+tooltip = "The probability, or for Faster R-CNN the score, from 0 to 1, a cell must reach to belong to a feature. ADAF's default is 0.5."
 default = "0.5"
 
 [[steps.inputs]]
@@ -380,14 +391,15 @@ label = "None"
 [[steps.actions]]
 id = "zoom"
 label = "Zoom and Pan"
-desc = "The image the model reads and the probability of a feature, as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
+desc = "The image the model reads and the probability of a feature (for Faster R-CNN, the score of the best box), as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
 println(count(c -> abs(c.x - x0) <= d && abs(c.y - y0) <= d, candidates), " features within ", d, " m of ", x0, ", ", y0)
 Pollis.browse(terrain_maps("Learned Detection in Lidar",
 	"Image the Model Reads" => image,
-	"Probability of a Feature" => probability;
+{{?feature=all|barrow|enclosure|ringfort}}	"Probability of a Feature" => probability;
+{{?feature=fasterrcnn-all|fasterrcnn-barrow|fasterrcnn-enclosure|fasterrcnn-ringfort}}	"Score of the Best Box" => probability;
 	labels = found.labels, centre = (x0, y0), width = 2d, imagery = :{{imagery}}))
 '''
 

@@ -1,6 +1,6 @@
 # Learned Detection in Lidar — Factsheet
 
-**Learned detection** applies neural networks trained on labelled lidar data to find archaeological features in a terrain model. The Learned Detection in Lidar panel of the Historical Geography and Archaeology Toolbox applies the published segmentation models of ADAF, the Automatic Detection of Archaeological Features tool, in Julia, in eight steps ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a); [Kostovska, Kocev, Čož, Kokalj, Curran and Corns (2025)](#ref-KKCKC...2025a)). ArchaeologicalDetection.jl builds the network with NNlib.jl and reads ADAF's weights with Pickle.jl, on a grid read with Rasters.jl and ArchGDAL.jl ([FluxML Contributors (2026)](#ref-FMLC2026a); [Pickle.jl Contributors (2026)](#ref-PJC2026a); [Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a); [GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026a)).
+**Learned detection** applies neural networks trained on labelled lidar data to find archaeological features in a terrain model. The Learned Detection in Lidar panel of the Historical Geography and Archaeology Toolbox applies the published segmentation and object detection models of ADAF, the Automatic Detection of Archaeological Features tool, in Julia, in eight steps ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a); [Kostovska, Kocev, Čož, Kokalj, Curran and Corns (2025)](#ref-KKCKC...2025a)). ArchaeologicalDetection.jl builds the network with NNlib.jl and reads ADAF's weights with Pickle.jl, on a grid read with Rasters.jl and ArchGDAL.jl ([FluxML Contributors (2026)](#ref-FMLC2026a); [Pickle.jl Contributors (2026)](#ref-PJC2026a); [Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a); [GDAL/OGR Contributors (2026)](#ref-GDALOGRC2026a)).
 
 | Item | Learned Detection in Lidar panel |
 |---|---|
@@ -16,18 +16,18 @@
 | Step | Function | Computation |
 |---|---|---|
 | 1. Terrain Model | `Raster` | The terrain model read, with its coordinate system, grid and cell size checked |
-| 2. Trained Network Model | `adaf_weights`, `adaf_model` | One of ADAF's four segmentation models, downloaded once from Zenodo and read into an HRNet built with NNlib.jl |
+| 2. Trained Network Model | `adaf_weights`, `adaf_model` | One of ADAF's eight models, four HRNet segmentation and four Faster R-CNN object detection, downloaded once from Zenodo and built with NNlib.jl |
 | 3. Input Image | `adaf_input` | The simple local relief model with a radius of 10 cells or 10 m, clipped to −0.5 to 0.5 m and stretched onto 0 to 1 |
-| 4. Run the Network | `adaf_probability` | The network on tiles of 1024 by 1024 cells from the north-west corner, with a sigmoid on its output |
+| 4. Run the Network | `adaf_probability` | The network on tiles of 1024 by 1024 cells from the north-west corner: for HRNet, the sigmoid of its output; for Faster R-CNN, the score of the best box over each cell |
 
-The network is that of AiTLAS, the toolbox that runs ADAF's models, on the HRNet backbone of PyTorch Image Models ([Dimitrovski, Kitanovski, Panov, Kostovska, Simidjievski and Kocev (2023)](#ref-DKPKS...2023a); [Wightman (2019)](#ref-Wig2019a)).
+The network is that of AiTLAS, the toolbox that runs ADAF's models, on the HRNet backbone of PyTorch Image Models ([Dimitrovski, Kitanovski, Panov, Kostovska, Simidjievski and Kocev (2023)](#ref-DKPKS...2023a); [Wightman (2019)](#ref-Wig2019a)). The object detection network is torchvision's Faster R-CNN ([Ren, He, Girshick and Sun (2017)](#ref-RHGS2017a)).
 
 ## How Learned Detection in Lidar Computes, Shows and Saves Its Results
 
 | Step | Function | Computation |
 |---|---|---|
 | 5. Save the Network's Output | `write` | The probability map, before any threshold, as a Cloud-Optimised GeoTIFF |
-| 6. Compute the Features | `adaf_features` | The cells at or above the Threshold, without the 8 cells along each tile's edges, joined through their sides, filtered by the Minimum Area and the Minimum Roundness, ranked by highest probability |
+| 6. Compute the Features | `adaf_features` | The cells at or above the Threshold, without the 8 cells along each tile's edges for HRNet, joined through their sides, filtered by the Minimum Area and the Minimum Roundness, ranked by highest probability |
 | 7. Look at the Features | `terrain_maps` | Zoom and Pan: the local relief the model reads, the probability and imagery of the same ground, side by side with a scale bar, moving together, with each feature outlined in yellow, on the whole area, with a button that goes to the square of the Zoom Size around the Zoom Centre and back. The imagery comes from Google or Esri, with the user's own key, or from EOX's Sentinel-2 cloudless of 2016, open but in cells of 10 m, as Imagery chooses; its server learns where the terrain model is. |
 | 8. Save Features | `save_candidates` | The outline of each feature with its measures, as a GeoPackage in the coordinate system of the terrain model |
 
@@ -70,6 +70,8 @@ With the default file, Step 1, Terrain Model, downloads a 1 m terrain model from
 <a id="ref-Ng2026a"></a>Ng, Y. (2026). ArchGDAL.jl: a high level API for GDAL, the Geospatial Data Abstraction Library. [github.com/yeesian/ArchGDAL.jl](https://github.com/yeesian/ArchGDAL.jl)
 
 <a id="ref-PJC2026a"></a>Pickle.jl Contributors (2026). Pickle.jl: loading and saving objects in Python's Pickle format. [github.com/chengchingwen/Pickle.jl](https://github.com/chengchingwen/Pickle.jl)
+
+<a id="ref-RHGS2017a"></a>Ren, S., He, K., Girshick, R. and Sun, J. (2017). Faster R-CNN: towards real-time object detection with region proposal networks. *IEEE Transactions on Pattern Analysis and Machine Intelligence* 39(6), 1137–1149. [doi:10.1109/TPAMI.2016.2577031](https://doi.org/10.1109/TPAMI.2016.2577031)
 
 <a id="ref-Sch2026a"></a>Schouten, R. (2026a). Rasters.jl: raster manipulation for the Julia language. [github.com/rafaqz/Rasters.jl](https://github.com/rafaqz/Rasters.jl)
 

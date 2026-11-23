@@ -11,6 +11,10 @@
 
 Each model is trained for one class, and a cell can have a high probability in several of them ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). The All Archaeology model is the usual first choice. The others separate the kinds once something has been found, and are downloaded only when chosen ([Kostovska, Kocev, Čož, Kokalj, Curran and Corns (2025)](#ref-KKCKC...2025a)).
 
+## Choosing Between HRNet Segmentation and Faster R-CNN Object Detection
+
+Each of the four classes has two ADAF models: an HRNet segmentation model and a Faster R-CNN object detection model ([Kostovska, Kocev, Čož, Kokalj, Curran and Corns (2025)](#ref-KKCKC...2025a)). The segmentation model gives a probability at each cell, so its features follow the outline of what it found, and their area and roundness describe that outline. The detection model gives boxes with scores ([Ren, He, Girshick and Sun (2017)](#ref-RHGS2017a)), so its features are rectangles or unions of rectangles: their area is that of the boxes, and their roundness is near 0.785, that of a square, whatever their form. The Minimum Roundness therefore sorts only the features of a segmentation model. A detection model's score measures how closely the content of the box resembles the training examples, as a segmentation model's probability does for a cell.
+
 ## Is the Terrain Model Suited to the ADAF Models?
 
 The ADAF models were trained on bare-earth terrain models at 0.5 m, made from lidar of Ireland, and their authors report the best results on data like it ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). A terrain model at 1 m shows every feature at half the number of cells, so that a barrow looks to the model like one of half the size, and the smallest features shrink to a few cells. A terrain model with buildings or vegetation left in, a digital surface model, shows forms the models never saw. The features sought matter most: forms outside the three classes, or monuments of other shapes and sizes, are outside what the models learned, however good the terrain model.
@@ -28,6 +32,8 @@ The Minimum Area and the Minimum Roundness remove features after the threshold. 
 <a id="ref-CCCKK2026a"></a>Čož, N., Corns, A., Curran, S., Kocev, D. and Kokalj, Ž. (2026). Automatic detection of archaeological features from airborne laser scanning data using deep learning: development and evaluation of the ADAF tool. *Journal of Archaeological Science: Reports* 71, 105733. [doi:10.1016/j.jasrep.2026.105733](https://doi.org/10.1016/j.jasrep.2026.105733)
 
 <a id="ref-KKCKC...2025a"></a>Kostovska, A., Kocev, D., Čož, N., Kokalj, Ž., Curran, S. and Corns, A. (2025). ADAF machine learning model weights. Dataset, version 1.0.0. [doi:10.5281/zenodo.15848663](https://doi.org/10.5281/zenodo.15848663)
+
+<a id="ref-RHGS2017a"></a>Ren, S., He, K., Girshick, R. and Sun, J. (2017). Faster R-CNN: towards real-time object detection with region proposal networks. *IEEE Transactions on Pattern Analysis and Machine Intelligence* 39(6), 1137–1149. [doi:10.1109/TPAMI.2016.2577031](https://doi.org/10.1109/TPAMI.2016.2577031)
 
 ## See Also
 - [Overview](overview.md) · [ADAF Models](adaf.md) · [Diagnostics](diagnostics.md)
