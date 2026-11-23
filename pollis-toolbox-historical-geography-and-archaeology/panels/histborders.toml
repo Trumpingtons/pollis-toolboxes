@@ -299,9 +299,9 @@ shapes = tempname() * ".geojson"
 DBInterface.execute(con, """COPY (SELECT * FROM (SELECT name, starts, ends,
 	ST_CollectionExtract(ST_MakeValid(ST_ReducePrecision(ST_SimplifyPreserveTopology(geom, 0.02), 0.01)), 3) AS geom FROM borders) WHERE NOT ST_IsEmpty(geom))
 	TO '$(quoted(shapes))' (FORMAT GDAL, DRIVER 'GeoJSON')""")
-states = Pollis.layer(shapes; name = "States", column = "name", opacity = 0.75, years = ("starts", "ends"))
 println(source, ": ", length(changes), " years of change from ", since, " to ", upto, "; the slider opens on ", year)
-display(Pollis.webmap(states; title = "Historical Borders: $(source)", year, labels = false))
+display(Pollis.webmap(Pollis.layer(shapes; name = "States", column = "name", opacity = 0.75, years = ("starts", "ends"));
+	title = "Historical Borders: $(source)", year, labels = false))
 '''
 
 [[actionGroups]]
