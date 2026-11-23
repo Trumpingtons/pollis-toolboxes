@@ -1,8 +1,8 @@
-# Old Maps — Decision Guide
+# Historical Maps — Decision Guide
 
-The Old Maps panel of the Historical Geography and Archaeology Toolbox has three tabs, each for a kind of old map, and a choice of today's map to set beside it.
+The Historical Maps panel of the Historical Geography and Archaeology Toolbox has three tabs, each for a kind of old map, and a choice of today's map to set beside it.
 
-## Which Tab of Old Maps Should I Choose?
+## Which Tab of Historical Maps Should I Choose?
 
 | Question | Tab |
 |---|---|
@@ -18,9 +18,9 @@ The maps of France cover the whole country at one scale; the maps of Allmaps are
 
 The Map of Today input of the Maps of France tab sets what lies on the right of the line. Aerial Photographs, IGN's photographs of today, show buildings, fields and woods as they are, the closest to the aerial photographs of the past. Plan IGN shows streets, places and their names in IGN's style, the closest to the lines of an old map. OpenStreetMap leaves the base map alone, with its names over both sides ([Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a)). Two Old Maps sets two old maps on either side of the line instead, such as the map of Cassini beside the map of the état-major.
 
-## Which Zoom Should I Choose in Old Maps?
+## Which Zoom Should I Choose in Historical Maps?
 
-The Zoom input of the Old Maps panel sets the zoom the map opens on, from 0, the whole world, to about 18, a street. A town fits at about 12 to 14, a quarter at 15 or 16. The map of Cassini has tiles to zoom 14 and the map of the état-major to zoom 15, so a higher Zoom enlarges their tiles without more detail ([Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a)). For Save as GeoTIFF, Zoom also sets the detail and the area saved: one zoom higher doubles the detail and halves the width.
+The Zoom input of the Historical Maps panel sets the zoom the map opens on, from 0, the whole world, to about 18, a street. A town fits at about 12 to 14, a quarter at 15 or 16. The map of Cassini has tiles to zoom 14 and the map of the état-major to zoom 15, so a higher Zoom enlarges their tiles without more detail ([Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a)). For Save as GeoTIFF, Zoom also sets the detail and the area saved: one zoom higher doubles the detail and halves the width.
 
 ## Which Largest Should I Choose in Georeferenced Maps?
 

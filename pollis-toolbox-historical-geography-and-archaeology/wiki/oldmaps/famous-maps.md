@@ -1,6 +1,6 @@
-# Old Maps — Famous Maps
+# Historical Maps — Famous Maps
 
-Famous Maps is the tab of the Old Maps panel that shows one of eight famous maps of the world, from the Tabula Peutingeriana to the Tasman map, as an image that moves and enlarges on its own, beside today's map of the region the map shows.
+Famous Maps is the tab of the Historical Maps panel that shows one of eight famous maps of the world, from the Tabula Peutingeriana to the Tasman map, as an image that moves and enlarges on its own, beside today's map of the region the map shows.
 
 ## Which Maps Does the Famous Maps Tab Show?
 
@@ -31,7 +31,7 @@ The Famous Maps tab names the terms of each image beside it. The image of the Me
 
 ## How Is a Famous Map Shown Beside Today's Map?
 
-The Famous Maps tab of the Old Maps panel lays the image on the left of the page, where it can be dragged and enlarged up to twice its own pixels, and today's map on the right, fitted to the region the map shows, outlined in red. The two sides move separately, since the image has no coordinates. The images are at most about 4,000 pixels wide, the size the image servers return when asked for it ([Appleby, Crane, Sanderson, Stroop and Warner (2020)](#ref-ACSSW2020b)); Whole Image opens the image alone in Pollis's browser.
+The Famous Maps tab of the Historical Maps panel lays the image on the left of the page, where it can be dragged and enlarged up to twice its own pixels, and today's map on the right, fitted to the region the map shows, outlined in red. The two sides move separately, since the image has no coordinates. The images are at most about 4,000 pixels wide, the size the image servers return when asked for it ([Appleby, Crane, Sanderson, Stroop and Warner (2020)](#ref-ACSSW2020b)); Whole Image opens the image alone in Pollis's browser.
 
 ## References
 

@@ -1,6 +1,6 @@
-# Old Maps — Maps of France
+# Historical Maps — Maps of France
 
-Maps of France is the tab of the Old Maps panel that draws the historical maps of France that IGN, the Institut national de l'information géographique et forestière, serves as tiles on its Géoplateforme, beside today's aerial photographs, Plan IGN or OpenStreetMap ([Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a)).
+Maps of France is the tab of the Historical Maps panel that draws the historical maps of France that IGN, the Institut national de l'information géographique et forestière, serves as tiles on its Géoplateforme, beside today's aerial photographs, Plan IGN or OpenStreetMap ([Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a)).
 
 ## What Is the Map of Cassini?
 
@@ -29,7 +29,7 @@ IGN publishes both copies of the map of Cassini under the Licence Ouverte: publi
 
 ## How Does Save as GeoTIFF Save a Map of France?
 
-Save as GeoTIFF, a Next Step of the Maps of France and Georeferenced Maps tabs of the Old Maps panel, saves the old map around the Place as one GeoTIFF file in the Folder: the tiles at Zoom over a box four tiles wide, read through GDAL's WMS driver with ArchGDAL.jl, in Web Mercator (EPSG:3857), with red, green, blue and alpha bands ([Ng (2026)](#ref-Ng2026a); [Open Geospatial Consortium (2019)](#ref-OGC2019a)). A GIS opens the file on its coordinates. A Zoom higher by one doubles the detail and halves the area saved.
+Save as GeoTIFF, a Next Step of the Maps of France and Georeferenced Maps tabs of the Historical Maps panel, saves the old map around the Place as one GeoTIFF file in the Folder: the tiles at Zoom over a box four tiles wide, read through GDAL's WMS driver with ArchGDAL.jl, in Web Mercator (EPSG:3857), with red, green, blue and alpha bands ([Ng (2026)](#ref-Ng2026a); [Open Geospatial Consortium (2019)](#ref-OGC2019a)). A GIS opens the file on its coordinates. A Zoom higher by one doubles the detail and halves the area saved.
 
 ## References
 

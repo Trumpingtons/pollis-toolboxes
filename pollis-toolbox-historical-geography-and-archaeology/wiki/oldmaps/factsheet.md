@@ -1,8 +1,8 @@
-# Old Maps — Factsheet
+# Historical Maps — Factsheet
 
-**Old maps** set beside today's map show how a place has changed: streets laid out or gone, rivers moved, towns grown over fields. The Old Maps panel of the Historical Geography and Archaeology Toolbox draws an old map and today's map of the same place together, with MapLibre GL JS, from three sources: the maps of France that IGN serves as tiles, the maps of libraries that Allmaps holds georeferenced, and famous maps of the world in the images their libraries publish ([MapLibre Contributors (2026)](#ref-MLC2026a); [Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a); [Allmaps (2026)](#ref-All2026a)).
+**Old maps** set beside today's map show how a place has changed: streets laid out or gone, rivers moved, towns grown over fields. The Historical Maps panel of the Historical Geography and Archaeology Toolbox draws an old map and today's map of the same place together, with MapLibre GL JS, from three sources: the maps of France that IGN serves as tiles, the maps of libraries that Allmaps holds georeferenced, and famous maps of the world in the images their libraries publish ([MapLibre Contributors (2026)](#ref-MLC2026a); [Institut national de l'information géographique et forestière (2026)](#ref-IGN2026a); [Allmaps (2026)](#ref-All2026a)).
 
-| Item | Old Maps panel |
+| Item | Historical Maps panel |
 |---|---|
 | **Purpose** | Compare an old map with today's map of the same place, and find the old maps of a place |
 | **Tabs** | Maps of France; Georeferenced Maps; Famous Maps |
@@ -11,7 +11,7 @@
 | **Output** | A map with a swipe, or an old map beside today's; for Georeferenced Maps, the table `maps` |
 | **Needs** | An Internet connection; no account or key |
 
-## What Do the Inputs of Old Maps Set?
+## What Do the Inputs of Historical Maps Set?
 
 | Input | What the input sets |
 |---|---|
@@ -28,13 +28,13 @@
 
 ## What Is in the Table of Maps of Georeferenced Maps?
 
-The Georeferenced Maps tab of the Old Maps panel writes the table `maps` in DuckDB, one row for each map of Allmaps that covers the Place. The columns are `id`, the map's identifier in Allmaps; `title`, the label of its IIIF manifest; `year`, the year its manifest gives, or missing; `library`, the institution that provides the image; `km2`, the area the map covers; `tiles`, the address of the map's tiles from the Allmaps Tile Server; `image` and `manifest`, its IIIF image and manifest; `editor`, its page in Allmaps Editor; and `geom`, the outline of the map on today's coordinates ([Allmaps (2026)](#ref-All2026a); [Appleby, Crane, Sanderson, Stroop and Warner (2020)](#ref-ACSSW2020a)).
+The Georeferenced Maps tab of the Historical Maps panel writes the table `maps` in DuckDB, one row for each map of Allmaps that covers the Place. The columns are `id`, the map's identifier in Allmaps; `title`, the label of its IIIF manifest; `year`, the year its manifest gives, or missing; `library`, the institution that provides the image; `km2`, the area the map covers; `tiles`, the address of the map's tiles from the Allmaps Tile Server; `image` and `manifest`, its IIIF image and manifest; `editor`, its page in Allmaps Editor; and `geom`, the outline of the map on today's coordinates ([Allmaps (2026)](#ref-All2026a); [Appleby, Crane, Sanderson, Stroop and Warner (2020)](#ref-ACSSW2020a)).
 
-## Which Functions of HistoricalGeography.jl Does Old Maps Call?
+## Which Functions of HistoricalGeography.jl Does Historical Maps Call?
 
-The Maps of France tab of the Old Maps panel calls `ign_layer(id)`, which gives the title, years, tile address, zooms and source of a map of France, and Zooms of the Maps lists them all with `ign_layers()`. The Georeferenced Maps tab calls `allmaps(con; at, largest, folder)`, which asks Allmaps for the maps that cover a point and writes the table `maps`. The Famous Maps tab calls `famous_map(id)`, and The Famous Maps lists the eight with `famous_maps()`. Save as GeoTIFF calls `save_geotiff(url, box; zoom, path)`, which reads the tiles through GDAL with ArchGDAL.jl, and Borders over the Map calls `historical_borders` and `borders_geojson`, as Historical Borders does ([Ng (2026)](#ref-Ng2026a)).
+The Maps of France tab of the Historical Maps panel calls `ign_layer(id)`, which gives the title, years, tile address, zooms and source of a map of France, and Zooms of the Maps lists them all with `ign_layers()`. The Georeferenced Maps tab calls `allmaps(con; at, largest, folder)`, which asks Allmaps for the maps that cover a point and writes the table `maps`. The Famous Maps tab calls `famous_map(id)`, and The Famous Maps lists the eight with `famous_maps()`. Save as GeoTIFF calls `save_geotiff(url, box; zoom, path)`, which reads the tiles through GDAL with ArchGDAL.jl, and Borders over the Map calls `historical_borders` and `borders_geojson`, as Historical Borders does ([Ng (2026)](#ref-Ng2026a)).
 
-## What Do the Next Steps of Old Maps Do?
+## What Do the Next Steps of Historical Maps Do?
 
 | Group | Action | Tabs | What the action shows |
 |---|---|---|---|

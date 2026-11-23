@@ -1,8 +1,8 @@
-# Old Maps: old maps set beside today's map of the same place: the maps of France that IGN serves as tiles, the maps
+# Historical Maps: old maps set beside today's map of the same place: the maps of France that IGN serves as tiles, the maps
 # that Allmaps holds georeferenced, and famous maps of the world in the images their libraries publish
 
 [meta]
-title = "Old Maps"
+title = "Historical Maps"
 viewType = "pollis.oldmaps"
 defaultModel = "france"
 decisionFirstColumn = "Tab"
@@ -451,7 +451,7 @@ layers = [Pollis.tiles(old.url; name = "$(old.title), $(old.years)", attribution
 {{?today!=osm}}push!(layers, Pollis.tiles(today.url; name = today.title, attribution = today.attribution, maxzoom = today.maxzoom, side = "right"))
 
 # the old map on the left of the line, today's on the right: drag the line to uncover one or the other
-display(Pollis.webmap(layers...; center = (lon, lat), zoom, title = "Old Maps: $(old.title)", labels = "{{today}}" == "osm"))
+display(Pollis.webmap(layers...; center = (lon, lat), zoom, title = "Historical Maps: $(old.title)", labels = "{{today}}" == "osm"))
 '''
 
 [[codeBranches]]
@@ -481,7 +481,7 @@ named(i) = string(isempty(m.title[i]) ? "Map $(m.id[i])" : m.title[i], ismissing
 
 # the map warped by Allmaps on the left of the line, today's map on the right
 display(Pollis.webmap(Pollis.tiles(m.tiles[pick]; name = named(pick), attribution = "Allmaps; $(m.library[pick])", side = "left");
-	center = (lon, lat), zoom, title = "Old Maps: $(named(pick))"))
+	center = (lon, lat), zoom, title = "Historical Maps: $(named(pick))"))
 println("Map ", pick, " in Allmaps Editor: ", m.editor[pick])
 '''
 
@@ -502,7 +502,7 @@ region = """{"type":"FeatureCollection","features":[{"type":"Feature","propertie
 
 # the old map on the left, which moves and enlarges on its own, and today's map of its region on the right
 display(Pollis.webmap(Pollis.layer(region; name = "Region of the map", color = "#d62728", opacity = 0.05);
-	beside = Pollis.picture(f.image; name = "$(f.title), $(f.year)", attribution = "$(f.library); $(f.terms)"), title = "Old Maps: $(f.title)"))
+	beside = Pollis.picture(f.image; name = "$(f.title), $(f.year)", attribution = "$(f.library); $(f.terms)"), title = "Historical Maps: $(f.title)"))
 '''
 
 [[actionGroups]]

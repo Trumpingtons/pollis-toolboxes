@@ -1,6 +1,6 @@
-# Old Maps — Georeferenced Maps
+# Historical Maps — Georeferenced Maps
 
-Georeferenced Maps is the tab of the Old Maps panel that finds the old maps of a place among the maps that Allmaps holds georeferenced, and draws one of them, warped onto today's coordinates, beside today's map ([Allmaps (2026)](#ref-All2026a)).
+Georeferenced Maps is the tab of the Historical Maps panel that finds the old maps of a place among the maps that Allmaps holds georeferenced, and draws one of them, warped onto today's coordinates, beside today's map ([Allmaps (2026)](#ref-All2026a)).
 
 ## What Is Allmaps?
 
@@ -8,7 +8,7 @@ Allmaps is a set of open-source tools for curating, georeferencing and exploring
 
 ## How Does the Georeferenced Maps Tab Find the Maps of a Place?
 
-The Georeferenced Maps tab of the Old Maps panel asks the Allmaps API, through `allmaps` of HistoricalGeography.jl, for the georeferenced maps that cover the Place, at most 100, each with the outline of its mask and its area. Largest keeps the maps that cover at most that many km²: maps of a region, a country or a continent also cover the Place, and Largest leaves them out ([Allmaps (2026)](#ref-All2026a)). The list runs from the oldest map with a year, and Map Number chooses the map drawn on the left of the line. The tab writes the list to the Folder and the table `maps`.
+The Georeferenced Maps tab of the Historical Maps panel asks the Allmaps API, through `allmaps` of HistoricalGeography.jl, for the georeferenced maps that cover the Place, at most 100, each with the outline of its mask and its area. Largest keeps the maps that cover at most that many km²: maps of a region, a country or a continent also cover the Place, and Largest leaves them out ([Allmaps (2026)](#ref-All2026a)). The list runs from the oldest map with a year, and Map Number chooses the map drawn on the left of the line. The tab writes the list to the Folder and the table `maps`.
 
 ## Where Do the Titles and Years of Georeferenced Maps Come From?
 
@@ -16,7 +16,7 @@ The title of a map in the Georeferenced Maps tab is the label of the IIIF manife
 
 ## How Is a Map of Allmaps Drawn on Today's Map?
 
-The Georeferenced Maps tab of the Old Maps panel draws a map from the Allmaps Tile Server, which warps the image, through its ground control points, onto the tiles of a web map, and leaves the area outside the mask transparent ([Allmaps (2026)](#ref-All2026a)). The tiles are made on request, so the first view of a map can be slow. Map Outlines draws the outline of every map found, coloured by year, and the page of a map in Allmaps Editor, printed by the Example Code, shows its ground control points.
+The Georeferenced Maps tab of the Historical Maps panel draws a map from the Allmaps Tile Server, which warps the image, through its ground control points, onto the tiles of a web map, and leaves the area outside the mask transparent ([Allmaps (2026)](#ref-All2026a)). The tiles are made on request, so the first view of a map can be slow. Map Outlines draws the outline of every map found, coloured by year, and the page of a map in Allmaps Editor, printed by the Example Code, shows its ground control points.
 
 ## References
 
