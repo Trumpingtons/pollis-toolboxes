@@ -1,0 +1,582 @@
+# Sites and Monuments: the ancient places of an area from Pleiades and from the Ancient Near East site placemarks,
+# read with DuckDB's spatial extension and drawn on Google's maps, Esri's imagery or a free map, and saved as KML for
+# Google Earth and Google My Maps, as a GeoPackage, as GeoJSON or as CSV
+
+[meta]
+title = "Sites and Monuments"
+viewType = "pollis.sitesmonuments"
+defaultModel = "pleiades"
+decisionFirstColumn = "Register"
+
+# The user's keys for the maps, kept by Pollis in Secret Storage and set in the Julia REPL
+[apiKey]
+label = "Maps"
+noun = "keys"
+
+[[apiKey.fields]]
+name = "googleMapsKey"
+envVar = "GOOGLE_MAPS_API_KEY"
+label = "Google Maps key"
+prompt = "Google Maps key, for Google's roadmap, satellite and 3D maps"
+
+[[apiKey.fields]]
+name = "arcgisKey"
+envVar = "ARCGIS_API_KEY"
+label = "ArcGIS key"
+prompt = "ArcGIS Location Platform API key, for Esri's World Imagery"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[models]]
+id = "pleiades"
+label = "Ancient World"
+
+[[models]]
+id = "ane"
+label = "Ancient Near East"
+
+[[wikis]]
+name = "Factsheet"
+file = "sitesmonuments/factsheet.md"
+bundled = true
+description = "One-page reference: the registers, the inputs, the table of sites, the maps and the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "sitesmonuments/overview.md"
+bundled = true
+description = "What a register of ancient places records, and what a map of it shows"
+
+[[wikis]]
+name = "Decision Guide"
+file = "sitesmonuments/decision-guide.md"
+bundled = true
+description = "Which register, which filters, which map and which file to save"
+
+[[wikis]]
+name = "Diagnostics"
+file = "sitesmonuments/diagnostics.md"
+bundled = true
+description = "Rough places, places without years, names in parentheses, empty maps and files too large for My Maps"
+
+[[wikis]]
+separator = true
+label = "Registers"
+
+[[wikis]]
+name = "Pleiades"
+file = "sitesmonuments/pleiades.md"
+bundled = true
+description = "The gazetteer of ancient places: places, locations, kinds, years and visible remains"
+
+[[wikis]]
+name = "Ancient Near East Placemarks"
+file = "sitesmonuments/ane-placemarks.md"
+bundled = true
+description = "Pedersen's placemarks of sites of the Ancient Near East for Google Earth"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Qui2023c"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "Goo2026a"
+
+[[references]]
+key = "Goo2026b"
+
+[[references]]
+key = "Esr2026a"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "Ero2026a"
+
+[[references]]
+separator = true
+label = "Formats"
+
+[[references]]
+key = "BDDGH...2016a"
+
+[[references]]
+key = "Goo2026h"
+
+[[references]]
+key = "Goo2026i"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "ETBBB...2025a"
+
+[[references]]
+key = "Ped2007a"
+
+[[faq]]
+question = "How do I see the sites on Google Maps?"
+answer = "Set the key of Google Maps with the keys on the Powered by line, choose Google Roadmap, Google Satellite or Google Satellite with Labels as Map, and run the Example Code. The sites are drawn on Google's map on a page of its own in Pollis's browser, and a click on one shows its name, kind, years and link.\n\nIn Google's Photorealistic 3D Maps shows the sites near the Place in 3D, with the same key."
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I open the sites in Google Earth or Google My Maps?"
+answer = "Run the Example Code, then Save as KML. Google Earth opens the KML file as it is, or imports it into a project. Google My Maps imports it into a layer of a map from the legend, with Add layer and then Import, but takes at most 2,000 rows and 5 MB of KML: with more sites, narrow the Box or the filters first.\n\nSave as CSV gives a table with longitude and latitude, which My Maps and Google Earth also read."
+wiki = "Decision Guide"
+
+[[faq]]
+question = "Which places does Pleiades mark as rough, and can I trust their position?"
+answer = "A rough place has only a vague location, often the centre of a large box: its point shows where to look, not where the place is. Pleiades' own guidance is not to assume that the point of a rough place is accurate. Precise and Rough Places draws the two apart."
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Why do some sites of the Ancient Near East tab have their names in parentheses?"
+answer = "In the Ancient Near East site placemarks, ancient names are written without parentheses and modern names within them. A name in parentheses alone is a site known only by its modern name, and its kind is modern name only."
+wiki = "Ancient Near East Placemarks"
+
+[[faq]]
+question = "Can I use the sites as the Known Sites of the detection panels?"
+answer = "Yes. Save as GeoPackage writes the sites of the Box as points, or outlines where the register has them, in longitude and latitude, which the Known Sites step of Learned Detection in Satellite Images reads and reprojects."
+wiki = "Factsheet"
+hidden = true
+
+[[faq]]
+question = "What does the remains column of Pleiades mean?"
+answer = "Pleiades records for each location of a place whether archaeological remains are known to be visible there, and how substantive they are: substantive, restored, traces, not visible, none, not applicable or unknown. The Sites and Monuments panel keeps for each place the most visible remains among its locations."
+wiki = "Pleiades"
+hidden = true
+
+[[faq]]
+question = "What are the sites with no name in the Ancient Near East tab?"
+answer = "The No names folder of the Ancient Near East site placemarks holds sites without a name, each labelled with a code of its region. The Sites and Monuments panel gives them the kind no name and keeps the code as their name."
+wiki = "Ancient Near East Placemarks"
+hidden = true
+
+[[faq]]
+question = "How often does Pleiades change?"
+answer = "Pleiades is published continuously and its data for GIS is updated several times a week. The Sites and Monuments panel builds its table of places once from the download and keeps it in the Folder: delete pleiades-places.parquet to build it again from a new download."
+wiki = "Pleiades"
+hidden = true
+
+[[bullets]]
+text = "Ancient World"
+detail = "The places of Pleiades, the gazetteer of ancient places, with their kinds, their years and their visible remains"
+
+[[bullets]]
+text = "Ancient Near East"
+detail = "The sites of Pedersen's placemarks for Google Earth, by ancient or modern name, with the outlines of the largest"
+
+[[bullets]]
+text = "Google Maps and Others"
+detail = "The sites on Google's roadmap, satellite or 3D maps, on Esri's World Imagery or on a free map, with each site's columns on a click"
+
+[[bullets]]
+text = "Google Earth and My Maps"
+detail = "The sites saved as KML for Google Earth and Google My Maps, or as GeoPackage, GeoJSON or CSV for any GIS"
+
+[[bullets]]
+text = "Known Sites"
+detail = "A GeoPackage of the sites of an area, ready for the Known Sites of the detection panels"
+
+[[decisionRows]]
+task = "Ancient World"
+context = "Greek and Roman world"
+purpose = "Find the ancient places of an area, by kind, years and visible remains"
+
+[[decisionRows]]
+task = "Ancient Near East"
+context = "Tells and cities"
+purpose = "Find the sites of Mesopotamia, the Levant and their neighbours, by ancient or modern name"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the register is kept once downloaded, and where Export saves: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "box"
+label = "Box"
+tooltip = "The area, as west, south, east, north in degrees. The default is the centre of Rome."
+default = "12.40, 41.84, 12.56, 41.94"
+models = ["pleiades"]
+
+[[inputs]]
+id = "aneBox"
+label = "Box"
+tooltip = "The area, as west, south, east, north in degrees. The default is the Khabur basin around Tell Brak, in north-eastern Syria."
+default = "40.8, 36.5, 41.4, 36.9"
+models = ["ane"]
+
+[[inputs]]
+id = "kinds"
+label = "Kinds"
+tooltip = "Pleiades' kinds of place to keep, separated by commas, such as settlement, villa, temple-2, tomb, fort or theatre: the keys of Pleiades' vocabulary of place types. Empty keeps every kind."
+default = ""
+models = ["pleiades"]
+
+[[inputs]]
+id = "remains"
+label = "Remains"
+kind = "select"
+default = "all"
+tooltip = "All places, those with visible remains (substantive, restored or traces) at one of their locations, or those with substantive remains only."
+models = ["pleiades"]
+
+[[inputs.options]]
+value = "all"
+label = "All Places"
+
+[[inputs.options]]
+value = "visible"
+label = "Visible Remains"
+
+[[inputs.options]]
+value = "substantive"
+label = "Substantive Remains"
+
+[[inputs]]
+id = "since"
+label = "From"
+tooltip = "The first year: the places kept are those whose years meet From to Until, years before Christ negative. Places without years are always kept."
+default = "-3000"
+newRow = true
+models = ["pleiades"]
+
+[[inputs]]
+id = "upto"
+label = "Until"
+tooltip = "The last year: the places kept are those whose years meet From to Until. Pleiades dates the modern locations of some places up to 2100."
+default = "2100"
+models = ["pleiades"]
+
+[[inputs]]
+id = "nameContains"
+label = "Name Contains"
+tooltip = "Keeps the sites whose name contains this text, in any case, such as Tell, Tepe or Hüyük. Empty keeps every site."
+default = ""
+models = ["ane"]
+
+[[inputs]]
+id = "basemap"
+label = "Map"
+kind = "select"
+default = "free"
+tooltip = "What the sites are drawn on. Google's maps need a Google Maps key, Esri's imagery an ArcGIS key, set with the keys on the Powered by line; the free map, of OpenStreetMap's data from OpenFreeMap, needs none."
+newRow = true
+
+[[inputs.options]]
+value = "free"
+label = "Free Map"
+
+[[inputs.options]]
+value = "roadmap"
+label = "Google Roadmap"
+
+[[inputs.options]]
+value = "satellite"
+label = "Google Satellite"
+
+[[inputs.options]]
+value = "hybrid"
+label = "Google Satellite with Labels"
+
+[[inputs.options]]
+value = "esri"
+label = "Esri World Imagery"
+
+[[inputs]]
+id = "place"
+label = "Place"
+tooltip = "A point as longitude, latitude, for Sites Near the Place and the 3D map. The default is the Forum of Rome."
+default = "12.4853, 41.8925"
+models = ["pleiades"]
+
+[[inputs]]
+id = "anePlace"
+label = "Place"
+tooltip = "A point as longitude, latitude, for Sites Near the Place and the 3D map. The default is Tell Brak, ancient Nagar."
+default = "41.0579, 36.6673"
+models = ["ane"]
+
+[[inputs]]
+id = "distance"
+label = "Distance (km)"
+tooltip = "How far from the Place Sites Near the Place looks, and the 3D map shows sites, in kilometres."
+default = "2"
+models = ["pleiades"]
+
+[[inputs]]
+id = "aneDistance"
+label = "Distance (km)"
+tooltip = "How far from the Place Sites Near the Place looks, and the 3D map shows sites, in kilometres."
+default = "10"
+models = ["ane"]
+
+[[codeBranches]]
+model = "pleiades"
+code = '''
+using DuckDB, Tables, Downloads, SmartRegions
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+folder = mkpath(expanduser(raw"{{folder}}"))  # where Pleiades is kept once downloaded, and where Export saves
+box = ({{box}})  # west, south, east, north, in degrees
+place, distance = ({{place}}), {{distance}}  # a point as longitude, latitude, and a distance from it in km
+register, colour = "Pleiades", "remains"  # the register, and the column that colours the map
+
+# Pleiades' places, built once from its data for GIS into a Parquet file: each place's kinds, and the years and most visible remains of its locations
+places = joinpath(folder, "pleiades-places.parquet")
+if !isfile(places)
+	zip = Downloads.download("https://atlantides.org/downloads/pleiades/gis/pleiades_gis_data.zip", joinpath(folder, "pleiades_gis_data.zip"))
+	csv(name) = "ST_Read('/vsizip/$(quoted(zip))/data/gis/$(name).csv')"
+	DBInterface.execute(con, """COPY (
+		WITH t AS (SELECT place_id, string_agg(DISTINCT place_type, ', ' ORDER BY place_type) AS kinds FROM $(csv("places_place_types")) GROUP BY place_id),
+		l AS (SELECT place_id, year_after_which AS a, year_before_which AS b, archaeological_remains AS r FROM $(csv("location_points"))
+			UNION ALL SELECT place_id, year_after_which, year_before_which, archaeological_remains FROM $(csv("location_polygons"))),
+		d AS (SELECT place_id, min(TRY_CAST(a AS INTEGER)) AS starts, max(TRY_CAST(b AS INTEGER)) AS ends,
+			arg_max(r, CASE r WHEN 'substantive' THEN 5 WHEN 'restored' THEN 4 WHEN 'traces' THEN 3 WHEN 'notvisible' THEN 2 WHEN 'none' THEN 1 ELSE 0 END) AS remains
+			FROM l GROUP BY place_id)
+		SELECT p.title AS name, t.kinds, d.starts, d.ends, d.remains, p.location_precision AS precision, p.uri AS link,
+			TRY_CAST(p.representative_longitude AS DOUBLE) AS lon, TRY_CAST(p.representative_latitude AS DOUBLE) AS lat
+		FROM $(csv("places")) p LEFT JOIN t ON t.place_id = p.id LEFT JOIN d ON d.place_id = p.id
+		WHERE TRY_CAST(p.representative_latitude AS DOUBLE) IS NOT NULL) TO '$(quoted(places))' (FORMAT parquet)""")
+end
+
+# the places in the Box of the Kinds and Remains chosen whose years meet From to Until, as the table sites
+kinds = [strip(k) for k in split("{{kinds}}", ",") if !isempty(strip(k))]  # none keeps every kind
+DBInterface.execute(con, """CREATE OR REPLACE TABLE sites AS
+	SELECT name, coalesce(kinds, 'unknown') AS kinds, starts, ends, coalesce(remains, 'unknown') AS remains, precision, link, lon, lat, ST_Point(lon, lat) AS geom
+	FROM '$(quoted(places))'
+	WHERE lon BETWEEN $(box[1]) AND $(box[3]) AND lat BETWEEN $(box[2]) AND $(box[4])
+		AND (starts IS NULL OR ends IS NULL OR (starts <= {{upto}} AND ends >= {{since}}))
+{{?remains=visible}}		AND remains IN ('substantive', 'restored', 'traces')
+{{?remains=substantive}}		AND remains = 'substantive'
+		$(isempty(kinds) ? "" : "AND list_has_any(string_split(kinds, ', '), [$(join(["'$(quoted(k))'" for k in kinds], ", "))])")
+	ORDER BY name""")
+n = only(rows("SELECT count(*) AS n FROM sites").n)
+println(n, " places of ", register, " in the Box")
+
+# draws the rows of a query on the Map, coloured by a column; a click on a site shows its columns
+{{?basemap=free}}draw(sql, column, title) = display(Pollis.webmap(Pollis.layer(geojson(con, sql); name = register, column); style = "liberty", title))
+{{?basemap=esri}}haskey(ENV, "ARCGIS_API_KEY") || error("Esri's imagery needs an ArcGIS key: set it with the keys on the Powered by line")
+{{?basemap=esri}}imagery = Pollis.tiles("https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=$(ENV["ARCGIS_API_KEY"])";
+{{?basemap=esri}}	name = "Esri World Imagery", attribution = "Powered by Esri. Esri, Vantor, Earthstar Geographics, and the GIS User Community", maxzoom = 19)
+{{?basemap=esri}}draw(sql, column, title) = display(Pollis.webmap(imagery, Pollis.layer(geojson(con, sql); name = register, column); title))
+{{?basemap=roadmap|satellite|hybrid}}draw(sql, column, title) = Pollis.browse(googlemap(title, (box[1] + box[3]) / 2, (box[2] + box[4]) / 2; types = "{{basemap}}", features = geojson(con, sql), column))
+n > 0 && draw("SELECT * EXCLUDE (lon, lat) FROM sites", colour, "$(register): $(n) places")
+'''
+
+[[codeBranches]]
+model = "ane"
+code = '''
+using DuckDB, Tables, Downloads, SmartRegions
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the placemarks are kept once downloaded, and where Export saves
+box = ({{aneBox}})  # west, south, east, north, in degrees
+place, distance = ({{anePlace}}), {{aneDistance}}  # a point as longitude, latitude, and a distance from it in km
+register, colour = "Ancient Near East placemarks", "kind"  # the register, and the column that colours the map
+
+# the placemarks of the Ancient Near East, downloaded once: the folders Sites, No names and Extensions of its KML
+kmz = joinpath(folder, "ANE.kmz")
+isfile(kmz) || Downloads.download("https://zenodo.org/records/6384045/files/ANE.kmz?download=1", kmz)
+kml(layer) = "ST_Read('/vsizip/$(quoted(kmz))/doc.kml', layer = '$(layer)')"
+
+# the sites in the Box whose name contains Name Contains, as the table sites: an ancient name is written without parentheses, a modern one within them
+DBInterface.execute(con, """CREATE OR REPLACE TABLE sites AS
+	SELECT Name AS name, kind, ST_X(ST_Centroid(geom)) AS lon, ST_Y(ST_Centroid(geom)) AS lat, ST_Force2D(geom) AS geom FROM (
+		SELECT Name, CASE WHEN Name LIKE '(%' THEN 'modern name only' ELSE 'ancient name' END AS kind, geom FROM $(kml("Sites"))
+		UNION ALL SELECT Name, 'no name', geom FROM $(kml("No names"))
+		UNION ALL SELECT Name, 'outline', geom FROM $(kml("Extensions")))
+	WHERE ST_X(ST_Centroid(geom)) BETWEEN $(box[1]) AND $(box[3]) AND ST_Y(ST_Centroid(geom)) BETWEEN $(box[2]) AND $(box[4])
+		AND Name ILIKE '%$(quoted("{{nameContains}}"))%'
+	ORDER BY name""")
+n = only(rows("SELECT count(*) AS n FROM sites").n)
+println(n, " sites of the ", register, " in the Box")
+
+# draws the rows of a query on the Map, coloured by a column; a click on a site shows its columns
+{{?basemap=free}}draw(sql, column, title) = display(Pollis.webmap(Pollis.layer(geojson(con, sql); name = register, column); style = "liberty", title))
+{{?basemap=esri}}haskey(ENV, "ARCGIS_API_KEY") || error("Esri's imagery needs an ArcGIS key: set it with the keys on the Powered by line")
+{{?basemap=esri}}imagery = Pollis.tiles("https://ibasemaps-api.arcgis.com/arcgis/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}?token=$(ENV["ARCGIS_API_KEY"])";
+{{?basemap=esri}}	name = "Esri World Imagery", attribution = "Powered by Esri. Esri, Vantor, Earthstar Geographics, and the GIS User Community", maxzoom = 19)
+{{?basemap=esri}}draw(sql, column, title) = display(Pollis.webmap(imagery, Pollis.layer(geojson(con, sql); name = register, column); title))
+{{?basemap=roadmap|satellite|hybrid}}draw(sql, column, title) = Pollis.browse(googlemap(title, (box[1] + box[3]) / 2, (box[2] + box[4]) / 2; types = "{{basemap}}", features = geojson(con, sql), column))
+n > 0 && draw("SELECT * EXCLUDE (lon, lat) FROM sites", colour, "$(register): $(n) sites")
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "precise-rough"
+label = "Precise and Rough Places"
+desc = "The places on the Map coloured by Pleiades' precision: a rough place has only a vague location, whose point shows where to look"
+models = ["pleiades"]
+code = '''
+draw("SELECT * EXCLUDE (lon, lat) FROM sites", "precision", "$(register): precise and rough places")
+'''
+
+[[actionGroups.actions]]
+id = "roadmap-satellite"
+label = "Roadmap and Satellite"
+desc = "The sites on Google's roadmap and satellite map side by side, moving together, with the Google Maps key"
+code = '''
+Pollis.browse(googlemap("$(register): roadmap and satellite", (box[1] + box[3]) / 2, (box[2] + box[4]) / 2; types = ["roadmap", "satellite"],
+	features = geojson(con, "SELECT * EXCLUDE (lon, lat) FROM sites"), column = colour))
+'''
+
+[[actionGroups.actions]]
+id = "google-3d"
+label = "In Google's Photorealistic 3D Maps"
+desc = "The sites within the Distance of the Place in Google's Photorealistic 3D Maps, looking down on the Place, with the Google Maps key"
+code = '''
+near = "SELECT * EXCLUDE (lon, lat) FROM sites WHERE ST_Distance_Sphere(ST_Point(lon, lat), ST_Point($(place[1]), $(place[2]))) <= $(1000distance)"
+Pollis.browse(googlemap3d("$(register) in 3D", place[1], place[2]; range = 1000distance, features = geojson(con, near), column = colour))
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "sites-by-kind"
+label = "Sites by Kind"
+desc = "How many sites of each kind the Box holds, the commonest first: for Pleiades a place counts once for each of its kinds"
+code = '''
+{{?model=pleiades}}k = rows("SELECT kind, count(*) AS n FROM (SELECT unnest(string_split(kinds, ', ')) AS kind FROM sites) GROUP BY kind ORDER BY n DESC, kind")
+{{?model=ane}}k = rows("SELECT kind, count(*) AS n FROM sites GROUP BY kind ORDER BY n DESC, kind")
+println(register, ", ", n, " sites in the Box:")
+for i in eachindex(k.kind)[1:min(end, 30)]
+	println(lpad(k.n[i], 6), "  ", k.kind[i])
+end
+length(k.kind) > 30 && println("and ", length(k.kind) - 30, " kinds more")
+'''
+
+[[actionGroups.actions]]
+id = "sites-by-century"
+label = "Places by Century"
+desc = "How many places of the Box have years that meet each century, from the year after which to the year before which their locations are dated"
+models = ["pleiades"]
+code = '''
+c = rows("""SELECT c, count(*) AS n FROM (SELECT unnest(range(CAST(floor(starts / 100) AS INTEGER), CAST(floor((ends - 1) / 100) AS INTEGER) + 1)) AS c FROM sites WHERE starts IS NOT NULL AND ends IS NOT NULL)
+	GROUP BY c ORDER BY c""")
+undated = only(rows("SELECT count(*) AS u FROM sites WHERE starts IS NULL OR ends IS NULL").u)
+println(register, ": places in use in each century, of the ", n - undated, " places of the Box with years")
+for i in eachindex(c.c)
+	century = c.c[i] < 0 ? string(-100c.c[i], " to ", -100c.c[i] - 99, " BC") : string(100c.c[i], " to ", 100c.c[i] + 99)
+	println(rpad(century, 18), lpad(c.n[i], 6))
+end
+'''
+
+[[actionGroups.actions]]
+id = "sites-near-place"
+label = "Sites Near the Place"
+desc = "The sites within the Distance of the Place, the nearest first, with their distance in metres"
+code = '''
+s = rows("""SELECT name, round(ST_Distance_Sphere(ST_Point(lon, lat), ST_Point($(place[1]), $(place[2])))) AS m, * EXCLUDE (name, lon, lat, geom)
+	FROM sites WHERE ST_Distance_Sphere(ST_Point(lon, lat), ST_Point($(place[1]), $(place[2]))) <= $(1000distance) ORDER BY m""")
+println(length(s.name), " sites of the ", register, " within ", distance, " km of ", place, ":")
+for i in eachindex(s.name)[1:min(end, 40)]
+{{?model=pleiades}}	println(lpad(Int(s.m[i]), 7), " m  ", s.name[i], "  (", s.kinds[i], ")")
+{{?model=ane}}	println(lpad(Int(s.m[i]), 7), " m  ", s.name[i], "  (", s.kind[i], ")")
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-kml"
+label = "Save as KML"
+desc = "The sites of the Box as KML in the Folder, for Google Earth and Google My Maps, each with its name and its details"
+code = '''
+out = joinpath(folder, "sites-{{model}}-$(join(box, "_")).kml")
+{{?model=pleiades}}details = "concat_ws('; ', kinds, CASE WHEN starts IS NOT NULL THEN starts || ' to ' || ends END, 'remains: ' || remains, precision, link)"
+{{?model=ane}}details = "kind"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT name AS Name, $(details) AS Description, geom FROM sites) TO '$(quoted(out))' (FORMAT GDAL, DRIVER 'KML', SRS 'EPSG:4326')")
+	println("Wrote ", out, ", ", n, " sites")
+	n > 2000 && println("Google My Maps imports at most 2,000 rows a file: narrow the Box or the filters for My Maps")
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-gpkg"
+label = "Save as GeoPackage"
+desc = "The sites of the Box as a GeoPackage in the Folder, for any GIS and for the Known Sites of the detection panels"
+code = '''
+out = joinpath(folder, "sites-{{model}}-$(join(box, "_")).gpkg")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (lon, lat) FROM sites) TO '$(quoted(out))' (FORMAT GDAL, DRIVER 'GPKG', SRS 'EPSG:4326')")
+	println("Wrote ", out, ", ", n, " sites")
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-geojson"
+label = "Save as GeoJSON"
+desc = "The sites of the Box as a GeoJSON file in the Folder, for web maps and Google Earth"
+code = '''
+out = joinpath(folder, "sites-{{model}}-$(join(box, "_")).geojson")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	geojson(con, "SELECT * EXCLUDE (lon, lat) FROM sites"; file = out)
+	println("Wrote ", out, ", ", n, " sites")
+end
+'''
+
+[[actionGroups.actions]]
+id = "save-csv"
+label = "Save as CSV"
+desc = "The sites of the Box as a CSV table in the Folder, with longitude and latitude, for spreadsheets and Google My Maps"
+code = '''
+out = joinpath(folder, "sites-{{model}}-$(join(box, "_")).csv")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY (SELECT * EXCLUDE (geom) FROM sites) TO '$(quoted(out))' (HEADER)")
+	println("Wrote ", out, ", ", n, " sites")
+end
+'''
