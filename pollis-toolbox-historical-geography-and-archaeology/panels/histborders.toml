@@ -345,9 +345,7 @@ desc = "Year beside Other Year: each state's area in the Box in both, the larges
 code = '''
 second = clamp({{other}}, since, upto)
 second == year && error("Year and Other Year are both $(year) within $(source): choose two different years")
-held(y) = "(SELECT name, sum(km2) AS km2 FROM borders WHERE $(y) BETWEEN starts AND ends GROUP BY name)"
-c = rows("""SELECT coalesce(a.name, b.name) AS name, round(coalesce(a.km2, 0))::BIGINT AS one, round(coalesce(b.km2, 0))::BIGINT AS two
-	FROM $(held(year)) a FULL JOIN $(held(second)) b ON a.name = b.name ORDER BY abs(coalesce(b.km2, 0) - coalesce(a.km2, 0)) DESC LIMIT 30""")
+c = area_change(con, year, second; limit = 30)  # each state's km² in the Box in both years, the largest changes first
 w = maximum(length, c.name; init = 5) + 2
 println(rpad("state", w), lpad("$(year), km²", 16), lpad("$(second), km²", 16))
 for i in eachindex(c.name)
@@ -365,11 +363,7 @@ label = "History of a Place"
 desc = "The states whose territory holds the Place, in order, with the years the source gives each"
 code = '''
 lon, lat = parse.(Float64, split("{{place}}", ","))
-h = rows("""SELECT name, min(starts) AS starts, max(ends) AS ends FROM (
-		SELECT *, sum(fresh) OVER (PARTITION BY name ORDER BY starts, ends) AS run FROM (
-			SELECT name, starts, ends, CASE WHEN starts <= lag(ends) OVER (PARTITION BY name ORDER BY starts, ends) + 1 THEN 0 ELSE 1 END AS fresh
-			FROM borders WHERE ST_Intersects(geom, ST_Point($(lon), $(lat)))))
-	GROUP BY name, run ORDER BY starts, ends""")
+h = place_history(con, lon, lat)  # the states that held the Place, in order, each once for each unbroken stretch of years
 println("The place at ", lon, ", ", lat, " in ", source, ", ", since, " to ", upto, ":")
 isempty(h.name) && println("  no state of the source holds it: is it inside the Box?")
 for i in eachindex(h.name)

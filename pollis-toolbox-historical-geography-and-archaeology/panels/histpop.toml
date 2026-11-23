@@ -1,0 +1,553 @@
+# Historical Populations: the populations of the past, from Buringh's European cities, the world cities of Chandler and
+# Modelski geolocated by Reba, Reitsma and Seto, and the HYDE 3.5 grid, read through HistoricalGeography.jl and drawn
+# on a map with a year slider
+
+[meta]
+title = "Historical Populations"
+viewType = "pollis.histpop"
+defaultModel = "buringh"
+decisionFirstColumn = "Source"
+
+[apiKey]
+label = "NASA Earthdata"
+noun = "credentials"
+
+[[apiKey.fields]]
+name = "earthdataUsername"
+envVar = "EARTHDATA_USERNAME"
+prompt = "NASA Earthdata Login username"
+password = false
+
+[[apiKey.fields]]
+name = "earthdataPassword"
+envVar = "EARTHDATA_PASSWORD"
+prompt = "NASA Earthdata Login password"
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+# Further packages the examples use: checked by the install indicator, not listed on the Powered-by line
+[requires]
+packages = ["ECharts.jl"]
+
+[[models]]
+id = "buringh"
+label = "European Cities"
+
+[[models]]
+id = "reba"
+label = "World Cities"
+
+[[models]]
+id = "hyde"
+label = "HYDE 3.5"
+
+[[wikis]]
+name = "Factsheet"
+file = "histpop/factsheet.md"
+bundled = true
+description = "One-page reference: the sources, the inputs, the tables of values, the Next Steps"
+
+[[wikis]]
+name = "Overview"
+file = "histpop/overview.md"
+bundled = true
+description = "What estimates of past populations are, and how to read the map and its classes"
+
+[[wikis]]
+name = "Diagnostics"
+file = "histpop/diagnostics.md"
+bundled = true
+description = "Years without values, values repeated, kinds of estimate, cities matched by place"
+
+[[wikis]]
+name = "Decision Guide"
+file = "histpop/decision-guide.md"
+bundled = true
+description = "Which source for which region, period and question, and which Years Shown and Cell"
+
+[[wikis]]
+separator = true
+label = "Sources"
+
+[[wikis]]
+name = "European Cities"
+file = "histpop/european-cities.md"
+bundled = true
+description = "Buringh's European urban population from 700 to 2000, with imputed and proxied values"
+
+[[wikis]]
+name = "World Cities"
+file = "histpop/world-cities.md"
+bundled = true
+description = "The cities of Chandler and Modelski from 3700 BC to AD 2000, geolocated, with a certainty of place"
+
+[[wikis]]
+name = "HYDE 3.5"
+file = "histpop/hyde.md"
+bundled = true
+description = "The population of the world on a grid of 5 arc-minutes from 10,000 BCE to 2025"
+
+[[wikis]]
+name = "Authentication"
+file = "histpop/authentication.md"
+bundled = true
+description = "The NASA Earthdata Login of World Cities, its tokens, and running the code outside the REPL"
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "RM2026a"
+
+[[references]]
+key = "DDBL2026b"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "MLC2026a"
+
+[[references]]
+key = "Ero2026a"
+
+[[references]]
+key = "NASA2026a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "RRS2016a"
+
+[[references]]
+key = "GBDS2017a"
+
+[[references]]
+key = "BBZ2013a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "Bur2020a"
+
+[[references]]
+key = "RRS2018a"
+
+[[references]]
+key = "Gol2025a"
+
+[[faq]]
+question = "Why does a city disappear from the map and come back later?"
+answer = "A city is shown only in the years its source gives it a value, and each value for Years Shown at most, until the city's next value. Where the source has no value for a century or more, the city leaves the map until its next value, rather than keep an old number.\n\nRaise Years Shown to bridge longer gaps, and run Years with Values to see the years of the source."
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Which tab should I use for cities outside Europe?"
+answer = "World Cities, which covers the whole world from 3700 BC to AD 2000 with the cities of Chandler and Modelski, and needs a free NASA Earthdata account. European Cities covers Europe only, from 700 to 2000.\n\nFor the population of a whole area, towns and countryside included, use HYDE 3.5."
+wiki = "Decision Guide"
+
+[[faq]]
+question = "The HYDE 3.5 tab says that population.nc is missing: what do I do?"
+answer = "Open the link that the message gives in a web browser, which downloads population.nc (640 MB), and move the file into the Folder of the panel. Utrecht University's server answers only web browsers, so the code cannot download it.\n\nThen run the Example Code again."
+wiki = "HYDE 3.5"
+
+[[faq]]
+question = "How do I give World Cities my NASA Earthdata login?"
+answer = "Press the key on the Powered by line of the Historical Populations panel, and enter the username and password of your Earthdata Login account, made free of charge at urs.earthdata.nasa.gov. Pollis keeps both in its Secret Storage and sets them for the Julia REPL when the code runs."
+wiki = "Authentication"
+
+[[faq]]
+question = "In the World Cities tab of the Historical Populations panel, what does the certainty 1, 2 or 3 of a city describe?"
+right = "How sure the location of the city's coordinates is"
+wrong = ["How sure the population figure is", "How many sources give the city's population", "Whether the value was imputed or counted", "The class of size of the city", "The century of the city's earliest value"]
+explanation = "Reba, Reitsma and Seto ranked the reliability of each geocoded location to assess its geographic uncertainty: certainty 1 where the location is sure, 2 and 3 where it is less so. The certainty is about the coordinates, not the population."
+wiki = "World Cities"
+hidden = true
+
+[[faq]]
+question = "In the European Cities tab of the Historical Populations panel, what does a value marked imputed mean?"
+right = "A city-specific imputation that covers a year without a population figure"
+wrong = ["A value copied from World Cities for the same city", "An estimate derived from a proxy rather than a quantitative source", "A value counted in a census", "A value rounded to the nearest thousand", "A value for the city's whole metropolitan area"]
+explanation = "Buringh covered missing data with city-specific imputations, marked imputed in the column natureofestimate; an estimate derived from a proxy is marked proxied, and a value from the demographic sources has neither mark."
+wiki = "European Cities"
+hidden = true
+
+[[faq]]
+question = "What is the default Cell of the HYDE 3.5 tab of the Historical Populations panel, and how many of HYDE's cells does each square hold?"
+right = "0.5 degrees, with 36 cells of 5 arc-minutes in each square"
+wrong = ["5 arc-minutes, with one cell of HYDE in each square", "1 degree, with 144 cells of 5 arc-minutes in each square", "0.25 degrees, with 9 cells of 5 arc-minutes in each square", "0.5 degrees, with 6 cells of 5 arc-minutes in each square", "2 degrees, with 576 cells of 5 arc-minutes in each square"]
+explanation = "The default Cell of 0.5 degrees keeps a map of a continent quick: a square of 0.5 degrees holds 6 by 6, that is 36, cells of 5 arc-minutes (1/12 of a degree)."
+wiki = "Decision Guide"
+hidden = true
+
+[[faq]]
+question = "How does the Historical Populations panel colour the cities of European Cities and World Cities on its map?"
+right = "By their class of size, from below 10,000 to 1,000,000 and more"
+wrong = ["By a continuous scale from the smallest to the largest population", "By the logarithm of their population, from light to dark", "By their country, with one colour for each country", "By the kind of estimate of their value, imputed or not", "By the year of their value, with older values paler"]
+explanation = "Populations of the past span several orders of magnitude, so the map colours each city by its class of size: below 10,000, then classes up to 500,000 to 1,000,000, and 1,000,000 and more."
+wiki = "Overview"
+hidden = true
+
+[[faq]]
+question = "Which Next Step of the Historical Populations panel lists the cities whose value stays the same over 200 years or more?"
+right = "Repeated Values"
+wrong = ["Years with Values", "Kinds of Estimate", "Two Sources", "Largest Cities of the Year", "Population Over Time"]
+explanation = "Repeated Values, in Diagnose, lists the runs of one value over 200 years or more in the Box, the largest cities first, with what the source says of the values."
+wiki = "Diagnostics"
+hidden = true
+
+[[faq]]
+question = "Until which year does the HYDE 3.5 tab of the Historical Populations panel show the grid of 1500 on the map?"
+right = "Until 1599, as the next grid is that of 1600"
+wrong = ["For Years Shown, 100 years after 1500", "In 1500 only", "Until 1509, as grids come every 10 years", "Until 1550, halfway to the next grid", "Until the last year of the slider"]
+explanation = "Each grid of HYDE 3.5 stands for its year until the year before the next grid; HYDE has a grid every 100 years from 0 to 1700, so the grid of 1500 is shown until 1599."
+wiki = "Overview"
+hidden = true
+
+[[bullets]]
+text = "A Year Slider"
+detail = "Cities or cells of a grid on a map, year by year: move the slider or press Play, and click a point for its values"
+
+[[bullets]]
+text = "Classes of Size"
+detail = "Colours by classes of population, or of people per km², which span several orders of magnitude"
+
+[[bullets]]
+text = "European Cities"
+detail = "Buringh's estimates for 2,262 European settlements at 19 years from 700 to 2000"
+
+[[bullets]]
+text = "World Cities"
+detail = "The cities of Chandler and Modelski from 3700 BC to AD 2000, geolocated by Reba, Reitsma and Seto"
+
+[[bullets]]
+text = "HYDE 3.5"
+detail = "The population of the world on a grid from 10,000 BCE to 2025, towns and countryside together"
+
+[[decisionRows]]
+task = "European Cities"
+context = "Europe, 700 to 2000"
+purpose = "Follow the towns and cities of Europe over the centuries, small ones included"
+
+[[decisionRows]]
+task = "World Cities"
+context = "The world's largest cities"
+purpose = "Compare the large cities of every continent since antiquity"
+
+[[decisionRows]]
+task = "HYDE 3.5"
+context = "Everyone, on a grid"
+purpose = "See where people lived, in towns and countryside, and how densely"
+
+[[inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Where the files of the sources are kept once downloaded, where population.nc of HYDE 3.5 must be put, and where Export saves: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[inputs]]
+id = "box"
+label = "Box"
+tooltip = "The area mapped, as west, south, east, north in degrees. The default is Europe; the whole world is -180, -90, 180, 90."
+default = "-12, 34, 45, 72"
+
+[[inputs]]
+id = "smallest"
+label = "Smallest City"
+tooltip = "The population from which a city is drawn on the map: a city shows from the year it reaches it."
+default = "10000"
+models = ["buringh", "reba"]
+
+[[inputs]]
+id = "reach"
+label = "Years Shown"
+tooltip = "The years for which a value is shown at most, until the city's next value: a city with no value for longer leaves the map until its next one."
+default = "100"
+models = ["buringh", "reba"]
+
+[[inputs]]
+id = "cell"
+label = "Cell"
+tooltip = "The side of a cell of the map, in degrees: the cells of HYDE 3.5, of 5 arc-minutes (1/12 of a degree), added up into squares of this size."
+default = "0.5"
+models = ["hyde"]
+
+[[inputs]]
+id = "since"
+label = "From"
+tooltip = "The first year of the slider. European Cities starts in 700, World Cities in 3700 BC (written -3700), HYDE 3.5 in 10,000 BCE (written -10000)."
+default = "1000"
+newRow = true
+
+[[inputs]]
+id = "upto"
+label = "Until"
+tooltip = "The last year of the slider. European Cities and World Cities end in 2000, HYDE 3.5 in 2025."
+default = "2000"
+
+[[inputs]]
+id = "year"
+label = "Year"
+tooltip = "The year the slider opens on, and the year of the Next Steps. A year outside the source is moved to its first or last."
+default = "1500"
+
+[[inputs]]
+id = "other"
+label = "Other Year"
+tooltip = "The year that Two Years sets beside Year."
+default = "1800"
+
+[[inputs]]
+id = "place"
+label = "Place"
+tooltip = "A point as longitude, latitude, for History of a Place and Two Sources. The default is Bologna."
+default = "11.3426, 44.4938"
+
+[[codeBranches]]
+model = "*"
+code = '''
+using DuckDB, Tables, HistoricalGeography
+{{?model=hyde}}using ArchGDAL  # reads the NetCDF file of HYDE 3.5
+
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+{{?model=reba}}DBInterface.execute(con, "LOAD excel")  # DuckDB's excel extension, which reads the spreadsheet of the source
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+folder = mkpath(expanduser(raw"{{folder}}"))  # where the sources' files are kept once downloaded
+box = ({{box}})  # west, south, east, north, in degrees
+
+# the values of the source in the Box from From to Until, by year
+{{?model=buringh}}p = city_populations(con, :buringh; folder, box, since = {{since}}, upto = {{upto}})  # the table cities
+{{?model=reba}}p = city_populations(con, :reba; folder, box, since = {{since}}, upto = {{upto}})  # the table cities; the login is that of the key on the Powered by line
+{{?model=hyde}}p = hyde_population(con; folder, box, since = {{since}}, upto = {{upto}}, cell = {{cell}})  # the table grid, from population.nc in the Folder
+source, since, upto, years = p.source, p.since, p.upto, p.years  # the first and last years with values, and the years of the source
+year = clamp({{year}}, since, upto)
+{{?model=buringh|reba}}reach = {{reach}}  # the years for which a value is shown at most, until the city's next value
+
+# the map, of which the slider shows one year
+{{?model=buringh|reba}}points = cities_geojson(con; least = {{smallest}}, reach)  # each value of a city as a point, coloured by its class of size
+{{?model=buringh|reba}}println(source, ": ", p.cities, " cities with values in ", length(years), " years from ", since, " to ", upto, "; the slider opens on ", year)
+{{?model=buringh|reba}}display(Pollis.webmap(Pollis.layer(points; name = "Cities", column = "class", years = ("starts", "ends")); title = "Historical Populations: $(source)", year))
+{{?model=hyde}}cells = grid_geojson(con)  # each cell as a square, coloured by its class of people per km²
+{{?model=hyde}}println(source, ": ", length(years), " grids from ", since, " to ", upto, " in cells of ", p.cell, " degrees; the slider opens on ", year)
+{{?model=hyde}}display(Pollis.webmap(Pollis.layer(cells; name = "People per km²", column = "class", opacity = 0.7, years = ("starts", "ends")); title = "Historical Populations: $(source)", year))
+'''
+
+[[actionGroups]]
+id = "visualise"
+label = "Visualise"
+
+[[actionGroups.actions]]
+id = "population-over-time"
+label = "Population Over Time"
+desc = "The people of the source in the Box at each of its years, as a line drawn with ECharts: those of the cities counted, or those of the grid"
+code = '''
+using ECharts
+
+{{?model=buringh|reba}}t = total_population(con; reach)  # the cities with a value up to Years Shown old, at each year of the source
+{{?model=hyde}}t = total_population(con; table = "grid")  # every cell with people, at each year of the grid
+EChart(ec_width = 700, ec_height = 400, title = [ECharts.Title(text = "Population in the Box, $(source)")],
+	xAxis = [ECharts.Axis(_type = "value", name = "year", min = since, max = upto)], yAxis = [ECharts.Axis(_type = "value", name = "people")],
+	series = [ECharts.XYSeries(name = "people", _type = "line", data = [[y, v] for (y, v) in zip(t.year, t.population)])])
+'''
+
+[[actionGroups]]
+id = "diagnose"
+label = "Diagnose"
+
+[[actionGroups.actions]]
+id = "years-with-values"
+label = "Years with Values"
+desc = "The years in which the source has values in the Box, by century: how many years, and how many cities or cells have a value"
+code = '''
+{{?model=buringh|reba}}table, place, what = "cities", "key", "cities"
+{{?model=hyde}}table, place, what = "grid", "lon || ',' || lat", "cells with people"
+v = rows("SELECT floor(year / 100)::INTEGER * 100 AS century, count(DISTINCT year) AS years, count(*) AS n, count(DISTINCT $(place)) AS places FROM $(table) GROUP BY century ORDER BY century")
+println(source, ": the years with values from ", since, " to ", upto, ", by century")
+for i in eachindex(v.century)
+	println("  ", rpad(string(v.century[i], " to ", v.century[i] + 99), 14), lpad(v.years[i], 4), " years,", lpad(v.n[i], 8), " values of ", v.places[i], " ", what)
+end
+'''
+
+[[actionGroups.actions]]
+id = "kinds-of-estimate"
+label = "Kinds of Estimate"
+desc = "The values of the cities by what the source says of them: imputed or proxied in European Cities, the certainty of the place in World Cities"
+models = ["buringh", "reba"]
+code = '''
+k = rows("SELECT coalesce(nullif(note, ''), 'not marked') AS kind, count(*) AS n, count(DISTINCT key) AS cities FROM cities GROUP BY ALL ORDER BY kind")
+{{?model=buringh}}println(source, ": the values by the nature of the estimate")
+{{?model=reba}}println(source, ": the values by the certainty of the city's place (1 sure, 2 and 3 less so)")
+for i in eachindex(k.kind)
+	println("  ", rpad(k.kind[i], 14), lpad(k.n[i], 8), " values of ", k.cities[i], " cities")
+end
+'''
+
+[[actionGroups.actions]]
+id = "repeated-values"
+label = "Repeated Values"
+desc = "The cities whose value stays the same over 200 years or more, from consecutive values of the source, the largest first"
+models = ["buringh", "reba"]
+code = '''
+r = rows("""WITH v AS (SELECT key, name, year, population, note, CASE WHEN population = lag(population) OVER (PARTITION BY key ORDER BY year) THEN 0 ELSE 1 END AS fresh FROM cities)
+	SELECT any_value(name) AS name, min(year) AS starts, max(year) AS ends, count(*) AS n, round(any_value(population))::BIGINT AS population, coalesce(string_agg(DISTINCT note, ', '), '') AS note
+	FROM (SELECT *, sum(fresh) OVER (PARTITION BY key ORDER BY year) AS run FROM v) GROUP BY key, run
+	HAVING count(*) >= 2 AND max(year) - min(year) >= 200 ORDER BY population DESC, max(year) - min(year) DESC""")
+println(source, ": ", length(r.name), " runs of one value over 200 years or more, in ", p.cities, " cities")
+for i in eachindex(r.name)[1:min(end, 25)]
+	println("  ", rpad(r.name[i], 28), lpad(r.population[i], 10), "  ", r.starts[i], " to ", r.ends[i], " (", r.n[i], " values)  ", r.note[i])
+end
+'''
+
+[[actionGroups]]
+id = "compare"
+label = "Compare"
+
+[[actionGroups.actions]]
+id = "two-years-cities"
+label = "Two Years"
+desc = "The largest cities of Other Year, each with its population in Year beside it"
+models = ["buringh", "reba"]
+code = '''
+second = clamp({{other}}, since, upto)
+second == year && error("Year and Other Year are both $(year) within $(source): choose two different years")
+a, b = largest_cities(con, year; reach), largest_cities(con, second; reach)
+name(t, i) = string(t.name[i], ", ", coalesce(t.country[i], ""))
+before = Dict(name(a, i) => a.population[i] for i in eachindex(a.name))
+println(source, ": ", length(a.name), " cities in ", year, " and ", length(b.name), " in ", second)
+println(rpad("city", 36), lpad(year, 12), lpad(second, 12))
+for i in eachindex(b.name)[1:min(end, 25)]
+	println(rpad(name(b, i), 36), lpad(get(before, name(b, i), "-"), 12), lpad(b.population[i], 12))
+end
+'''
+
+[[actionGroups.actions]]
+id = "two-years-grid"
+label = "Two Years"
+desc = "The people of the Box in the grids nearest Year and Other Year, and the cells whose people grew the most"
+models = ["hyde"]
+code = '''
+nearest(y) = years[argmin(abs.(years .- y))]  # the grid of HYDE 3.5 nearest a year
+early, late = nearest(year), nearest(clamp({{other}}, since, upto))
+early == late && error("Year and Other Year fall on the same grid of $(source), $(early): choose years further apart")
+s = rows("SELECT year, round(sum(population))::BIGINT AS people, count(*) AS cells FROM grid WHERE year IN ($(early), $(late)) GROUP BY year ORDER BY year")
+for i in eachindex(s.year)
+	println(source, ", ", s.year[i], ": ", s.people[i], " people in ", s.cells[i], " cells with people")
+end
+g = rows("""SELECT round(lon, 3) AS lon, round(lat, 3) AS lat, round(coalesce(a.population, 0))::BIGINT AS early, round(b.population)::BIGINT AS late
+	FROM (SELECT * FROM grid WHERE year = $(late)) b LEFT JOIN (SELECT * FROM grid WHERE year = $(early)) a USING (lon, lat)
+	ORDER BY b.population - coalesce(a.population, 0) DESC LIMIT 10""")
+println("The cells whose people grew the most from ", early, " to ", late, ", by their centres:")
+for i in eachindex(g.lon)
+	println("  ", rpad(string(g.lon[i], ", ", g.lat[i]), 22), lpad(g.early[i], 12), lpad(g.late[i], 12))
+end
+'''
+
+[[actionGroups.actions]]
+id = "two-sources"
+label = "Two Sources"
+desc = "The city nearest the Place in European Cities and in World Cities, their values side by side by year"
+models = ["buringh", "reba"]
+code = '''
+lon, lat = parse.(Float64, split("{{place}}", ","))
+DBInterface.execute(con, "LOAD excel")  # reads the spreadsheet of World Cities
+{{?model=buringh}}o = city_populations(con, :reba; folder, box, since, upto, table = "other")  # World Cities, with the login of the key on the Powered by line
+{{?model=reba}}o = city_populations(con, :buringh; folder, box, since, upto, table = "other")  # European Cities
+a, b = city_history(con, lon, lat), city_history(con, lon, lat; table = "other")
+println(source, ": ", a.name[1], ", ", a.km[1], " km from the Place; ", o.source, ": ", b.name[1], ", ", b.km[1], " km from the Place")
+va, vb = Dict(zip(a.year, a.population)), Dict(zip(b.year, b.population))
+println(lpad("year", 6), lpad(source, 30), lpad(o.source, 30))
+for y in sort(union(a.year, b.year))
+	println(lpad(y, 6), lpad(get(va, y, ""), 30), lpad(get(vb, y, ""), 30))
+end
+'''
+
+[[actionGroups]]
+id = "interpret"
+label = "Interpret"
+
+[[actionGroups.actions]]
+id = "history-of-place"
+label = "History of a Place"
+desc = "The values of the city nearest the Place, or of the cell of the grid that holds it, at every year of the source"
+code = '''
+lon, lat = parse.(Float64, split("{{place}}", ","))
+{{?model=buringh|reba}}h = city_history(con, lon, lat)  # the values of the city nearest the Place
+{{?model=buringh|reba}}println(h.name[1], ", ", coalesce(h.country[1], ""), ", ", h.km[1], " km from the Place, in ", source, ":")
+{{?model=buringh|reba}}for i in eachindex(h.year); println(lpad(h.year[i], 6), lpad(h.population[i], 12), "  ", coalesce(h.note[i], "")); end
+{{?model=hyde}}h = cell_history(con, lon, lat)  # the people of the cell that holds the Place
+{{?model=hyde}}isempty(h.year) && error("the Place is in no cell with people in the Box")
+{{?model=hyde}}println("The cell of ", p.cell, " degrees that holds ", lon, ", ", lat, ", in ", source, ":")
+{{?model=hyde}}for i in eachindex(h.year); println(lpad(h.year[i], 6), lpad(h.population[i], 12), " people", lpad(h.people_km2[i], 10), " per km²"); end
+'''
+
+[[actionGroups.actions]]
+id = "largest-cities"
+label = "Largest Cities of the Year"
+desc = "The cities of Year in the Box, from the largest, each with the year of its value"
+models = ["buringh", "reba"]
+code = '''
+l = largest_cities(con, year; reach, limit = 30)  # each city's latest value up to Year, if it is less than Years Shown old
+println("The largest cities of ", source, " in ", year, ":")
+for i in eachindex(l.name)
+	println("  ", rpad(string(l.name[i], ", ", coalesce(l.country[i], "")), 36), lpad(l.population[i], 12), "  value of ", l.valued[i])
+end
+'''
+
+[[actionGroups.actions]]
+id = "densest-cells"
+label = "Densest Cells of the Year"
+desc = "The cells of the grid nearest Year with the most people per km², by their centres"
+models = ["hyde"]
+code = '''
+g = years[argmin(abs.(years .- year))]  # the grid of HYDE 3.5 nearest Year
+d = rows("SELECT round(lon, 3) AS lon, round(lat, 3) AS lat, round(population)::BIGINT AS people, round(population / km2, 1) AS people_km2 FROM grid WHERE year = $(g) ORDER BY population / km2 DESC LIMIT 15")
+println("The densest cells of ", source, " in ", g, ", by their centres:")
+for i in eachindex(d.lon)
+	println("  ", rpad(string(d.lon[i], ", ", d.lat[i]), 22), lpad(d.people[i], 12), " people", lpad(d.people_km2[i], 10), " per km²")
+end
+'''
+
+[[actionGroups]]
+id = "export"
+label = "Export"
+
+[[actionGroups.actions]]
+id = "save-geoparquet"
+label = "Save as GeoParquet"
+desc = "Every value in the Box with its year, as a GeoParquet file in the Folder: cities as points, cells as squares"
+code = '''
+{{?model=buringh|reba}}out = joinpath(folder, "historical-populations-{{model}}-$(join(box, "_"))-$(since)-$(upto).parquet")
+{{?model=hyde}}out = joinpath(folder, "historical-populations-hyde-$(join(box, "_"))-$(p.cell)-$(since)-$(upto).parquet")
+{{?model=buringh|reba}}shapes = "SELECT *, ST_Point(lon, lat) AS geom FROM cities"
+{{?model=hyde}}shapes = "SELECT *, ST_MakeEnvelope(lon - $(p.cell / 2), lat - $(p.cell / 2), lon + $(p.cell / 2), lat + $(p.cell / 2)) AS geom FROM grid"
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	DBInterface.execute(con, "COPY ($(shapes)) TO '$(quoted(out))' (FORMAT parquet)")  # DuckDB writes GeoParquet metadata
+	println("Wrote ", out)
+end
+'''
