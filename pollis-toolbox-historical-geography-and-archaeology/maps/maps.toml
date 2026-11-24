@@ -470,6 +470,32 @@ display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#2e7d32"
 '''
 
 [[maps]]
+id = "freya-stark"
+topic = "journeys"
+title = "The Travels of Freya Stark"
+work = "Freya Stark, Letters from Syria, The Valleys of the Assassins and The Southern Gates of Arabia"
+kind = "historical"
+since = 1927
+upto = 1935
+region = "Syria, Persia and the Hadhramaut"
+description = "Freya Stark's journeys, each a line of its own: her first journey east in 1927 and 1928, by donkey into the Jebel Druse, closed by the French Mandate; the valleys of the Assassins and the Throne of Solomon in the Elburz in 1930 and 1931; Luristan in 1931; the hidden treasure of Pusht-i-Kuh in 1932; and the Hadhramaut in 1935, from Aden to Shibam and Tarim, until the Royal Air Force flew her back to Aden. Each stage has a short quotation of her letters or books."
+source = "Letters from Syria (1942), The Valleys of the Assassins (1934) and The Southern Gates of Arabia (1936)"
+sourceUrl = "https://archive.org/details/in.ernet.dli.2015.211087"
+licence = "Short quotations, copyright the estate of Freya Stark; CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The stages of her journeys, each journey a part with a line of its own, and each stage with her words
+trip = journey(con, :stark; folder)
+display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#9c4f2c", opacity = 0.8),
+	Pollis.layer(trip.path; name = "Stages", column = "part");
+	title = "The Travels of Freya Stark", center = (42, 25), zoom = 3))
+'''
+
+[[maps]]
 id = "zheng-he"
 topic = "journeys"
 title = "The Voyages of Zheng He"
