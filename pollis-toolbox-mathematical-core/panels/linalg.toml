@@ -455,7 +455,7 @@ models = ["lsq"]
 [[inputs]]
 id = "matrix"
 label = "Test Matrix"
-tooltip = "A sparse matrix from an n x n grid on the unit square. Laplacian: the five-point Laplacian, symmetric positive definite. Shifted Laplacian: the Laplacian minus 110 I, symmetric with some negative eigenvalues. Convection-Diffusion: the Laplacian plus convection along x, nonsymmetric. Tall: the Laplacian stacked on a random sparse matrix, twice as many equations as unknowns."
+tooltip = "A sparse matrix from an n x n grid on the unit square. Laplacian: the five-point Laplacian, symmetric positive definite. Shifted Laplacian: the Laplacian minus 110 I, symmetric with some negative eigenvalues. Convection-Diffusion: the Laplacian plus convection along x, nonsymmetric. Tall: the Laplacian stacked on the first differences of the grid along x and along y, about three times as many equations as unknowns."
 kind = "select"
 default = "spd"
 models = ["iter"]
@@ -603,12 +603,13 @@ function testmatrix(kind, n)  # a sparse matrix from the n x n grid of the unit 
     h = 1 / (n + 1)
     T = spdiagm(-1 => fill(-1.0, n - 1), 0 => fill(2.0, n), 1 => fill(-1.0, n - 1)) / h^2
     D = spdiagm(-1 => fill(-1.0, n - 1), 1 => fill(1.0, n - 1)) / (2h)  # centred first difference
+    G = spdiagm(n + 1, n, 0 => fill(1.0, n), -1 => fill(-1.0, n)) / h  # first differences between neighbours, (n + 1) x n
     Id = sparse(1.0I, n, n)
     L = kron(Id, T) + kron(T, Id)  # minus the 2-D Laplacian, zero on the boundary: symmetric positive definite
     kind == "spd" && return L
     kind == "indefinite" && return L - 110.0I  # shifted past the smallest eigenvalues: symmetric, some eigenvalues negative
     kind == "nonsymmetric" && return L + 50.0 * kron(Id, D)  # convection along x: no longer symmetric
-    return [L; sprandn(Xoshiro(1), n^2, n^2, 3 / n^2)]  # tall: 2n^2 equations, n^2 unknowns
+    return [L; kron(Id, G); kron(G, Id)]  # tall: the Laplacian and the differences along x and y, 3n^2 + 2n equations, n^2 unknowns
 end
 n = {{gridn}}  # grid points per side: n^2 unknowns
 tol = {{tol}}
@@ -781,32 +782,34 @@ code = '''
 [[actionGroups.actions]]
 id = "warm-start"
 label = "Warm Start"
-desc = "A new right-hand side close to b, solved twice: from zero, and from the solution already found. When the new problem is near the old one, as in the steps of Newton's method or of a time-stepping scheme, a warm start saves iterations. CG, MINRES, GMRES and BiCGSTAB take a starting vector"
+desc = "New right-hand sides that differ from b by one part in a hundred, in ten thousand and in a million, each solved from zero and from the solution already found. How many iterations each start needs: in the steps of Newton's method or of a time-stepping scheme the new problem is close to the old one, and a warm start often needs fewer, though not always. CG, MINRES, GMRES and BiCGSTAB take a starting vector"
 models = ["iter"]
 code = '''
-b_new = b .+ 0.01 .* randn(Xoshiro(4), length(b))  # b changed by about one per cent
 if method in ("lsqr", "lsmr")
     (note = "LSQR and LSMR in Krylov.jl start from zero: choose a square test matrix and CG, MINRES, GMRES or BiCGSTAB",)
 else
-    x_cold, s_cold = solvers[method](A, b_new; stopping(method, b_new)...)
-    x_warm, s_warm = solvers[method](A, b_new, x; stopping(method, b_new)...)  # x: the solution for b, as the starting vector
-    (iterations_from_zero = s_cold.niter, iterations_from_previous_solution = s_warm.niter, relative_difference = norm(x_warm - x_cold) / norm(x_cold))
+    map((1e-2, 1e-4, 1e-6)) do change
+        b_new = b .+ change .* randn(Xoshiro(4), length(b))  # b changed by about this fraction
+        x_cold, s_cold = solvers[method](A, b_new; stopping(method, b_new)...)
+        x_warm, s_warm = solvers[method](A, b_new, x; stopping(method, b_new)...)  # x: the solution for b, as the starting vector
+        (change_in_b = change, iterations_from_zero = s_cold.niter, iterations_from_previous_solution = s_warm.niter, relative_difference = norm(x_warm - x_cold) / norm(x_cold))
+    end
 end
 '''
 
 [[actionGroups.actions]]
 id = "workspace"
 label = "Many Right-Hand Sides"
-desc = "Twenty new right-hand sides, solved by calling the method afresh each time and by reusing one workspace, which holds the method's vectors: the memory allocated and the fastest of three runs of each"
+desc = "Ten new right-hand sides, solved by calling the method afresh each time and by reusing one workspace, which holds the method's vectors: the memory each allocates and the time it takes"
 models = ["iter"]
 code = '''
-bs = [randn(Xoshiro(3), size(A, 1)) for _ in 1:20]  # 20 new right-hand sides
+bs = [randn(Xoshiro(3), size(A, 1)) for _ in 1:10]  # 10 new right-hand sides
 ws = krylov_workspace(Val(Symbol(method)), A, b)  # the vectors of the method, allocated once
 afresh() = [solvers[method](A, bj; stopping(method, bj)...)[1] for bj in bs]
 in_place() = [copy(Krylov.solution(krylov_solve!(ws, A, bj; stopping(method, bj)...))) for bj in bs]
 X1 = afresh(); X2 = in_place()  # also compiles both before measuring
-(megabytes_afresh = (@allocated afresh()) / 2^20, megabytes_in_place = (@allocated in_place()) / 2^20,
- seconds_afresh = minimum(@elapsed(afresh()) for _ in 1:3), seconds_in_place = minimum(@elapsed(in_place()) for _ in 1:3),
+r1 = @timed afresh(); r2 = @timed in_place()
+(megabytes_afresh = r1.bytes / 2^20, megabytes_in_place = r2.bytes / 2^20, seconds_afresh = r1.time, seconds_in_place = r2.time,
  largest_difference = maximum(norm(X1[j] - X2[j]) for j in eachindex(bs)))
 '''
 
@@ -1042,15 +1045,20 @@ z2, s2 = gmres(K, [b; c]; atol = 0.0, rtol = tol)
 [[actionGroups.actions]]
 id = "adjoint"
 label = "Adjoint Systems (BiLQR and TriLQR)"
-desc = "A x = b and transpose(A) y = c solved together, for an output c' x such as the mean of the solution: c' x and y' b are the same number when both systems are solved, so the adjoint gives a second estimate of the output. BiLQR for a square A, TriLQR for a rectangular one"
+desc = "A x = b and transpose(A) y = c solved together, for an output c' x such as the mean of the solution: c' x and y' b are the same number when both systems are solved, so the adjoint gives a second estimate of the output. BiLQR and TriLQR on the same square matrix, beside the output from the direct solve"
 models = ["iter"]
 code = '''
-c = fill(1 / size(A, 2), size(A, 2))  # the output: the mean of the solution, c' x
-square = size(A, 1) == size(A, 2)
-bb = square ? b : A * ones(size(A, 2))  # tall: a right-hand side in the range of A, so A x = b has an exact solution
-xa, ya, sa = square ? bilqr(A, bb, c; atol = 0.0, rtol = tol) : trilqr(A, bb, c; atol = 0.0, rtol = tol)
-(method = square ? "BiLQR" : "TriLQR", iterations = sa.niter, primal_solved = sa.solved_primal, adjoint_solved = sa.solved_dual,
- output_from_x = dot(c, xa), output_from_y = dot(ya, bb), output_direct = dot(c, A \ bb), seconds = sa.timer)
+if size(A, 1) != size(A, 2)
+    (note = "This step uses a square matrix: choose the Laplacian, the shifted Laplacian or convection-diffusion",)
+else
+    c = fill(1 / size(A, 2), size(A, 2))  # the output: the mean of the solution, c' x
+    output_direct = dot(c, A \ b)
+    map(["BiLQR" => bilqr, "TriLQR" => trilqr]) do (name, solver)
+        xa, ya, sa = solver(A, b, c; atol = 0.0, rtol = tol)  # A x = b and transpose(A) y = c together
+        (method = name, iterations = sa.niter, primal_solved = sa.solved_primal, adjoint_solved = sa.solved_dual,
+         output_from_x = dot(c, xa), output_from_y = dot(ya, b), output_direct = output_direct, seconds = sa.timer)
+    end
+end
 '''
 
 [[actionGroups.actions]]
@@ -1080,7 +1088,7 @@ using MLDataDevices
 dev = gpu_device()  # the GPU of the backend loaded, or the CPU when there is none
 A32 = Matrix{Float32}(testmatrix("{{matrix}}", min(n, 40)))
 b32 = ones(Float32, size(A32, 1))
-stop32 = method in ("lsqr", "lsmr") ? (axtol = 1f-5, btol = 1f-5) : (atol = 0f0, rtol = 1f-5)  # single precision holds about 7 digits
+stop32 = method in ("lsqr", "lsmr") ? (axtol = 1f-4, btol = 1f-4) : (atol = 0f0, rtol = 1f-4)  # single precision holds about 7 digits: a tolerance it can reach
 x_dev, s_dev = solvers[method](dev(A32), dev(b32); stop32...)
 x_cpu, s_cpu = solvers[method](A32, b32; stop32...)
 (device = string(dev), unknowns = size(A32, 2), iterations_device = s_dev.niter, iterations_cpu = s_cpu.niter,
