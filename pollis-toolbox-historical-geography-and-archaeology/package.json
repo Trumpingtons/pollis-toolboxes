@@ -48,6 +48,9 @@
             "id": "learnedsatellite", "command": "pollis.historicalGeography.learnedsatellite", "title": "Learned Detection in Satellite Images", "submenu": "archaeology", "group": "1_archaeology", "order": 4, "data": "panels/learnedsatellite.toml"
           },
           {
+            "id": "enkiheldout", "command": "pollis.historicalGeography.enkiheldout", "title": "Enki on Held-Out Ground", "submenu": "archaeology", "group": "1_archaeology", "order": 5, "data": "panels/enkiheldout.toml", "defaultModel": "published", "decisionFirstColumn": "Tab"
+          },
+          {
             "id": "sitesmonuments", "command": "pollis.historicalGeography.sitesmonuments", "title": "Sites and Monuments", "group": "3_archaeology", "order": 2, "data": "panels/sitesmonuments.toml", "defaultModel": "pleiades", "decisionFirstColumn": "Register"
           }
         ],
