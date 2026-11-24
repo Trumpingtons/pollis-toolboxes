@@ -415,7 +415,7 @@ detail = "the coefficients that best fit more equations than unknowns, here a po
 
 [[bullets]]
 text = "Iterative Methods"
-detail = "solves a large sparse system with a Krylov method of Krylov.jl, which needs only the products of A with vectors: CG, MINRES, GMRES, BiCGSTAB, LSQR or LSMR, each suited to a structure of A"
+detail = "solves a large sparse system with a Krylov method of <span class=\"yellow\">Krylov.jl</span>, which needs only the products of A with vectors: CG, MINRES, GMRES, BiCGSTAB, LSQR or LSMR, each suited to a structure of A"
 
 [[decisionRows]]
 task = "Linear Systems"
