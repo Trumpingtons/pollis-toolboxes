@@ -324,6 +324,51 @@ journal = "SIAM Journal on Matrix Analysis and Applications"
 doi = "10.1137/21M1459265"
 openAccess = true
 
+[[faq]]
+question = "Why should I not solve a system as inv(A) * b?"
+answer = '''
+Forming the inverse costs about three times as much as one LU solve, and the answer is less accurate. A \ b factorises A and solves two triangular systems instead; to solve with the same matrix many times, keep the factorisation (lu(A), cholesky(A) or factorize(A)) and reuse it. Even the diagonal of the inverse, for standard errors, comes more cheaply from a factorisation.
+
+Compare Solvers, on the Linear Systems and Factorisations tabs, puts the inverse beside backslash, LU, QR and Cholesky; Reuse the Factorisation times a factorisation computed once against solving afresh.
+'''
+wiki = "Decision Guide"
+
+[[faq]]
+question = "How do I know whether to trust a solution?"
+answer = '''
+Two numbers tell you. A small relative residual, near 1e-16, says the algorithm did its job: x is the exact solution of a nearby problem. The condition number of A says how far that can be from the true solution: about log10 of it decimal digits may be lost. Below 1e3 a matrix is well conditioned; near 1e16 it is numerically singular. A small determinant does not mean ill-conditioning.
+
+Residual Check and Condition Number, under Diagnose, compute both for each tab.
+'''
+wiki = "Diagnostics"
+
+[[faq]]
+question = "Why does A \\ b fit least squares by QR and not by the normal equations?"
+answer = '''
+Forming transpose(A) * A squares the condition number. With a condition number of 1e6, the normal equations face 1e12 and can lose twelve of sixteen digits, where QR loses six. A \ b on a tall matrix uses QR with column pivoting; the SVD also handles a matrix whose columns are not linearly independent.
+
+Compare Methods, on the Least Squares tab, gives the coefficients by QR, by the normal equations and by the SVD, with the condition number each one faces.
+'''
+wiki = "Least Squares"
+
+[[faq]]
+question = "When should I use an iterative method instead of A \\ b?"
+answer = '''
+When A is large and sparse, its factors can hold far more nonzeros than A itself, and a factorisation can exhaust memory and time; sometimes A is known only through a routine that returns the product A v. An iterative method touches A only through such products, about one per iteration, so its cost depends on the number of nonzeros and on how many iterations it needs.
+
+On the Iterative Methods tab, each solve is put beside the sparse direct solve; Iterations and Grid Size compares the two as the grid is refined, and Matrix-Free Operator solves without storing the matrix.
+'''
+wiki = "Iterative Methods"
+
+[[faq]]
+question = "Which Krylov method suits my matrix?"
+answer = '''
+The structure of A decides. CG for a symmetric positive definite matrix; MINRES for a symmetric one that may be indefinite; GMRES or BiCGSTAB for any square nonsymmetric matrix; LSQR or LSMR for least squares, with a matrix of any shape. How many iterations a method needs depends on the eigenvalues or singular values of A, and a preconditioner, a matrix close to A that is cheap to solve with, can cut them.
+
+Compare Krylov Methods runs every method that applies on the same system, and Compare Preconditioners tries Jacobi and algebraic multigrid.
+'''
+wiki = "Iterative Methods"
+
 [[models]]
 id = "solve"
 label = "Linear Systems"
