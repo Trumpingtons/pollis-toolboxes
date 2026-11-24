@@ -14,13 +14,13 @@ noun = "keys"
 [[apiKey.fields]]
 name = "googleMapsKey"
 envVar = "GOOGLE_MAPS_API_KEY"
-label = "Google Maps key"
+label = "Google Maps"
 prompt = "Google Maps key, for Google's satellite imagery"
 
 [[apiKey.fields]]
 name = "arcgisKey"
 envVar = "ARCGIS_API_KEY"
-label = "ArcGIS key"
+label = "ArcGIS"
 prompt = "ArcGIS Location Platform API key, for Esri's World Imagery"
 
 [[packages]]
