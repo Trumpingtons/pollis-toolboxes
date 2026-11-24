@@ -496,6 +496,58 @@ display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#9c4f2c"
 '''
 
 [[maps]]
+id = "petrie"
+topic = "journeys"
+title = "Ten Years' Digging in Egypt"
+work = "W. M. Flinders Petrie, Ten Years' Digging in Egypt"
+kind = "historical"
+since = 1880
+upto = 1891
+region = "Egypt"
+description = "The excavations of Flinders Petrie from 1880 to 1891, site by site in the order he worked them: the survey of the pyramids of Gizeh, Tanis, Naukratis, Nebesheh and Daphnae in the Delta, the journey up the Nile to Assuan, then Hawara and its mummy portraits, Gurob, Illahun and the town of Kahun, and Medum, each with the year of its season and his words."
+source = "Ten Years' Digging in Egypt (Project Gutenberg)"
+sourceUrl = "https://www.gutenberg.org/ebooks/52570"
+licence = "Public domain (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The sites in the order Petrie worked them, each with the year of its season and his words, and the way through them
+trip = journey(con, :petrie; folder)
+display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#b5651d", opacity = 0.8),
+	Pollis.layer(trip.path; name = "Sites", column = "year");
+	title = "Ten Years' Digging in Egypt", center = (31.2, 27.5), zoom = 5))
+'''
+
+[[maps]]
+id = "burckhardt"
+topic = "journeys"
+title = "The Journeys of Burckhardt"
+work = "John Lewis Burckhardt, Travels in Syria and the Holy Land, Travels in Nubia and Travels in Arabia"
+kind = "historical"
+since = 1812
+upto = 1815
+region = "Syria, Arabia Petraea, Nubia and the Hedjaz"
+description = "The journeys of Johann Ludwig Burckhardt, in disguise as a Muslim trader, each a line of its own: from Damascus to Cairo in 1812, by Wady Mousa, where on 22 August he saw the ruins of Petra; up the Nile to Mahass in 1813, and back by the temples of Ebsambal (Abu Simbel); across the Nubian desert to Berber, Shendy and Souakin in 1814; and Djidda, Mekka, the Hadj at Arafat, Medina and Yembo in 1814 and 1815, each stage with its date and the words of his journals."
+source = "Travels in Syria and the Holy Land (Project Gutenberg)"
+sourceUrl = "https://www.gutenberg.org/ebooks/8884"
+licence = "Public domain (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The stages of his journeys, each journey a part with a line of its own, and each stage with its date and his words
+trip = journey(con, :burckhardt; folder)
+display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#7b5e2a", opacity = 0.8),
+	Pollis.layer(trip.path; name = "Stages", column = "part");
+	title = "The Journeys of Burckhardt", center = (35, 24), zoom = 4))
+'''
+
+[[maps]]
 id = "zheng-he"
 topic = "journeys"
 title = "The Voyages of Zheng He"
