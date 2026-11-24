@@ -444,6 +444,32 @@ display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#1f6f8b"
 '''
 
 [[maps]]
+id = "humboldt"
+topic = "journeys"
+title = "The Journey of Humboldt and Bonpland"
+work = "Alexander von Humboldt, Personal Narrative and other works"
+kind = "historical"
+since = 1799
+upto = 1804
+region = "Venezuela, Cuba, Colombia, Ecuador, Peru and Mexico"
+description = "Alexander von Humboldt and Aimé Bonpland in the Americas, from Corunna on 5 June 1799 by Cumaná, the Lake of Valencia, the electric eels of Calabozo, the Orinoco and the Cassiquiare, Cuba, the Andes from Bogotá to Chimborazo, Lima and Mexico to Philadelphia in 1804, each stage with its passage of Humboldt's Personal Narrative, Views of Nature, Researches or Political Essay on the Kingdom of New Spain."
+source = "Personal Narrative, translated by Thomasina Ross (Project Gutenberg)"
+sourceUrl = "https://www.gutenberg.org/ebooks/6322"
+licence = "Public domain (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The stages of the journey, each with its passage of Humboldt's works, and the route through them
+trip = journey(con, :humboldt; folder)
+display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#2e7d32", opacity = 0.8),
+	Pollis.layer(trip.path; name = "Stages", column = "stage");
+	title = "The Journey of Humboldt and Bonpland", center = (-75, 10), zoom = 2))
+'''
+
+[[maps]]
 id = "zheng-he"
 topic = "journeys"
 title = "The Voyages of Zheng He"
