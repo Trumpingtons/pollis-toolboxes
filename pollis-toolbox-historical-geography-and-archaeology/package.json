@@ -51,9 +51,15 @@
             "id": "sitesmonuments", "command": "pollis.historicalGeography.sitesmonuments", "title": "Sites and Monuments", "group": "3_archaeology", "order": 2, "data": "panels/sitesmonuments.toml", "defaultModel": "pleiades", "decisionFirstColumn": "Register"
           }
         ],
-        "planned": [
-          { "title": "Historical Episodes", "group": "2_episodes", "order": 1 }
-        ]
+        "topicMaps": {
+          "file": "maps/maps.toml",
+          "topics": [
+            { "id": "at-war", "title": "At War", "description": "The battles, sieges and campaigns of a war, each where and when it took place, over the realms of its years.", "group": "2_topics", "order": 1 },
+            { "id": "conquests", "title": "Conquests", "description": "The battles and campaigns of a conqueror, from the first to the last, over the realms of their years.", "group": "2_topics", "order": 2 },
+            { "id": "places", "title": "Places", "description": "The places a work names, historical or fictional, each with the passages that name it.", "group": "2_topics", "order": 3 },
+            { "id": "journeys", "title": "Journeys", "description": "The stages of a journey, historical or legendary, each with its passage of the source, and the route through them where the source gives their order.", "group": "2_topics", "order": 4 }
+          ]
+        }
       }
     ]
   }
