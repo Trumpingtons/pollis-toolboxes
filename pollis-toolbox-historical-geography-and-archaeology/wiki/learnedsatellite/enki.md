@@ -36,6 +36,10 @@ Enki's training script has a second stage, which unfreezes the network beyond it
 
 Enki sees the form, texture and colour of a cell in RGB, and was trained on tells and mound-like features of arid and semi-arid ground in the Ancient Near East. Its README names its limits: two classes only, RGB only, mainly tells and mounds, and false positives in modern ground such as buildings, industrial areas, construction sites, quarries, roads and landforms that resemble mounds ([Rosati (2025b)](#ref-Ros2025b)). Outside the Ancient Near East, or on imagery unlike Google's and Bing's, its shares are less certain, which Enki Fine-Tuned on Known Sites can partly correct. Its cells are 350 m, so a feature shows where to look, not the outline of a site: the site is found on the imagery of the cell, older maps and the ground.
 
+## How Can Enki Fine-Tuned on Known Sites Be Tested on Sites It Has Not Seen?
+
+Pollis's panel Transfer Learning and Fine-Tuning, in Model > Neural Network Architectures, tests the training of Enki on new ground. It splits the area into two sides at the column of cells that halves the known sites, trains on one side and scores on the other: Enki as published, a random forest on the 1,280 channels of Enki's frozen network, and Enki with its last two layers trained again, as Enki Fine-Tuned on Known Sites trains them. Each is scored by the AUC on the held-out side and by the share of its known sites in the cells of highest share. The panel also saves the two layers trained again to a file of about 1.3 MB with `enki_save` of ArchaeologicalDetection.jl, which `enki_model` reads back onto Enki's network with its keyword `head`.
+
 ## References
 
 <a id="ref-FMLC2026a"></a>FluxML Contributors (2026). NNlib.jl: neural network primitives with multiple backends. [github.com/FluxML/NNlib.jl](https://github.com/FluxML/NNlib.jl)
