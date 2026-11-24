@@ -1,17 +1,17 @@
 # Linear Algebra — Factsheet
 
-Linear algebra is the arithmetic of many quantities at once. Systems of equations, regressions, input-output tables, Markov chains and the curvature of a function of several variables are all matrix problems. This panel uses Julia's standard library **LinearAlgebra**, which calls the LAPACK and BLAS routines of [Anderson, Bai, Bischof, Blackford, Demmel, Dongarra, Du Croz, Greenbaum, Hammarling, McKenney and Sorensen (1999)](#ref-ABBBD...1999a) and needs no installation.
+Linear algebra is the arithmetic of many quantities at once. Systems of equations, regressions, input-output tables, Markov chains and the curvature of a function of several variables are all matrix problems. This panel uses Julia's standard library **LinearAlgebra**, which calls the LAPACK and BLAS routines of [Anderson, Bai, Bischof, Blackford, Demmel, Dongarra, Du Croz, Greenbaum, Hammarling, McKenney and Sorensen (1999)](#ref-ABBBD...1999a) and needs no installation. For large sparse systems it adds the Krylov methods of **Krylov.jl** ([Montoison and Orban (2023)](#ref-MO2023a)).
 
 | | |
 |---|---|
 | **Purpose** | Solve linear systems, factorise matrices, find eigenvalues and singular values, fit by least squares |
-| **Julia stack** | `LinearAlgebra` (standard library), backed by LAPACK and BLAS |
+| **Julia stack** | `LinearAlgebra` (standard library), backed by LAPACK and BLAS; `Krylov` for large sparse systems |
 | **Key operator** | `A \ b`: solves square systems and least-squares problems, choosing the method from the structure of `A` |
 | **Factorisations** | `lu`, `qr`, `cholesky`, `eigen`, `svd`, and `factorize`, which picks one |
 | **Accuracy measure** | The condition number `cond(A)`: about $\log_{10}\kappa(A)$ decimal digits may be lost |
 | **Matrix types** | `Symmetric`, `Diagonal`, `Tridiagonal`, `UpperTriangular`, ...: tell Julia the structure and it uses a faster method |
 
-## The Five Tasks
+## The Six Tasks
 
 | Task | Problem | Julia | Result |
 |---|---|---|---|
@@ -20,6 +20,7 @@ Linear algebra is the arithmetic of many quantities at once. Systems of equation
 | Eigenvalues | $Av = \lambda v$ | `eigen(A)` | Eigenvalues $\lambda_i$ and eigenvectors $v_i$ |
 | Singular Values | $A = U \Sigma V^\top$ | `svd(A)` | Singular values $\sigma_1 \ge \sigma_2 \ge \dots \ge 0$ |
 | Least Squares | $\min_x \lVert Ax - b \rVert_2$, $A$ tall | `A \ b` | Coefficients $x$ |
+| Iterative Methods | $Ax = b$ or $\min_x \lVert Ax - b \rVert_2$, $A$ large and sparse | `cg(A, b)`, `minres`, `gmres`, `lsqr` | $x$ and the statistics of the run |
 
 ## Minimal Example
 
@@ -37,6 +38,8 @@ eigvals(A), svdvals(A), cond(A)
 
 <a id="ref-ABBBD...1999a"></a>Anderson, E., Bai, Z., Bischof, C., Blackford, S., Demmel, J., Dongarra, J., Du Croz, J., Greenbaum, A., Hammarling, S., McKenney, A. and Sorensen, D. (1999). *LAPACK Users' Guide*, 3rd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719604](https://doi.org/10.1137/1.9780898719604)
 
+<a id="ref-MO2023a"></a>Montoison, A. and Orban, D. (2023). Krylov.jl: a Julia basket of hand-picked Krylov methods. *Journal of Open Source Software* 8(89), 5187. [doi:10.21105/joss.05187](https://doi.org/10.21105/joss.05187)
+
 ## See Also
 - [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)
-- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md)
+- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md) · [Iterative Methods](iterative-methods.md)

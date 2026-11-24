@@ -57,4 +57,4 @@ The factorisation object also gives `det(F)` and `logdet(F)`, the latter safe fr
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)
-- [Linear Systems](linear-systems.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md)
+- [Linear Systems](linear-systems.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md) · [Iterative Methods](iterative-methods.md)

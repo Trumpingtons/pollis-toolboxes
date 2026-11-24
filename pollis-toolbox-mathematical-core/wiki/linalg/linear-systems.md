@@ -50,4 +50,4 @@ $$\frac{\lVert \hat x - x \rVert}{\lVert x \rVert} \lesssim \kappa(A) \, \vareps
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)
-- [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md)
+- [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md) · [Iterative Methods](iterative-methods.md)

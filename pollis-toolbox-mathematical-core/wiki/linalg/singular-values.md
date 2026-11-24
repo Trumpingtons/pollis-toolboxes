@@ -44,4 +44,4 @@ This is the basis of principal components, of image and signal compression, of l
 
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)
-- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Least Squares](least-squares.md)
+- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Least Squares](least-squares.md) · [Iterative Methods](iterative-methods.md)

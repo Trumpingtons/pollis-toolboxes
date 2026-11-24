@@ -22,6 +22,8 @@ Numerical linear algebra never inverts a matrix to solve a system. It writes $A$
 
 A factorisation costs about $n^3$ operations for an $n \times n$ matrix; each solve with it afterwards costs only about $n^2$. Factorise once, solve many times.
 
+For a large sparse matrix the factors can hold far more nonzeros than the matrix. Iterative methods then build the solution from products of the matrix with vectors, in Krylov subspaces $\operatorname{span}\{b, Ab, A^2b, \dots\}$ ([Saad (2003)](#ref-Saa2003a)): see [Iterative Methods](iterative-methods.md).
+
 ## Floating Point
 
 Computers hold about 16 significant decimal digits. Stable algorithms, such as LU with partial pivoting, Householder QR ([Householder (1958)](#ref-Hou1958a)) and the QR algorithm for eigenvalues ([Francis (1961)](#ref-Fra1961a)), give the exact answer to a problem within rounding of the one posed ([Higham (2002)](#ref-Hig2002b)). Whether that answer is close to the true one then depends on the problem alone, through its condition number.
@@ -42,8 +44,10 @@ Julia's `LinearAlgebra` makes the structure of a matrix part of its type. `Symme
 
 <a id="ref-Hou1958a"></a>Householder, A. S. (1958). Unitary triangularization of a nonsymmetric matrix. *Journal of the ACM* 5(4), 339–342. [doi:10.1145/320941.320947](https://doi.org/10.1145/320941.320947)
 
+<a id="ref-Saa2003a"></a>Saad, Y. (2003). *Iterative Methods for Sparse Linear Systems*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718003](https://doi.org/10.1137/1.9780898718003)
+
 <a id="ref-TB1997a"></a>Trefethen, L. N. and Bau, D. (1997). *Numerical Linear Algebra*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898719574](https://doi.org/10.1137/1.9780898719574)
 
 ## See Also
 - [Factsheet](factsheet.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md) · [Decision Guide](decision-guide.md)
-- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md)
+- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md) · [Iterative Methods](iterative-methods.md)

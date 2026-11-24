@@ -9,6 +9,7 @@
 | A square matrix describing dynamics or a quadratic form | Stability, long-run behaviour, curvature | Eigenvalues |
 | Any matrix | Its rank, conditioning, a compressed version | Singular Values |
 | More equations than unknowns | The best fit | Least Squares |
+| A matrix too large to factorise, or known only through products $Av$ | The unknowns or the best fit | Iterative Methods |
 
 ## Which Method for $Ax = b$?
 
@@ -18,7 +19,7 @@
 | Symmetric positive definite | `cholesky(A) \ b` | $\tfrac{1}{3} n^3$ |
 | Symmetric, indefinite | `Symmetric(A) \ b` (Bunch-Kaufman) | $\tfrac{1}{3} n^3$ |
 | Triangular, diagonal, tridiagonal | Wrap it (`UpperTriangular`, `Diagonal`, `Tridiagonal`) | $n^2$ or $n$ |
-| Large and sparse | `SparseArrays`, or an iterative method (Krylov.jl) | Depends on the sparsity |
+| Large and sparse | A sparse factorisation (`A \ b` on a `SparseMatrixCSC`), or a Krylov method of Krylov.jl: `cg`, `minres`, `gmres`, `lsqr` ([Iterative Methods](iterative-methods.md)) | A product with $A$ per iteration ([Saad (2003)](#ref-Saa2003a)) |
 | Tall (least squares) | `A \ b` (QR) | $2mn^2$ |
 | Rank-deficient or nearly so | `pinv(A) * b` or `qr(A, ColumnNorm()) \ b` | SVD: about $4mn^2$ |
 
@@ -48,6 +49,8 @@ Forming the inverse costs about three times as much as one LU solve and is less 
 
 <a id="ref-Hig2002b"></a>Higham, N. J. (2002). *Accuracy and Stability of Numerical Algorithms*, 2nd edition. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718027](https://doi.org/10.1137/1.9780898718027)
 
+<a id="ref-Saa2003a"></a>Saad, Y. (2003). *Iterative Methods for Sparse Linear Systems*. Society for Industrial and Applied Mathematics. [doi:10.1137/1.9780898718003](https://doi.org/10.1137/1.9780898718003)
+
 ## See Also
 - [Factsheet](factsheet.md) · [Overview](overview.md) · [Assumptions](assumptions.md) · [Diagnostics](diagnostics.md) · [Interpretation](interpretation.md)
-- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md)
+- [Linear Systems](linear-systems.md) · [Factorisations](factorisations.md) · [Eigenvalues](eigenvalues.md) · [Singular Value Decomposition](singular-values.md) · [Least Squares](least-squares.md) · [Iterative Methods](iterative-methods.md)

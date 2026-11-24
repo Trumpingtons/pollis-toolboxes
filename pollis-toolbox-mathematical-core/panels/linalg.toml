@@ -12,8 +12,20 @@ defaultModel = "solve"
 name = "LinearAlgebra.jl"
 github = "https://github.com/JuliaLang/LinearAlgebra.jl"
 
+[[packages]]
+name = "Krylov.jl"
+github = "https://github.com/JuliaSmoothOptimizers/Krylov.jl"
+
+[[packages]]
+name = "AlgebraicMultigrid.jl"
+github = "https://github.com/JuliaLinearAlgebra/AlgebraicMultigrid.jl"
+
+[[packages]]
+name = "MLDataDevices.jl"
+github = "https://github.com/LuxDL/MLDataDevices.jl"
+
 [requires]
-packages = ["LinearAlgebra.jl", "Plots.jl"]
+packages = ["LinearAlgebra.jl", "Plots.jl", "Krylov.jl", "AlgebraicMultigrid.jl", "MLDataDevices.jl"]
 
 [[notebookSections]]
 label = ""
@@ -47,6 +59,12 @@ name = "Least Squares"
 file = "linalg/tutorial-05-least-squares.ipynb"
 bundled = true
 description = "Fit a polynomial to noisy data by QR, by the normal equations and by the SVD, and see why QR is the default"
+
+[[notebookSections.notebooks]]
+name = "Iterative Methods"
+file = "linalg/tutorial-06-iterative-methods.ipynb"
+bundled = true
+description = "Solve a large sparse system with the Krylov methods of Krylov.jl: CG, MINRES, GMRES and LSQR, the residual at every iteration, a preconditioner, and how the iterations grow with the grid"
 
 [[wikis]]
 name = "Factsheet"
@@ -107,6 +125,11 @@ name = "Least Squares"
 file = "linalg/least-squares.md"
 bundled = true
 
+[[wikis]]
+name = "Iterative Methods"
+file = "linalg/iterative-methods.md"
+bundled = true
+
 [[references]]
 separator = true
 label = "Software"
@@ -126,6 +149,14 @@ year = 1999
 journal = "Society for Industrial and Applied Mathematics"
 doi = "10.1137/1.9780898719604"
 openAccess = false
+
+[[references]]
+title = "Krylov.jl: A Julia Basket of Hand-Picked Krylov Methods"
+authors = "Montoison, Alexis; Orban, Dominique"
+year = 2023
+journal = "Journal of Open Source Software"
+doi = "10.21105/joss.05187"
+openAccess = true
 
 [[references]]
 separator = true
@@ -159,6 +190,14 @@ title = "Introduction to Linear Algebra"
 authors = "Strang, Gilbert"
 year = 2023
 journal = "Wellesley-Cambridge Press"
+openAccess = false
+
+[[references]]
+title = "Iterative Methods for Sparse Linear Systems"
+authors = "Saad, Yousef"
+year = 2003
+journal = "Society for Industrial and Applied Mathematics"
+doi = "10.1137/1.9780898718003"
 openAccess = false
 
 [[references]]
@@ -197,6 +236,94 @@ journal = "Psychometrika"
 doi = "10.1007/BF02288367"
 openAccess = false
 
+[[references]]
+title = "Methods of Conjugate Gradients for Solving Linear Systems"
+authors = "Hestenes, M. R.; Stiefel, E."
+year = 1952
+journal = "Journal of Research of the National Bureau of Standards"
+doi = "10.6028/jres.049.044"
+openAccess = true
+
+[[references]]
+title = "Solution of Sparse Indefinite Systems of Linear Equations"
+authors = "Paige, C. C.; Saunders, M. A."
+year = 1975
+journal = "SIAM Journal on Numerical Analysis"
+doi = "10.1137/0712047"
+openAccess = false
+
+[[references]]
+title = "LSQR: An Algorithm for Sparse Linear Equations and Sparse Least Squares"
+authors = "Paige, Christopher C.; Saunders, Michael A."
+year = 1982
+journal = "ACM Transactions on Mathematical Software"
+doi = "10.1145/355984.355989"
+openAccess = true
+
+[[references]]
+title = "GMRES: A Generalized Minimal Residual Algorithm for Solving Nonsymmetric Linear Systems"
+authors = "Saad, Youcef; Schultz, Martin H."
+year = 1986
+journal = "SIAM Journal on Scientific and Statistical Computing"
+doi = "10.1137/0907058"
+openAccess = false
+
+[[references]]
+title = "Algebraic Multigrid"
+authors = "Ruge, J. W.; Stüben, K."
+year = 1987
+journal = "Multigrid Methods, Society for Industrial and Applied Mathematics"
+doi = "10.1137/1.9781611971057.ch4"
+openAccess = false
+
+[[references]]
+title = "Two Conjugate-Gradient-Type Methods for Unsymmetric Linear Equations"
+authors = "Saunders, M. A.; Simon, H. D.; Yip, E. L."
+year = 1988
+journal = "SIAM Journal on Numerical Analysis"
+doi = "10.1137/0725052"
+openAccess = false
+
+[[references]]
+title = "Bi-CGSTAB: A Fast and Smoothly Converging Variant of Bi-CG for the Solution of Nonsymmetric Linear Systems"
+authors = "van der Vorst, H. A."
+year = 1992
+journal = "SIAM Journal on Scientific and Statistical Computing"
+doi = "10.1137/0913035"
+openAccess = false
+
+[[references]]
+title = "LSMR: An Iterative Algorithm for Sparse Least-Squares Problems"
+authors = "Fong, David Chin-Lung; Saunders, Michael"
+year = 2011
+journal = "SIAM Journal on Scientific Computing"
+doi = "10.1137/10079687X"
+openAccess = true
+
+[[references]]
+title = "BiLQ: An Iterative Method for Nonsymmetric Linear Systems with a Quasi-Minimum Error Property"
+authors = "Montoison, Alexis; Orban, Dominique"
+year = 2020
+journal = "SIAM Journal on Matrix Analysis and Applications"
+doi = "10.1137/19M1290991"
+openAccess = true
+
+[[references]]
+title = "TriCG and TriMR: Two Iterative Methods for Symmetric Quasi-Definite Systems"
+authors = "Montoison, Alexis; Orban, Dominique"
+year = 2021
+journal = "SIAM Journal on Scientific Computing"
+doi = "10.1137/20M1363030"
+openAccess = true
+
+[[references]]
+title = "GPMR: An Iterative Method for Unsymmetric Partitioned Linear Systems"
+authors = "Montoison, Alexis; Orban, Dominique"
+year = 2023
+journal = "SIAM Journal on Matrix Analysis and Applications"
+doi = "10.1137/21M1459265"
+openAccess = true
+
 [[models]]
 id = "solve"
 label = "Linear Systems"
@@ -217,6 +344,10 @@ label = "Singular Values"
 id = "lsq"
 label = "Least Squares"
 
+[[models]]
+id = "iter"
+label = "Iterative Methods"
+
 [[bullets]]
 text = "Linear Systems"
 detail = "solves A x = b with the backslash operator, which picks the method from the structure of A, and checks the residual"
@@ -236,6 +367,10 @@ detail = "the rank, the condition number and the best approximation of A by a ma
 [[bullets]]
 text = "Least Squares"
 detail = "the coefficients that best fit more equations than unknowns, here a polynomial through simulated noisy data"
+
+[[bullets]]
+text = "Iterative Methods"
+detail = "solves a large sparse system with a Krylov method of Krylov.jl, which needs only the products of A with vectors: CG, MINRES, GMRES, BiCGSTAB, LSQR or LSMR, each suited to a structure of A"
 
 [[decisionRows]]
 task = "Linear Systems"
@@ -261,6 +396,11 @@ purpose = "svd writes A = U S Vt with orthogonal U and V; the singular values gi
 task = "Least Squares"
 context = "More equations than unknowns, a tall design matrix: regression, curve fitting, calibration"
 purpose = "A \\ b on a tall A uses a pivoted QR and minimises the sum of squared residuals; the normal equations square the condition number, the SVD handles a rank-deficient A"
+
+[[decisionRows]]
+task = "Iterative Methods"
+context = "A matrix too large to factorise, or known only through its products with vectors: discretised differential equations, networks, large sparse regressions"
+purpose = "A Krylov method builds the solution from b, A b, A^2 b, ...: CG for symmetric positive definite A, MINRES for symmetric indefinite A, GMRES or BiCGSTAB for nonsymmetric A, LSQR or LSMR for least squares; a preconditioner cuts the iterations"
 
 [[inputs]]
 id = "A"
@@ -311,6 +451,81 @@ label = "Random Seed"
 tooltip = "Random seed for the simulated data: the same seed gives the same data on every run."
 default = "1"
 models = ["lsq"]
+
+[[inputs]]
+id = "matrix"
+label = "Test Matrix"
+tooltip = "A sparse matrix from an n x n grid on the unit square. Laplacian: the five-point Laplacian, symmetric positive definite. Shifted Laplacian: the Laplacian minus 110 I, symmetric with some negative eigenvalues. Convection-Diffusion: the Laplacian plus convection along x, nonsymmetric. Tall: the Laplacian stacked on a random sparse matrix, twice as many equations as unknowns."
+kind = "select"
+default = "spd"
+models = ["iter"]
+
+[[inputs.options]]
+value = "spd"
+label = "Laplacian (Symmetric Positive Definite)"
+
+[[inputs.options]]
+value = "indefinite"
+label = "Shifted Laplacian (Symmetric Indefinite)"
+
+[[inputs.options]]
+value = "nonsymmetric"
+label = "Convection-Diffusion (Nonsymmetric)"
+
+[[inputs.options]]
+value = "tall"
+label = "Tall Sparse (Least Squares)"
+
+[[inputs]]
+id = "method"
+label = "Krylov Method"
+tooltip = "Suited to the Matrix: CG for the Laplacian, MINRES for the shifted Laplacian, GMRES for convection-diffusion, LSQR for the tall matrix. Any other choice runs that method as it is, also on a matrix it does not suit, so you can see what happens. CG, MINRES, GMRES and BiCGSTAB need a square matrix."
+kind = "select"
+default = "auto"
+models = ["iter"]
+
+[[inputs.options]]
+value = "auto"
+label = "Suited to the Matrix"
+
+[[inputs.options]]
+value = "cg"
+label = "CG"
+
+[[inputs.options]]
+value = "minres"
+label = "MINRES"
+
+[[inputs.options]]
+value = "gmres"
+label = "GMRES"
+
+[[inputs.options]]
+value = "bicgstab"
+label = "BiCGSTAB"
+
+[[inputs.options]]
+value = "lsqr"
+label = "LSQR"
+
+[[inputs.options]]
+value = "lsmr"
+label = "LSMR"
+
+[[inputs]]
+id = "gridn"
+label = "Grid Points per Side"
+tooltip = "Points in each direction of the grid: the matrix has this number squared columns, 3600 at 60. The Laplacian's condition number grows with the square of this number, and with it the iterations."
+default = "60"
+models = ["iter"]
+newRow = true
+
+[[inputs]]
+id = "tol"
+label = "Tolerance"
+tooltip = "The method stops when the residual norm falls below this tolerance times the norm of b. LSQR and LSMR also stop when the normal equations hold to this tolerance, as a least-squares residual does not go to zero."
+default = "1e-8"
+models = ["iter"]
 
 [[codeBranches]]
 model = "solve"
@@ -379,6 +594,39 @@ r = b - A * x
  r_squared = 1 - sum(abs2, r) / sum(abs2, b .- sum(b) / n))
 '''
 
+[[codeBranches]]
+model = "iter"
+code = '''
+using LinearAlgebra, SparseArrays, Random, Krylov
+
+function testmatrix(kind, n)  # a sparse matrix from the n x n grid of the unit square
+    h = 1 / (n + 1)
+    T = spdiagm(-1 => fill(-1.0, n - 1), 0 => fill(2.0, n), 1 => fill(-1.0, n - 1)) / h^2
+    D = spdiagm(-1 => fill(-1.0, n - 1), 1 => fill(1.0, n - 1)) / (2h)  # centred first difference
+    Id = sparse(1.0I, n, n)
+    L = kron(Id, T) + kron(T, Id)  # minus the 2-D Laplacian, zero on the boundary: symmetric positive definite
+    kind == "spd" && return L
+    kind == "indefinite" && return L - 110.0I  # shifted past the smallest eigenvalues: symmetric, some eigenvalues negative
+    kind == "nonsymmetric" && return L + 50.0 * kron(Id, D)  # convection along x: no longer symmetric
+    return [L; sprandn(Xoshiro(1), n^2, n^2, 3 / n^2)]  # tall: 2n^2 equations, n^2 unknowns
+end
+n = {{gridn}}  # grid points per side: n^2 unknowns
+tol = {{tol}}
+A = testmatrix("{{matrix}}", n)
+b = ones(size(A, 1))
+solvers = Dict("cg" => cg, "minres" => minres, "gmres" => gmres, "bicgstab" => bicgstab, "lsqr" => lsqr, "lsmr" => lsmr)
+suited = Dict("spd" => "cg", "indefinite" => "minres", "nonsymmetric" => "gmres", "tall" => "lsqr")
+method = "{{method}}" == "auto" ? suited["{{matrix}}"] : "{{method}}"
+# Stop when the residual is below tol times the norm of b; LSQR and LSMR also when the normal equations hold
+stopping(m, rhs) = m in ("lsqr", "lsmr") ? (axtol = tol, btol = tol) : (atol = tol * norm(rhs), rtol = 0.0)
+x, stats = solvers[method](A, b; stopping(method, b)..., history = true)  # history: the residual at every iteration
+r = b - A * x
+x_direct = A \ b  # sparse direct solve, for comparison
+t_direct = @elapsed A \ b
+(method = method, size = size(A), nonzeros = nnz(A), iterations = stats.niter, solved = stats.solved, status = stats.status,
+ relative_residual = norm(r) / norm(b), difference_from_direct = norm(x - x_direct) / norm(x_direct), seconds = stats.timer, seconds_direct = t_direct)
+'''
+
 [[actionGroups]]
 id = "visualise"
 label = "Visualise"
@@ -386,7 +634,7 @@ label = "Visualise"
 [[actionGroups.actions]]
 id = "result-plot"
 label = "Result Plot"
-desc = "The result at a glance: the solution vector, the L and U factors, the eigenvalues in the complex plane, the singular values, or the data with the fitted curve"
+desc = "The result at a glance: the solution vector, the L and U factors, the eigenvalues in the complex plane, the singular values, the data with the fitted curve, or the residual at every iteration of the Krylov method"
 code = '''
 using Plots
 {{?model=solve}} Plots.bar(1:length(x), x, label="x", xlabel="component", title="Solution of A x = b")
@@ -398,15 +646,29 @@ using Plots
 {{?model=lsq}} Plots.scatter(t, b, ms=3, label="data", xlabel="t", ylabel="y")
 {{?model=lsq}} Plots.plot!(ts, [sum(x[j + 1] * s^j for j in 0:{{degree}}) for s in ts], lw=2, label="fitted, degree {{degree}}")
 {{?model=lsq}} Plots.plot!(ts, truth.(ts), lw=1.5, ls=:dash, c=:black, label="true curve")
+{{?model=iter}} Plots.plot(0:length(stats.residuals) - 1, stats.residuals ./ norm(b), yscale=:log10, lw=2, label="residual / norm(b)", xlabel="iteration", title="$(uppercase(method)) on a $(size(A, 1)) x $(size(A, 2)) matrix")
+{{?model=iter}} method in ("lsqr", "lsmr") && Plots.plot!(0:length(stats.Aresiduals) - 1, stats.Aresiduals ./ norm(transpose(A) * b), lw=2, label="normal-equations residual / norm(transpose(A) b)")
+{{?model=iter}} Plots.hline!([tol], c=:gray, ls=:dot, label="tolerance")
 '''
 
 [[actionGroups.actions]]
 id = "heatmap"
 label = "Matrix Heatmap"
-desc = "Each entry of the matrix as a colour, rows from top to bottom: structure such as symmetry, a dominant diagonal or near-equal columns shows at once"
+desc = "Each entry of the matrix as a colour, rows from top to bottom: structure such as symmetry, a dominant diagonal or near-equal columns shows at once. For the large sparse matrix of Iterative Methods, where its nonzero entries are"
 code = '''
 using Plots
-Plots.heatmap(A, yflip=true, c=:balance, clims=(-1, 1) .* maximum(abs, A), title="A, $(size(A, 1)) x $(size(A, 2))", xlabel="column", ylabel="row")
+{{?model=solve|fact|eig|svd|lsq}} Plots.heatmap(A, yflip=true, c=:balance, clims=(-1, 1) .* maximum(abs, A), title="A, $(size(A, 1)) x $(size(A, 2))", xlabel="column", ylabel="row")
+{{?model=iter}} Plots.spy(A, title="Nonzeros of A, $(size(A, 1)) x $(size(A, 2)), $(nnz(A)) of $(length(A))", xlabel="column", ylabel="row", legend=false)
+'''
+
+[[actionGroups.actions]]
+id = "solution-grid"
+label = "Solution on the Grid"
+desc = "The solution as a picture: each unknown belongs to one point of the n x n grid, so x reshaped to a square shows the field the system describes"
+models = ["iter"]
+code = '''
+using Plots
+Plots.heatmap(reshape(x, n, n), aspect_ratio=:equal, c=:viridis, title="Solution by $(uppercase(method)) on the $n x $n grid", xlabel="column of the grid", ylabel="row of the grid")
 '''
 
 [[actionGroups.actions]]
@@ -432,19 +694,21 @@ label = "Diagnose"
 [[actionGroups.actions]]
 id = "residual-check"
 label = "Residual Check"
-desc = "Multiplies the result back and measures what is left: the relative residual of the solution, the factors against A, A V against V times the eigenvalues, U S Vt against A, or the normal equations. Values near 1e-16 mean exact up to rounding"
+desc = "Multiplies the result back and measures what is left: the relative residual of the solution, the factors against A, A V against V times the eigenvalues, U S Vt against A, or the normal equations. Values near 1e-16 mean exact up to rounding; an iterative solution stops near the tolerance asked for"
 code = '''
 {{?model=solve}} (relative_residual = norm(A * x - b) / (opnorm(A) * norm(x)),)
 {{?model=fact}} (lu = norm(F_lu.L * F_lu.U - A[F_lu.p, :]) / norm(A), qr = norm(Matrix(F_qr.Q) * F_qr.R - A) / norm(A), cholesky = F_ch === nothing ? missing : norm(transpose(F_ch.U) * F_ch.U - A) / norm(A))
 {{?model=eig}} (eigen_equation = norm(A * V - V * Diagonal(values)) / norm(A), vectors_unit_length = maximum(abs.([norm(V[:, j]) for j in 1:size(V, 2)] .- 1)))
 {{?model=svd}} (reconstruction = norm(S.U * Diagonal(S.S) * S.Vt - A) / norm(A), U_orthonormal = norm(transpose(S.U) * S.U - I), V_orthonormal = norm(S.Vt * transpose(S.Vt) - I))
 {{?model=lsq}} (normal_equations = norm(transpose(A) * r) / (opnorm(A) * norm(r)), note = "the residual is orthogonal to every column of A at the least-squares solution")
+{{?model=iter}} (relative_residual = norm(b - A * x) / norm(b), tolerance = tol, normal_equations = norm(transpose(A) * (b - A * x)) / norm(transpose(A) * b), solved = stats.solved, status = stats.status, iterations = stats.niter)
 '''
 
 [[actionGroups.actions]]
 id = "conditioning"
 label = "Condition Number"
 desc = "How much the result can change when the data change a little: the condition number, the decimal digits it may cost, and an experiment that perturbs the data by one part in a hundred million"
+models = ["solve", "fact", "eig", "svd", "lsq"]
 code = '''
 using Random
 kappa = cond(A)
@@ -514,6 +778,38 @@ code = '''
 (A = A, rank_k_approximation = round.(Ak, digits=4), largest_entry_error = maximum(abs.(A - Ak)))
 '''
 
+[[actionGroups.actions]]
+id = "warm-start"
+label = "Warm Start"
+desc = "A new right-hand side close to b, solved twice: from zero, and from the solution already found. When the new problem is near the old one, as in the steps of Newton's method or of a time-stepping scheme, a warm start saves iterations. CG, MINRES, GMRES and BiCGSTAB take a starting vector"
+models = ["iter"]
+code = '''
+b_new = b .+ 0.01 .* randn(Xoshiro(4), length(b))  # b changed by about one per cent
+if method in ("lsqr", "lsmr")
+    (note = "LSQR and LSMR in Krylov.jl start from zero: choose a square test matrix and CG, MINRES, GMRES or BiCGSTAB",)
+else
+    x_cold, s_cold = solvers[method](A, b_new; stopping(method, b_new)...)
+    x_warm, s_warm = solvers[method](A, b_new, x; stopping(method, b_new)...)  # x: the solution for b, as the starting vector
+    (iterations_from_zero = s_cold.niter, iterations_from_previous_solution = s_warm.niter, relative_difference = norm(x_warm - x_cold) / norm(x_cold))
+end
+'''
+
+[[actionGroups.actions]]
+id = "workspace"
+label = "Many Right-Hand Sides"
+desc = "Twenty new right-hand sides, solved by calling the method afresh each time and by reusing one workspace, which holds the method's vectors: the memory allocated and the fastest of three runs of each"
+models = ["iter"]
+code = '''
+bs = [randn(Xoshiro(3), size(A, 1)) for _ in 1:20]  # 20 new right-hand sides
+ws = krylov_workspace(Val(Symbol(method)), A, b)  # the vectors of the method, allocated once
+afresh() = [solvers[method](A, bj; stopping(method, bj)...)[1] for bj in bs]
+in_place() = [copy(Krylov.solution(krylov_solve!(ws, A, bj; stopping(method, bj)...))) for bj in bs]
+X1 = afresh(); X2 = in_place()  # also compiles both before measuring
+(megabytes_afresh = (@allocated afresh()) / 2^20, megabytes_in_place = (@allocated in_place()) / 2^20,
+ seconds_afresh = minimum(@elapsed(afresh()) for _ in 1:3), seconds_in_place = minimum(@elapsed(in_place()) for _ in 1:3),
+ largest_difference = maximum(norm(X1[j] - X2[j]) for j in eachindex(bs)))
+'''
+
 [[actionGroups]]
 id = "compare"
 label = "Compare"
@@ -573,6 +869,63 @@ sig = svdvals(A)
 (symmetric = issymmetric(A), absolute_eigenvalues = round.(lam, digits=6), singular_values = round.(sig, digits=6))
 '''
 
+[[actionGroups.actions]]
+id = "krylov-methods"
+label = "Compare Krylov Methods"
+desc = "Every method that applies to the shape of A, on the same system: iterations, whether it met the tolerance, the residual and the time. A method run on a matrix it does not suit, such as CG on a nonsymmetric one, may stop at its iteration limit without meeting the tolerance"
+models = ["iter"]
+code = '''
+tried = size(A, 1) == size(A, 2) ? ["cg", "minres", "gmres", "bicgstab", "lsqr", "lsmr"] : ["lsqr", "lsmr"]
+map(tried) do m
+    xm, sm = solvers[m](A, b; stopping(m, b)...)
+    rm = b - A * xm
+    (method = m, iterations = sm.niter, solved = sm.solved, relative_residual = norm(rm) / norm(b),
+     normal_equations = norm(transpose(A) * rm) / norm(transpose(A) * b), seconds = sm.timer)
+end
+'''
+
+[[actionGroups.actions]]
+id = "preconditioners"
+label = "Compare Preconditioners"
+desc = "The same method with no preconditioner, with Jacobi (the diagonal of A) and with algebraic multigrid of the Laplacian, from AlgebraicMultigrid.jl: iterations, the true residual and the time, including the time to build the multigrid. For LSQR and LSMR, scaling every column of A to length one"
+models = ["iter"]
+code = '''
+using AlgebraicMultigrid
+if method in ("lsqr", "lsmr")
+    Dc = Diagonal(1 ./ sqrt.(vec(sum(abs2, A; dims=1))))  # scale every column of A to length one: solve for z = Dc^-1 x
+    map(["none" => Diagonal(ones(size(A, 2))), "column scaling" => Dc]) do (name, Dj)
+        z, sp = solvers[method](A * Dj, b; stopping(method, b)...)
+        xp = Dj * z
+        (preconditioner = name, iterations = sp.niter, solved = sp.solved, normal_equations = norm(transpose(A) * (b - A * xp)) / norm(transpose(A) * b), seconds = sp.timer)
+    end
+else
+    t0 = time()
+    P_amg = aspreconditioner(ruge_stuben(testmatrix("spd", n)))  # multigrid of the Laplacian, the symmetric positive definite part of every square test matrix
+    t_amg = time() - t0
+    side(P, ldiv) = method in ("gmres", "bicgstab") ? (N = P, ldiv = ldiv) : (M = P, ldiv = ldiv)  # right preconditioning keeps the true residual; CG and MINRES take a symmetric one
+    options = ["none" => (;), "Jacobi" => side(Diagonal(1 ./ diag(A)), false), "algebraic multigrid" => side(P_amg, true)]
+    map(options) do (name, pre)
+        xp, sp = solvers[method](A, b; atol = 0.0, rtol = tol, pre...)  # relative to the first residual, measured as each preconditioner measures it
+        (preconditioner = name, iterations = sp.niter, solved = sp.solved, relative_residual = norm(b - A * xp) / norm(b),
+         seconds = sp.timer + (name == "algebraic multigrid" ? t_amg : 0.0))
+    end
+end
+'''
+
+[[actionGroups.actions]]
+id = "grid-growth"
+label = "Iterations and Grid Size"
+desc = "The same test matrix and method on grids of 20, 40, 80 and 160 points per side, against the sparse direct solve: the iterations grow as the grid is refined, because the condition number of the Laplacian grows with the square of the number of points per side"
+models = ["iter"]
+code = '''
+map((20, 40, 80, 160)) do m
+    Am = testmatrix("{{matrix}}", m); bm = ones(size(Am, 1))
+    xm, sm = solvers[method](Am, bm; stopping(method, bm)...)
+    t_dir = @elapsed Am \ bm
+    (grid = "$m x $m", unknowns = size(Am, 2), iterations = sm.niter, solved = sm.solved, seconds = sm.timer, seconds_direct = t_dir)
+end
+'''
+
 [[actionGroups]]
 id = "interpret"
 label = "Interpret"
@@ -580,11 +933,47 @@ label = "Interpret"
 [[actionGroups.actions]]
 id = "properties"
 label = "Matrix Properties"
-desc = "The facts that decide which method applies: size, rank, symmetry, positive definiteness, determinant, trace, norm and condition number"
+desc = "The facts that decide which method applies: size, rank, symmetry, positive definiteness, determinant, trace, norm and condition number. For the large sparse matrix of Iterative Methods: size, nonzeros, symmetry, bandwidth, the sign of the diagonal, and the memory it takes stored sparse and dense"
 code = '''
 m, p = size(A)
-(size = (m, p), rank = rank(A), square = m == p, symmetric = issymmetric(A), positive_definite = isposdef(A),
- determinant = m == p ? det(A) : missing, trace = m == p ? tr(A) : missing, norm_2 = opnorm(A), condition_number = cond(A))
+{{?model=solve|fact|eig|svd|lsq}} (size = (m, p), rank = rank(A), square = m == p, symmetric = issymmetric(A), positive_definite = isposdef(A),
+{{?model=solve|fact|eig|svd|lsq}}  determinant = m == p ? det(A) : missing, trace = m == p ? tr(A) : missing, norm_2 = opnorm(A), condition_number = cond(A))
+{{?model=iter}} rows, cols, _ = findnz(A)
+{{?model=iter}} (size = (m, p), nonzeros = nnz(A), nonzeros_per_row = nnz(A) / m, square = m == p, symmetric = issymmetric(A), bandwidth = maximum(abs.(rows .- cols)),
+{{?model=iter}}  positive_diagonal = all(>(0), diag(A)), megabytes_sparse = Base.summarysize(A) / 2^20, megabytes_dense = 8 * m * p / 2^20)
+'''
+
+[[actionGroups.actions]]
+id = "matrix-free"
+label = "Matrix-Free Operator"
+desc = "A Krylov method needs only the product of A with a vector. Here the Laplacian is never stored: a function applies the five-point stencil to the grid, and CG solves the system with it as with the sparse matrix, in the same iterations"
+models = ["iter"]
+code = '''
+struct LaplacianOperator  # minus the 2-D Laplacian on the n x n grid, as a product with a vector: no matrix is stored
+    n::Int
+end
+Base.size(P::LaplacianOperator) = (P.n^2, P.n^2)
+Base.eltype(::LaplacianOperator) = Float64
+function LinearAlgebra.mul!(y::AbstractVector, P::LaplacianOperator, v::AbstractVector)
+    k = P.n; h2 = (1 / (k + 1))^2
+    V = reshape(v, k, k); Y = reshape(y, k, k)
+    for j in 1:k, i in 1:k  # the five-point stencil, zero outside the grid
+        s = 4 * V[i, j]
+        i > 1 && (s -= V[i - 1, j])
+        i < k && (s -= V[i + 1, j])
+        j > 1 && (s -= V[i, j - 1])
+        j < k && (s -= V[i, j + 1])
+        Y[i, j] = s / h2
+    end
+    return y
+end
+op = LaplacianOperator(n)
+L_sparse = testmatrix("spd", n)
+bL = ones(n^2)
+x_free, s_free = cg(op, bL; stopping("cg", bL)...)
+x_sparse, s_sparse = cg(L_sparse, bL; stopping("cg", bL)...)
+(iterations_matrix_free = s_free.niter, iterations_sparse = s_sparse.niter, largest_difference = maximum(abs.(x_free - x_sparse)),
+ bytes_operator = Base.summarysize(op), bytes_sparse_matrix = Base.summarysize(L_sparse), seconds_matrix_free = s_free.timer, seconds_sparse = s_sparse.timer)
 '''
 
 [[actionGroups.actions]]
@@ -609,4 +998,91 @@ map(values) do lam
     turn = imag(lam) != 0 ? ", rotating by $(round(rad2deg(angle(lam)), digits=1)) degrees a step" : real(lam) < 0 ? ", changing sign every step" : ""
     (eigenvalue = lam, modulus = a, behaviour = kind * turn, half_life_or_doubling_steps = a == 1 ? Inf : log(2) / abs(log(a)))
 end
+'''
+
+[[actionGroups]]
+id = "advanced"
+label = "Advanced Methods"
+
+[[actionGroups.actions]]
+id = "saddle-point"
+label = "Saddle-Point Systems (TriCG and TriMR)"
+desc = "The symmetric quasi-definite system [I A; transpose(A) -I] [r; x] = [b; 0], with A scaled to a largest entry of 1, whose x solves the regularised least-squares problem (transpose(A) A + I) x = transpose(A) b. TriCG and TriMR work on the two blocks; MINRES sees one large symmetric indefinite matrix. Iterations, and the distance of each x to the direct solution"
+models = ["iter"]
+code = '''
+m, p = size(A)
+As = A / maximum(abs, A)  # scaled to a largest entry of 1, so that the identity blocks weigh against it
+K = [sparse(1.0I, m, m) As; transpose(As) -sparse(1.0I, p, p)]  # the whole matrix, for MINRES and the direct solve
+x_reg = (transpose(As) * As + I) \ (transpose(As) * b)  # the regularised least-squares solution, directly
+r1, x1, s1 = tricg(As, b, zeros(p); atol = 0.0, rtol = tol)  # by default the blocks are I and -I
+r2, x2, s2 = trimr(As, b, zeros(p); atol = 0.0, rtol = tol)
+z3, s3 = minres(K, [b; zeros(p)]; atol = 0.0, rtol = tol)
+[(method = name, iterations = s.niter, solved = s.solved, distance_to_direct = norm(xs - x_reg) / norm(x_reg), seconds = s.timer)
+ for (name, xs, s) in (("TriCG", x1, s1), ("TriMR", x2, s2), ("MINRES on the whole matrix", z3[m+1:end], s3))]
+'''
+
+[[actionGroups.actions]]
+id = "partitioned"
+label = "Partitioned Systems (GPMR)"
+desc = "The nonsymmetric 2 x 2 block system [I A; B I] [x; y] = [b; c], here with A scaled to a largest entry of 1 and B = -transpose(A). GPMR works on the blocks A and B; GMRES sees one large matrix. Iterations, and the distance of each solution to the direct one"
+models = ["iter"]
+code = '''
+m, p = size(A)
+As = A / maximum(abs, A)  # scaled to a largest entry of 1, so that the identity blocks weigh against it
+B = -sparse(transpose(As))  # p x m, the shape of transpose(A)
+c = ones(p)
+K = [sparse(1.0I, m, m) As; B sparse(1.0I, p, p)]
+z_dir = K \ [b; c]
+x1, y1, s1 = gpmr(As, B, b, c; atol = 0.0, rtol = tol)  # the diagonal blocks are I by default
+z2, s2 = gmres(K, [b; c]; atol = 0.0, rtol = tol)
+[(method = name, iterations = s.niter, solved = s.solved, distance_to_direct = norm(z - z_dir) / norm(z_dir), seconds = s.timer)
+ for (name, z, s) in (("GPMR", [x1; y1], s1), ("GMRES on the whole matrix", z2, s2))]
+'''
+
+[[actionGroups.actions]]
+id = "adjoint"
+label = "Adjoint Systems (BiLQR and TriLQR)"
+desc = "A x = b and transpose(A) y = c solved together, for an output c' x such as the mean of the solution: c' x and y' b are the same number when both systems are solved, so the adjoint gives a second estimate of the output. BiLQR for a square A, TriLQR for a rectangular one"
+models = ["iter"]
+code = '''
+c = fill(1 / size(A, 2), size(A, 2))  # the output: the mean of the solution, c' x
+square = size(A, 1) == size(A, 2)
+bb = square ? b : A * ones(size(A, 2))  # tall: a right-hand side in the range of A, so A x = b has an exact solution
+xa, ya, sa = square ? bilqr(A, bb, c; atol = 0.0, rtol = tol) : trilqr(A, bb, c; atol = 0.0, rtol = tol)
+(method = square ? "BiLQR" : "TriLQR", iterations = sa.niter, primal_solved = sa.solved_primal, adjoint_solved = sa.solved_dual,
+ output_from_x = dot(c, xa), output_from_y = dot(ya, bb), output_direct = dot(c, A \ bb), seconds = sa.timer)
+'''
+
+[[actionGroups.actions]]
+id = "block"
+label = "Several Right-Hand Sides (Block-GMRES)"
+desc = "Four right-hand sides, b and three random ones, solved together by block-GMRES, against GMRES on each in turn: each block iteration multiplies A by four vectors at once. Iterations, time and the largest residual. Block-GMRES needs a square A"
+models = ["iter"]
+code = '''
+if size(A, 1) != size(A, 2)
+    (note = "Block-GMRES needs a square matrix: choose the Laplacian, the shifted Laplacian or convection-diffusion",)
+else
+    Bs = hcat(b, randn(Xoshiro(5), size(A, 1), 3))
+    X, sb = block_gmres(A, Bs; atol = 0.0, rtol = tol)
+    single = [gmres(A, Bs[:, j]; atol = 0.0, rtol = tol) for j in 1:4]
+    (block_iterations = sb.niter, block_seconds = sb.timer, separate_iterations = [s.niter for (_, s) in single], separate_seconds = sum(s.timer for (_, s) in single),
+     largest_relative_residual = maximum(norm(Bs[:, j] - A * X[:, j]) / norm(Bs[:, j]) for j in 1:4))
+end
+'''
+
+[[actionGroups.actions]]
+id = "gpu"
+label = "On the GPU"
+desc = "The same method on the GPU, with MLDataDevices.jl: load CUDA.jl, AMDGPU.jl, Metal.jl or oneAPI.jl first, or it runs on the CPU. The matrix is dense and single precision, as every backend multiplies such matrices, on at most 40 points per side. Iterations, time and the difference from the same solve on the CPU"
+models = ["iter"]
+code = '''
+using MLDataDevices
+dev = gpu_device()  # the GPU of the backend loaded, or the CPU when there is none
+A32 = Matrix{Float32}(testmatrix("{{matrix}}", min(n, 40)))
+b32 = ones(Float32, size(A32, 1))
+stop32 = method in ("lsqr", "lsmr") ? (axtol = 1f-5, btol = 1f-5) : (atol = 0f0, rtol = 1f-5)  # single precision holds about 7 digits
+x_dev, s_dev = solvers[method](dev(A32), dev(b32); stop32...)
+x_cpu, s_cpu = solvers[method](A32, b32; stop32...)
+(device = string(dev), unknowns = size(A32, 2), iterations_device = s_dev.niter, iterations_cpu = s_cpu.niter,
+ seconds_device = s_dev.timer, seconds_cpu = s_cpu.timer, largest_difference = maximum(abs.(Array(x_dev) .- x_cpu)))
 '''
