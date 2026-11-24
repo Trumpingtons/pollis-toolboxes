@@ -418,6 +418,32 @@ display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#c0392b"
 '''
 
 [[maps]]
+id = "beagle"
+topic = "journeys"
+title = "The Voyage of the Beagle"
+work = "Charles Darwin, Journal of Researches"
+kind = "historical"
+since = 1831
+upto = 1836
+region = "Around the world"
+description = "Charles Darwin round the world in HMS Beagle, from Devonport on 27 December 1831 to Falmouth on 2 October 1836, by Bahia, Patagonia, Tierra del Fuego, Chile, the Galapagos, Tahiti, New Zealand and Australia, each stage with its date and passage of his Journal of Researches, his journeys by land among them."
+source = "Journal of Researches, second edition (Wikisource)"
+sourceUrl = "https://en.wikisource.org/wiki/Journal_of_researches_into_the_natural_history_and_geology_of_the_countries_visited_during_the_voyage_of_H.M.S._Beagle_round_the_world"
+licence = "Public domain (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The stages of the voyage, each with its date and passage of the Journal, and the route through them
+trip = journey(con, :darwin; folder)
+display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#1f6f8b", opacity = 0.8),
+	Pollis.layer(trip.path; name = "Stages", column = "day");
+	title = "The Voyage of the Beagle", center = (-40, -15), zoom = 1))
+'''
+
+[[maps]]
 id = "zheng-he"
 topic = "journeys"
 title = "The Voyages of Zheng He"
