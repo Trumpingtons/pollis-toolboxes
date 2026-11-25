@@ -51,9 +51,7 @@ kind = "Historical"
 years = "336–323 BCE"
 region = "From Macedonia to Egypt and the Indus"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q551888"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -77,9 +75,7 @@ kind = "Historical"
 years = "230–221 BCE"
 region = "Northern and central China"
 source = "Shiji, chapter 6 (Wikisource)"
-sourceUrl = "https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98/%E5%8D%B7006"
 licence = "Public domain (text), CC0 1.0 (places)"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -103,9 +99,7 @@ kind = "Historical"
 years = "58–51 BCE"
 region = "Gaul, Britain and the Rhine"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q202161"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -118,4 +112,29 @@ historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, u
 display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
 	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
 	title = "Caesar's Gallic Wars", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "samudragupta"
+title = "Conquests of Samudragupta"
+subtitle = "The Allahabad pillar inscription, translated by John Faithfull Fleet"
+description = "The kings Samudragupta captured, set free or made to pay him tribute, from Kanchi to Nepal and Ceylon, as his pillar inscription at Allahabad tells them, each with its words."
+kind = "Historical"
+years = "c. 335–375"
+region = "India, Nepal and Ceylon"
+source = "Corpus Inscriptionum Indicarum, volume III (Internet Archive)"
+sourceUrl = "https://archive.org/details/dli.csl.8714"
+licence = "Public domain (text), CC0 1.0 (places)"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The conquests of Samudragupta, written from his Allahabad pillar inscription, which gives no years
+war = war_events(con, :samudragupta; folder)
+# The realms of Cliopatria in the same area through the years of his reign, about 335 to 375, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = 335, upto = 375)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind");
+	title = "Conquests of Samudragupta", year = 335, labels = false))
 '''

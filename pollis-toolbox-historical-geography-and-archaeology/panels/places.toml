@@ -51,9 +51,7 @@ kind = "Historical"
 years = "440–430 BCE"
 region = "From the Atlantic to India"
 source = "Perseus Digital Library, with the Getty Thesaurus of Geographic Names"
-sourceUrl = "https://github.com/PerseusDL/canonical-greekLit"
 licence = "CC BY-SA 4.0 (text), ODC-By (TGN)"
-licenceUrl = "https://creativecommons.org/licenses/by-sa/4.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -68,6 +66,52 @@ display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "menti
 '''
 
 [[rows]]
+id = "periplus"
+title = "Places of The Periplus of the Erythraean Sea"
+subtitle = "The Periplus of the Erythraean Sea, translated by Wilfred H. Schoff"
+description = "The ports and markets of a Greek merchant's guide to the Red Sea, Arabia, the Persian Gulf and India, from Mussel Harbor and Berenice to Barygaza, Muziris and Taprobane, each with its passage of Schoff's translation and its section. Its years are those to which Schoff dates it, early in the reign of Nero."
+kind = "Historical"
+years = "54–60"
+region = "From the Red Sea to India and Ceylon"
+source = "The Periplus of the Erythraean Sea, translated by Wilfred H. Schoff (Internet Archive)"
+sourceUrl = "https://archive.org/details/cu31924030139236"
+licence = "Public domain (text), CC0 1.0 (places)"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The places the Periplus names, in the order it first names them, each with its passages and their sections
+places = text_places(con, :periplus; folder)
+println(places.count, " places, named in ", places.mentions, " passages")
+display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "order"); title = "Places of The Periplus of the Erythraean Sea",
+	center = (58, 18), zoom = 3))
+'''
+
+[[rows]]
+id = "meghaduta"
+title = "Places of The Cloud-Messenger"
+subtitle = "Kalidasa, The Cloud-Messenger (Meghaduta), translated by Arthur W. Ryder"
+description = "The places over which an exiled Yaksha sends a cloud with his message, from Rama's peak by Vidisha and Ujjain to the field of the epic battles, Prayaga and Mount Kailasa, each with its stanzas of Ryder's translation. Its years are those of the fifth century, in which Ryder puts Kalidasa."
+kind = "Fictional"
+years = "400–500"
+region = "Central and northern India, and the Himalaya"
+source = "Translations of Shakuntala and Other Works, translated by Arthur W. Ryder (Project Gutenberg)"
+sourceUrl = "https://www.gutenberg.org/ebooks/16659"
+licence = "Public domain (text), CC0 1.0 (places)"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The places the poem names, in the order it first names them, each with its stanzas
+places = text_places(con, :meghaduta; folder)
+println(places.count, " places, named in ", places.mentions, " passages")
+display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "order"); title = "Places of The Cloud-Messenger",
+	center = (79, 26), zoom = 4.5))
+'''
+
+[[rows]]
 id = "arabian-nights"
 title = "Places of The Arabian Nights"
 subtitle = "The Book of the Thousand Nights and a Night"
@@ -76,9 +120,7 @@ kind = "Fictional"
 years = "786–809"
 region = "From Samarcand to Cairo and Sarandib"
 source = "The Book of the Thousand Nights and a Night, translated by Richard F. Burton, volumes 1, 2 and 6 (Internet Archive)"
-sourceUrl = "https://archive.org/details/aplainandliteral51252gut"
 licence = "Public domain (text), CC0 1.0 (places)"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -100,9 +142,7 @@ kind = "Fictional"
 years = "1000–1010"
 region = "Heian Japan"
 source = "The Tale of Genji, text of Shibuya Eiichi (Japanese Wikisource)"
-sourceUrl = "https://ja.wikisource.org/wiki/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AA%9E_(%E6%B8%8B%E8%B0%B7%E6%A0%84%E4%B8%80%E6%A0%A1%E8%A8%82)"
 licence = "CC BY-SA 3.0 (text), CC0 1.0 (places)"
-licenceUrl = "https://creativecommons.org/licenses/by-sa/3.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)

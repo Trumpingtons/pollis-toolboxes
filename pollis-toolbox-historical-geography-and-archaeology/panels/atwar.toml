@@ -51,9 +51,7 @@ kind = "Historical"
 years = "499–449 BCE"
 region = "Greece, Asia Minor and the Aegean"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q76026"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -77,9 +75,7 @@ kind = "Historical"
 years = "431–404 BCE"
 region = "Greece, the Aegean and Sicily"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q33745"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -95,6 +91,31 @@ display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column
 '''
 
 [[rows]]
+id = "caesars-civil-war"
+title = "Caesar's Civil War"
+subtitle = "Caesar, Commentaries on the Civil War"
+description = "The battles, sieges and sea fights between Caesar and Pompey and the Pompeians, from the crossing of the Rubicon to Munda, and those of the Alexandrian War in Egypt; Caesar recounts the war to 48 BCE."
+kind = "Historical"
+years = "49–45 BCE"
+region = "Italy, Hispania, Illyria, Greece, Egypt, Asia Minor and Africa"
+source = "Wikidata"
+licence = "CC0 1.0"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles, sieges and sea fights of Caesar's Civil War that Wikidata gives with a place and a date,
+# with those of the Alexandrian War (Q9377266), in Egypt, which Wikidata does not give as part of it
+war = war_events(con, ["Q1238338", "Q9377266"]; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Caesar's Civil War", year = war.since, labels = false))
+'''
+
+[[rows]]
 id = "guelphs-ghibellines"
 title = "Guelphs and Ghibellines"
 subtitle = "Guelphs and Ghibellines"
@@ -103,9 +124,7 @@ kind = "Historical"
 years = "1120–1390"
 region = "Italy"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q187742"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -129,9 +148,7 @@ kind = "Historical"
 years = "1337–1453"
 region = "France and England"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q12551"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -155,9 +172,7 @@ kind = "Historical"
 years = "1455–1487"
 region = "England and Wales"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q127751"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -181,9 +196,7 @@ kind = "Historical"
 years = "1803–1815"
 region = "Europe, and the seas and colonies of its powers"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q78994"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -207,9 +220,7 @@ kind = "Historical"
 years = "1861–1865"
 region = "The United States"
 source = "Wikidata, with the battlefield boundaries of the National Park Service"
-sourceUrl = "https://www.wikidata.org/wiki/Q8676"
 licence = "CC0 1.0 (events), public domain (battlefields)"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
@@ -236,9 +247,7 @@ kind = "Historical"
 years = "1914–1918"
 region = "The world, mostly Europe and the Middle East"
 source = "Wikidata"
-sourceUrl = "https://www.wikidata.org/wiki/Q361"
 licence = "CC0 1.0"
-licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
 code = '''
 using HistoricalGeography, DuckDB, Tables
 con = DBInterface.connect(DuckDB.DB)
