@@ -1,0 +1,465 @@
+# Terrain Model from Point Cloud: a bare-earth terrain model made from a lidar point cloud, the ground kept as the survey classified it or found again with a morphological filter, the cells without ground filled from the cells around them, checked against the density of the ground points, and saved for Relief Visualisation, Candidate Features and Learned Detection in Lidar; read with PDAL_jll.jl and LazIO.jl, computed with ArchaeologicalDetection.jl, Geomorphometry.jl and NearestNeighbors.jl
+
+[meta]
+title = "Terrain Model from Point Cloud"
+viewType = "pollis.pointcloud"
+style = "timeArrow"
+intro = "Make a bare-earth terrain model from a lidar point cloud: read the points of a survey, keep or find its ground, fill the cells without ground, see where the model stands on few ground points, and save it as the Terrain Model of the other panels of Archaeological Prospection. A step first runs the steps before it that have not run in the Julia REPL as they are now, so a new distance does not read the points again."
+
+# The user's keys for the imagery of Google and Esri, kept by Pollis in Secret Storage for every panel and set in the Julia REPL; either may be left unset
+[apiKey]
+label = "Imagery"
+noun = "keys"
+
+[[apiKey.fields]]
+name = "googleMapsKey"
+envVar = "GOOGLE_MAPS_API_KEY"
+label = "Google Maps"
+prompt = "Google Maps key, for Google's satellite imagery"
+
+[[apiKey.fields]]
+name = "arcgisKey"
+envVar = "ARCGIS_API_KEY"
+label = "ArcGIS"
+prompt = "ArcGIS Location Platform API key, for Esri's World Imagery"
+
+[[packages]]
+name = "ArchaeologicalDetection.jl"
+github = "https://github.com/Trumpingtons/ArchaeologicalDetection.jl"
+
+[[packages]]
+name = "PDAL_jll.jl"
+github = "https://github.com/JuliaBinaryWrappers/PDAL_jll.jl"
+
+[[packages]]
+name = "LazIO.jl"
+github = "https://github.com/evetion/LazIO.jl"
+
+[[packages]]
+name = "Geomorphometry.jl"
+github = "https://github.com/Deltares/Geomorphometry.jl"
+
+[[packages]]
+name = "NearestNeighbors.jl"
+github = "https://github.com/KristofferC/NearestNeighbors.jl"
+
+[[packages]]
+name = "SmartRegions.jl"
+github = "https://github.com/Trumpingtons/SmartRegions.jl"
+
+[[packages]]
+name = "Rasters.jl"
+github = "https://github.com/rafaqz/Rasters.jl"
+
+[[packages]]
+name = "ArchGDAL.jl"
+github = "https://github.com/yeesian/ArchGDAL.jl"
+
+[[wikis]]
+name = "Factsheet"
+file = "pointcloud/factsheet.md"
+bundled = true
+description = "One-page reference: the five steps, the code that computes them, the example surveys"
+
+[[wikis]]
+name = "Overview"
+file = "pointcloud/overview.md"
+bundled = true
+description = "What a point cloud holds, what a bare-earth terrain model is, and why archaeologists make their own"
+
+[[wikis]]
+name = "Diagnostics"
+file = "pointcloud/diagnostics.md"
+bundled = true
+description = "Cells without ground, vegetation left as mounds, features flattened, seams and steps, and points that cannot be read"
+
+[[wikis]]
+name = "Decision Guide"
+file = "pointcloud/decision-guide.md"
+bundled = true
+description = "The survey's ground or ground found again, which filter, which cell size, and how far to fill"
+
+[[wikis]]
+separator = true
+label = "Methods"
+
+[[wikis]]
+name = "Ground Filters"
+file = "pointcloud/ground-filters.md"
+bundled = true
+
+[[wikis]]
+name = "Filling the Gaps"
+file = "pointcloud/gap-filling.md"
+bundled = true
+
+[[wikis]]
+name = "Point Cloud Files"
+file = "pointcloud/point-cloud-files.md"
+bundled = true
+
+[[references]]
+separator = true
+label = "Software"
+
+[[references]]
+key = "BCHG2021a"
+
+[[references]]
+key = "Pro2026b"
+
+[[references]]
+key = "Ise2013a"
+
+[[references]]
+key = "PS2026a"
+
+[[references]]
+key = "Car2026a"
+
+[[references]]
+key = "Sch2026a"
+
+[[references]]
+key = "Ng2026a"
+
+[[references]]
+key = "GDALOGRC2026a"
+
+[[references]]
+key = "ASPRS2025a"
+
+[[references]]
+key = "Hob2021a"
+
+[[references]]
+separator = true
+label = "Original Papers"
+
+[[references]]
+key = "KP1998a"
+
+[[references]]
+key = "ZCWSY...2003a"
+
+[[references]]
+key = "SV2004a"
+
+[[references]]
+key = "PCM2013a"
+
+[[references]]
+key = "SL2020a"
+
+[[references]]
+key = "She1968a"
+
+[[references]]
+key = "CEGHA...2018a"
+
+[[references]]
+key = "ITLFO...2020a"
+
+[[references]]
+separator = true
+label = "Data"
+
+[[references]]
+key = "KCNPC...2011a"
+
+[[references]]
+key = "Ope2022a"
+
+[[references]]
+key = "Mau2026a"
+
+[[faq]]
+question = "What does Terrain Model from Point Cloud compute?"
+answer = '''
+Terrain Model from Point Cloud makes a bare-earth terrain model, a grid of the height of the ground, from the points of a lidar survey. Step 1 reads the points. Step 2 takes the lowest ground point of each cell, either from the points the survey classified as ground or from ground found again by a morphological filter. Step 3 fills the cells without a ground point from the cells around them, up to a distance. Step 4 shows how many ground points each cell stands on and which cells were filled. Step 5 saves the terrain model as a Cloud-Optimised GeoTIFF, which Relief Visualisation, Candidate Features and Learned Detection in Lidar read as their Terrain Model.
+'''
+wiki = "Factsheet"
+
+[[faq]]
+question = "Why make a terrain model from the point cloud when the provider publishes one?"
+answer = '''
+A provider's terrain model is made for every use at once, at a cell size and with a ground classification chosen for hydrology, flooding or planning. Low banks, shallow ditches and the slopes of mounds can be smoothed away by a strict ground filter, or vegetation left in as false mounds by a loose one. Making the terrain model from the points lets the archaeologist choose the cell size, check the ground classification or find the ground again, and see where the model stands on few ground points, as under dense forest.
+'''
+wiki = "Overview"
+
+[[faq]]
+question = "Which classes of a LAS file are ground?"
+answer = '''
+In the LAS specification, class 2 is ground. In LAS 1.0 to 1.3, class 8 is model key points, ground points kept for a thinned terrain model, so a survey's ground is classes 2 and 8 together. Classes 3, 4 and 5 are low, medium and high vegetation, 6 buildings, 7 low points and 18 high noise. Terrain Model from Point Cloud takes classes 2 and 8 as the survey's ground, and leaves classes 7 and 18 out of every grid.
+'''
+wiki = "Point Cloud Files"
+
+[[faq]]
+question = "In Terrain Model from Point Cloud, what does a cell filled in Step 3 rest on?"
+right = "The heights of the nearest cells with ground, weighted by the inverse square of their distance"
+wrong = ["The lowest point of the cell, whatever its class", "The mean height of every point in the cell", "The height of the nearest ground point in the whole survey, wherever it is", "A plane fitted to the cell's vegetation points", "The provider's own terrain model, read from its web service"]
+explanation = "Fill the Gaps gives a cell without ground the mean of the heights of the nearest cells with ground, each weighted by the inverse square of its distance, as Shepard (1968) interpolated. A cell farther than the Distance from any cell with ground stays empty."
+wiki = "Filling the Gaps"
+hidden = true
+
+[[faq]]
+question = "Why are there rough, cracked patches in the shaded relief of a terrain model made under forest?"
+right = "Few ground points reach the soil, so many cells are filled"
+wrong = ["The ground filter keeps every vegetation point under forest", "The cell size is too large for forest", "The points of the forest are in another coordinate system", "The shaded relief is lit from the wrong azimuth over forest", "The provider removes every point under trees"]
+explanation = "Under dense canopy only a small share of the laser pulses reaches the ground, so many cells have no ground point and are filled from a sparse set of neighbours. The density of the ground points in Step 4 shows where this happens."
+wiki = "Diagnostics"
+hidden = true
+
+[[steps]]
+id = "cloud"
+title = "Point Cloud"
+intro = "Read the points of a survey, and check its coordinate system and its classes. A survey can be a LAS or LAZ file, local or on the web, a folder of them, a tile index with an area, or a COPC file on the web, of which only the area is read. The points are gathered into one LAZ file in the folder, read again from there later."
+code = '''
+using ArchaeologicalDetection, SmartRegions, Rasters, ArchGDAL, Statistics
+using Downloads: download
+folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
+{{?survey=aguada}}# Example: the lidar survey of the Middle Usumacinta of 2019 (OpenTopography, CC BY 4.0), its tiles of 500 m over the platform of Aguada Fénix, Tabasco, Mexico, picked from the survey's tile index
+{{?survey=aguada}}name = "aguada-fenix"
+{{?survey=aguada}}index = joinpath(folder, "MX19_Inomata_TileIndex.zip")
+{{?survey=aguada}}isfile(index) || download("https://opentopography.s3.sdsc.edu/pc-bulk/MX19_Inomata/MX19_Inomata_TileIndex.zip", index)
+{{?survey=aguada}}area = (696600, 1968700, 697700, 1970300)  # xmin, ymin, xmax, ymax, in UTM zone 15N
+{{?survey=aguada}}sources = index_tiles("/vsizip/" * index * "/MX19_Inomata_TileIndex.shp", area)  # the addresses of the tiles that cross the area
+{{?survey=aguada}}cloud = fetch_points(sources, joinpath(folder, name * ".laz"); bounds = area, folder = joinpath(folder, "tiles"))
+{{?survey=quirigua}}# Example: the drone lidar survey of the Museo Quiriguá, Guatemala, of January 2024 (Maurer, OpenTopography, CC BY 4.0): a COPC file of 1.9 GB on the web, of which only 300 by 300 m around the Acropolis is read, its points 0.5 m apart
+{{?survey=quirigua}}name = "quirigua"
+{{?survey=quirigua}}area = (280742, 1689006, 281042, 1689306)  # xmin, ymin, xmax, ymax, in UTM zone 16N
+{{?survey=quirigua}}cloud = fetch_points("https://opentopography.s3.sdsc.edu/dataspace/OTDS.072026.32616.7/pointcloud/quirigua_museo_lidar_pointcloud.copc.laz", joinpath(folder, name * ".laz"); bounds = area, resolution = 0.5)
+{{?survey=own}}name = "{{name}}"
+{{?survey=own}}source = expanduser(raw"{{source}}")  # a file, a folder of files, a tile index or an address
+{{?survey=own}}area = {{area}}  # nothing for the whole survey, or (xmin, ymin, xmax, ymax) in its coordinates
+{{?survey=own}}sources = isdir(source) ? filter(f -> occursin(r"\.la[sz]$"i, f), readdir(source; join = true)) :
+{{?survey=own}}	occursin(r"\.(shp|gpkg)$"i, source) ? index_tiles(source, area) : occursin(r"\.zip$"i, source) ? index_tiles("/vsizip/" * source, area) : source
+{{?survey=own}}cloud = fetch_points(sources, joinpath(folder, name * ".laz"); bounds = area, resolution = {{resolution}}, folder = joinpath(folder, "tiles"))  # kept once written: delete it to read the survey again
+info = point_cloud_summary(cloud)
+isempty(info.wkt) && error("The point cloud has no coordinate system")
+ArchGDAL.GDAL.osrisprojected(ArchGDAL.importWKT(info.wkt)) == 1 || error("The coordinate system of the point cloud is not projected: reproject it to one in metres")
+area === nothing && (area = (info.bounds.xmin, info.bounds.ymin, info.bounds.xmax, info.bounds.ymax))
+points = read_points(cloud);
+println(length(points), " points over ", round((area[3] - area[1]) * (area[4] - area[2]) / 1e6; digits = 2), " km², EPSG ", info.epsg)
+point_classes(points)  # class => points: 2 ground, 8 model key points, 3 to 5 vegetation, 6 buildings, 7 and 18 noise
+'''
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The points are gathered there into one LAZ file, tiles from the web are kept in its tiles folder, and Step 5 writes the terrain model there."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps.inputs]]
+id = "survey"
+label = "Survey"
+kind = "select"
+tooltip = "Aguada Fénix: 12 tiles of 500 m of the Middle Usumacinta survey of 2019, about 130 MB, over the platform of Aguada Fénix, with ground, vegetation and buildings classified. Quiriguá: 300 by 300 m of a drone survey of 2024 around the Acropolis of Quiriguá, about 130 MB read from a COPC file on the web, with ground classified. Your Own Survey: the Source, Area, Resolution and Name below."
+default = "aguada"
+
+[[steps.inputs.options]]
+value = "aguada"
+label = "Aguada Fénix, Mexico (Airborne Lidar, 2019)"
+
+[[steps.inputs.options]]
+value = "quirigua"
+label = "Quiriguá, Guatemala (Drone Lidar, 2024)"
+
+[[steps.inputs.options]]
+value = "own"
+label = "Your Own Survey"
+
+[[steps.inputs]]
+id = "source"
+label = "Source"
+tooltip = "Your Own Survey: a LAS or LAZ file, a folder of them, a tile index (a shapefile, GeoPackage or zipped shapefile with the address or file of each tile in a field URL), or the address of a LAS, LAZ or COPC file on the web."
+default = "~/my-survey.laz"
+
+[[steps.inputs]]
+id = "area"
+label = "Area"
+tooltip = "Your Own Survey: nothing for the whole survey, or (xmin, ymin, xmax, ymax) in the coordinates of the points. A tile index needs an area; a COPC file on the web is read only within it."
+default = "nothing"
+
+[[steps.inputs]]
+id = "resolution"
+label = "Resolution (m)"
+tooltip = "Your Own Survey, COPC files only: nothing to read every point, or a distance in metres, as 0.5, to read the points only that far apart, fewer and quicker."
+default = "nothing"
+
+[[steps.inputs]]
+id = "name"
+label = "Name"
+tooltip = "Your Own Survey: the name of the LAZ file of the points and of the terrain model in the folder. The LAZ file is kept once written: delete it, or change the name, to read the survey again with another Area or Resolution."
+default = "my-survey"
+
+[[steps]]
+id = "ground"
+title = "Ground"
+intro = "Take the lowest ground point of each cell: the ground as the survey classified it, classes 2 and 8, or ground found again from the lowest point of each cell by a morphological filter, whatever the classes. The cell size is that of the terrain model."
+code = '''
+{{?ground=survey}}ground = ground_grid(points, {{cellSize}}; bounds = area)  # the lowest point of classes 2 and 8 in each cell
+{{?ground=zhang}}ground = find_ground(points, {{cellSize}}; method = :zhang, window = {{window}}, slope = {{slope}}, threshold = {{threshold}}, initial = {{initial}}, bounds = area)
+{{?ground=pingel}}ground = find_ground(points, {{cellSize}}; method = :pingel, window = {{window}}, slope = {{slope}}, initial = {{initial}}, bounds = area)
+nx, ny = size(ground.heights)
+with = count(!isnan, ground.heights)
+println(nx, " by ", ny, " cells of ", ground.cellsize, " m; ", with, " with ground (", round(100 * with / (nx * ny); digits = 1), "%)")
+'''
+
+[[steps.inputs]]
+id = "ground"
+label = "Ground"
+kind = "select"
+tooltip = "Survey's Ground: the points the survey classified as ground, classes 2 and 8. Zhang's Filter: the progressive morphological filter of Zhang, Chen, Whitman, Shyu, Yan and Zhang (2003). Pingel's Filter: the simple morphological filter of Pingel, Clarke and McBride (2013), slower. The filters find the ground again from every point but noise, whatever its class."
+default = "survey"
+
+[[steps.inputs.options]]
+value = "survey"
+label = "Survey's Ground (Classes 2 and 8)"
+
+[[steps.inputs.options]]
+value = "zhang"
+label = "Zhang's Filter"
+
+[[steps.inputs.options]]
+value = "pingel"
+label = "Pingel's Filter"
+
+[[steps.inputs]]
+id = "cellSize"
+label = "Cell Size (m)"
+tooltip = "The side of the cells of the terrain model, in metres. A cell size with a few ground points in most cells gives a terrain model that rests on measured heights: 1 m for an airborne survey of about 10 ground points a square metre, 0.5 m for a drone survey."
+default = "1.0"
+
+[[steps.inputs]]
+id = "window"
+label = "Window (m)"
+tooltip = "Zhang's and Pingel's filters: the largest window, in metres, about the width of the largest object above the ground to remove, as a building or a dense clump of trees. Larger windows also take low mounds and platforms for objects."
+default = "20"
+
+[[steps.inputs]]
+id = "slope"
+label = "Slope (m/m)"
+tooltip = "Zhang's and Pingel's filters: the steepest slope of the ground, in metres a metre, by which the allowed height above the opened surface grows with the window. Steeper ground needs a larger slope, or its edges are taken for objects."
+default = "0.15"
+
+[[steps.inputs]]
+id = "threshold"
+label = "Maximum Height (m)"
+tooltip = "Zhang's filter: the largest height above the opened surface, in metres, at which a cell is still ground."
+default = "2.5"
+
+[[steps.inputs]]
+id = "initial"
+label = "Initial Height (m)"
+tooltip = "Zhang's filter: the height above the opened surface, in metres, at which a cell is still ground with the smallest window. With either filter, the points at most this height above the ground of their cell are counted as its ground points in Step 4."
+default = "0.2"
+
+[[steps]]
+id = "gaps"
+title = "Fill the Gaps"
+intro = "Fill each cell without ground from the nearest cells with ground, weighted by the inverse square of their distance, when the nearest is close enough. Farther cells stay empty, so no height is made up where no ground was measured."
+code = '''
+terrain = fill_gaps(ground; distance = {{distance}}, neighbours = {{neighbours}})
+println(count(terrain.filled), " cells filled (", round(100 * count(terrain.filled) / length(terrain.filled); digits = 1), "%), ", count(isnan, terrain.heights), " left empty")
+dem = terrain_raster(terrain, info.epsg === nothing ? info.wkt : EPSG(info.epsg))  # the terrain model, north up
+'''
+
+[[steps.inputs]]
+id = "distance"
+label = "Distance (m)"
+tooltip = "A cell is filled only when a cell with ground is at most this far, in metres. Larger distances fill more of the gaps under dense forest and buildings, from heights farther away."
+default = "10"
+
+[[steps.inputs]]
+id = "neighbours"
+label = "Neighbours"
+tooltip = "The number of nearest cells with ground a filled cell takes its height from."
+default = "8"
+
+[[steps]]
+id = "check"
+title = "Check the Terrain Model"
+intro = "See where the terrain model stands on measured ground and where it was filled: the number of ground points of each cell, and the filled cells, beside its shaded relief. Few ground points and many filled cells call for care in reading small features there."
+code = '''
+density = ground_density(ground)  # ground points a square metre, in each cell
+println("Ground points a square metre: median ", round(median(density); digits = 2), "; cells with none ", count(==(0), density), " of ", length(density))
+'''
+
+[[steps.inputs]]
+id = "zoomCentre"
+label = "Zoom Centre"
+tooltip = "A point, as x, y in the coordinates of the points, around which Zoom on the Place, on the maps of Zoom and Pan, looks. Empty: the centre of the area."
+default = ""
+
+[[steps.inputs]]
+id = "zoomSize"
+label = "Zoom Size (m)"
+tooltip = "The width of the square Zoom on the Place, on the maps of Zoom and Pan, goes to, in metres."
+default = "300"
+
+[[steps.inputs]]
+id = "imagery"
+label = "Imagery"
+kind = "select"
+tooltip = "The imagery beside the maps. Automatic takes Google when a Google Maps key is set, otherwise Esri when an ArcGIS key is set, otherwise Sentinel-2: the keys are set on the Powered by line. Google and Esri need the user's own key and come under their terms, which are the user's to follow; EOX's Sentinel-2 cloudless of 2016 needs no key and is open (CC BY 4.0), but in cells of 10 m. The server of the imagery learns where the survey is."
+default = "auto"
+
+[[steps.inputs.options]]
+value = "auto"
+label = "Automatic"
+
+[[steps.inputs.options]]
+value = "google"
+label = "Google Satellite (Your Key)"
+
+[[steps.inputs.options]]
+value = "esri"
+label = "Esri World Imagery (Your Key)"
+
+[[steps.inputs.options]]
+value = "sentinel"
+label = "Sentinel-2 Cloudless, 10 m"
+
+[[steps.inputs.options]]
+value = "none"
+label = "None"
+
+[[steps.actions]]
+id = "zoom"
+label = "Zoom and Pan"
+desc = "The shaded relief of the terrain model, the ground points a square metre of each cell, and the filled cells, as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
+code = '''
+zc = strip("{{zoomCentre}}")
+x0, y0 = isempty(zc) ? ((area[1] + area[3]) / 2, (area[2] + area[4]) / 2) : Tuple(parse.(Float64, split(zc, ",")))
+d = {{zoomSize}} / 2
+crs_points = info.epsg === nothing ? info.wkt : EPSG(info.epsg)
+density_map = terrain_raster(merge(terrain, (heights = density,)), crs_points)
+filled_map = terrain_raster(merge(terrain, (heights = Float64.(terrain.filled),)), crs_points)
+Pollis.browse(terrain_maps("Terrain Model from Point Cloud, " * name,
+	"Shaded Relief" => shaded_relief(replace_missing(dem, NaN32)),
+	"Ground Points a Square Metre" => (density_map, 0, max(1, quantile(vec(density), 0.98))),
+	"Filled Cells" => filled_map;
+	centre = (x0, y0), width = 2d, imagery = :{{imagery}}))
+'''
+
+[[steps]]
+id = "save"
+title = "Save the Terrain Model"
+intro = "Write the terrain model as a Cloud-Optimised GeoTIFF in the folder of the files. Relief Visualisation, Candidate Features and Learned Detection in Lidar read it as their Terrain Model, by its name, with the same Folder."
+
+[[steps.actions]]
+id = "save-terrain"
+label = "Terrain Model as Cloud-Optimised GeoTIFF"
+desc = "Write the terrain model to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression, the cells left empty as NaN"
+code = '''
+out = joinpath(folder, name * "-dtm.tif")
+if isfile(out)
+	println(out, " is there already: rename or move it first")
+else
+	write(out, Float32.(coalesce.(dem, NaN32)); driver = "COG", options = Dict("COMPRESS" => "DEFLATE"), missingval = NaN32)
+	println("Wrote ", out, ": give ", basename(out), " as the Terrain Model of Relief Visualisation, Candidate Features or Learned Detection in Lidar")
+end
+'''
