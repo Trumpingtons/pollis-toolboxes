@@ -13,11 +13,13 @@ name = "Symbolics.jl"
 github = "https://github.com/JuliaSymbolics/Symbolics.jl"
 
 [[packages]]
-name = "SymbolicNumericIntegration.jl"
-github = "https://github.com/SciML/SymbolicNumericIntegration.jl"
+name = "Giac.jl"
+# Fork of JuliaGiac/Giac.jl at its release 0.14.3 in which to_giac converts pi, e and the other irrational constants, on which the registered version overflows the stack (upstream issue 89); back to upstream once a fixed version is registered
+github = "https://github.com/Trumpingtons/Giac.jl"
+fork = true
 
 [requires]
-packages = ["Symbolics.jl", "SymbolicNumericIntegration.jl", "Nemo.jl", "Latexify.jl", "Plots.jl"]
+packages = ["Symbolics.jl", "Giac.jl", "Nemo.jl", "Latexify.jl", "Plots.jl"]
 
 [[notebookSections]]
 label = ""
@@ -93,14 +95,6 @@ year = 2022
 journal = "ACM Communications in Computer Algebra"
 doi = "10.1145/3511528.3511535"
 openAccess = false
-
-[[references]]
-title = "Symbolic-Numeric Integration of Univariate Expressions Based on Sparse Regression"
-authors = "Iravanian, Shahriar; Martensen, Carl Julius; Cheli, Alessandro; Gowda, Shashi; Jain, Anand; Ma, Yingbo; Rackauckas, Christopher"
-year = 2022
-journal = "arXiv"
-url = "https://arxiv.org/abs/2201.12468"
-openAccess = true
 
 [[references]]
 title = "Julia: A Fresh Approach to Numerical Computing"
@@ -185,7 +179,7 @@ detail = "first and second derivatives by rule, plus the gradient and Hessian ov
 
 [[bullets]]
 text = "Integration"
-detail = "an antiderivative found by symbolic-numeric regression, and the definite integral between two bounds"
+detail = "an exact antiderivative from the computer algebra system <span class=\"yellow\">Giac</span>, and the exact definite integral between two bounds"
 
 [[bullets]]
 text = "Limits and Series"
@@ -208,7 +202,7 @@ purpose = "Differential and expand_derivatives apply the chain, product and quot
 [[decisionRows]]
 task = "Integration"
 context = "An elementary function of one variable whose antiderivative is itself elementary: areas, expected values, consumer surplus"
-purpose = "Proposes candidate terms from the integrand and keeps the combination that differentiates back to it (sparse regression); returns any part it could not integrate"
+purpose = "Giac integrates by symbolic algorithms and returns the antiderivative and the definite integral exactly; an integral with no closed form stays unevaluated, as integrate(...), and its value is computed numerically"
 
 [[decisionRows]]
 task = "Limits and Series"
@@ -308,14 +302,19 @@ H = Symbolics.hessian(f, vs)
 [[codeBranches]]
 model = "int"
 code = '''
-using Symbolics, SymbolicNumericIntegration
+using Symbolics
+import Giac  # imported, not used: Giac and Symbolics both export build_function and substitute
 
 @variables {{vars}}
 v = {{var}}
 f = {{expr}}
-F, unsolved, err = SymbolicNumericIntegration.integrate(f, v; symbolic=true)  # antiderivative, the part left unintegrated, numerical error
-area = SymbolicNumericIntegration.integrate(f, (v, {{a}}, {{b}}); symbolic=true, detailed=false)  # definite integral from {{a}} to {{b}} (nothing if it failed)
-(antiderivative = F, unsolved = unsolved, definite_integral = area)
+gf, gv = Giac.to_giac(f), Giac.to_giac(v)  # the expression and the main variable in Giac
+F = Giac.Commands.simplify(Giac.Commands.integrate(gf, gv))  # exact antiderivative; one with no closed form stays unevaluated, as integrate(...)
+closed_form = !occursin("integrate", string(F))
+area = Giac.Commands.simplify(Giac.Commands.integrate(gf, gv, Giac.to_giac(Num({{a}})), Giac.to_giac(Num({{b}}))))  # exact definite integral from {{a}} to {{b}}
+value = Giac.to_julia(Giac.Commands.evalf(area))  # its numerical value, computed numerically when there is no closed form
+Fn = closed_form ? Giac.build_function(F, gv) : t -> Giac.to_julia(Giac.Commands.evalf(Giac.Commands.integrate(gf, gv, Giac.to_giac(Num({{a}})), Giac.to_giac(Num(t)))))  # F as a Julia function; with no closed form, the integral from {{a}} to t
+(antiderivative = F, closed_form = closed_form, definite_integral = area, value = value)
 '''
 
 [[codeBranches]]
@@ -360,7 +359,7 @@ p = Plots.plot(ts, fn.(ts), lw=2, c=:black, label="f", xlabel="{{var}}", title=s
 {{?model=diff}} Plots.plot!(ts, build_function(df, v; expression=Val{false}).(ts), lw=1.5, label="f'")
 {{?model=diff}} Plots.plot!(ts, build_function(d2f, v; expression=Val{false}).(ts), lw=1.5, ls=:dash, label="f''")
 {{?model=int}} Plots.plot!(ts, fn.(ts), fillrange=0, fillalpha=0.2, lw=0, label="area = $(area)")
-{{?model=int}} Plots.plot!(ts, build_function(F, v; expression=Val{false}).(ts), lw=1.5, ls=:dash, label="F (antiderivative)")
+{{?model=int}} Plots.plot!(ts, Fn.(ts), lw=1.5, ls=:dash, label=closed_form ? "F (antiderivative)" : "F (integral from {{a}})")
 {{?model=lim}} Plots.plot!(ts, build_function(T, v; expression=Val{false}).(ts), lw=1.5, ls=:dash, label="Taylor order {{order}}")
 {{?model=solve}} r = filter(x -> abs(imag(x)) < 1e-12, complex.(float.(Symbolics.symbolic_to_float.(roots))))
 {{?model=solve}} Plots.hline!([{{rhs}}], c=:gray, ls=:dot, label="{{rhs}}"); Plots.scatter!(real.(r), fill({{rhs}}, length(r)), ms=6, label="real roots")
@@ -394,7 +393,7 @@ desc = "Verifies the result symbolically: the simplified and expanded forms equa
 code = '''
 {{?model=alg}} (simplified_minus_original = simplify(fs - f; expand=true), expanded_minus_original = simplify(fe - f; expand=true))
 {{?model=diff}} (symmetric_hessian = isequal(H, transpose(H)), gradient_matches_derivative = isequal(simplify(grad[findfirst(isequal(v), vs)] - df), 0))
-{{?model=int}} (derivative_of_F_minus_f = simplify(expand_derivatives(Differential(v)(F)) - f; expand=true), unsolved = unsolved)
+{{?model=int}} (derivative_of_F_minus_f = Giac.Commands.simplify(Giac.Commands.diff(F, gv) - gf), closed_form = closed_form)
 {{?model=lim}} (limit = L, taylor_at_point = substitute(T, Dict(v => {{x0}})), note = "where f is continuous at the point, both equal f there")
 {{?model=solve}} [(root = r, residual = simplify(substitute(f - {{rhs}}, Dict(v => r)); expand=true)) for r in roots]
 '''
@@ -410,7 +409,7 @@ ts = range({{a}}, {{b}}, length=7)
 {{?model=diff}} dfn = build_function(df, v; expression=Val{false}); h = 1e-6
 {{?model=diff}} [(t = t, exact = dfn(t), finite_difference = (fn(t + h) - fn(t - h)) / (2h)) for t in ts]
 {{?model=int}} xs = range({{a}}, {{b}}, length=10_001); ys = fn.(xs)
-{{?model=int}} (symbolic = area, trapezoid = step(xs) * (sum(ys) - (ys[1] + ys[end]) / 2))
+{{?model=int}} (symbolic = area, value = value, trapezoid = step(xs) * (sum(ys) - (ys[1] + ys[end]) / 2))
 {{?model=lim}} [(distance = h, f_right = fn({{x0}} + h), f_left = fn({{x0}} - h), limit = L) for h in (1e-1, 1e-2, 1e-3, 1e-4)]
 {{?model=solve}} [(root = r, f_at_root = fn(Symbolics.symbolic_to_float(r))) for r in roots]
 '''
@@ -427,10 +426,10 @@ code = '''
 fn = build_function(f, v; expression=Val{false})
 {{?model=alg}} g = fe
 {{?model=diff}} g = df
-{{?model=int}} g = F
 {{?model=lim}} g = T
 {{?model=solve}} g = f - {{rhs}}
-gn = build_function(g, v; expression=Val{false})
+{{?model!=int}} gn = build_function(g, v; expression=Val{false})
+{{?model=int}} gn = Fn  # the antiderivative, computed by Giac
 [(t = t, f = round(fn(t), digits=6), result = round(gn(t), digits=6)) for t in range({{a}}, {{b}}, length=9)]
 '''
 
@@ -485,7 +484,7 @@ code = '''
 using Latexify
 {{?model=alg}} latexify([f, fs, fe])
 {{?model=diff}} latexify([f, df, d2f])
-{{?model=int}} latexify([f, F])
+{{?model=int}} (f = latexify(f), F = Giac.to_julia(Giac.Commands.latex(F)))  # the antiderivative in LaTeX from Giac
 {{?model=lim}} latexify([f, T])
 {{?model=solve}} latexify(roots)
 '''

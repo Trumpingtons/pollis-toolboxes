@@ -5,7 +5,7 @@ The definite integral adds up a rate over a range: total cost from marginal cost
 | | |
 |---|---|
 | **Purpose** | Definite integrals of formulas in one or several variables, and of sampled data |
-| **Julia stack** | `QuadGK.jl` (adaptive, one variable), `HCubature.jl` (adaptive, several variables), `FastGaussQuadrature.jl` (Gauss rules), `SymbolicNumericIntegration.jl` (antiderivatives) |
+| **Julia stack** | `QuadGK.jl` (adaptive, one variable), `HCubature.jl` (adaptive, several variables), `FastGaussQuadrature.jl` (Gauss rules), `Giac.jl` (antiderivatives) |
 | **Improper integrals** | Infinite limits with QuadGK |
 | **Error control** | Adaptive methods return an error estimate and stop at a relative tolerance |
 | **Output** | The integral, its error estimate and the number of function evaluations |

@@ -1,11 +1,11 @@
 # Symbolic Math — Factsheet
 
-The Symbolic Math panel works with expressions as formulas rather than numbers, in the way of a calculus or algebra textbook such as [Apostol (1967)](#ref-Apo1967a) or [Stewart, Clegg and Watson (2020)](#ref-SCW2020a). An answer stays exact, for example a fraction remains a fraction. Symbolics.jl, described in [Gowda, Ma, Cheli, Gwóźzdź, Shah, Edelman and Rackauckas (2022)](#ref-GMCGS...2022a), handles the algebra and derivatives, SymbolicNumericIntegration.jl finds antiderivatives, and Nemo.jl factors polynomials.
+The Symbolic Math panel works with expressions as formulas rather than numbers, in the way of a calculus or algebra textbook such as [Apostol (1967)](#ref-Apo1967a) or [Stewart, Clegg and Watson (2020)](#ref-SCW2020a). An answer stays exact, for example a fraction remains a fraction. Symbolics.jl, described in [Gowda, Ma, Cheli, Gwóźzdź, Shah, Edelman and Rackauckas (2022)](#ref-GMCGS...2022a), handles the algebra and derivatives, Giac.jl, an interface to the computer algebra system Giac, finds antiderivatives and definite integrals, and Nemo.jl factors polynomials.
 
 | | |
 |---|---|
 | **Purpose** | Simplify, differentiate, integrate, expand and solve expressions exactly |
-| **Julia stack** | Symbolics.jl, SymbolicNumericIntegration.jl, Nemo.jl, Latexify.jl, Plots.jl |
+| **Julia stack** | Symbolics.jl, Giac.jl, Nemo.jl, Latexify.jl, Plots.jl |
 | **Models** | Algebra, Differentiation, Integration, Limits and Series, Equation Solving |
 | **Output** | Formulas with their numerical checks, LaTeX, and compiled Julia functions |
 | **Key choice** | The operation, and whether the exact answer is worth having over a numerical one |

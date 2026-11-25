@@ -12,7 +12,7 @@ The **Differentiation** tab applies the chain, product and quotient rules throug
 
 ## The Integration Tab
 
-The **Integration** tab finds an antiderivative by the symbolic-numeric regression of [Iravanian, Martensen, Cheli, Gowda, Jain, Ma and Rackauckas (2022)](#ref-IMCGJ...2022a). Candidate terms are proposed from the integrand, and sparse regression keeps the combination that differentiates back to it. The call `integrate(f, v; symbolic=true)` returns the antiderivative, the part left unintegrated, and a numerical error. A second call gives the definite integral between **From** and **To**, or `nothing` when integration failed. Since the method tests candidates, not every integrable function succeeds, and a non-empty unintegrated part means that the answer is incomplete.
+The **Integration** tab integrates with Giac, a computer algebra system, through Giac.jl. The call `Giac.Commands.integrate(f, v)` returns the antiderivative, and `Giac.Commands.integrate(f, v, a, b)` the definite integral between **From** and **To**, both exact and simplified. The answer may contain special functions, such as `erf(x)` for the antiderivative of `exp(-x^2)`. An integral with no closed form that Giac can find comes back unevaluated, as `integrate(...)`: the tab then reports `closed_form = false`, and the value of the definite integral is computed numerically. Giac is imported rather than used, because Giac and Symbolics both export `build_function` and `substitute`.
 
 ## The Limits and Series Tab
 
@@ -34,8 +34,6 @@ The **Equation Solving** tab solves **Expression** equal to **Right-Hand Side** 
 ## References
 
 <a id="ref-Gru1996a"></a>Gruntz, D. (1996). On Computing Limits in a Symbolic Manipulation System. *PhD thesis, ETH Zurich*. [doi:10.3929/ethz-a-001631582](https://doi.org/10.3929/ethz-a-001631582)
-
-<a id="ref-IMCGJ...2022a"></a>Iravanian, S., Martensen, C. J., Cheli, A., Gowda, S., Jain, A., Ma, Y. and Rackauckas, C. (2022). Symbolic-Numeric Integration of Univariate Expressions Based on Sparse Regression. *arXiv*. [Link](https://arxiv.org/abs/2201.12468)
 
 ## See Also
 

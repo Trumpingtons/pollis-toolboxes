@@ -41,11 +41,13 @@ name = "FastGaussQuadrature.jl"
 github = "https://github.com/JuliaApproximation/FastGaussQuadrature.jl"
 
 [[packages]]
-name = "SymbolicNumericIntegration.jl"
-github = "https://github.com/SciML/SymbolicNumericIntegration.jl"
+name = "Giac.jl"
+# Fork of JuliaGiac/Giac.jl at its release 0.14.3 in which to_giac converts pi, e and the other irrational constants, on which the registered version overflows the stack (upstream issue 89); back to upstream once a fixed version is registered
+github = "https://github.com/Trumpingtons/Giac.jl"
+fork = true
 
 [requires]
-packages = ["QuadGK.jl", "HCubature.jl", "FastGaussQuadrature.jl", "Symbolics.jl", "SymbolicNumericIntegration.jl", "Plots.jl"]
+packages = ["QuadGK.jl", "HCubature.jl", "FastGaussQuadrature.jl", "Symbolics.jl", "Giac.jl", "Plots.jl"]
 
 [[notebookSections]]
 label = ""
@@ -620,14 +622,17 @@ code = '''
 [[actionGroups.actions]]
 id = "cross-check"
 label = "Cross-Check"
-desc = "An independent check. One variable: an exact antiderivative from SymbolicNumericIntegration evaluated at the limits (the fundamental theorem). Several variables: iterated integrals in both orders (Fubini). Data: the exact integral of a cubic fitted to the points"
+desc = "An independent check. One variable: an exact antiderivative from Giac evaluated at the limits (the fundamental theorem). Several variables: iterated integrals in both orders (Fubini). Data: the exact integral of a cubic fitted to the points"
 code = '''
-{{?model=def}} using Symbolics, SymbolicNumericIntegration
+{{?model=def}} using Symbolics
+{{?model=def}} import Giac  # imported, not used: Giac and Symbolics both export build_function and substitute
 {{?model=def}} (isfinite(a) && isfinite(b)) || error("the antiderivative check needs finite limits")
 {{?model=def}} @variables t
-{{?model=def}} Fsym, unsolved, _ = integrate(f(t), t; symbolic=true)
-{{?model=def}} Fat(x) = Symbolics.value(substitute(Fsym, Dict(t => x)))
-{{?model=def}} (antiderivative = Fsym, unsolved_part = unsolved, by_fundamental_theorem = Fat(b) - Fat(a), numerical = I, difference = Fat(b) - Fat(a) - I)
+{{?model=def}} gt = Giac.to_giac(t)
+{{?model=def}} F = Giac.Commands.simplify(Giac.Commands.integrate(Giac.to_giac(f(t)), gt))  # exact antiderivative; one with no closed form stays unevaluated, as integrate(...)
+{{?model=def}} occursin("integrate", string(F)) && error("Giac finds no closed-form antiderivative of f, so the fundamental theorem cannot check the integral")
+{{?model=def}} Fat = Giac.build_function(F, gt)  # the antiderivative as a Julia function
+{{?model=def}} (antiderivative = F, by_fundamental_theorem = Fat(b) - Fat(a), numerical = I, difference = Fat(b) - Fat(a) - I)
 {{?model=multi}} using QuadGK
 {{?model=multi}} length(lo) == 2 || error("the iterated-integral check is written for two variables")
 {{?model=multi}} I12 = quadgk(u -> quadgk(v -> f([u, v]), lo[2], hi[2])[1], lo[1], hi[1])[1]

@@ -8,7 +8,7 @@ The panel suits small expressions where exactness is useful. The choice of tab i
 |---|---|---|
 | A cleaner form, or an exact value | **Algebra** | Rewrite rules, expansion and exact substitution |
 | Slopes, gradients or second-order conditions | **Differentiation** | Chain, product and quotient rules |
-| An antiderivative or an area | **Integration** | Candidate terms kept by sparse regression |
+| An antiderivative or an area | **Integration** | Symbolic integration by Giac, exact or left unevaluated |
 | Indeterminate forms or a local approximation | **Limits and Series** | Gruntz's algorithm and Taylor expansion |
 | Exact roots of an equation | **Equation Solving** | Exact factoring, and inversion by isolation |
 
