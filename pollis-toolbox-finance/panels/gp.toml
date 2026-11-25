@@ -10,7 +10,9 @@ defaultModel = "fit"
 
 [[packages]]
 name = "Extremes.jl"
-github = "https://github.com/jojal5/Extremes.jl"
+# Fork of jojal5/Extremes.jl at its dev branch, without Gadfly (upstream pull request 144): the registered 1.0.5 depends on Gadfly, which holds DataStructures at 0.18 and so keeps Symbolics 7 out of the environment (upstream issue 146); back to upstream once a version without Gadfly is registered
+github = "https://github.com/Trumpingtons/Extremes.jl"
+fork = true
 
 [requires]
 packages = ["Extremes.jl", "Distributions.jl", "Plots.jl"]
@@ -253,9 +255,12 @@ models = ["fit"]
 label = "Mean Excess Plot"
 desc = "Mean of the excesses over each candidate threshold, with 95% intervals: above a threshold where the GP fits, the line is straight; the dashed line is the threshold chosen"
 code = '''
-using Extremes, Plots
-mrl = Extremes.mrlplot_data(y)  # mean excess over 100 candidate thresholds, with 95% intervals
-plot(mrl.Threshold, mrl.mrl; ribbon = (mrl.mrl .- mrl.lbound, mrl.ubound .- mrl.mrl), fillalpha = 0.2,
+using Statistics, Plots
+thresholds = range(minimum(y), sort(y)[end - 2]; length = 100)  # 100 candidate thresholds, up to the third largest value
+excesses = [y[y .> t] .- t for t in thresholds]
+mean_excess = mean.(excesses)
+halfwidth = 1.96 .* std.(excesses) ./ sqrt.(length.(excesses))  # 95% interval of each mean
+plot(thresholds, mean_excess; ribbon = halfwidth, fillalpha = 0.2,
     label = "mean excess (95% interval)", xlabel = "Threshold", ylabel = "Mean excess", title = "Mean Excess Plot")
 vline!([u]; linestyle = :dash, color = :red, label = "threshold u")
 '''

@@ -24,7 +24,7 @@ A good result has **xi_hat** and the modified scale roughly constant from some t
 
 The **QQ Plot** tab prints two summaries of how far the points lie from the 45-degree line. The QQ correlation is near 1 for a straight plot, but it ignores a shift or a wrong slope, and it is high for most sorted samples. The QQ RMSE over the standard deviation gives the deviation in units of the data's spread, and so does respond to a shift or slope.
 
-A good result has points along the line, including the largest few. Points that bend upward at the right mean that the data have a heavier tail than the fit, and a downward bend means a lighter one. Neither summary is a test, and the code computes no p-value. `qqplotci(fm)` in Extremes.jl adds a confidence band to the plot, which helps to separate a real bend from the scatter expected at the extreme points.
+A good result has points along the line, including the largest few. Points that bend upward at the right mean that the data have a heavier tail than the fit, and a downward bend means a lighter one. Neither summary is a test, and the code computes no p-value. `qqplotci(fm)` in ExtremePlots.jl adds a confidence band to the plot, which helps to separate a real bend from the scatter expected at the extreme points.
 
 ## What to Do When Extreme Value Checks Are Missing from the Panel
 
@@ -33,7 +33,7 @@ A good result has points along the line, including the largest few. Points that 
 | Clustering of large losses | Plot exceedance times; group them with `getcluster(y, u)` and fit the cluster peaks |
 | Change over time | Repeat the tabs on separate periods and compare the fits |
 | Uncertainty of the shape | `cint(fm)` on the fitted model |
-| Other views of the fit | `probplot(fm)`, `returnlevelplot(fm)` and `diagnosticplots(fm)` in Extremes.jl |
+| Other views of the fit | `probplot(fm)`, `returnlevelplot(fm)` and `diagnosticplots(fm)` in ExtremePlots.jl |
 | Out-of-sample fit | Fit on an early part of the series and compare with the later losses |
 
 The Extremes.jl plotting functions draw with Gadfly, not with the Plots.jl used by the panel.

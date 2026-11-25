@@ -25,8 +25,8 @@ Where alpha is well inside the data, such as several percent of a long sample, t
 | Concern | What the user can do |
 |---|---|
 | Choice of threshold | **Mean Excess**, **Threshold Stability** in the Extreme Value Diagnostics panel |
-| Fit of the distribution | **QQ Plot** in the Extreme Value Diagnostics panel; `diagnosticplots(fm)` in Extremes.jl |
-| Fit at long periods | `returnlevelplot(fm)` and `returnlevelplotci(fm)` in Extremes.jl |
+| Fit of the distribution | **QQ Plot** in the Extreme Value Diagnostics panel; `diagnosticplots(fm)` in ExtremePlots.jl |
+| Fit at long periods | `returnlevelplot(fm)` and `returnlevelplotci(fm)` in ExtremePlots.jl |
 | Calibration of VaR | Fit on an early sample, count later losses above VaR, and compare the share with alpha |
 | Sensitivity | Repeat each tab at nearby thresholds and with another **Estimation method** |
 
