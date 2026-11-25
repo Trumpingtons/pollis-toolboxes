@@ -1,0 +1,802 @@
+# Epigraphy: the sources of epigraphy, a row per source with what it covers, its period, size, access and licence,
+# and, where the source can be downloaded, the Julia code that downloads it and shows it as a table
+
+[meta]
+title = "Epigraphy"
+viewType = "pollis.epigraphy"
+style = "minimal"
+intro = "The databases, corpora and data sets of inscriptions on stone, metal and other materials, each with its period, size, access and licence, and the Julia code that downloads it where it can be downloaded."
+rowTitle = "Source"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "EzXML.jl"
+github = "https://github.com/JuliaIO/EzXML.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "CodecZlib.jl"
+github = "https://github.com/JuliaIO/CodecZlib.jl"
+
+[[packages]]
+name = "ZipArchives.jl"
+github = "https://github.com/JuliaIO/ZipArchives.jl"
+
+[[packages]]
+name = "JSON.jl"
+github = "https://github.com/JuliaIO/JSON.jl"
+
+# The table: the columns after the sources' titles, then a row per source
+
+[[columns]]
+id = "covers"
+label = "Covers"
+
+[[columns]]
+id = "period"
+label = "Period"
+
+[[columns]]
+id = "size"
+label = "Size"
+
+[[columns]]
+id = "access"
+label = "Access"
+
+[[columns]]
+id = "licence"
+label = "Licence"
+
+[[rows]]
+id = "edcs"
+title = "Epigraphik-Datenbank Clauss/Slaby (EDCS)"
+subtitle = "University of Zürich, since 2025; begun by Manfred Clauss and Wolfgang A. Slaby"
+description = "The largest database of Latin inscriptions, each with its province, place, dating and the publications that print it, searched by the words of its text, its material, kind, language, province and place, and shown on a map of the places with coordinates. A search's results can be exported as a CSV file. Most of its inscriptions are also in LIST, below."
+covers = "Latin inscriptions of the Roman world"
+period = ""
+size = "541,333 entries"
+access = "Its site, edcs.hist.uzh.ch, a search at a time"
+licence = "Not found"
+
+[[rows]]
+id = "edh"
+title = "Epigraphic Database Heidelberg (EDH)"
+subtitle = "Heidelberg Academy of Sciences and Humanities; Heidelberg University Library"
+description = "Latin and bilingual inscriptions of the Roman Empire, each with its province, ancient and modern findspot, type, material, dating and text, and the coordinates of its findspot. The code reads the CSV file of the inscriptions, maps their findspots and shows them as a table."
+covers = "Latin and bilingual inscriptions of the Roman Empire"
+period = "Mostly 1st to 3rd century CE"
+size = "82,450 inscriptions, 79,488 with their findspot's coordinates"
+access = "Its Open Data Repository: CSV and EpiDoc dumps, and an API"
+licence = "CC BY-SA 4.0"
+code = '''
+using DuckDB, Tables, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The inscriptions of the EDH, a CSV file of 60 MB downloaded once
+file = joinpath(folder, "edh_data_text.csv")
+isfile(file) || Downloads.download("https://edh.ub.uni-heidelberg.de/data/download/edh_data_text.csv", file)
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+# A row per inscription: its number, province, ancient and modern findspot, type, material, years and text, and the
+# coordinates of its findspot, which the EDH gives as latitude, longitude
+DBInterface.execute(con, """CREATE OR REPLACE TABLE edh AS
+	SELECT hd_nr AS edh, provinz AS province, fo_antik AS findspot, fo_modern AS modern_findspot, i_gattung AS type, material,
+		TRY_CAST(dat_jahr_a AS INTEGER) AS year_from, TRY_CAST(dat_jahr_e AS INTEGER) AS year_to, atext AS text,
+		TRY_CAST(split_part(koordinaten1, ',', 2) AS DOUBLE) AS lon, TRY_CAST(split_part(koordinaten1, ',', 1) AS DOUBLE) AS lat
+	FROM read_csv('$(quoted(file))', header = true, all_varchar = true)""")
+n = rows("SELECT count(*) AS n, count(lon) AS located, count(year_from) AS dated FROM edh")
+println(only(n.n), " inscriptions, ", only(n.located), " with their findspot's coordinates, ", only(n.dated), " dated")
+# The findspots on a map, each with its number of inscriptions; a click on one shows its name and number
+places = tempname() * ".geojson"
+DBInterface.execute(con, """COPY (SELECT any_value(findspot) AS findspot, count(*) AS inscriptions, ST_Point(lon, lat) AS geom
+	FROM edh WHERE lon IS NOT NULL GROUP BY lon, lat) TO '$(quoted(places))' (FORMAT GDAL, DRIVER 'GeoJSON')""")
+display(Pollis.webmap(Pollis.layer(places; name = "Findspots", column = "inscriptions"); title = "Epigraphic Database Heidelberg",
+	center = (14, 42), zoom = 3.5))
+vscodedisplay(Tables.rowtable(DBInterface.execute(con, "SELECT * EXCLUDE (lon, lat) FROM edh ORDER BY edh")), "Epigraphic Database Heidelberg")
+'''
+
+[[rows]]
+id = "list"
+title = "Latin Inscriptions in Space and Time (LIST)"
+subtitle = "Social Dynamics in the Ancient Mediterranean (SDAM), Aarhus University: Vojtěch Kaše, Petra Heřmánková and Adéla Sobotková"
+description = "The inscriptions of the EDH and the EDCS in one data set, 77,091 of them in both, with 65 attributes: the cleaned texts, the dates, the coordinates, the type (predicted by a model for the inscriptions of the EDCS alone) and the urban context, whether the findspot is within 5 km of a large, medium or small city or rural. The code maps the findspots and counts the dated inscriptions by century."
+covers = "Latin inscriptions of the EDH and the EDCS"
+period = "Mostly 1st to 4th century CE"
+size = "525,870 inscriptions, 511,977 with coordinates, 206,566 dated"
+access = "Zenodo, version 1.2 (2024): a Parquet file of 110 MB, or GeoJSON of 1.2 GB"
+licence = "CC BY 4.0"
+code = '''
+using DuckDB, Tables, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# LIST 1.2, a Parquet file of 110 MB downloaded once
+file = joinpath(folder, "LIST_v1-2.parquet")
+isfile(file) || Downloads.download("https://zenodo.org/records/10473706/files/LIST_v1-2.parquet?download=1", file)
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+DBInterface.execute(con, "SET geometry_always_xy = true")  # coordinates as longitude, latitude
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+# A row per inscription: its numbers in LIST, the EDCS and the EDH, its province, findspot, type (predicted by a model
+# for the inscriptions of the EDCS alone), material, years, urban context and text, and its coordinates
+DBInterface.execute(con, """CREATE OR REPLACE TABLE list AS
+	SELECT "LIST-ID" AS list, "EDCS-ID" AS edcs, "EDH-ID" AS edh, province_label_clean AS province, findspot_ancient_clean AS findspot,
+		coalesce(type_of_inscription_clean, type_of_inscription_auto) AS type, material_clean AS material,
+		CAST(not_before AS INTEGER) AS year_from, CAST(not_after AS INTEGER) AS year_to, urban_context,
+		clean_text_interpretive_word AS text, Longitude AS lon, Latitude AS lat
+	FROM read_parquet('$(quoted(file))')""")
+n = rows("SELECT count(*) AS n, count(lon) AS located, count(year_from) AS dated FROM list")
+println(only(n.n), " inscriptions, ", only(n.located), " with coordinates, ", only(n.dated), " dated")
+# The dated inscriptions by century of their earliest year, negative before the Common Era
+c = rows("""SELECT CASE WHEN year_from > 0 THEN (year_from - 1) // 100 + 1 ELSE -((-year_from - 1) // 100 + 1) END AS century,
+	count(*) AS n FROM list WHERE year_from IS NOT NULL GROUP BY 1 ORDER BY 1""")
+println("By century: ", join(("$a: $b" for (a, b) in zip(c.century, c.n) if b >= 100), ", "), " (centuries with 100 or more)")
+# The findspots on a map, each with its number of inscriptions
+places = tempname() * ".geojson"
+DBInterface.execute(con, """COPY (SELECT any_value(findspot) AS findspot, count(*) AS inscriptions, ST_Point(lon, lat) AS geom
+	FROM list WHERE lon IS NOT NULL GROUP BY lon, lat) TO '$(quoted(places))' (FORMAT GDAL, DRIVER 'GeoJSON')""")
+display(Pollis.webmap(Pollis.layer(places; name = "Findspots", column = "inscriptions"); title = "Latin Inscriptions in Space and Time",
+	center = (14, 42), zoom = 3.5))
+# The Table Viewer shows the first 100,000 inscriptions by their LIST number; the table list holds them all
+vscodedisplay(Tables.rowtable(DBInterface.execute(con, "SELECT * EXCLUDE (lon, lat) FROM list ORDER BY list LIMIT 100000")), "Latin Inscriptions in Space and Time")
+'''
+
+[[rows]]
+id = "edr"
+title = "Epigraphic Database Roma (EDR)"
+subtitle = "Sapienza University of Rome"
+description = "The Latin and Greek inscriptions of ancient Italy, with Sicily and Sardinia, in EpiDoc XML: an automatic conversion of some of the EDR's contents, published on Zenodo. Each has its number, region, place and findspot, type, object, material, dating and text; the records have no coordinates. The code reads the records from the archive without unpacking it."
+covers = "Latin and Greek inscriptions of ancient Italy"
+period = "Mostly 1st century BCE to 3rd century CE"
+size = "115,590 inscriptions, 91,125 dated"
+access = "Zenodo, version 12 (2026): EpiDoc XML, an archive of 268 MB"
+licence = "CC BY 4.0 on Zenodo; the records state Reserved Rights, free access"
+code = '''
+using EzXML, ZipArchives, Downloads, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The inscriptions of the EDR, an archive of 268 MB downloaded once, read from the archive without unpacking it; reading
+# its 115,600 records takes a minute or two
+archive = joinpath(folder, "EDR.zip")
+isfile(archive) || Downloads.download("https://zenodo.org/records/18468635/files/EDR.zip?download=1", archive)
+reader = ZipReader(read(archive))
+# A field of a record, by its path in the EpiDoc XML, "" when the record has none; a year, from a date such as -0050
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+entries = filter(name -> endswith(name, ".xml"), zip_names(reader))
+# A record that is not valid XML is left out, and the parser's warnings are not shown
+records = with_logger(NullLogger()) do
+	map(entries) do name
+		doc = try parsexml(zip_readentry(reader, name, String)) catch; return nothing end
+		edition = findfirst("//t:div[@type='edition']", root(doc), tei)
+		text = ""
+		if edition !== nothing
+			# The text as written, its abbreviations expanded: the heading and the editors' corrections are left out, and a line break
+			# that does not split a word is a space
+			foreach(unlink!, findall("t:head | .//t:reg | .//t:corr", edition, tei))
+			foreach(lb -> linkprev!(lb, TextNode(" ")), findall(".//t:lb[not(@break='no')]", edition, tei))
+			text = join(split(nodecontent(edition)), " ")
+		end
+		(edr = field(doc, "//t:idno[@type='localID']"), region = field(doc, "//t:origPlace/t:placeName[@type='provinceItalicRegion']"),
+			place = field(doc, "//t:origPlace/t:placeName[not(@type)]"),
+			findspot = field(doc, "//t:provenance[@type='found']/t:placeName[@type='locus']"),
+			country = field(doc, "//t:placeName[@type='modernCountry']"), type = field(doc, "//t:keywords/t:term"),
+			object = field(doc, "//t:objectType"), material = field(doc, "//t:material"),
+			from = year(field(doc, "//t:origDate/@notBefore-custom")), to = year(field(doc, "//t:origDate/@notAfter-custom")),
+			text = text)
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " inscriptions, ", count(r -> !ismissing(r.from), records), " dated")
+println("By type: ", join(("$t ($n)" for (t, n) in first(counts([r.type for r in records]), 10)), ", "))
+println("By region: ", join(("$p ($n)" for (p, n) in first(counts([r.region for r in records]), 10)), ", "))
+vscodedisplay(records, "Epigraphic Database Roma")
+'''
+
+[[rows]]
+id = "rib"
+title = "Roman Inscriptions of Britain (RIB Online)"
+subtitle = "Scott Vanderbilt, with the project LatinNow"
+description = "Volume I of The Roman Inscriptions of Britain, the 2,401 monumental inscriptions found before 1955 with the Addenda and Corrigenda since, and Volume III, the 550 found between 1995 and 2006; with the Vindolanda writing tablets (Tabulae Vindolandenses II to IV) and the Bloomberg tablets from Roman London. Each inscription has its text, translation, findspot and commentary, and its TEI XML."
+covers = "Inscriptions and writing tablets of Roman Britain"
+period = "Roman Britain"
+size = "2,951 monumental inscriptions, and the tablets"
+access = "Its site, romaninscriptionsofbritain.org, an inscription at a time"
+licence = "CC BY 4.0 for the texts and their TEI XML; the photographs reserved"
+
+[[rows]]
+id = "irt"
+title = "Inscriptions of Roman Tripolitania (IRT)"
+subtitle = "King's College London: the edition of J. M. Reynolds and J. B. Ward-Perkins (1952), online in 2009"
+description = "The inscriptions of Tripolitania in Libya, mostly from Lepcis Magna and Sabratha, in EpiDoc XML, each with its title, type, object, material, findspot, dating, text and English translation. The code reads the records from the archive without unpacking it."
+covers = "Latin, Greek and Libyan inscriptions of Roman Tripolitania"
+period = "Mostly 1st to 4th century CE"
+size = "1,018 inscriptions, 978 translated into English"
+access = "Its site: an archive of the EpiDoc files, 3 MB"
+licence = "CC BY 2.0 UK"
+code = '''
+using EzXML, ZipArchives, Downloads, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The inscriptions of the IRT, an archive of 3 MB downloaded once, read from the archive without unpacking it
+archive = joinpath(folder, "irt2009-P5.zip")
+isfile(archive) || Downloads.download("https://inslib.kcl.ac.uk/irt2009/redist/inscr/irt2009-P5.zip", archive)
+reader = ZipReader(read(archive))
+# A field of a record, by its path in the EpiDoc XML, "" when the record has none; a year, from a date such as 0178
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The text as written, its abbreviations expanded: the heading and the editors' corrections are left out, and a line
+# break that does not split a word is a space
+function text(div)
+	div === nothing && return ""
+	foreach(unlink!, findall("t:head | .//t:reg | .//t:corr", div, tei))
+	foreach(lb -> linkprev!(lb, TextNode(" ")), findall(".//t:lb[not(@break='no')]", div, tei))
+	return join(split(nodecontent(div)), " ")
+end
+entries = filter(name -> endswith(name, ".xml"), zip_names(reader))
+# A record that is not valid XML is left out, and the parser's warnings are not shown
+records = with_logger(NullLogger()) do
+	map(entries) do name
+		doc = try parsexml(zip_readentry(reader, name, String)) catch; return nothing end
+		# The edition, not the reconstruction that follows it in a few records
+		edition = findfirst("//t:div[@type='edition'][not(@subtype='reconstruction')]", root(doc), tei)
+		(irt = field(doc, "//t:idno[@type='filename']"), title = join(split(field(doc, "//t:titleStmt/t:title")), " "),
+			type = lowercase(field(doc, "//t:titleStmt/t:title/t:rs[@type='textType']")),
+			language = edition === nothing || !haskey(edition, "xml:lang") ? "" : edition["xml:lang"],
+			object = field(doc, "//t:rs[@type='objectType']"), material = field(doc, "//t:material"),
+			findspot = field(doc, "//t:placeName[@type='ancientFindspot']"), modern_findspot = field(doc, "//t:placeName[@type='modernFindspot']"),
+			from = year(field(doc, "(//t:origDate/@when | //t:origDate/@notBefore)[1]")),
+			to = year(field(doc, "(//t:origDate/@when | //t:origDate/@notAfter)[1]")),
+			text = text(edition), translation = text(findfirst("//t:div[@type='translation']", root(doc), tei)))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " inscriptions, ", count(r -> !ismissing(r.from), records), " dated, ",
+	count(r -> !isempty(r.translation), records), " translated")
+# The languages by their ISO 639 codes: la Latin, grc Ancient Greek, ber-Latn a Berber language in
+# the Latin alphabet
+println("By language: ", join(("$l ($n)" for (l, n) in counts([r.language for r in records])), ", "))
+println("By type: ", join(("$t ($n)" for (t, n) in first(counts([r.type for r in records]), 8)), ", "))
+println("By findspot: ", join(("$f ($n)" for (f, n) in first(counts([r.findspot for r in records]), 8)), ", "))
+vscodedisplay(records, "Inscriptions of Roman Tripolitania")
+'''
+
+[[rows]]
+id = "isicily"
+title = "I.Sicily"
+subtitle = "Jonathan Prag, University of Oxford"
+description = "The inscriptions of ancient Sicily in all its languages, in EpiDoc XML, each with its title, language, type, object, material, ancient and modern place, coordinates, dating and text, and its numbers in Trismegistos, the EDR, the EDH and the EDCS. The code maps the findspots and counts the inscriptions by language."
+covers = "Inscriptions of ancient Sicily: Greek, Latin, Elymian, Sicel, Punic, Oscan and Hebrew"
+period = "Mostly 6th century BCE to 4th century CE"
+size = "5,136 inscriptions, 5,003 with coordinates"
+access = "GitHub (ISicily/ISicily), an archive of 9 MB"
+licence = "CC BY 4.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The inscriptions of I.Sicily, an archive of 9 MB downloaded once from GitHub
+archive = joinpath(folder, "ISicily.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/ISicily/ISicily/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "ISicily")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "ISicily-master/inscriptions"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the EpiDoc XML, "" when the record has none; a year, from a date such as 0300
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The coordinates of a findspot, given as latitude, longitude
+coordinates(geo) = (m = match(r"^(?<lat>-?[\d.]+),\s*(?<lon>-?[\d.]+)$", geo); m === nothing ? (missing, missing) :
+	(parse(Float64, m[:lon]), parse(Float64, m[:lat])))
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out, and the parser's warnings are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		# The primary edition, not the lemmatised one that follows it in some records
+		edition = something(findfirst("//t:div[@type='edition'][@subtype='primary']", root(doc), tei),
+			findfirst("//t:div[@type='edition']", root(doc), tei), Some(nothing))
+		text = ""
+		if edition !== nothing
+			# The text as written, its abbreviations expanded: the heading and the editors' corrections are left out,
+			# and a line break that does not split a word is a space
+			foreach(unlink!, findall("t:head | .//t:reg | .//t:corr", edition, tei))
+			foreach(lb -> linkprev!(lb, TextNode(" ")), findall(".//t:lb[not(@break='no')]", edition, tei))
+			text = join(split(nodecontent(edition)), " ")
+		end
+		lon, lat = coordinates(field(doc, "//t:origPlace/t:geo"))
+		(isicily = field(doc, "//t:idno[@type='filename']"), title = field(doc, "//t:titleStmt/t:title"),
+			language = field(doc, "//t:textLang/@mainLang"), type = field(doc, "//t:keywords/t:term"),
+			object = field(doc, "//t:objectType"), material = field(doc, "//t:material"),
+			place = field(doc, "//t:origPlace/t:placeName[@type='ancient']"), modern_place = field(doc, "//t:origPlace/t:placeName[@type='modern']"),
+			from = year(field(doc, "//t:origDate/@notBefore-custom")), to = year(field(doc, "//t:origDate/@notAfter-custom")),
+			text = text, lon = lon, lat = lat)
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " inscriptions, ", count(r -> !ismissing(r.lon), records), " with their findspot's coordinates, ",
+	count(r -> !ismissing(r.from), records), " dated")
+# The languages by their ISO 639 codes: grc Ancient Greek, la Latin, xly Elymian, scx Sicel, xpu Punic, osc Oscan, he Hebrew
+println("By language: ", join(("$l ($n)" for (l, n) in counts([r.language for r in records])), ", "))
+println("By type: ", join(("$t ($n)" for (t, n) in first(counts([r.type for r in records]), 8)), ", "))
+# The findspots on a map, each with its number of inscriptions; a click on one shows its ancient name, or else its modern
+# one, and its number
+spots = Dict{Tuple{Float64, Float64}, Vector{String}}()
+foreach(filter(r -> !ismissing(r.lon), records)) do r
+	push!(get!(spots, (r.lon, r.lat), String[]), isempty(r.place) ? r.modern_place : r.place)
+end
+features = ["""{"type":"Feature","geometry":{"type":"Point","coordinates":[$lon,$lat]},"properties":""" *
+	"""{"findspot":"$(escape_string(first(names)))","inscriptions":$(length(names))}}""" for ((lon, lat), names) in spots]
+places = tempname() * ".geojson"
+write(places, """{"type":"FeatureCollection","features":[$(join(features, ","))]}""")
+display(Pollis.webmap(Pollis.layer(places; name = "Findspots", column = "inscriptions"); title = "I.Sicily", center = (14.2, 37.5), zoom = 7))
+vscodedisplay([Base.structdiff(r, NamedTuple{(:lon, :lat)}) for r in records], "I.Sicily")
+'''
+
+[[rows]]
+id = "phi"
+title = "PHI Greek Inscriptions"
+subtitle = "Packard Humanities Institute"
+description = "The texts of Greek inscriptions from the published corpora, arranged by region, searched by their words. I.PHI, the data set on which the model Ithaca was trained, is made from these texts by a script that reads the site; it is not published as a download."
+covers = "Greek inscriptions"
+period = ""
+size = "About 210,000 inscriptions"
+access = "Its site, inscriptions.packhum.org; it checks that it is read by a browser"
+licence = "Its terms permit personal study, not re-use"
+
+[[rows]]
+id = "iip"
+title = "Inscriptions of Israel/Palestine (IIP)"
+subtitle = "Brown University Library"
+description = "The inscriptions of Israel/Palestine, in EpiDoc XML, each with its language, type, religion, region, place and site, dating, text and English translation, and the coordinates of some places. The code maps those places and counts the inscriptions by language, religion and region."
+covers = "Inscriptions in Greek, Aramaic, Hebrew, Latin and other languages"
+period = "About 500 BCE to 640 CE"
+size = "5,528 inscriptions, 4,695 translated into English"
+access = "GitHub (Brown-University-Library/iip-texts), an archive of 7 MB"
+licence = "CC BY-NC 4.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The inscriptions of the IIP, an archive of 7 MB downloaded once from GitHub
+archive = joinpath(folder, "iip-texts.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/Brown-University-Library/iip-texts/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "IIP")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "iip-texts-master/epidoc-files"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the EpiDoc XML, "" when the record has none; a year, from a date such as 0070;
+# a class of the IIP's taxonomy, without its "#"
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+class(value) = replace(value, "#" => "")
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The coordinates of a place, given as latitude,longitude
+coordinates(geo) = (m = match(r"^(?<lat>-?[\d.]+),\s*(?<lon>-?[\d.]+)$", geo); m === nothing ? (missing, missing) :
+	(parse(Float64, m[:lon]), parse(Float64, m[:lat])))
+# The text as written, its abbreviations expanded: the heading and the editors' corrections are left out, and a line
+# break that does not split a word is a space
+function text(div)
+	div === nothing && return ""
+	foreach(unlink!, findall("t:head | .//t:reg | .//t:corr", div, tei))
+	foreach(lb -> linkprev!(lb, TextNode(" ")), findall(".//t:lb[not(@break='no')]", div, tei))
+	return join(split(nodecontent(div)), " ")
+end
+# The records, without the file on which the IIP tests its encoding
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names
+	if endswith(name, ".xml") && name != "aaTestFile.xml"]
+# A record that is not valid XML is left out, and the parser's warnings are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		# The transcription, else the transcription divided into words, else the diplomatic edition
+		edition = something((findfirst("//t:div[@type='edition'][@subtype='$s']", root(doc), tei)
+			for s in ("transcription", "transcription_segmented", "diplomatic"))..., Some(nothing))
+		lon, lat = coordinates(field(doc, "//t:origin//t:settlement/t:geo"))
+		(iip = field(doc, "//t:idno[@type='IIP']"), language = field(doc, "//t:textLang/@mainLang"),
+			type = class(field(doc, "//t:msItem/@class")), religion = class(field(doc, "//t:msItem/@ana")),
+			region = field(doc, "//t:origin//t:region"), place = field(doc, "//t:origin//t:settlement/text()"),
+			site = field(doc, "//t:origin//t:geogName[@type='site']"),
+			from = year(field(doc, "//t:origin/t:date/@notBefore")), to = year(field(doc, "//t:origin/t:date/@notAfter")),
+			text = text(edition), translation = text(findfirst("//t:div[@type='translation']", root(doc), tei)), lon = lon, lat = lat)
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " inscriptions, ", count(r -> !ismissing(r.from), records), " dated, ",
+	count(r -> !isempty(r.translation), records), " translated")
+# The languages by their ISO 639 codes: grc Ancient Greek, arc Aramaic, he Hebrew, la Latin, phn Phoenician
+println("By language: ", join(("$l ($n)" for (l, n) in first(counts([r.language for r in records]), 8)), ", "))
+println("By religion: ", join(("$c ($n)" for (c, n) in counts([r.religion for r in records])), ", "))
+println("By region: ", join(("$p ($n)" for (p, n) in first(counts([r.region for r in records]), 8)), ", "))
+# The places whose coordinates the records give, on a map, each with its number of inscriptions; a click on one shows
+# its name and number
+spots = Dict{Tuple{Float64, Float64}, Vector{String}}()
+foreach(r -> push!(get!(spots, (r.lon, r.lat), String[]), r.place), filter(r -> !ismissing(r.lon), records))
+features = ["""{"type":"Feature","geometry":{"type":"Point","coordinates":[$lon,$lat]},"properties":""" *
+	"""{"place":"$(escape_string(first(names)))","inscriptions":$(length(names))}}""" for ((lon, lat), names) in spots]
+places = tempname() * ".geojson"
+write(places, """{"type":"FeatureCollection","features":[$(join(features, ","))]}""")
+display(Pollis.webmap(Pollis.layer(places; name = "Places", column = "inscriptions"); title = "Inscriptions of Israel/Palestine",
+	center = (35.2, 31.8), zoom = 7))
+vscodedisplay([Base.structdiff(r, NamedTuple{(:lon, :lat)}) for r in records], "Inscriptions of Israel/Palestine")
+'''
+
+[[rows]]
+id = "usep"
+title = "U.S. Epigraphy Project (USEP)"
+subtitle = "Brown University Library"
+description = "The Greek and Latin inscriptions kept in the collections of the United States, in EpiDoc XML, each with the state, city and institution where it is, its summary, language, type, object, material, place of origin, dating and text. Its records are transcribed, described only, or known from the bibliography only."
+covers = "Inscriptions in collections in the United States"
+period = "About 800 BCE to 700 CE"
+size = "3,440 records, 2,432 of them transcribed"
+access = "GitHub (Brown-University-Library/usep-data), an archive of 8 MB"
+licence = "Not found"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The inscriptions of the USEP, an archive of 8 MB downloaded once from GitHub
+archive = joinpath(folder, "usep-data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/Brown-University-Library/usep-data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "USEP")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "usep-data-master/xml_inscriptions"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the EpiDoc XML, "" when the record has none; a year, from a date such as 0199;
+# a class of the USEP's taxonomy, without its "#"
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+class(value) = replace(value, "#" => "")
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The records are in three folders: transcribed, metadata_only (described, not yet transcribed) and bib_only (known
+# from the bibliography)
+files = [(basename(root), joinpath(root, name)) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out, and the parser's warnings are not shown
+records = with_logger(NullLogger()) do
+	map(files) do (status, file)
+		doc = try readxml(file) catch; return nothing end
+		edition = findfirst("//t:div[@type='edition']", root(doc), tei)
+		text = ""
+		if edition !== nothing
+			# The text as written, its abbreviations expanded: the heading and the editors' corrections are left out,
+			# and a line break that does not split a word is a space
+			foreach(unlink!, findall("t:head | .//t:reg | .//t:corr", edition, tei))
+			foreach(lb -> linkprev!(lb, TextNode(" ")), findall(".//t:lb[not(@break='no')]", edition, tei))
+			text = join(split(nodecontent(edition)), " ")
+		end
+		# Where the inscription is kept: the US state, or the country, the city and the institution
+		(usep = field(doc, "//t:idno[@type='USEpigraphy']"), status = status, state = field(doc, "//t:msIdentifier/t:region"),
+			city = field(doc, "//t:msIdentifier/t:settlement"), institution = field(doc, "//t:msIdentifier/t:institution"),
+			summary = field(doc, "//t:msContents/t:summary"), language = field(doc, "//t:textLang/@mainLang"),
+			type = class(field(doc, "//t:msItem/@class")), object = class(field(doc, "//t:objectDesc/@ana")),
+			material = class(field(doc, "//t:supportDesc/@ana")), origin = field(doc, "//t:origin/t:placeName"),
+			from = year(field(doc, "//t:origin/t:date/@notBefore")), to = year(field(doc, "//t:origin/t:date/@notAfter")),
+			text = text)
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " inscriptions: ", join(("$s ($n)" for (s, n) in counts([r.status for r in records])), ", "))
+# The languages by their ISO 639 codes: lat Latin, grc Ancient Greek, grc-Cprt Greek in the Cypriot syllabary,
+# ett Etruscan, phn Phoenician, und undetermined
+println("By language: ", join(("$l ($n)" for (l, n) in first(counts([r.language for r in records]), 6)), ", "))
+println("By state or country: ", join(("$s ($n)" for (s, n) in first(counts([r.state for r in records]), 10)), ", "))
+println("The institutions with most inscriptions: ",
+	join(("$i ($n)" for (i, n) in first(counts(["$(r.city) $(r.institution)" for r in records]), 8)), ", "))
+vscodedisplay(records, "U.S. Epigraphy Project")
+'''
+
+[[rows]]
+id = "cdli"
+title = "Cuneiform Digital Library Initiative (CDLI)"
+subtitle = "Oxford, Berlin and Los Angeles"
+description = "The catalogue of the cuneiform objects in the world's collections, each with its period, provenience, genre, language, material, museum number and publications, and the transliterations in ATF of the objects edited, some with an English translation. The code reads the dump of August 2022 on GitHub, the last one there, and counts the objects by period, genre, language and provenience; the site, cdli.earth, exports a search at a time through its API."
+covers = "Cuneiform tablets, seals, cones, bricks and other objects, in Sumerian, Akkadian, Hittite and other languages"
+period = "Mostly Ur III, Old Babylonian and Neo-Assyrian (about 2100 to 612 BCE)"
+size = "353,283 objects, 133,133 of them transliterated"
+access = "GitHub (cdli-gh/data), the dump of August 2022: 155 MB and 87 MB; its site's API, a search at a time"
+licence = "Texts free to re-use, citing the CDLI; images for non-commercial use"
+code = '''
+using DuckDB, Tables, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The catalogue and the transliterations of the CDLI, files of 155 MB and 87 MB downloaded once from its dump of
+# August 2022 on GitHub
+dump = "https://media.githubusercontent.com/media/cdli-gh/data/master/"
+catalogue, atf = joinpath(folder, "cdli_cat.csv"), joinpath(folder, "cdliatf_unblocked.atf")
+isfile(catalogue) || Downloads.download(dump * "cdli_cat.csv", catalogue)
+isfile(atf) || Downloads.download(dump * "cdliatf_unblocked.atf", atf)
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+# A row per object: its CDLI number (as P000001), designation, period, provenience, genre, language, material, object
+# type, museum number, collection and the publication that first printed it
+DBInterface.execute(con, """CREATE OR REPLACE TABLE cdli AS
+	SELECT 'P' || lpad(id_text, 6, '0') AS cdli, designation, period, provenience, genre, subgenre, language, material,
+		object_type AS object, museum_no AS museum_number, collection, primary_publication
+	FROM read_csv('$(quoted(catalogue))', header = true, all_varchar = true)""")
+# The transliterations in ATF: an object starts with a line "&P000001 = ...", and each line of its text starts with its
+# number, as "1." or "2'."; "#tr.en:" starts a line of English translation, and the lines starting with @, $, # and >
+# describe the object or its lines
+transliterated, english = Dict{String, Vector{String}}(), Dict{String, Vector{String}}()
+let current = ""
+	for line in eachline(atf)
+		if startswith(line, "&P")
+			current = line[2:8]
+		elseif startswith(line, "#tr.en:")
+			push!(get!(english, current, String[]), strip(line[8:end]))
+		elseif !isempty(line) && !(line[1] in "@\$#>&")
+			m = match(r"^\S+\.\s+(?<text>.+)$", line)
+			m === nothing || push!(get!(transliterated, current, String[]), strip(m[:text]))
+		end
+	end
+end
+n = rows("SELECT count(*) AS n FROM cdli")
+println(only(n.n), " objects, ", length(transliterated), " transliterated, ", length(english), " translated into English")
+for (column, label) in [("period", "By period"), ("genre", "By genre"), ("language", "By language"), ("provenience", "By provenience")]
+	c = rows("SELECT coalesce($column, '(not given)') AS v, count(*) AS n FROM cdli GROUP BY 1 ORDER BY 2 DESC LIMIT 8")
+	println(label, ": ", join(("$(c.v[i]) ($(c.n[i]))" for i in eachindex(c.n)), ", "))
+end
+# The objects with their number of lines, the start of their transliteration, a line after another, and of their
+# translation; the Table Viewer shows the 100,000 first transliterated objects, the vector objects holds them all
+objects = [merge(r, (lines = length(get(transliterated, r.cdli, String[])),
+	transliteration = first(join(get(transliterated, r.cdli, String[]), " / "), 200),
+	translation = first(join(get(english, r.cdli, String[]), " "), 200)))
+	for r in Tables.rowtable(DBInterface.execute(con, "SELECT * FROM cdli ORDER BY cdli"))]
+vscodedisplay(first(filter(o -> o.lines > 0, objects), 100000), "Cuneiform Digital Library Initiative")
+'''
+
+[[rows]]
+id = "oracc"
+title = "Open Richly Annotated Cuneiform Corpus (ORACC)"
+subtitle = "University of Pennsylvania Museum, with the editors of its projects"
+description = "Lemmatised editions of cuneiform texts in projects such as the Royal Inscriptions of the Neo-Assyrian Period (RINAP), the State Archives of Assyria (SAAo) and the Electronic Text Corpus of Sumerian Royal Inscriptions (ETCSRI): each word with its form as written, citation form, guide word and part of speech, and each project's catalogue with the coordinates of the proveniences from Pleiades. The code reads a project, RINAP unless another is named, with its subprojects, maps its proveniences and builds its glossary."
+covers = "Lemmatised cuneiform texts in Sumerian, Akkadian and other languages"
+period = "By project: RINAP, 744 to 612 BCE"
+size = "208 JSON archives; RINAP, 1,037 texts and 198,281 words"
+access = "Its JSON page, an archive per project and subproject: RINAP 24 MB, and 53 MB for its five subprojects"
+licence = "CC0 for the data; the annotated editions under CC BY-SA 3.0, as their credits say"
+code = '''
+using JSON, ZipArchives, Downloads, Tables
+# An ORACC project, by its name on ORACC's JSON page (oracc.museum.upenn.edu/json): rinap, the Royal Inscriptions of
+# the Neo-Assyrian Period, or riao, ribo, etcsri, saao, dcclt and others
+project = "rinap"
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy/oracc"))  # where the downloads are kept
+# The JSON archive of a project or of a subproject, downloaded once: rinap/rinap4 is rinap-rinap4.zip
+function archive(name)
+	file = joinpath(folder, replace(name, "/" => "-") * ".zip")
+	isfile(file) || Downloads.download("https://oracc.museum.upenn.edu/json/$(basename(file))", file)
+	return ZipReader(read(file))
+end
+readjson(reader, name) = JSON.parse(zip_readentry(reader, name, String))
+main = archive(project)
+# The catalogue of the project's texts, and the subproject in whose archive each text is: a project with subprojects
+# names them in its "proxies", one without lists its texts in its "members"
+catalogue = readjson(main, "$project/catalogue.json")["members"]
+corpus = readjson(main, "$project/corpus.json")
+proxies = haskey(corpus, "proxies") ? corpus["proxies"] : Dict(id => project for id in keys(corpus["members"]))
+readers = Dict(sub => sub == project ? main : archive(sub) for sub in unique(values(proxies)))
+# The words of a text: the nodes "l" of its tree, each with its form as written, its citation form, guide word (a
+# short English meaning) and part of speech
+function words!(found, node)
+	node isa AbstractDict || return found
+	if get(node, "node", "") == "l" && haskey(node, "f")
+		f = node["f"]
+		push!(found, (form = get(node, "frag", ""), cf = get(f, "cf", ""), gw = get(f, "gw", ""), pos = get(f, "pos", "")))
+	end
+	foreach(child -> words!(found, child), get(node, "cdl", []))
+	return found
+end
+# The words of each text that has an edition; the file of a text without one is missing or empty
+names = Dict(sub => Set(zip_names(reader)) for (sub, reader) in readers)
+texts = Dict{String, Vector{NamedTuple{(:form, :cf, :gw, :pos), NTuple{4, String}}}}()
+for (id, sub) in proxies
+	name = "$sub/corpusjson/$id.json"
+	name in names[sub] || continue
+	content = zip_readentry(readers[sub], name, String)
+	isempty(content) || (texts[id] = words!(NamedTuple{(:form, :cf, :gw, :pos), NTuple{4, String}}[], JSON.parse(content)))
+end
+# The coordinates of a provenience, from Pleiades, given as [longitude,latitude]
+coordinates(value) = (m = match(r"^\[(?<lon>-?[\d.]+),\s*(?<lat>-?[\d.]+)\]$", value); m === nothing ? (missing, missing) :
+	(parse(Float64, m[:lon]), parse(Float64, m[:lat])))
+field(entry, key) = string(get(entry, key, ""))
+# A row per text of the catalogue: its designation and popular name, ruler, period, genre, object, material, provenience
+# and date, its number of words, and the start of its transliteration
+records = map(sort!(collect(keys(catalogue)))) do id
+	entry = catalogue[id]
+	words = get(texts, id, [])
+	lon, lat = coordinates(field(entry, "pleiades_coord"))
+	(text = id, designation = field(entry, "designation"), popular_name = field(entry, "popular_name"), ruler = field(entry, "ruler"),
+		period = field(entry, "period"), genre = field(entry, "genre"), object = field(entry, "object_type"),
+		material = field(entry, "material"), provenience = field(entry, "provenience"), date = field(entry, "date_of_origin"),
+		words = length(words), transliteration = first(join((w.form for w in words), " "), 200), lon = lon, lat = lat)
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+lemmas = [w for words in values(texts) for w in words if !isempty(w.cf)]
+println(length(records), " texts, ", length(texts), " of them edited, ", sum(r -> r.words, records), " words, ", length(lemmas), " lemmatised")
+println("By ruler: ", join(("$r ($n)" for (r, n) in first(counts([r.ruler for r in records]), 10)), ", "))
+println("By object: ", join(("$o ($n)" for (o, n) in first(counts([r.object for r in records]), 8)), ", "))
+# The parts of speech of ORACC: N noun, V verb, AJ adjective, AV adverb; RN royal name, GN geographical name, DN divine
+# name, PN personal name and others
+common = counts(["$(w.cf)[$(w.gw)]" for w in lemmas if w.pos in ("N", "V", "AJ", "AV")])
+println("The most frequent words: ", join(("$w ($n)" for (w, n) in first(common, 15)), ", "))
+named = counts(["$(w.cf) $(w.pos)" for w in lemmas if w.pos in ("RN", "GN", "DN", "PN")])
+println("The most frequent names: ", join(("$w ($n)" for (w, n) in first(named, 15)), ", "))
+# The proveniences on a map, each with its number of texts; a click on one shows its name and number
+spots = Dict{Tuple{Float64, Float64}, Vector{String}}()
+foreach(r -> push!(get!(spots, (r.lon, r.lat), String[]), r.provenience), filter(r -> !ismissing(r.lon), records))
+features = ["""{"type":"Feature","geometry":{"type":"Point","coordinates":[$lon,$lat]},"properties":""" *
+	"""{"provenience":"$(escape_string(first(proveniences)))","texts":$(length(proveniences))}}""" for ((lon, lat), proveniences) in spots]
+places = tempname() * ".geojson"
+write(places, """{"type":"FeatureCollection","features":[$(join(features, ","))]}""")
+display(Pollis.webmap(Pollis.layer(places; name = "Proveniences", column = "texts"); title = "ORACC: $project", center = (44, 34), zoom = 5))
+vscodedisplay([Base.structdiff(r, NamedTuple{(:lon, :lat)}) for r in records], "ORACC: $project")
+# The glossary of the project's texts: each word by its citation form, guide word and part of speech, with its number
+# of occurrences
+glossary = [(cf = cf, gw = gw, pos = pos, occurrences = n) for ((cf, gw, pos), n) in counts([(w.cf, w.gw, w.pos) for w in lemmas])]
+vscodedisplay(glossary, "ORACC: glossary of $project")
+'''
+
+[[rows]]
+id = "dasi"
+title = "Digital Archive for the Study of pre-Islamic Arabian Inscriptions (DASI)"
+subtitle = "University of Pisa; Consiglio Nazionale delle Ricerche (CNR)"
+description = "The inscriptions of pre-Islamic Arabia, each with its text, translation, object, place and bibliography, and their images, in corpora by language; the Corpus of South Arabian Inscriptions (CSAI) is the largest."
+covers = "Inscriptions of pre-Islamic Arabia, in Ancient South Arabian and other languages"
+period = "Pre-Islamic Arabia"
+size = "Over 18,000 texts in the CSAI"
+access = "Its site, dasi.cnr.it; it asks not to be read by programs"
+licence = "CC BY 4.0 for its records since 2026, not for its images"
+
+[[rows]]
+id = "dio"
+title = "Deutsche Inschriften Online (DIO)"
+subtitle = "Die Deutschen Inschriften, of the academies of Germany and Austria, on Epigraf"
+description = "The articles of the volumes of Die Deutschen Inschriften, the inscriptions of the Middle Ages and early modern times, on Epigraf. The dump of them all gives each article's title, dating, the Wikidata ids of its city or district and links to its images; each volume has a dump of its own in EpiDoc, with the texts. The code reads the dump of them all with DuckDB."
+covers = "Medieval and early modern inscriptions of Germany and Austria"
+period = "Mostly 14th to 17th century"
+size = "31,197 articles, 29,750 of them in 69 printed volumes"
+access = "Epigraf's dumps: all articles in JSON-LD, 2 MB; each volume in EpiDoc, Turtle and RDF/XML"
+licence = "CC BY 4.0; the images are links, for private use"
+code = '''
+using DuckDB, Tables, Downloads, ZipArchives
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# The articles of the German Inscriptions Online, a dump of 2 MB downloaded once and unpacked into a JSON-LD file of 54 MB
+archive = joinpath(folder, "epigraf-public-cgif-001.zip")
+isfile(archive) || Downloads.download("https://epigraf.inschriften.net/files/download/77936", archive)
+file = joinpath(folder, "epigraf-public-cgif-001.jsonld")
+isfile(file) || write(file, zip_readentry(ZipReader(read(archive)), "epigraf-public-cgif-001.jsonld"))
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+quoted(text) = replace(text, "'" => "''")
+# A row per article: its id, its volume and number in the series Die Deutschen Inschriften (DI) when it is printed in
+# one (the others are online only, or come from other projects), its title, its years, the Wikidata ids of its city or
+# district (and of some objects), and its number of images; the file is a single JSON object, larger than DuckDB reads
+# by default
+DBInterface.execute(con, """CREATE OR REPLACE TABLE dio AS
+	WITH articles AS (SELECT unnest("@reverse"."schema:isPartOf") AS a
+		FROM read_json('$(quoted(file))', maximum_object_size = 200000000))
+	SELECT regexp_extract(a."@id", '/([^/]+)#dfi\$', 1) AS article,
+		'DI ' || TRY_CAST(regexp_extract(a."@id", '~di(\\d+)-', 1) AS INTEGER) AS volume,
+		nullif(regexp_extract(a."@id", '~di\\d+-0*(\\w+)', 1), '') AS number, a."schema:name" AS title,
+		TRY_CAST(left(a."schema:temporalCoverage"."@value", 4) AS INTEGER) AS year_from,
+		TRY_CAST(left(split_part(a."schema:temporalCoverage"."@value", '/', 2), 4) AS INTEGER) AS year_to,
+		array_to_string(list_transform(list_filter(a."schema:keywords", lambda k: k."@id" LIKE 'wd:%'),
+			lambda k: replace(k."@id", 'wd:', '')), ', ') AS wikidata,
+		CAST(CASE WHEN a."schema:image" IS NULL THEN 0 WHEN json_type(a."schema:image") = 'ARRAY'
+			THEN json_array_length(a."schema:image") ELSE 1 END AS INTEGER) AS images
+	FROM articles""")
+n = rows("""SELECT count(*) AS n, count(year_from) AS dated, count(DISTINCT volume) AS volumes, count(volume) AS printed,
+	count_if(images > 0) AS illustrated FROM dio""")
+println(only(n.n), " articles, ", only(n.printed), " of them in ", only(n.volumes), " printed volumes; ", only(n.dated), " dated, ",
+	only(n.illustrated), " with images")
+# The articles by century of their first year, from the century 1 (years 1 to 100)
+c = rows("""SELECT (year_from - 1) // 100 + 1 AS century, count(*) AS n FROM dio WHERE year_from IS NOT NULL
+	GROUP BY century ORDER BY century""")
+println("By century: ", join(("$(c.century[i]) ($(c.n[i]))" for i in eachindex(c.n) if c.n[i] >= 100), ", "))
+v = rows("SELECT volume, count(*) AS n FROM dio WHERE volume IS NOT NULL GROUP BY volume ORDER BY n DESC LIMIT 8")
+println("The volumes with most articles: ", join(("$(v.volume[i]) ($(v.n[i]))" for i in eachindex(v.n)), ", "))
+order = "TRY_CAST(regexp_extract(volume, '\\d+') AS INTEGER) NULLS LAST, article"  # by volume, then by article
+vscodedisplay(Tables.rowtable(DBInterface.execute(con, "SELECT * FROM dio ORDER BY $order")), "German Inscriptions Online")
+'''
+
+[[rows]]
+id = "rundata"
+title = "Scandinavian Runic-text Database (Rundata)"
+subtitle = "Runforum, Department of Scandinavian Languages, Uppsala University"
+description = "The runic inscriptions of Scandinavia and of wherever Scandinavians wrote them, each with its place, parish and municipality, period, object, material, carver and style, transliterated, normalised in Old Norse and translated into English, with coordinates in the Swedish grid RT90 or in latitude and longitude. The code reads the files of Rundata 3.1, converts the RT90 coordinates and maps the findspots."
+covers = "Runic inscriptions, transliterated, normalised and translated"
+period = "Mostly the Viking Age and the Middle Ages"
+size = "11,671 inscriptions, 5,196 with coordinates, 6,752 translated into English"
+access = "Runforum's site: the files of Rundata 3.1 (2018), 5 MB; the version of 2020 is in Runor, online"
+licence = "ODbL and DbCL"
+code = '''
+using DuckDB, Tables, Downloads, ZipArchives
+folder = mkpath(expanduser("~/.pollis/data/examples/epigraphy"))  # where the downloads are kept
+# Rundata 3.1, the files of the Windows program of the Scandinavian Runic-text Database (2018), an archive of 5 MB
+# downloaded once and read without unpacking it
+archive = joinpath(folder, "rundata_3-1_zip.zip")
+isfile(archive) || Downloads.download("https://www.runforum.nordiska.uu.se/filer/rundata_3-1_zip.zip", archive)
+reader = ZipReader(read(archive))
+# The files are in Windows-1252: the bytes 0x80 to 0x9f are the characters of this table, the others the characters of
+# the same code
+windows = collect("€\u81‚ƒ„…†‡ˆ‰Š‹Œ\u8dŽ\u8f\u90‘’“”•–—˜™š›œ\u9džŸ")
+decoded(bytes) = String([0x80 <= b <= 0x9f ? windows[b - 0x7f] : Char(b) for b in bytes])
+# The records of a file, a line each, without the lines of its header, which start with "!"
+lines(name) = filter(line -> !isempty(line) && !startswith(line, '!'), split(decoded(zip_readentry(reader, name)), "\r\n"))
+# A record starts with its signum (as U 344) and its flags (as † for a lost inscription); in RUNDATA.INF its fields
+# follow, each between two copies of a control character, the place of its letter in the alphabet: P (16) the place,
+# X (24) the coordinates, D (4) the period and so on
+signum(line) = join(first(split(line, ' '), 2), ' ')
+head(line) = line[1:prevind(line, something(findfirst(c -> c < ' ', line), lastindex(line) + 1))]
+function field(line, letter)
+	mark = Char(letter - 'A' + 1)
+	start = findfirst(mark, line)
+	stop = start === nothing ? nothing : findnext(mark, line, nextind(line, start))
+	return stop === nothing ? "" : strip(line[nextind(line, start):prevind(line, stop)])
+end
+info = lines("RUNDATA.INF")
+heads = Dict(signum(line) => head(line) for line in info)
+# The text of each inscription in RUNDATA.RUN (transliterated) and RUNDATA.ENG (translated into English), after its
+# signum and flags
+texts(name) = Dict(signum(line) => strip(chopprefix(line, get(heads, signum(line), ""))) for line in lines(name))
+runes, english = texts("RUNDATA.RUN"), texts("RUNDATA.ENG")
+# The coordinates of a findspot: latitude and longitude in brackets, as (59.3293 ; 18.0686), or northing and easting in
+# the Swedish grid RT90, as 6275755.1538971, converted below
+function coordinates(text)
+	m = match(r"\((?<lat>-?[\d.]+) ; (?<lon>-?[\d.]+)\)", text)
+	m === nothing || return (lon = parse(Float64, m[:lon]), lat = parse(Float64, m[:lat]), east = missing, north = missing)
+	m = match(r"^(?<north>\d{7})\.(?<east>\d{7})$", text)
+	m === nothing || return (lon = missing, lat = missing, east = parse(Float64, m[:east]), north = parse(Float64, m[:north]))
+	return (lon = missing, lat = missing, east = missing, north = missing)
+end
+# A row per inscription: its place, parish and municipality, period, object, material, carver, style, runes and
+# English translation; the coordinates of the findspot, else those of where the inscription is now
+records = map(info) do line
+	s = signum(line)
+	x = field(line, 'X')
+	(signum = s, place = field(line, 'P'), parish = field(line, 'S'), municipality = field(line, 'K'), period = field(line, 'D'),
+		object = field(line, 'L'), material = field(line, 'I'), carver = field(line, 'R'), style = field(line, 'G'),
+		runes = get(runes, s, ""), english = get(english, s, ""), coordinates(isempty(x) ? field(line, 'Y') : x)...)
+end
+# The RT90 coordinates as longitude and latitude, by DuckDB's spatial extension (EPSG:3021 to EPSG:4326)
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD spatial")  # DuckDB's spatial extension, which the toolbox installs
+grid = tempname() * ".csv"
+write(grid, "signum,east,north\n" * join(("\"$(r.signum)\",$(r.east),$(r.north)" for r in records if !ismissing(r.east)), "\n"))
+converted = Tables.columntable(DBInterface.execute(con, """SELECT signum, ST_X(p) AS lon, ST_Y(p) AS lat FROM (SELECT signum,
+	ST_Transform(ST_Point(east, north), 'EPSG:3021', 'EPSG:4326', always_xy := true) AS p FROM read_csv('$grid', header = true))"""))
+lonlat = Dict(converted.signum[i] => (converted.lon[i], converted.lat[i]) for i in eachindex(converted.signum))
+records = [haskey(lonlat, r.signum) ? merge(r, (lon = lonlat[r.signum][1], lat = lonlat[r.signum][2])) : r for r in records]
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(length(records), " inscriptions, ", count(r -> !ismissing(r.lon), records), " with coordinates, ",
+	count(r -> !isempty(r.english), records), " translated into English")
+# The periods by their first letter: V the Viking Age, M the Middle Ages, U the Proto-Norse period (urnordisk)
+println("By period: ", join(("$p ($n)" for (p, n) in counts([first(r.period, 1) for r in records])), ", "))
+# The first part of a signum is the region: a Swedish province (U Uppland, Sö Södermanland, Ög Östergötland), N Norway,
+# DR Denmark, and others
+println("By region: ", join(("$p ($n)" for (p, n) in first(counts([first(split(r.signum)) for r in records]), 12)), ", "))
+# The findspots on a map, each with its number of inscriptions; a click on one shows its place and number
+spots = Dict{Tuple{Float64, Float64}, Vector{String}}()
+foreach(r -> push!(get!(spots, (r.lon, r.lat), String[]), r.place), filter(r -> !ismissing(r.lon), records))
+features = ["""{"type":"Feature","geometry":{"type":"Point","coordinates":[$lon,$lat]},"properties":""" *
+	"""{"place":"$(escape_string(first(names)))","inscriptions":$(length(names))}}""" for ((lon, lat), names) in spots]
+places = tempname() * ".geojson"
+write(places, """{"type":"FeatureCollection","features":[$(join(features, ","))]}""")
+display(Pollis.webmap(Pollis.layer(places; name = "Findspots", column = "inscriptions"); title = "Scandinavian Runic-text Database",
+	center = (14, 60), zoom = 4))
+vscodedisplay([Base.structdiff(r, NamedTuple{(:lon, :lat, :east, :north)}) for r in records], "Scandinavian Runic-text Database")
+'''

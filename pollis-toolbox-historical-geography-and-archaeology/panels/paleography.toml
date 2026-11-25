@@ -1,0 +1,529 @@
+# Paleography: the sources of paleography, a row per source with what it covers, its period, size, access and licence,
+# and, where the source can be downloaded, the Julia code that downloads it and shows it as a table
+
+[meta]
+title = "Paleography"
+viewType = "pollis.paleography"
+style = "minimal"
+intro = "The digitised manuscripts, catalogues, dictionaries of abbreviations and data sets of transcribed and classified handwriting, each with its period, size, access and licence, and the Julia code that downloads it where it can be downloaded."
+rowTitle = "Source"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "EzXML.jl"
+github = "https://github.com/JuliaIO/EzXML.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "CodecZlib.jl"
+github = "https://github.com/JuliaIO/CodecZlib.jl"
+
+[[packages]]
+name = "ZipArchives.jl"
+github = "https://github.com/JuliaIO/ZipArchives.jl"
+
+[[packages]]
+name = "JSON.jl"
+github = "https://github.com/JuliaIO/JSON.jl"
+
+[[packages]]
+name = "NPZ.jl"
+github = "https://github.com/fhs/NPZ.jl"
+
+# The table: the columns after the sources' titles, then a row per source
+
+[[columns]]
+id = "covers"
+label = "Covers"
+
+[[columns]]
+id = "period"
+label = "Period"
+
+[[columns]]
+id = "size"
+label = "Size"
+
+[[columns]]
+id = "access"
+label = "Access"
+
+[[columns]]
+id = "licence"
+label = "Licence"
+
+[[rows]]
+id = "ecodices"
+title = "e-codices, Virtual Manuscript Library of Switzerland"
+subtitle = "University of Fribourg"
+description = "The medieval and some modern manuscripts of the libraries, archives and monasteries of Switzerland, each photographed whole, with its scholarly description, through IIIF: a manifest per manuscript with its title, date, place of origin, language, material, size and summary, and its pages on an image server. The code lists the libraries, reads the manifests of one, the Aargauer Kantonsbibliothek unless another is named, and saves a page's image."
+covers = "Manuscripts in Swiss collections, mostly Latin and German"
+period = "The Middle Ages, and some modern manuscripts"
+size = "3,107 manuscripts in 100 collections"
+access = "Its site and IIIF manifests, a manuscript at a time"
+licence = "Manifests CC0; images by the terms of each library, most free to re-use with citation"
+code = '''
+using JSON, Downloads
+# A library of e-codices, by the name of its collection on e-codices' IIIF pages: kba is the Aargauer Kantonsbibliothek
+# in Aarau, csg the Stiftsbibliothek of St. Gallen, ubb the Universitätsbibliothek of Basel, bge the Bibliothèque de Genève
+library = "kba"
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography/e-codices"))  # where the downloads are kept
+site = "https://e-codices.ch/metadata/iiif/"
+# e-codices refuses Julia's own user agent, so the downloads give a generic one; it refuses too many requests in a row,
+# so they come a second apart
+download(url, file) = (sleep(1); Downloads.download(url, file; headers = ["User-Agent" => "research-script/1.0"]))
+# A IIIF file of e-codices, downloaded once: the collections (a library each) and the manifests (a manuscript each)
+function iiif(url)
+	file = joinpath(folder, replace(chopprefix(url, site), "/" => "-"))
+	isfile(file) || download(url, file)
+	return JSON.parse(read(file, String))
+end
+# The libraries, each by the name of its collection
+libraries = [(library = chopsuffix(basename(c["@id"]), ".json"), name = c["label"])
+	for c in iiif(site * "collection.json")["collections"]]
+println(length(libraries), " libraries")
+vscodedisplay(libraries, "e-codices: the libraries")
+# The manuscripts of the library, from their manifests: a field may come more than once, as Century for a manuscript of
+# two centuries, and its values are then joined
+manifests = [iiif(m["@id"]) for m in iiif(site * "collection/$library.json")["manifests"]]
+function field(manifest, label)
+	values = [string(m["value"]) for m in manifest["metadata"] if m["label"] == label]
+	return replace(join(values, "; "), r"<[^>]+>" => "")
+end
+manuscripts = map(manifests) do m
+	(manuscript = m["label"], title = field(m, "Title (English)"), date = field(m, "Date of Origin (English)"),
+		century = field(m, "Century"), origin = field(m, "Place of Origin (English)"), language = field(m, "Text Language"),
+		material = field(m, "Material"), pages = field(m, "Number of Pages"), dimensions = field(m, "Dimensions"),
+		images = length(m["sequences"][1]["canvases"]), summary = field(m, "Summary (English)"), doi = field(m, "DOI"))
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(manuscripts[1].manuscript[1:findlast(',', manuscripts[1].manuscript) - 1], ": ", length(manuscripts), " manuscripts, ",
+	sum(m -> m.images, manuscripts), " images")
+println("By century: ", join(("$v ($n)" for (v, n) in counts([c for m in manuscripts for c in split(m.century, "; ")])), ", "))
+println("By language: ", join(("$v ($n)" for (v, n) in counts([l for m in manuscripts for l in split(m.language, "; ")])), ", "))
+vscodedisplay(manuscripts, "e-codices: $library")
+# An image of a manuscript, by the numbers of the manuscript and of its image, 1000 pixels wide, from the IIIF image
+# server
+function image(manuscript, n)
+	canvas = manifests[manuscript]["sequences"][1]["canvases"][n]
+	url = replace(canvas["images"][1]["resource"]["@id"], "/full/full/" => "/full/1000,/")
+	file = joinpath(folder, chopsuffix(basename(dirname(dirname(dirname(dirname(url))))), ".jp2") * ".jpg")
+	isfile(file) || download(url, file)
+	return file
+end
+println(manuscripts[1].manuscript, ", ", manifests[1]["sequences"][1]["canvases"][3]["label"], ": ", image(1, 3))
+'''
+
+[[rows]]
+id = "biblissima"
+title = "Biblissima"
+subtitle = "Biblissima+ (2021 to 2029), after Biblissima (2012 to 2021)"
+description = "One search of the catalogues, digital libraries and databases of manuscripts and early printed books: their historical collections, inscriptions, bindings, illuminations, coats of arms, people, organisations, works and places. IIIF Collections searches the digitised manuscripts and early books of many libraries, and the authority files give the people, places, organisations and shelfmarks they name, as structured data."
+covers = "Manuscripts and early printed books, mostly of Western Europe"
+period = "8th to 18th century"
+size = "885,829 items in the authority files"
+access = "Its portal and IIIF Collections; the authority files on a Wikibase, whose SPARQL access is restricted"
+licence = "Authority files Etalab Open License 2.0"
+
+[[rows]]
+id = "pinakes"
+title = "Pinakes"
+subtitle = "Institut de recherche et d'histoire des textes (IRHT), Paris; begun in 1971 at the Pontifical Institute of Mediaeval Studies, Toronto"
+description = "The manuscript tradition of Greek texts before the 16th century, mostly from the catalogues of the world's libraries: for each work its manuscripts, and for each manuscript its city, library, fonds and shelfmark, the works it holds and its century or date, with links to digitisations. The database is concise and sends the reader back to the catalogues."
+covers = "Greek texts and the manuscripts that hold them"
+period = "Up to the 16th century"
+size = "About 200,000 records of 40,000 manuscripts in 1,300 libraries, at its launch in 2008"
+access = "Its site, pinakes.irht.cnrs.fr, a search at a time"
+licence = "Its legal notice permits private use, not re-use"
+
+[[rows]]
+id = "digipal"
+title = "Digital Resource and Database of Palaeography, Manuscript Studies and Diplomatic (DigiPal)"
+subtitle = "King's College London, 2010 to 2014; since 2026 AOROC, École pratique des hautes études, with Biblissima+"
+description = "English handwriting of the 11th century: the manuscripts and charters, their scribes, and the images of their letters (graphs) cut out and described one by one, so that the letter forms of different scribes, places and dates can be compared side by side."
+covers = "English handwriting in Latin and Old English"
+period = "Mostly 1000 to 1100"
+size = "1,675 manuscripts and charters, 995 images, 64,033 images of letters, 1,478 scribal hands"
+access = "Its site, digipal.eu, to browse and search"
+licence = "Data CC BY 4.0; the images may not be downloaded"
+
+[[rows]]
+id = "cappelli"
+title = "Lexicon Abbreviaturarum of Adriano Cappelli"
+subtitle = "Ad fontes, University of Zürich: the hackathon of 2015"
+description = "The abbreviations of Latin and Italian manuscripts in Cappelli's dictionary (Leipzig, 1928), each cut out of its page as an image, with its page, the letters it starts with, its transcription, category and the period of the manuscripts it comes from. The code reads the spreadsheet of the abbreviations with DuckDB and saves an abbreviation's image."
+covers = "Abbreviations of Latin and Italian manuscripts"
+period = "Mostly 13th to 15th century"
+size = "14,329 abbreviations of 9,466 words and numbers"
+access = "Ad fontes: an archive of 49 MB with the spreadsheet and the images"
+licence = "Public domain"
+code = '''
+using DuckDB, Tables, Downloads, ZipArchives
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography"))  # where the downloads are kept
+# The abbreviations of Adriano Cappelli's Lexicon Abbreviaturarum (Leipzig, 1928), as the Ad fontes hackathon of 2015 cut them
+# out of its pages: an archive of 49 MB downloaded once, with a spreadsheet and an image of each abbreviation
+archive = joinpath(folder, "cappelli.zip")
+isfile(archive) || Downloads.download("https://www.adfontes.uzh.ch/media/files/5_Ressourcen/cappelli.zip", archive)
+reader = ZipReader(read(archive))
+sheet = joinpath(folder, "cappelli.xlsx")
+isfile(sheet) || write(sheet, zip_readentry(reader, "cappelli.xlsx"))
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+DBInterface.execute(con, "LOAD excel")  # DuckDB's Excel extension, which the toolbox installs
+rows(sql) = Tables.columntable(DBInterface.execute(con, sql))
+# A row per abbreviation: its page in the Lexicon, the letters it starts with, its transcription, category, the period
+# of the manuscripts it comes from (XV m. is the middle of the 15th century, p. the start, f. the end) and language;
+# the categories are in German, as the hackathon gave them: römische Zahl is a Roman numeral, Westgotisch Visigothic
+DBInterface.execute(con, """CREATE OR REPLACE TABLE cappelli AS
+	SELECT id, page_id AS page, characters AS letters, transcription, category,
+		regexp_extract(period, '^([IVX]+)', 1) AS century, period, language
+	FROM read_xlsx('$sheet', all_varchar = true)""")
+n = rows("SELECT count(*) AS n, count(DISTINCT transcription) AS words FROM cappelli")
+println(only(n.n), " abbreviations of ", only(n.words), " words")
+for (column, label) in [("century", "By century"), ("language", "By language"), ("category", "By category")]
+	c = rows("SELECT coalesce($column, '(not given)') AS v, count(*) AS n FROM cappelli GROUP BY 1 ORDER BY 2 DESC LIMIT 10")
+	println(label, ": ", join(("$(c.v[i]) ($(c.n[i]))" for i in eachindex(c.n)), ", "))
+end
+# The words with the most abbreviations, each written in many ways in the manuscripts
+c = rows("SELECT transcription AS v, count(*) AS n FROM cappelli GROUP BY 1 ORDER BY 2 DESC LIMIT 15")
+println("The most abbreviated words: ", join(("$(c.v[i]) ($(c.n[i]))" for i in eachindex(c.n)), ", "))
+abbreviations = Tables.rowtable(DBInterface.execute(con, "SELECT * FROM cappelli ORDER BY TRY_CAST(id AS INTEGER)"))
+vscodedisplay(abbreviations, "Cappelli's abbreviations")
+# The image of an abbreviation, by its id: img_abbr/<id>.jpg in the archive, saved beside the spreadsheet
+image(id) = (file = joinpath(folder, "cappelli_$id.jpg"); write(file, zip_readentry(reader, "img_abbr/$id.jpg")); file)
+println("An abbreviation of \"", abbreviations[1].transcription, "\": ", image(abbreviations[1].id))
+'''
+
+[[rows]]
+id = "htrunited"
+title = "HTR-United"
+subtitle = "A catalogue kept on GitHub by Thibault Clérice, Alix Chagué and others"
+description = "The catalogue of the data sets made to train handwritten text recognition (HTR) and OCR, each with its languages, scripts, whether handwritten or printed, its dates, format (ALTO or PAGE XML), size, licence and link. The code reads the catalogue and counts the data sets by language, script, format and licence."
+covers = "Data sets of transcribed manuscripts and prints, mostly French and Latin"
+period = "Mostly the Middle Ages to the 20th century"
+size = "138 data sets, 2.1 million lines in those that count lines"
+access = "GitHub (HTR-United/htr-united): its catalogue, 0.5 MB"
+licence = "Each data set its own: 110 CC BY 4.0, 18 CC BY-SA 4.0"
+code = '''
+using JSON, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography"))  # where the downloads are kept
+# The catalogue of HTR-United, a file of 0.5 MB downloaded again each day: the data sets of transcribed manuscripts and
+# prints for training handwritten text recognition (HTR), each with its languages, scripts, dates, format and size
+catalogue = joinpath(folder, "htr-united.json")
+(isfile(catalogue) && time() - mtime(catalogue) < 86400) ||
+	Downloads.download("https://raw.githubusercontent.com/HTR-United/htr-united/master/catalog.json", catalogue)
+entries = JSON.parse(read(catalogue, String))
+# A licence is given by its name, or by its type and version; a few data sets give more than one
+licence(l) = haskey(l, "name") ? string(l["name"]) : "$(get(l, "type", "")) $(get(l, "version", ""))"
+licences(e) = join((licence(l) for l in (e["license"] isa AbstractVector ? e["license"] : [e["license"]])), "; ")
+volume(e, metric) = sum((v["count"] for v in e["volume"] if v["metric"] == metric); init = 0)
+# A row per data set: its title, languages (ISO 639 codes: lat Latin, fro Old French), scripts (ISO 15924: Latn Latin,
+# Grek Greek, Arab Arabic), whether handwritten or printed, its dates, format, size, licence and link
+datasets = map(sort!(collect(values(entries)); by = e -> strip(e["title"]))) do e
+	(title = strip(e["title"]), languages = join(e["language"], ", "), scripts = join((s["iso"] for s in e["script"]), ", "),
+		kind = e["script-type"], from = get(e["time"], "notBefore", ""), to = get(e["time"], "notAfter", ""),
+		format = e["format"], lines = volume(e, "lines"), pages = volume(e, "pages"), characters = volume(e, "characters"),
+		licence = licences(e), software = e["production-software"], url = e["url"])
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(length(datasets), " data sets, ", sum(d -> d.lines, datasets), " lines in those that count lines")
+languages = counts([l for d in datasets for l in split(d.languages, ", ")])
+println("By language: ", join(("$v ($n)" for (v, n) in first(languages, 12)), ", "))
+println("By script: ", join(("$v ($n)" for (v, n) in counts([s for d in datasets for s in split(d.scripts, ", ")])), ", "))
+println("By kind: ", join(("$v ($n)" for (v, n) in counts([d.kind for d in datasets])), ", "))
+println("By format: ", join(("$v ($n)" for (v, n) in counts([d.format for d in datasets])), ", "))
+println("By licence: ", join(("$v ($n)" for (v, n) in first(counts([d.licence for d in datasets]), 6)), ", "))
+vscodedisplay(datasets, "HTR-United")
+'''
+
+[[rows]]
+id = "catmus"
+title = "CATMuS Medieval"
+subtitle = "Consistent Approaches to Transcribing Manuscripts: Thibault Clérice, Ariane Pinche and others"
+description = "The lines of medieval manuscripts and incunabula transcribed by the same rules, each with its image and the language, century, script, genre and region of its manuscript, for training and testing handwritten text recognition, and the dating and classification of scripts. The code lists the files on Hugging Face, a manuscript each, reads the lines of one, Paris, BnF, esp. 33 unless another is named, and saves a line's image."
+covers = "Medieval manuscripts in Latin, French, Castilian, Italian, Middle Dutch and other languages"
+period = "8th to 16th century, mostly 13th to 15th"
+size = "313 manuscripts, over 160,000 lines"
+access = "Hugging Face (CATMuS/medieval): 346 Parquet files, 26.5 GB"
+licence = "CC BY 4.0"
+code = '''
+using DuckDB, Tables, Downloads, JSON
+# A manuscript of CATMuS Medieval, by its shelfmark as in the names of the files (its parts joined by __, the spaces
+# by _): Paris__BnF__esp__33 is Paris, BnF, esp. 33
+manuscript = "Paris__BnF__esp__33"
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography/catmus"))  # where the downloads are kept
+# The files of the data set on Hugging Face, a Parquet file per manuscript (or per part of one) in the folders train,
+# dev and test, each named by its language, century, script and shelfmark, as L-Cas.C-14.S-Hyb.Paris__BnF__esp__33.H-ebbcb
+site = "https://huggingface.co/api/datasets/CATMuS/medieval/tree/main/"
+listing = [f for split in ("train", "dev", "test") for f in JSON.parse(String(take!(Downloads.download(site * split, IOBuffer()))))]
+pattern = r"^(?<split>\w+)/L-(?<language>[^.]+)\.C-(?<century>\d+)\.S-(?<script>[^.]+)\.(?<shelfmark>.+)\.H-\w+\.Part-(?<part>\d+)"
+files = map(listing) do f
+	m = match(pattern, f["path"])
+	(shelfmark = m[:shelfmark], language = m[:language], century = parse(Int, m[:century]), script = m[:script],
+		split = m[:split], part = parse(Int, m[:part]), megabytes = round(f["size"] / 1e6; digits = 1), path = f["path"])
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+gigabytes = round(sum(f -> f.megabytes, files) / 1000; digits = 1)
+println(length(unique(f.shelfmark for f in files)), " manuscripts in ", length(files), " files of ", gigabytes, " GB")
+# The languages as Lat Latin, Fre French, Cas Castilian, Mid_Dut Middle Dutch, Ita Italian, Cat Catalan, Occ Occitan; the
+# scripts as Tex Textualis, Cur Cursiva, Hyb Hybrida, Car Caroline, Sem Semitextualis, Hum Humanistica, Pra Praegothica,
+# Pri printed (an incunable)
+first_parts = filter(f -> f.part == 0, files)
+println("By language: ", join(("$v ($n)" for (v, n) in counts([f.language for f in first_parts])), ", "))
+println("By century: ", join(("$v ($n)" for (v, n) in sort!(counts([f.century for f in first_parts]))), ", "))
+println("By script: ", join(("$v ($n)" for (v, n) in counts([f.script for f in first_parts])), ", "))
+vscodedisplay(files, "CATMuS Medieval: the files")
+# The lines of the manuscript, each file downloaded once: its text with the metadata of its manuscript, and its image
+chosen = filter(f -> f.shelfmark == manuscript, files)
+isempty(chosen) && error("No manuscript $manuscript in CATMuS Medieval")
+parquets = map(chosen) do f
+	file = joinpath(folder, basename(f.path))
+	isfile(file) || Downloads.download("https://huggingface.co/datasets/CATMuS/medieval/resolve/main/$(f.path)", file)
+	file
+end
+con = DBInterface.connect(DuckDB.DB)  # an in-memory database
+list = join(("'$(replace(p, "'" => "''"))'" for p in parquets), ", ")
+DBInterface.execute(con, """CREATE OR REPLACE VIEW manuscript AS
+	SELECT row_number() OVER (ORDER BY filename, file_row_number) AS line, *
+	FROM read_parquet([$list], filename = true, file_row_number = true)""")
+lines = Tables.rowtable(DBInterface.execute(con, """SELECT line, text, shelfmark, language, century, script_type, genre, region,
+	project, line_type FROM manuscript ORDER BY line"""))
+println(first(lines).shelfmark, ": ", length(lines), " lines, ", sum(l -> length(l.text), lines), " characters; ",
+	first(lines).script_type, ", ", first(lines).genre, ", ", first(lines).century, "th century")
+vscodedisplay(lines, "CATMuS Medieval: $(first(lines).shelfmark)")
+# The image of a line, by its number, saved as PNG beside the Parquet files
+function image(line)
+	file = joinpath(folder, "$(manuscript)_$line.png")
+	write(file, only(Tables.rowtable(DBInterface.execute(con, "SELECT im.bytes AS bytes FROM manuscript WHERE line = $line"))).bytes)
+	return file
+end
+println("Line 1, \"", first(lines).text, "\": ", image(1))
+'''
+
+[[rows]]
+id = "clamm"
+title = "Classification of Medieval Handwritings in Latin Script (CLaMM)"
+subtitle = "ICDAR 2017 competition: Florence Cloppet, Dominique Stutzmann and others"
+description = "Images of pages of Latin manuscripts, each labelled with one of 12 scripts (Caroline, Textualis, Hybrida and others) and one of 15 date classes, from before 1000 to 1600, for training and testing the classification of scripts and the dating of manuscripts. The code reads the labels of the training set from its archive, counts the images by script and date, and saves an image."
+covers = "Latin scripts of medieval manuscripts"
+period = "Before 1000 to 1600"
+size = "3,540 images to train on; 2,000 and 1,000 to test on"
+access = "Zenodo: the training set 5.5 GB, the test sets 3.1 GB and 3.3 GB"
+licence = "CC BY 4.0"
+code = '''
+using ZipArchives, Downloads, Mmap
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography"))  # where the downloads are kept
+# The training set of the ICDAR 2017 Competition on the Classification of Medieval Handwritings in Latin Script (CLaMM):
+# 3,540 images of manuscript pages in TIFF, each with its script and date, an archive of 5.5 GB downloaded once from
+# Zenodo and read without unpacking it
+archive = joinpath(folder, "ICDAR2017_CLaMM_Training.zip")
+isfile(archive) || Downloads.download("https://zenodo.org/records/5527690/files/ICDAR2017_CLaMM_Training.zip", archive)
+reader = ZipReader(Mmap.mmap(archive))
+# The labels: the scripts in alphabetical order and the dates in chronological order, as the competition numbered them
+scripts = ["Caroline", "Cursiva", "Half-Uncial", "Humanistic", "Humanistic Cursive", "Hybrida", "Praegothica", "Semihybrida",
+	"Semitextualis", "Southern Textualis", "Textualis", "Uncial"]
+dates = ["before 1000", "1001-1100", "1101-1200", "1201-1250", "1251-1300", "1301-1350", "1351-1400", "1401-1425", "1426-1450",
+	"1451-1475", "1476-1500", "1501-1525", "1526-1550", "1551-1575", "1576-1600"]
+labels = split(zip_readentry(reader, "ICDAR2017_CLaMM_Training/@ICDAR2017_CLaMM_Training.csv", String), r"\r?\n"; keepempty = false)
+images = map(Iterators.drop(labels, 1)) do line
+	file, script, date = split(line, ';')
+	(image = file, script = scripts[parse(Int, script)], date = dates[parse(Int, date)])
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(length(images), " images")
+println("By script: ", join(("$v ($n)" for (v, n) in counts([i.script for i in images])), ", "))
+println("By date: ", join(("$d ($(count(i -> i.date == d, images)))" for d in dates), ", "))
+vscodedisplay(images, "CLaMM: the training images")
+# The images of each script by date: a script is written over a span of centuries, and a date has several scripts
+table = [(; script = s, (Symbol(d) => count(i -> i.script == s && i.date == d, images) for d in dates)...) for s in scripts]
+vscodedisplay(table, "CLaMM: scripts by date")
+# An image, by its file name, saved beside the archive
+image(name) = (file = joinpath(folder, name); write(file, zip_readentry(reader, "ICDAR2017_CLaMM_Training/$name")); file)
+println(images[1].script, ", ", images[1].date, ": ", image(images[1].image))
+'''
+
+[[rows]]
+id = "divahisdb"
+title = "DIVA-HisDB"
+subtitle = "DIVA group, University of Fribourg, with e-codices"
+description = "Pages of three manuscripts of complex layout, Cod. Sang. 18 (a composite manuscript) and Cod. Sang. 863 (Lucan's Pharsalia) of St. Gallen and Cod. Bodmer 55 (Dante's Inferno and Purgatorio) of Cologny, with their layout drawn by hand: the regions of main text, comments (glosses) and decoration, and the polygon of each line, in PAGE XML and in images labelled pixel by pixel. The code takes the PAGE XML out of the archive and counts each page's regions and lines."
+covers = "The layout of three medieval manuscripts"
+period = "Around 1000 to the first half of the 14th century"
+size = "150 pages, about 4,400 lines of main text and 8,400 of comments"
+access = "Zenodo: the archive of the DIVA group's site, 1.3 GB"
+licence = "CC BY 4.0"
+code = '''
+using EzXML, ZipArchives, CodecZlib, Tar, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography"))  # where the downloads are kept
+# DIVA-HisDB as it was on the site of the DIVA group of the University of Fribourg, an archive of 1.3 GB downloaded once
+# from Zenodo; the layout of the pages of its three manuscripts, in PAGE XML, is in an archive of a few MB per
+# manuscript, taken out of it once
+archive = joinpath(folder, "DIVAHisDB.tar.gz")
+isfile(archive) || Downloads.download("https://zenodo.org/records/19127869/files/DIVAHisDB.tar.gz", archive)
+extracted = joinpath(folder, "DIVA-HisDB")
+wanted(header) = occursin(r"/diva-hisdb/hisdoc/(private-test/)?PAGE-gt-[\w-]+\.zip$", header.path) && !occursin("TASK-2", header.path)
+isdir(extracted) || open(file -> Tar.extract(wanted, GzipDecompressorStream(file), extracted), archive)
+zips = [joinpath(root, f) for (root, _, files) in walkdir(extracted) for f in files if endswith(f, ".zip")]
+# The manuscripts: CB55 is Cologny, Fondation Martin Bodmer, Cod. Bodmer 55, CSG18 and CSG863 the Codices Sangallenses 18
+# and 863 of the Stiftsbibliothek of St. Gallen, named CS18 and CS863 in some archives
+manuscripts = Dict("CB55" => "Cod. Bodmer 55", "CS18" => "Cod. Sang. 18", "CSG18" => "Cod. Sang. 18", "CS863" => "Cod. Sang. 863",
+	"CSG863" => "Cod. Sang. 863")
+# A page's layout: its text regions and decorations (graphic regions), and its lines, those of the main text and those
+# of the comments, the glosses written between and beside them; the pages of the private test have the lines of the
+# main text only
+page = ["p" => "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15"]
+pages = [begin
+	doc = parsexml(zip_readentry(reader, name, String))
+	p = findfirst("//p:Page", root(doc), page)
+	lines = [l["id"] for l in findall("//p:TextLine", root(doc), page)]
+	(manuscript = manuscripts[match(r"PAGE-gt-(?<m>[A-Z]+\d+)", file)[:m]], page = chopsuffix(basename(name), ".xml"),
+		split = occursin("privateTest", file) ? "private-test" : basename(dirname(name)),
+		width = parse(Int, p["imageWidth"]), height = parse(Int, p["imageHeight"]),
+		text_regions = length(findall("//p:TextRegion", root(doc), page)),
+		decorations = length(findall("//p:GraphicRegion", root(doc), page)),
+		main_lines = count(startswith("textline_"), lines), comment_lines = count(startswith("comment_"), lines))
+end for file in zips for reader in (ZipReader(read(file)),) for name in zip_names(reader) if endswith(name, ".xml")]
+sort!(pages; by = p -> (p.manuscript, p.page))
+for m in sort!(unique(p.manuscript for p in pages))
+	these = filter(p -> p.manuscript == m, pages)
+	splits = join(("$s $(count(p -> p.split == s, these))" for s in unique(p.split for p in these)), ", ")
+	println(m, ": ", length(these), " pages (", splits,
+		"), ", sum(p -> p.main_lines, these), " lines of main text, ", sum(p -> p.comment_lines, these), " of comments, ",
+		sum(p -> p.decorations, these), " decorations")
+end
+vscodedisplay(pages, "DIVA-HisDB: the pages")
+'''
+
+[[rows]]
+id = "biblia"
+title = "BiblIA"
+subtitle = "Daniel Stökl Ben Ezra and others, École pratique des hautes études (EPHE)"
+description = "Pages of medieval Hebrew manuscripts of the Bibliothèque nationale de France and the Vatican Library, transcribed line by line in ALTO XML with their regions and line polygons, each with its script (Ashkenazi, Italian or Sephardi), shelfmark, date and genre, Biblical or Rabbinic. The code reads the catalogue and the transcriptions from the archive."
+covers = "Medieval Hebrew manuscripts"
+period = "11th to 16th century, mostly the 13th and 14th"
+size = "202 pages of 94 manuscripts, 12,461 lines"
+access = "Zenodo: an archive of 546 MB, with the BnF's images; the Vatican's at their IIIF links"
+licence = "CC BY-NC-SA 4.0"
+code = '''
+using EzXML, ZipArchives, Downloads, Mmap
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography"))  # where the downloads are kept
+# BiblIA, pages of medieval Hebrew manuscripts of the Bibliothèque nationale de France (BnF) and the Vatican Library
+# (BAV), transcribed line by line in ALTO XML: an archive of 546 MB downloaded once from Zenodo and read without unpacking
+archive = joinpath(folder, "BiblIA_dataset.zip")
+isfile(archive) || Downloads.download("https://zenodo.org/records/5167263/files/BiblIA_dataset.zip", archive)
+reader = ZipReader(Mmap.mmap(archive))
+entries = Dict(basename(n) => n for n in zip_names(reader))
+# The catalogue: a line per page, with its script (Ashkenazy, Italian or Sephardi), library, shelfmark, date, genre
+# (Biblical or Rabbinic), whether in colour, its IIIF manifest, the link to its image and its part, train or test
+lines_of(text) = filter(!isempty, split(text, r"\r?\n"))
+catalogue = [split(line, '\t') for line in lines_of(zip_readentry(reader, entries["catalogue.txt"], String))]
+header = strip.(catalogue[1])
+column(row, name) = strip(row[findfirst(==(name), header)])
+# The lines of a page, from its ALTO file: the text of each TextLine, in the order of the file
+alto = ["a" => "http://www.loc.gov/standards/alto/ns-v4#"]
+function transcription(file)
+	doc = parsexml(zip_readentry(reader, entries[file], String))
+	return [join((s["CONTENT"] for s in findall("a:String", line, alto)), " ") for line in findall("//a:TextLine", root(doc), alto)]
+end
+transcribed = Dict(column(row, "filename") => transcription(column(row, "filename")) for row in catalogue[2:end])
+# A row per page: its manuscript and script, the number of its lines and characters and its first line; the images of
+# the BnF's pages are in the archive, those of the BAV's at their link
+pages = map(catalogue[2:end]) do row
+	file = column(row, "filename")
+	text = transcribed[file]
+	image = chopsuffix(file, ".xml") * ".jpg"
+	(page = chopsuffix(file, ".xml"), script = column(row, "script_type"), library = column(row, "library"),
+		shelfmark = column(row, "Shelfmark"), date = column(row, "Date"), genre = column(row, "Biblical_or_Rabbinic"),
+		split = column(row, "test/train"), lines = length(text), characters = sum(length, text; init = 0),
+		first_line = isempty(text) ? "" : first(text), image = haskey(entries, image) ? entries[image] : column(row, "link2img"))
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(length(pages), " pages of ", length(unique(p.shelfmark for p in pages)), " manuscripts, ", sum(p -> p.lines, pages),
+	" lines, ", sum(p -> p.characters, pages), " characters")
+for (label, values) in [("By script", [p.script for p in pages]), ("By library", [p.library for p in pages]),
+		("By genre", [p.genre for p in pages]), ("By part", [p.split for p in pages])]
+	println(label, ": ", join(("$v ($n)" for (v, n) in counts(values)), ", "))
+end
+vscodedisplay(pages, "BiblIA: the pages")
+# A row per line, with its page, script and manuscript, for the training of a model or a search of the texts
+lines = [(page = p.page, line = i, script = p.script, shelfmark = p.shelfmark, text = t)
+	for p in pages for (i, t) in enumerate(transcribed[p.page * ".xml"])]
+vscodedisplay(lines, "BiblIA: the lines")
+'''
+
+[[rows]]
+id = "muharaf"
+title = "Muharaf"
+subtitle = "Mehreen Saeed, Adrian Chan, Anupam Mijar and others"
+description = "Manuscripts of Handwritten Arabic: letters, poems, histories, church and legal records and other documents, transcribed line by line for training the recognition of cursive Arabic. The public part has the images of the pages and their lines with their transcriptions; the code reads the summary and keywords of each page."
+covers = "Handwritten Arabic documents"
+period = ""
+size = "1,216 pages in the public part"
+access = "Zenodo: the summaries 0.8 MB, the line images 1.3 GB, the pages 3.1 GB"
+licence = "CC BY-NC-SA"
+code = '''
+using ZipArchives, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography"))  # where the downloads are kept
+# The summaries and keywords of the pages of Muharaf's public part, an archive of 0.8 MB downloaded once from Zenodo and
+# read without unpacking it; the images and their transcriptions are in the other archives of the record, of 1.3 GB
+# (the lines) and 3.1 GB (the pages)
+archive = joinpath(folder, "public_summary_and_keywords.zip")
+isfile(archive) || Downloads.download("https://zenodo.org/records/11492215/files/public_summary_and_keywords.zip", archive)
+reader = ZipReader(read(archive))
+entries = Set(zip_names(reader))
+text(name) = name in entries ? strip(zip_readentry(reader, name, String)) : ""
+# A row per page, by the name of its image (as HM1B_10_03v): its keywords and the summary of its transcription
+pages = map(sort!([chopsuffix(basename(n), ".summary.txt") for n in entries if endswith(n, ".summary.txt")])) do page
+	(page = page, keywords = replace(text("public/$page.keywords_response.txt"), ";" => ", "),
+		summary = text("public/$page.summary.txt"))
+end
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(length(pages), " pages")
+keywords = counts([k for p in pages for k in split(p.keywords, ", ") if !isempty(k)])
+println("By keyword: ", join(("$v ($n)" for (v, n) in first(keywords, 20)), ", "))
+vscodedisplay(pages, "Muharaf: the pages")
+'''
+
+[[rows]]
+id = "kuzushiji"
+title = "Kuzushiji-49"
+subtitle = "ROIS-DS Center for Open Data in the Humanities (CODH), from the Kuzushiji Dataset of the National Institute of Japanese Literature"
+description = "The hiragana of pre-modern Japanese books in kuzushiji, the cursive script, each cut out as an image of 28 by 28 pixels and labelled with one of 48 hiragana or the iteration mark, for training the recognition of characters. The code reads the training and test sets and saves an image of a character."
+covers = "Hiragana in kuzushiji, the cursive script of pre-modern Japanese books"
+period = ""
+size = "270,912 images in 49 classes"
+access = "CODH: NumPy files, 66 MB to train on and 11 MB to test on"
+licence = "CC BY-SA 4.0"
+code = '''
+using NPZ, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/paleography/kuzushiji"))  # where the downloads are kept
+# Kuzushiji-49, the hiragana of 49 classes cut out of books of the Edo period: images of 28 by 28 pixels in NumPy
+# files, downloaded once, the training set of 66 MB and the test set of 11 MB, and the class map
+site = "http://codh.rois.ac.jp/kmnist/dataset/k49/"
+file(name) = (path = joinpath(folder, name); isfile(path) || Downloads.download(site * name, path); path)
+images = Dict(split => npzread(file("k49-$split-imgs.npz"))["arr_0"] for split in ("train", "test"))
+labels = Dict(split => npzread(file("k49-$split-labels.npz"))["arr_0"] for split in ("train", "test"))
+# The class map: a line per class with its index, its Unicode code point and its character
+classes = [split(line, ',') for line in Iterators.drop(eachline(file("k49_classmap.csv")), 1)]
+println(size(images["train"], 1), " images to train on and ", size(images["test"], 1), " to test on, of ",
+	size(images["train"], 2), " by ", size(images["train"], 3), " pixels, in ", length(classes), " classes")
+# A row per class: its character and code point, and its numbers of images in the two sets; the classes are very
+# unequal, as the characters are in the books
+counts = [(class = parse(Int, c[1]), character = c[3], codepoint = c[2], train = count(==(parse(Int, c[1])), labels["train"]),
+	test = count(==(parse(Int, c[1])), labels["test"])) for c in classes]
+println("The most frequent: ", join(("$(c.character) ($(c.train))" for c in first(sort(counts; by = c -> -c.train), 8)), ", "))
+println("The least frequent: ", join(("$(c.character) ($(c.train))" for c in first(sort(counts; by = c -> c.train), 8)), ", "))
+vscodedisplay(counts, "Kuzushiji-49: the classes")
+# An image of the training set, by its number, as a grey-scale PGM file: white strokes on black
+function image(i)
+	path = joinpath(folder, "k49_$i.pgm")
+	write(path, "P5 28 28 255\n", vec(permutedims(images["train"][i, :, :])))
+	return path
+end
+println("Image 1, ", counts[labels["train"][1] + 1].character, ": ", image(1))
+'''

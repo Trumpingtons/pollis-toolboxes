@@ -1,0 +1,542 @@
+# Papyrology: the sources of papyrology, a row per source with what it covers, its period, size, access and licence,
+# and, where the source can be downloaded, the Julia code that downloads it and shows it as a table
+
+[meta]
+title = "Papyrology"
+viewType = "pollis.papyrology"
+style = "minimal"
+intro = "The texts, catalogues, images and data sets of papyri, ostraca and tablets, each with its period, size, access and licence, and the Julia code that downloads it where it can be downloaded."
+rowTitle = "Source"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "EzXML.jl"
+github = "https://github.com/JuliaIO/EzXML.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+[[packages]]
+name = "CodecZlib.jl"
+github = "https://github.com/JuliaIO/CodecZlib.jl"
+
+[[packages]]
+name = "ZipArchives.jl"
+github = "https://github.com/JuliaIO/ZipArchives.jl"
+
+# The table: the columns after the sources' titles, then a row per source
+
+[[columns]]
+id = "covers"
+label = "Covers"
+
+[[columns]]
+id = "period"
+label = "Period"
+
+[[columns]]
+id = "size"
+label = "Size"
+
+[[columns]]
+id = "access"
+label = "Access"
+
+[[columns]]
+id = "licence"
+label = "Licence"
+
+
+[[rows]]
+id = "ddbdp"
+title = "Duke Databank of Documentary Papyri (DDbDP)"
+subtitle = "Papyri.info, Duke Collaboratory for Classics Computing (DC3)"
+description = "The texts of documentary papyri and ostraca as their editions print them, in EpiDoc XML, each with its Trismegistos number and its edition, from the Papyrological Editor of papyri.info. The code takes the texts as written, leaving out the regularised spellings and the editors' corrections."
+covers = "Documentary texts in Greek, Coptic and Latin"
+period = "Dated in the HGV"
+size = "67,980 texts, 4.8 million words"
+access = "GitHub (papyri/idp.data), an archive of 180 MB updated every hour"
+licence = "CC BY 3.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data of papyri.info, an archive of about 180 MB downloaded once, from which the texts of the DDbDP are taken
+archive = joinpath(folder, "idp.data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/papyri/idp.data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "DDbDP")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "idp.data-master/DDbDP"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the TEI XML, "" when the record has none
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out; the parser's warnings about ids that are not XML names are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		edition = findfirst("//t:div[@type='edition']", root(doc), tei)
+		# The text as written: the regularised spellings and the editors' corrections are left out
+		edition === nothing || foreach(unlink!, findall(".//t:reg | .//t:corr", edition, tei))
+		text = edition === nothing ? "" : join(split(nodecontent(edition)), " ")
+		(tm = field(doc, "//t:idno[@type='TM']"), edition = field(doc, "//t:body/t:head//t:title"),
+			series = first(split(field(doc, "//t:idno[@type='ddb-hybrid']"), ';')),
+			language = edition === nothing || !haskey(edition, "xml:lang") ? "" : edition["xml:lang"],
+			words = length(split(text)), text = first(text, 200))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " texts, ", sum(r -> r.words, records), " words")
+println("By language: ", join(("$l ($n)" for (l, n) in counts([r.language for r in records])), ", "))
+println("The series with most texts: ", join(("$s ($n)" for (s, n) in first(counts([r.series for r in records]), 10)), ", "))
+vscodedisplay(records, "Duke Databank of Documentary Papyri")
+'''
+
+[[rows]]
+id = "hgv"
+title = "Heidelberger Gesamtverzeichnis der griechischen Papyrusurkunden Ägyptens (HGV)"
+subtitle = "Papyri.info, with the Institut für Papyrologie, Heidelberg"
+description = "The metadata of the documentary papyri of the DDbDP: an English title, the date, the place of writing and of finding, the material and keywords, the places in German. Its translations of 8,001 texts are in the same archive, in the folder Translations."
+covers = "Dates, places and materials of documentary papyri"
+period = "Mostly 3rd century BCE to 8th century CE"
+size = "68,027 records, 66,640 of them dated"
+access = "GitHub (papyri/idp.data), an archive of 180 MB updated every hour"
+licence = "CC BY 3.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data of papyri.info, an archive of about 180 MB downloaded once, from which the HGV's records are taken
+archive = joinpath(folder, "idp.data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/papyri/idp.data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "HGV_meta_EpiDoc")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "idp.data-master/HGV_meta_EpiDoc"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the TEI XML, "" when the record has none; a year, from a date such as -0249-01-28
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out; the parser's warnings about ids that are not XML names are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		(tm = field(doc, "//t:idno[@type='TM']"), title = field(doc, "//t:titleStmt/t:title"),
+			place = field(doc, "//t:origPlace"), material = field(doc, "//t:material"),
+			from = year(field(doc, "(//t:origDate/@when | //t:origDate/@notBefore)[1]")),
+			to = year(field(doc, "(//t:origDate/@when | //t:origDate/@notAfter)[1]")))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+century(year) = year > 0 ? (year - 1) ÷ 100 + 1 : -((-year - 1) ÷ 100 + 1)
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+println(length(records), " records, ", count(r -> !ismissing(r.from), records), " of them dated")
+println("By century of the earliest date (negative before the Common Era): ",
+	join(("$c: $n" for (c, n) in sort(counts([century(r.from) for r in records if !ismissing(r.from)]))), ", "))
+println("The places with most records: ", join(("$p ($n)" for (p, n) in first(counts([r.place for r in records]), 10)), ", "))
+vscodedisplay(records, "Heidelberger Gesamtverzeichnis")
+'''
+
+[[rows]]
+id = "dclp"
+title = "Digital Corpus of Literary Papyri (DCLP)"
+subtitle = "Papyri.info"
+description = "Literary papyri with their author and work, their contents, date and material, and the text where it has been entered: Homer first, then the Septuagint, Demosthenes, Euripides, Menander, Isocrates and Hesiod. Each has its Trismegistos and LDAB numbers."
+covers = "Literary papyri in Greek, Latin, Coptic, Syriac and other languages"
+period = "Mostly 4th century BCE to 8th century CE"
+size = "14,850 papyri, 8,647 of them with their text"
+access = "GitHub (papyri/idp.data), an archive of 180 MB updated every hour"
+licence = "CC BY 3.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data of papyri.info, an archive of about 180 MB downloaded once, from which the texts of the DCLP are taken
+archive = joinpath(folder, "idp.data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/papyri/idp.data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "DCLP")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "idp.data-master/DCLP"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the TEI XML, "" when the record has none; a year, from a date such as -0249-01-28
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out; the parser's warnings about ids that are not XML names are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		(tm = field(doc, "//t:idno[@type='TM']"), ldab = field(doc, "//t:idno[@type='LDAB']"),
+			author = field(doc, "//t:bibl[@subtype='ancient']/t:author"), work = field(doc, "//t:bibl[@subtype='ancient']/t:title"),
+			contents = field(doc, "//t:term[@type='overview']"), material = field(doc, "//t:material"),
+			from = year(field(doc, "(//t:origDate/@when | //t:origDate/@notBefore)[1]")),
+			to = year(field(doc, "(//t:origDate/@when | //t:origDate/@notAfter)[1]")),
+			language = field(doc, "//t:div[@type='edition']/@xml:lang"))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " literary papyri, ", count(r -> !isempty(r.author), records), " of them with their author")
+println("The authors with most papyri: ", join(("$a ($n)" for (a, n) in first(counts([r.author for r in records if !isempty(r.author)]), 10)), ", "))
+println("By language of the text, none when the papyrus has no text yet: ",
+	join(("$(isempty(l) ? "none" : l) ($n)" for (l, n) in counts([r.language for r in records])), ", "))
+vscodedisplay(records, "Digital Corpus of Literary Papyri")
+'''
+
+[[rows]]
+id = "apis"
+title = "Advanced Papyrological Information System (APIS)"
+subtitle = "Papyri.info"
+description = "The catalogue records of 29 collections of papyri, the largest those of Michigan, Yale, Berkeley and Columbia: each papyrus with its inventory number, title, language and date, and the links to its images where there are any."
+covers = "Catalogue records and images of papyri in collections"
+period = "Mostly 3rd century BCE to 8th century CE"
+size = "38,530 records, 15,270 of them with images"
+access = "GitHub (papyri/idp.data), an archive of 180 MB updated every hour"
+licence = "CC BY 3.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data of papyri.info, an archive of about 180 MB downloaded once, from which the catalogue records of APIS are taken
+archive = joinpath(folder, "idp.data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/papyri/idp.data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "APIS")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "idp.data-master/APIS"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the TEI XML, "" when the record has none; a year, from a date such as -0249-01-28
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out; the parser's warnings about ids that are not XML names are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		(apis = field(doc, "//t:idno[@type='apisid']"), collection = first(split(field(doc, "//t:idno[@type='apisid']"), '.')),
+			title = field(doc, "//t:titleStmt/t:title"), inventory = field(doc, "//t:idno[@type='invNo']"),
+			language = field(doc, "//t:textLang/@mainLang"),
+			from = year(field(doc, "(//t:origDate/@when | //t:origDate/@notBefore)[1]")),
+			to = year(field(doc, "(//t:origDate/@when | //t:origDate/@notAfter)[1]")),
+			images = length(findall("//t:graphic", root(doc), tei)))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " records, ", count(r -> r.images > 0, records), " of them with images")
+println("By collection: ", join(("$c ($n)" for (c, n) in counts([r.collection for r in records])), ", "))
+vscodedisplay(records, "Advanced Papyrological Information System")
+'''
+
+[[rows]]
+id = "apd"
+title = "Arabic Papyrology Database (APD)"
+subtitle = "LMU Munich, under the patronage of the International Society for Arabic Papyrology"
+description = "Documents in Arabic script, some of them bilingual or trilingual, on papyrus, paper, parchment, ostraca, textile, leather, bone and wood. Its own site, free and non-commercial, has 13,536 documents with their texts; the data of papyri.info have 1,454 of them, the 4 not valid XML left out by the code."
+covers = "Documents in Arabic script"
+period = "7th to 15th century, for the 456 dated in papyri.info's data"
+size = "13,536 documents on its site; 1,454 in papyri.info's data"
+access = "Its site, free; papyri.info's data on GitHub"
+licence = "CC BY 3.0 (papyri.info's data)"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data of papyri.info, an archive of about 180 MB downloaded once, from which the documents of the APD are taken
+archive = joinpath(folder, "idp.data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/papyri/idp.data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "APD")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "idp.data-master/APD"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the TEI XML, "" when the record has none; a year, from a date such as -0249-01-28
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+year(date) = (m = match(r"^-?\d+", date); m === nothing ? missing : parse(Int, m.match))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out; the parser's warnings about ids that are not XML names are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		(apd = field(doc, "//t:idno[@type='apd']"), title = field(doc, "//t:titleStmt/t:title"),
+			material = field(doc, "//t:material"), place = field(doc, "//t:origPlace"),
+			from = year(field(doc, "(//t:origDate/@when | //t:origDate/@notBefore)[1]")),
+			to = year(field(doc, "(//t:origDate/@when | //t:origDate/@notAfter)[1]")))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " documents in Arabic script")
+println("By material: ", join(("$m ($n)" for (m, n) in counts([r.material for r in records])), ", "))
+vscodedisplay(records, "Arabic Papyrology Database")
+'''
+
+[[rows]]
+id = "bp"
+title = "Bibliographie Papyrologique (BP)"
+subtitle = "Papyri.info"
+description = "The bibliography of papyrology: articles, books, reviews and journals, each with its BP number, authors, title and date."
+covers = "Publications on papyrology"
+period = ""
+size = "77,652 records: 51,112 articles, 13,346 books, 10,756 reviews and 2,416 journals"
+access = "GitHub (papyri/idp.data), an archive of 180 MB updated every hour"
+licence = "CC BY 3.0"
+code = '''
+using EzXML, CodecZlib, Downloads, Tar, Tables, Logging
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data of papyri.info, an archive of about 180 MB downloaded once, from which the records of the Bibliographie Papyrologique are taken
+archive = joinpath(folder, "idp.data.tar.gz")
+isfile(archive) || Downloads.download("https://codeload.github.com/papyri/idp.data/tar.gz/refs/heads/master", archive)
+dir = joinpath(folder, "Biblio")
+isdir(dir) || open(io -> Tar.extract(h -> startswith(h.path, "idp.data-master/Biblio"), GzipDecompressorStream(io), dir), archive)
+# A field of a record, by its path in the TEI XML, "" when the record has none
+tei = ["t" => "http://www.tei-c.org/ns/1.0"]
+field(doc, path) = (node = findfirst(path, root(doc), tei); node === nothing ? "" : strip(nodecontent(node)))
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+files = [joinpath(root, name) for (root, _, names) in walkdir(dir) for name in names if endswith(name, ".xml")]
+# A record that is not valid XML is left out; the parser's warnings about ids that are not XML names are not shown
+records = with_logger(NullLogger()) do
+	map(files) do file
+		doc = try readxml(file) catch; return nothing end
+		(bp = field(doc, "//t:idno[@type='pi']"), type = haskey(root(doc), "type") ? root(doc)["type"] : "",
+			author = join((nodecontent(n) for n in findall("//t:author/t:surname", root(doc), tei)), "; "),
+			title = field(doc, "(//t:title)[1]"), date = field(doc, "(//t:date)[1]"))
+	end
+end
+unread = count(isnothing, records)
+records = [r for r in records if r !== nothing]
+unread > 0 && println(unread, " records could not be read as XML")
+println(length(records), " records")
+println("By type: ", join(("$t ($n)" for (t, n) in counts([r.type for r in records])), ", "))
+vscodedisplay(records, "Bibliographie Papyrologique")
+'''
+
+[[rows]]
+id = "trismegistos"
+title = "Trismegistos Texts"
+subtitle = "Trismegistos"
+description = "The metadata of the published and semi-published texts of Egypt and the Nile valley, each with its TM number, by which papyri.info and most data sets here identify a text. It does not give the texts themselves, but leads to the partner databases with their photographs, transliterations and translations. Its Collections, Archives and Places databases are searchable with it."
+covers = "Texts of Egypt and the Nile valley, in all languages"
+period = "About 800 BCE to 800 CE"
+size = "966,921 entries"
+access = "Its site; it checks that it is read by a browser"
+licence = "Not found"
+
+[[rows]]
+id = "ldab"
+title = "Leuven Database of Ancient Books (LDAB)"
+subtitle = "Trismegistos"
+description = "The basic information on ancient literary texts, as opposed to documents, in all ancient languages, scientific, magical and liturgical works included; cuneiform and the Egyptian Books of the Dead are not covered. From LDAB 10898 onwards, an LDAB number is the text's Trismegistos number."
+covers = "Literary texts in all ancient languages"
+period = ""
+size = "About 17,300 records"
+access = "Its site, part of Trismegistos"
+licence = "Not found"
+
+[[rows]]
+id = "mp3"
+title = "Mertens-Pack³ (MP³)"
+subtitle = "Centre de Documentation de Papyrologie Littéraire (CEDOPAL), University of Liège"
+description = "The catalogue of Greek and Latin literary papyri, the third edition of R. A. Pack's lists, begun by Paul Mertens and online since December 2005, now extended to magical, Jewish and Christian, documentary and Herculaneum papyri."
+covers = "Greek and Latin literary papyri"
+period = ""
+size = "About 8,000 papyri"
+access = "Its site, cedopalmp3.uliege.be"
+licence = "Not found"
+
+[[rows]]
+id = "tlademotic"
+title = "Thesaurus Linguae Aegyptiae: Demotic Sentences"
+subtitle = "Berlin-Brandenburg and Saxon Academies of Sciences and Humanities, on Hugging Face"
+description = "The Demotic sentences of the TLA's corpus 18 that are intact, unambiguously readable and fully lemmatised, 13,383 of its 31,156, each in transliteration with its lemmas, parts of speech, glosses, German translation and the dates of its text. The TLA publishes Late Egyptian and Earlier Egyptian sentences in the same way."
+covers = "Demotic sentences, with German translations"
+period = "7th century BCE to 5th century CE"
+size = "13,383 sentences, 7 MB"
+access = "Hugging Face, JSON lines"
+licence = "CC BY-SA 4.0"
+code = '''
+using DuckDB, Tables, Downloads
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The intact Demotic sentences of the TLA's corpus 18, a file of 7 MB from Hugging Face, downloaded once
+file = joinpath(folder, "tla-demotic-v18.jsonl")
+isfile(file) || Downloads.download("https://huggingface.co/datasets/thesaurus-linguae-aegyptiae/tla-demotic-v18-premium/resolve/main/train.jsonl", file)
+con = DBInterface.connect(DuckDB.DB)
+DBInterface.execute(con, "CREATE OR REPLACE TABLE demotic AS SELECT * FROM read_json('$(escape_string(file))')")
+# The sentences by century of the earliest date of their text, negative before the Common Era
+centuries = DBInterface.execute(con, """
+	SELECT CASE WHEN y > 0 THEN (y - 1) // 100 + 1 ELSE -((-y - 1) // 100 + 1) END AS century, count(*) AS sentences
+	FROM (SELECT TRY_CAST(dateNotBefore AS INTEGER) AS y FROM demotic) WHERE y IS NOT NULL GROUP BY century ORDER BY century""") |> Tables.columntable
+println(DBInterface.execute(con, "SELECT count(*) AS n FROM demotic") |> Tables.columntable |> t -> only(t.n), " sentences")
+println("By century: ", join(("$c: $n" for (c, n) in zip(centuries.century, centuries.sentences)), ", "))
+# Each sentence in transliteration, with its lemmas, parts of speech, German translation and dates
+vscodedisplay(Tables.rowtable(DBInterface.execute(con, "SELECT transliteration, translation, lemmatization, UPOS, dateNotBefore, dateNotAfter FROM demotic")),
+	"Thesaurus Linguae Aegyptiae: Demotic Sentences")
+'''
+
+[[rows]]
+id = "oxyrhynchus"
+title = "The Oxyrhynchus Papyri"
+subtitle = "Egypt Exploration Society; Faculty of Classics, University of Oxford"
+description = "The largest collection of its kind: the texts on papyrus and parchment that Grenfell and Hunt excavated at Oxyrhynchus (Bahnasa) from 1896 to 1907, housed in Oxford's Art, Archaeology and Ancient World Library, with an image database."
+covers = "Literary, documentary and other texts, mostly Greek, also Latin, Demotic, Coptic and Arabic"
+period = "2nd century BCE to 7th century CE"
+size = "Thousands of texts"
+access = "Its image database, online"
+licence = "Not found"
+
+[[rows]]
+id = "vesuvius"
+title = "Vesuvius Challenge: CT Scans of Herculaneum Papyri"
+subtitle = "Vesuvius Challenge, with EduceLab-Scrolls"
+description = "Synchrotron micro-CT scans of the scrolls and detached fragments of Herculaneum carbonised by the eruption of Vesuvius in 79: the volumes, the papyrus surfaces extracted from them, and predictions such as ink detection, in OME-Zarr, TIFF and OBJ. The volumes run to terabytes, and OME-Zarr lets a part of one be read alone."
+covers = "Herculaneum scrolls and fragments, in 3D"
+period = "Buried in 79"
+size = "45 samples: 35 scrolls and 10 fragments, 330 segments"
+access = "Open S3 bucket, without an account"
+licence = "CC BY-NC 4.0; Scrolls 1–4 and Fragments 1–6 scanned at DLS before 2025: EduceLab-Scrolls"
+code = '''
+using DuckDB, Tables, Downloads, CodecZlib
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The index of the samples of the Vesuvius Challenge's open data, about 85 KB compressed, read again each time as it grows
+index = joinpath(folder, "vesuvius-metadata.json")
+write(index, transcode(GzipDecompressor, read(Downloads.download("https://vesuvius-challenge-open-data.s3.amazonaws.com/metadata.min.json"))))
+con = DBInterface.connect(DuckDB.DB)
+# A row per scroll or fragment: its kind, the numbers of its scans, volumes and segments, and the licences of its volumes
+samples = DBInterface.execute(con, """
+	WITH m AS (SELECT content::JSON AS j FROM read_text('$(escape_string(index))')),
+		s AS (SELECT key AS sample, json_extract(j, '\$.samples."' || key || '"') AS d FROM m, unnest(json_keys(j, '\$.samples')) AS t(key))
+	SELECT sample, d->'sample'->'properties'->>'type' AS kind,
+		coalesce(len(json_keys(d->'scans')), 0) AS scans, coalesce(len(json_keys(d->'volumes')), 0) AS volumes,
+		coalesce(len(json_keys(d->'segments')), 0) AS segments,
+		array_to_string(list_distinct(json_extract_string(d, '\$.volumes.*.properties.license.name')), '; ') AS licences
+	FROM s ORDER BY kind, sample""") |> Tables.columntable
+println(length(samples.sample), " samples: ", count(==("scroll"), samples.kind), " scrolls and ", count(==("fragment"), samples.kind), " fragments, with ",
+	sum(samples.segments), " segments")
+# Each sample's files are under s3://vesuvius-challenge-open-data/<sample>/, also over https at the address below
+println("https://vesuvius-challenge-open-data.s3.amazonaws.com/index.html")
+vscodedisplay(Tables.rowtable(samples), "Vesuvius Challenge: Herculaneum Papyri")
+'''
+
+[[rows]]
+id = "alpub"
+title = "AL-PUB: Greek Characters of the Ancient Lives Project"
+subtitle = "Matthew Swindall, on Kaggle"
+description = "Cropped images of single Greek letters from 12,070 fragments of the Oxyrhynchus Papyri, annotated by the volunteers of the Ancient Lives Project, for training character recognition. Its second version has the lunate sigma in place of the sigma. It is the published part of AL-ALL, whose other half, from unpublished papyri, is not available."
+covers = "Images of Greek characters on papyrus"
+period = ""
+size = "205,797 images, 304 MB"
+access = "Kaggle, with an account"
+licence = "Apache 2.0"
+
+[[rows]]
+id = "icdar2023"
+title = "ICDAR 2023: Detection and Recognition of Greek Letters on Papyri"
+subtitle = "D-Scribes project, on Zenodo"
+description = "185 surfaces of 136 papyri of the Iliad, in book hands over a millennium, annotated letter by letter for the competition of ICDAR 2023, with the answers of its test set released after it, and each papyrus's Trismegistos number and link to papyri.info."
+covers = "Greek letters on papyri of the Iliad, located and named"
+period = ""
+size = "152 training images with 35,597 letters, 37 test images with 9,773; 424 MB"
+access = "Zenodo"
+licence = "CC BY-NC 4.0"
+code = '''
+using DuckDB, Tables, Downloads, ZipArchives
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# The data set of the competition, an archive of 424 MB downloaded once; its images stay in it
+archive = joinpath(folder, "ICDAR2023-Greek-Letters-on-Papyri.zip")
+isfile(archive) || Downloads.download("https://zenodo.org/records/13825619/files/ICDAR2023_Competition_on_Detection_and_Recognition_of_Greek_Letters_on_Papyri_Dataset.zip?download=1", archive)
+reader = ZipReader(read(archive))
+# The letters located and named on the images, in COCO's format: the training set, and the answers of the test set
+sets = ["training" => "2a.Training/HomerCompTraining.json", "test" => "2c.Answers/AnswersToTesting.json"]
+for (set, name) in sets
+	entry = only(filter(n -> endswith(n, name) && !startswith(n, "__MACOSX"), zip_names(reader)))
+	write(joinpath(folder, "icdar2023-$set.json"), zip_readentry(reader, entry))
+end
+con = DBInterface.connect(DuckDB.DB)
+json(set) = "read_json('$(escape_string(joinpath(folder, "icdar2023-$set.json")))', maximum_object_size = 100000000)"
+# A row per image of the training set: its file, size and number of letters. The answers of the test set give their
+# letters by image ids its list of images does not have, so they are counted as a whole
+images = DBInterface.execute(con, """
+	SELECT i.file_name AS image, i.width, i.height, count(a.id) AS letters
+	FROM (SELECT unnest(images) AS i FROM $(json("training"))) LEFT JOIN (SELECT unnest(annotations) AS a FROM $(json("training"))) ON a.image_id = i.id
+	GROUP BY ALL ORDER BY image""") |> Tables.columntable
+test = DBInterface.execute(con, "SELECT len(images) AS images, len(annotations) AS letters FROM $(json("test"))") |> Tables.columntable
+println("Training set: ", length(images.image), " images, ", sum(images.letters), " letters located and named; test set: ",
+	only(test.images), " images, ", only(test.letters), " letters")
+# The letters most often found in the training set
+letters = DBInterface.execute(con, """
+	SELECT c.name AS letter, count(*) AS n FROM (SELECT unnest(annotations) AS a FROM $(json("training")))
+	JOIN (SELECT unnest(categories) AS c FROM $(json("training"))) ON a.category_id = c.id GROUP BY 1 ORDER BY 2 DESC LIMIT 12""") |> Tables.columntable
+println("The letters most often found in the training set: ", join(("$l ($n)" for (l, n) in zip(letters.letter, letters.n)), ", "))
+vscodedisplay(Tables.rowtable(images), "ICDAR 2023: Greek Letters on Papyri")
+'''
+
+[[rows]]
+id = "helldate"
+title = "Hell-Date: Hellenistic Dated Papyri"
+subtitle = "EGRAPSA project, on Zenodo"
+description = "Images of Greek papyri dated within two years, about 50 a century, with their characters annotated, for dating by handwriting and for character recognition. The images stay with their holders: the data set gives each one's link and licence, and the code shows them in a table."
+covers = "Dated Greek cursive hands"
+period = "310 to 3 BCE"
+size = "194 images of 157 papyri; 2.7 MB without the images"
+access = "Zenodo; the images from their holders"
+licence = "CC BY-NC 4.0; each image under its holder's terms"
+code = '''
+using DuckDB, Tables, Downloads, ZipArchives
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+# Hell-Date, an archive of 2.7 MB downloaded once: the list of its images and the dates of its papyri
+archive = joinpath(folder, "Hell-Date.zip")
+isfile(archive) || Downloads.download("https://zenodo.org/records/15830980/files/Hell-Date.zip?download=1", archive)
+reader = ZipReader(read(archive))
+for name in ("data.csv", "metadata.csv")
+	write(joinpath(folder, "hell-date-$name"), zip_readentry(reader, name))
+end
+con = DBInterface.connect(DuckDB.DB)
+# data.csv ends its lines in CR LF but its last line in nothing, which DuckDB reads only when it is not strict
+# A row per image: its papyrus, the years it is dated to, its nome, its kind of document, its holder and the licence of the image
+images = DBInterface.execute(con, """
+	SELECT m.image_name AS image, m.checklist, m.TM, m."Year post quem" AS year_from, m."Year ante quem" AS year_to,
+		m."Production Nome (supposed)" AS nome, m.Function AS kind, d.Collection AS collection, d."Inventory Number" AS inventory,
+		d."License name" AS licence, d."Image link" AS link
+	FROM read_csv('$(escape_string(joinpath(folder, "hell-date-metadata.csv")))', header = true) m
+	JOIN read_csv('$(escape_string(joinpath(folder, "hell-date-data.csv")))', header = true, strict_mode = false) d USING (image_name) ORDER BY year_from""") |> Tables.columntable
+println(length(images.image), " images, dated from ", minimum(images.year_from), " to ", maximum(images.year_to))
+licences = DBInterface.execute(con, "SELECT \"License name\" AS licence, count(*) AS images FROM read_csv('$(escape_string(joinpath(folder, "hell-date-data.csv")))', header = true, strict_mode = false) GROUP BY 1 ORDER BY 2 DESC") |> Tables.columntable
+println("Licences of the images: ", join(("$l ($n)" for (l, n) in zip(licences.licence, licences.images)), ", "))
+vscodedisplay(Tables.rowtable(images), "Hell-Date: Hellenistic Dated Papyri")
+'''
+
+[[rows]]
+id = "zenon"
+title = "Zenon Papyri for Handwritten Text Recognition"
+subtitle = "D-Scribes project, on Zenodo"
+description = "Diplomatic transcriptions of papyri of the archive of Zenon of Kaunos, line by line in PageXML made with Transkribus, with their images, as ground truth for handwritten text recognition. Version 0.9."
+covers = "Transcribed lines of Greek papyri, with their images"
+period = ""
+size = "27 transcriptions and 32 images, 5 MB"
+access = "Zenodo"
+licence = "CC BY 4.0"
+code = '''
+using DuckDB, Tables, Downloads, EzXML
+folder = mkpath(expanduser("~/.pollis/data/examples/papyrology"))  # where the downloads are kept
+dir = mkpath(joinpath(folder, "zenon-htr"))
+# The data set's record on Zenodo lists its files, a PageXML transcription and an image for each papyrus: about 5 MB, downloaded once
+record = Downloads.download("https://zenodo.org/api/records/6565706")
+con = DBInterface.connect(DuckDB.DB)
+files = DBInterface.execute(con, "SELECT f.key AS name, f.links.self AS url FROM (SELECT unnest(files) AS f FROM read_json('$(escape_string(record))'))") |> Tables.columntable
+for (name, url) in zip(files.name, files.url)
+	path = joinpath(dir, name)
+	isfile(path) || Downloads.download(url, path)
+end
+# Each papyrus with the lines of its transcription, as they were drawn on the image in Transkribus
+page = ["p" => "http://schema.primaresearch.org/PAGE/gts/pagecontent/2013-07-15"]
+papyri = map(filter(endswith(".xml"), readdir(dir; join = true))) do file
+	lines = [nodecontent(n) for n in findall("//p:TextLine/p:TextEquiv/p:Unicode", root(readxml(file)), page)]
+	(papyrus = first(splitext(basename(file))), lines = length(lines), words = sum(l -> length(split(l)), lines; init = 0),
+		first_line = isempty(lines) ? "" : first(lines), image = isfile(replace(file, r"\.xml$" => ".jpg")))
+end
+println(length(papyri), " papyri transcribed, in ", sum(p -> p.lines, papyri), " lines; ", count(endswith(".jpg"), readdir(dir)), " images")
+vscodedisplay(papyri, "Zenon Papyri for Handwritten Text Recognition")
+'''
