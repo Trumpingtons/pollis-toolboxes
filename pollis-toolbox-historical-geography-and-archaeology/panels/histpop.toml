@@ -26,6 +26,7 @@ prompt = "NASA Earthdata Login password"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.6"
 
 [[packages]]
 name = "DuckDB.jl"
