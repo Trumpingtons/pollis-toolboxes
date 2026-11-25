@@ -20,8 +20,6 @@
 //   - the toolbox ids, panel ids and commands are not used by another toolbox, and every panel's TOML exists
 //   - only text, notebook and image files (.toml .md .json .ipynb .txt .png .svg), each at most 1 MB,
 //     5 MB in all; a README.md; notebooks saved without outputs
-//   - the topic maps (topicMaps) name a maps file of the toolbox, and each of its [[maps]] has a unique id and one of
-//     the topics listed
 //   - each Simulation Games case (games) is a folder of the toolbox with case.toml and model.jl; Julia
 //     files (.jl) go only in a case's folder, as Pollis runs model.jl when a facilitator hosts the case
 //   - every panel TOML passes validatePanel.mjs (its warnings are shown, not counted as errors)
@@ -65,7 +63,6 @@ interface ToolboxManifest {
 			readonly texts?: readonly Readonly<Record<string, unknown>>[];
 			readonly courses?: readonly { readonly title?: string; readonly url?: string }[];
 			readonly games?: readonly { readonly folder?: string }[];
-			readonly topicMaps?: { readonly file?: string; readonly topics?: readonly { readonly id?: string; readonly title?: string; readonly description?: string; readonly group?: string; readonly order?: number }[] };
 		}[];
 	};
 }
@@ -289,43 +286,6 @@ function checkToolbox(folder: string, base: string | undefined, validator: strin
 				}
 			}
 			gameFolders.push(relative + '/');
-		}
-		// The topic maps: a maps file of [[maps]] tables, each under one of the toolbox's topics
-		if (toolbox.topicMaps) {
-			const topics = toolbox.topicMaps.topics ?? [];
-			const topicIds = new Set<string>();
-			for (const topic of topics) {
-				if (!topic.id || !/^[a-z][a-z0-9-]*$/.test(topic.id) || topicIds.has(topic.id) || !topic.title || !topic.description || !topic.group || typeof topic.order !== 'number') {
-					error(`a topic of ${toolbox.id ?? 'a toolbox'} needs a unique "id" of lower-case letters, digits and hyphens, a "title", a "description", a "group" and an "order"`);
-				}
-				if (topic.id) {
-					topicIds.add(topic.id);
-				}
-			}
-			const file = toolbox.topicMaps.file ? path.resolve(ROOT, folder, toolbox.topicMaps.file) : '';
-			if (!file || !file.startsWith(path.resolve(ROOT, folder) + path.sep) || !file.endsWith('.toml')) {
-				error(`the topic maps of ${toolbox.id ?? 'a toolbox'} need a "file", a .toml file inside the toolbox folder`);
-			} else if (!fs.existsSync(file)) {
-				error(`the topic maps name ${toolbox.topicMaps.file}, which does not exist`);
-			} else {
-				// the id and topic of each [[maps]] table: one key = "value" line each, at the start of a line
-				const mapIds = new Set<string>();
-				for (const table of fs.readFileSync(file, 'utf-8').split(/^\[\[maps\]\]\s*$/m).slice(1)) {
-					const id = /^id\s*=\s*"(?<value>[^"]*)"/m.exec(table)?.groups?.value;
-					const topic = /^topic\s*=\s*"(?<value>[^"]*)"/m.exec(table)?.groups?.value;
-					if (!id || mapIds.has(id)) {
-						error(`a map of ${toolbox.topicMaps.file} needs a unique "id"`);
-					} else if (!topic || !topicIds.has(topic)) {
-						error(`the map ${id} needs a "topic" of the toolbox: ${[...topicIds].join(', ')}`);
-					}
-					if (id) {
-						mapIds.add(id);
-					}
-				}
-				if (!mapIds.size) {
-					error(`${toolbox.topicMaps.file} has no [[maps]]`);
-				}
-			}
 		}
 	}
 

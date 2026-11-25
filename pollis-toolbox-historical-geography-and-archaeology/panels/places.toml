@@ -1,0 +1,116 @@
+# Places: the maps of the Historical Geography and Archaeology Toolbox under this topic, a row per map with the
+# work it follows, its kind, years, region, source and licence, and the Julia code that draws it
+
+[meta]
+title = "Places"
+viewType = "pollis.places"
+style = "minimal"
+intro = "The places a work names, historical or fictional, each with the passages that name it."
+rowTitle = "Map"
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# The table: the columns after the maps' titles, then a row per map
+
+[[columns]]
+id = "kind"
+label = "Kind"
+
+[[columns]]
+id = "years"
+label = "Years"
+
+[[columns]]
+id = "region"
+label = "Region"
+
+[[columns]]
+id = "source"
+label = "Source"
+
+[[columns]]
+id = "licence"
+label = "Licence"
+
+[[rows]]
+id = "herodotus-places"
+title = "Places in Herodotus' Histories"
+subtitle = "Herodotus, Histories"
+description = "Every place Herodotus names that the Perseus Digital Library identifies, with the passages that name it, in A. D. Godley's translation."
+kind = "Historical"
+years = "440–430 BCE"
+region = "From the Atlantic to India"
+source = "Perseus Digital Library, with the Getty Thesaurus of Geographic Names"
+sourceUrl = "https://github.com/PerseusDL/canonical-greekLit"
+licence = "CC BY-SA 4.0 (text), ODC-By (TGN)"
+licenceUrl = "https://creativecommons.org/licenses/by-sa/4.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The places the text names, each with the number of times it is named and the passages that name it
+places = text_places(con, :herodotus; folder)
+println(places.count, " places, named ", places.mentions, " times; without coordinates: ", join(places.unlocated, ", "))
+# Opened on Herodotus' world: a few places are tagged far from it
+display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "mentions"); title = "Places in Herodotus' Histories",
+	center = (32, 36), zoom = 3.5))
+'''
+
+[[rows]]
+id = "arabian-nights"
+title = "Places of The Arabian Nights"
+subtitle = "The Book of the Thousand Nights and a Night"
+description = "The cities and lands of The Arabian Nights, from the frame story of King Shahryar to the voyages of Sindbad the Seaman, each with its passage of Richard F. Burton's translation and the Night that tells it. Its years are those of the reign of Harun al-Rashid, the Caliph of many of its tales."
+kind = "Fictional"
+years = "786–809"
+region = "From Samarcand to Cairo and Sarandib"
+source = "The Book of the Thousand Nights and a Night, translated by Richard F. Burton, volumes 1, 2 and 6 (Internet Archive)"
+sourceUrl = "https://archive.org/details/aplainandliteral51252gut"
+licence = "Public domain (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The places the Nights name, in the order they first name them, each with its passages and the Night that tells them
+places = text_places(con, :nights; folder)
+println(places.count, " places, named in ", places.mentions, " passages")
+display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "order"); title = "Places of The Arabian Nights",
+	center = (52, 30), zoom = 3))
+'''
+
+[[rows]]
+id = "genji"
+title = "Places in The Tale of Genji"
+subtitle = "Murasaki Shikibu, The Tale of Genji"
+description = "The places of The Tale of Genji, from the Palace of Heian-kyō to Suma, Akashi, Tsukushi and Uji, each with its passage of the Japanese text and an English summary. Its years are those of its writing, in the first decade of the eleventh century."
+kind = "Fictional"
+years = "1000–1010"
+region = "Heian Japan"
+source = "The Tale of Genji, text of Shibuya Eiichi (Japanese Wikisource)"
+sourceUrl = "https://ja.wikisource.org/wiki/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AA%9E_(%E6%B8%8B%E8%B0%B7%E6%A0%84%E4%B8%80%E6%A0%A1%E8%A8%82)"
+licence = "CC BY-SA 3.0 (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/licenses/by-sa/3.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The places the tale names, in the order it first names them, each with its passage and an English summary
+places = text_places(con, :genji; folder)
+println(places.count, " places, named in ", places.mentions, " passages")
+display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "order"); title = "Places in The Tale of Genji",
+	center = (134, 34.6), zoom = 5.5))
+'''

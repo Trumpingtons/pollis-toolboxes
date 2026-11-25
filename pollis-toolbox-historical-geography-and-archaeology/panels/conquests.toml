@@ -1,0 +1,121 @@
+# Conquests: the maps of the Historical Geography and Archaeology Toolbox under this topic, a row per map with the
+# work it follows, its kind, years, region, source and licence, and the Julia code that draws it
+
+[meta]
+title = "Conquests"
+viewType = "pollis.conquests"
+style = "minimal"
+intro = "The battles and campaigns of a conqueror, from the first to the last, over the realms of their years."
+rowTitle = "Map"
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# The table: the columns after the maps' titles, then a row per map
+
+[[columns]]
+id = "kind"
+label = "Kind"
+
+[[columns]]
+id = "years"
+label = "Years"
+
+[[columns]]
+id = "region"
+label = "Region"
+
+[[columns]]
+id = "source"
+label = "Source"
+
+[[columns]]
+id = "licence"
+label = "Licence"
+
+[[rows]]
+id = "alexander"
+title = "Conquests of Alexander the Great"
+subtitle = "Arrian, Anabasis of Alexander"
+description = "The battles and sieges of Alexander's campaigns, from the Balkans to the Indus."
+kind = "Historical"
+years = "336–323 BCE"
+region = "From Macedonia to Egypt and the Indus"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q551888"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles and sieges of Alexander's campaigns that Wikidata gives with a place and a date
+war = war_events(con, "Q551888"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Conquests of Alexander the Great", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "qin"
+title = "Conquests of Qin Shi Huang"
+subtitle = "Sima Qian, Records of the Grand Historian, Basic Annals of Qin Shi Huang"
+description = "How King Zheng of Qin conquered Han, Zhao, Yan, Wei, Chu and Qi, year by year of his reign, each event with its passage of the Chinese text."
+kind = "Historical"
+years = "230–221 BCE"
+region = "Northern and central China"
+source = "Shiji, chapter 6 (Wikisource)"
+sourceUrl = "https://zh.wikisource.org/wiki/%E5%8F%B2%E8%A8%98/%E5%8D%B7006"
+licence = "Public domain (text), CC0 1.0 (places)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The conquests of Qin, 230 to 221 BCE, written from chapter 6 of the Shiji: each with its passage
+war = war_events(con, :qin; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Conquests of Qin Shi Huang", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "gallic-wars"
+title = "Caesar's Gallic Wars"
+subtitle = "Julius Caesar, Commentaries on the Gallic War"
+description = "The battles and sieges of Caesar's conquest of Gaul, which he tells in his own Commentaries."
+kind = "Historical"
+years = "58–51 BCE"
+region = "Gaul, Britain and the Rhine"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q202161"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles and sieges of Caesar's conquest of Gaul that Wikidata gives with a place and a date
+war = war_events(con, "Q202161"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Caesar's Gallic Wars", year = war.since, labels = false))
+'''

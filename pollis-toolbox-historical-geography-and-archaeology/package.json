@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-historical-geography-and-archaeology",
   "displayName": "Historical Geography and Archaeology Toolbox",
   "description": "Pollis Historical Geography and Archaeology Toolbox: the past on the map, for historians, archaeologists, heritage officers, museums, and the municipalities and regions with history attached. Maps the borders of states with a year slider, from Cliopatria, the world maps of historical-basemaps and CShapes 2.0, and tells which states held a place over the centuries. Sets old maps beside today's map, with a line to swipe between them: the maps of Cassini and of the état-major and IGN's aerial photographs since 1950 for France, the maps that libraries have shared and Allmaps has georeferenced anywhere, and eight famous maps from the Tabula Peutingeriana to the Tasman map. Maps the populations of the past, from the European cities of Buringh, the world cities of Chandler and Modelski, and the grid of HYDE 3.5. For archaeological prospection, shows lidar terrain models as relief images, finds the places shaped like earthworks, and applies the trained models of ADAF to them.",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -52,17 +52,23 @@
           },
           {
             "id": "sitesmonuments", "command": "pollis.historicalGeography.sitesmonuments", "title": "Sites and Monuments", "group": "3_archaeology", "order": 2, "data": "panels/sitesmonuments.toml", "defaultModel": "pleiades", "decisionFirstColumn": "Register"
+          },
+          {
+            "id": "atwar", "command": "pollis.historicalGeography.atwar", "title": "At War", "group": "2_topics", "order": 1, "data": "panels/atwar.toml"
+          },
+          {
+            "id": "conquests", "command": "pollis.historicalGeography.conquests", "title": "Conquests", "group": "2_topics", "order": 2, "data": "panels/conquests.toml"
+          },
+          {
+            "id": "places", "command": "pollis.historicalGeography.places", "title": "Places", "group": "2_topics", "order": 3, "data": "panels/places.toml"
+          },
+          {
+            "id": "journeys", "command": "pollis.historicalGeography.journeys", "title": "Journeys", "group": "2_topics", "order": 4, "data": "panels/journeys.toml"
           }
         ],
-        "topicMaps": {
-          "file": "maps/maps.toml",
-          "topics": [
-            { "id": "at-war", "title": "At War", "description": "The battles, sieges and campaigns of a war, each where and when it took place, over the realms of its years.", "group": "2_topics", "order": 1 },
-            { "id": "conquests", "title": "Conquests", "description": "The battles and campaigns of a conqueror, from the first to the last, over the realms of their years.", "group": "2_topics", "order": 2 },
-            { "id": "places", "title": "Places", "description": "The places a work names, historical or fictional, each with the passages that name it.", "group": "2_topics", "order": 3 },
-            { "id": "journeys", "title": "Journeys", "description": "The stages of a journey, historical or legendary, each with its passage of the source, and the route through them where the source gives their order.", "group": "2_topics", "order": 4 }
-          ]
-        }
+        "pages": [
+          { "command": "pollis.britannica.open", "title": "Britannica Through the Editions", "group": "1_history", "order": 4 }
+        ]
       }
     ]
   }

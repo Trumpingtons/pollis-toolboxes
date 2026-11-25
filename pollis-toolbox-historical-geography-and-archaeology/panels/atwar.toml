@@ -1,0 +1,254 @@
+# At War: the maps of the Historical Geography and Archaeology Toolbox under this topic, a row per map with the
+# work it follows, its kind, years, region, source and licence, and the Julia code that draws it
+
+[meta]
+title = "At War"
+viewType = "pollis.atwar"
+style = "minimal"
+intro = "The battles, sieges and campaigns of a war, each where and when it took place, over the realms of its years."
+rowTitle = "Map"
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+
+[[packages]]
+name = "DuckDB.jl"
+github = "https://github.com/duckdb/DuckDB.jl"
+
+[[packages]]
+name = "Tables.jl"
+github = "https://github.com/JuliaData/Tables.jl"
+
+# The table: the columns after the maps' titles, then a row per map
+
+[[columns]]
+id = "kind"
+label = "Kind"
+
+[[columns]]
+id = "years"
+label = "Years"
+
+[[columns]]
+id = "region"
+label = "Region"
+
+[[columns]]
+id = "source"
+label = "Source"
+
+[[columns]]
+id = "licence"
+label = "Licence"
+
+[[rows]]
+id = "greco-persian-wars"
+title = "Greco-Persian Wars"
+subtitle = "Herodotus, Histories"
+description = "The battles, sieges and campaigns between the Achaemenid Empire and the Greek cities from the Ionian Revolt, which Herodotus tells to 479 BCE."
+kind = "Historical"
+years = "499–449 BCE"
+region = "Greece, Asia Minor and the Aegean"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q76026"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles, sieges and campaigns of the Greco-Persian Wars that Wikidata gives with a place and a date
+war = war_events(con, "Q76026"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Greco-Persian Wars", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "peloponnesian-war"
+title = "Peloponnesian War"
+subtitle = "Thucydides, History of the Peloponnesian War"
+description = "The battles, sea fights and sieges of the war between Athens and Sparta and their allies, which Thucydides recounts to 411 BCE."
+kind = "Historical"
+years = "431–404 BCE"
+region = "Greece, the Aegean and Sicily"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q33745"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles, sea fights and sieges of the Peloponnesian War that Wikidata gives with a place and a date
+war = war_events(con, "Q33745"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Peloponnesian War", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "guelphs-ghibellines"
+title = "Guelphs and Ghibellines"
+subtitle = "Guelphs and Ghibellines"
+description = "The battles and sieges between the factions that took the side of the Pope or of the Emperor in the cities of Italy."
+kind = "Historical"
+years = "1120–1390"
+region = "Italy"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q187742"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles and sieges of the Guelphs and Ghibellines that Wikidata gives with a place and a date
+war = war_events(con, "Q187742"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Guelphs and Ghibellines", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "hundred-years-war"
+title = "Hundred Years' War"
+subtitle = "Hundred Years' War"
+description = "The battles, sieges and sea fights between the kings of England and of France, from Edward III's claim to the French crown to the fall of Bordeaux."
+kind = "Historical"
+years = "1337–1453"
+region = "France and England"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q12551"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles, sieges and sea fights of the Hundred Years' War that Wikidata gives with a place and a date
+war = war_events(con, "Q12551"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Hundred Years' War", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "wars-of-the-roses"
+title = "Wars of the Roses"
+subtitle = "Wars of the Roses"
+description = "The battles between the houses of Lancaster and York for the English crown, from St Albans to Stoke Field."
+kind = "Historical"
+years = "1455–1487"
+region = "England and Wales"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q127751"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles of the Wars of the Roses that Wikidata gives with a place and a date
+war = war_events(con, "Q127751"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Wars of the Roses", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "napoleonic-wars"
+title = "Napoleonic Wars"
+subtitle = "Napoleonic Wars"
+description = "The battles, sieges and sea fights between Napoleon's France and the coalitions against it."
+kind = "Historical"
+years = "1803–1815"
+region = "Europe, and the seas and colonies of its powers"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q78994"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles, sieges and sea fights of the Napoleonic Wars that Wikidata gives with a place and a date
+war = war_events(con, "Q78994"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "Napoleonic Wars", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "american-civil-war"
+title = "American Civil War"
+subtitle = "American Civil War"
+description = "The battles and campaigns between the Union and the Confederacy, from Fort Sumter to Appomattox, over the battlefields that the American Battlefield Protection Program of the National Park Service drew."
+kind = "Historical"
+years = "1861–1865"
+region = "The United States"
+source = "Wikidata, with the battlefield boundaries of the National Park Service"
+sourceUrl = "https://www.wikidata.org/wiki/Q8676"
+licence = "CC0 1.0 (events), public domain (battlefields)"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles and campaigns of the American Civil War that Wikidata gives with a place and a date
+war = war_events(con, "Q8676"; folder)
+# The battlefields as the American Battlefield Protection Program of the National Park Service drew them
+fields = battlefields(con, :civil; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(fields.path; name = "Battlefields", color = "#8e44ad", opacity = 0.5),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "American Civil War", year = war.since, labels = false))
+'''
+
+[[rows]]
+id = "world-war-i"
+title = "World War I"
+subtitle = "World War I"
+description = "The battles, sea fights and campaigns of the First World War."
+kind = "Historical"
+years = "1914–1918"
+region = "The world, mostly Europe and the Middle East"
+source = "Wikidata"
+sourceUrl = "https://www.wikidata.org/wiki/Q361"
+licence = "CC0 1.0"
+licenceUrl = "https://creativecommons.org/publicdomain/zero/1.0/"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the downloads are kept
+# The battles, sea fights and campaigns of World War I that Wikidata gives with a place and a date
+war = war_events(con, "Q361"; folder)
+# The realms of Cliopatria in the same area and years, under the events
+historical_borders(con, :cliopatria; folder, box = war.box, since = war.since, upto = war.upto)
+display(Pollis.webmap(Pollis.layer(borders_geojson(con); name = "Realms", column = "name", opacity = 0.25, years = ("starts", "ends")),
+	Pollis.layer(war.path; name = "Events", column = "kind", years = ("starts", "until"));
+	title = "World War I", year = war.since, labels = false))
+'''
