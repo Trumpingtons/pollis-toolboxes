@@ -7,67 +7,28 @@ style = "timeArrow"
 intro = "Find texts in Wikisource, the free library of texts in the public domain or under free licences that volunteers transcribe and proofread, in more than 70 languages: query the Wikisource of a language by words and category, retrieve the pages found as a table with the years of their works, read a page with the words marked, and save the texts. Wikisource's search answers the queries, and Wikidata gives the years. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "JSON.jl"
-github = "https://github.com/JuliaIO/JSON.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Find the pages of texts that have the words, in the Wikisource of a language, optionally in one of its categories, and count them by the works they belong to. Words are joined by AND, OR and NOT, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. Wikisource lists 10,000 pages of a query at most, 500 a request."
 code = '''
-using JSON, Downloads
+using HistoricalGeography
 # The query: the Wikisource, the words and optionally a category
 language = strip(raw""" {{language}} """)
 words = strip(raw""" {{words}} """)
 category = strip(raw""" {{category}} """)
-encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
-	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
-# A request to a MediaWiki API, Wikisource's or Wikidata's, with a pause before it, to keep within Wikimedia's limits;
-# asked again up to three times when Wikimedia asks to wait, after the time it gives
-function mediawiki(site, parameters)
-	url = "https://$site/w/api.php?" * join(("$(encode(k))=$(encode(string(v)))" for (k, v) in [["format" => "json", "formatversion" => 2, "maxlag" => 5]; parameters]), "&")
-	for attempt in 1:4
-		sleep(1)
-		buffer = IOBuffer()  # the answer, read also when it is an error, whose reason the wiki gives in it
-		response = Downloads.request(url; output = buffer, headers = ["User-Agent" => "research-script/1.0"], throw = false)
-		body = String(take!(buffer))
-		waiting = response isa Downloads.Response && (response.status == 429 || response.status == 503 || occursin("maxlag", body))
-		if waiting && attempt < 4
-			wait_for = something(tryparse(Int, something(Dict(lowercase(k) => v for (k, v) in response.headers) |> h -> get(h, "retry-after", nothing), "")), 30)
-			println("Wikimedia asks to wait: asking again in ", wait_for, " seconds")
-			sleep(min(wait_for, 120))
-			continue
-		end
-		response isa Downloads.Response && response.status == 200 || error(site, " answered ", response isa Downloads.Response ? response.status : response.message, ": ", first(body, 200))
-		answer = JSON.parse(body)
-		haskey(answer, "error") && error(site, ": ", answer["error"]["info"])
-		return answer
-	end
-end
-wikisource = "$language.wikisource.org"
-search = words * (isempty(category) ? "" : " incategory:\"$category\"")
-hits = NamedTuple[]
-let offset = 0
-	while true
-		answer = mediawiki(wikisource, ["action" => "query", "list" => "search", "srsearch" => search, "srnamespace" => 0, "srlimit" => 500,
-			"sroffset" => offset, "srprop" => "wordcount|snippet"])
-		global total = answer["query"]["searchinfo"]["totalhits"]
-		for r in answer["query"]["search"]
-			push!(hits, (rank = length(hits) + 1, title = r["title"], work = first(split(r["title"], "/")), words = r["wordcount"],
-				snippet = strip(replace(replace(r["snippet"], r"<[^>]+>" => ""), r"\s+" => " "))))
-		end
-		haskey(answer, "continue") || break
-		offset = answer["continue"]["sroffset"]
-		offset >= 10000 && break
-	end
-end
-hits = identity.(hits)
+# The pages that Wikisource's search finds, the most relevant first, up to the 10,000 it lists, a second apart
+found = wikisource_search(language, words; category)
+total = found.total
 println(total, " pages of the ", language, " Wikisource have ", words, isempty(category) ? "" : " in the category $category",
-	length(hits) < total ? ", of which Wikisource lists the first $(length(hits))" : "")
-works = sort!([(work = w, pages = count(h -> h.work == w, hits)) for w in unique(h.work for h in hits)]; by = x -> -x.pages)
+	length(found.pages) < total ? ", of which Wikisource lists the first $(length(found.pages))" : "")
+works = tally(p.work for p in found.pages)
 println(length(works), " works; those with the most pages:")
-widest = isempty(works) ? 1 : first(works).pages
-foreach(x -> println(rpad(first(x.work, 50), 51), lpad(x.pages, 6), " ", repeat("█", round(Int, 30 * x.pages / widest))), first(works, 15))
+print_bars([first(w, 50) => n for (w, n) in first(works, 15)]; width = 30)
 '''
 
 [[steps.inputs]]
@@ -94,39 +55,12 @@ title = "Retrieve"
 intro = "Retrieve the pages found, up to a number, as a table: a row per page with its title, its work, the year of the work from Wikidata when it has one, its length in words, the words around the first place that has the words, and its page on Wikisource. The years of the works come from Wikidata, 50 a request, and From Year and To Year keep the pages whose works have a year between them."
 code = '''
 total == 0 && error("Step 1 found no pages: change its words or category")
-from_year, to_year = strip(raw""" {{fromYear}} """), strip(raw""" {{toYear}} """)
-order = "{{order}}"
-chosen_hits = first(hits, min({{atMost}}, length(hits)))
-# The Wikidata item of each work, and its date of publication, or of creation when it has none
-items = Dict{String, String}()
-for batch in Iterators.partition(unique(h.work for h in chosen_hits), 50)
-	answer = mediawiki(wikisource, ["action" => "query", "prop" => "pageprops", "ppprop" => "wikibase_item", "redirects" => 1, "titles" => join(batch, "|")])
-	renamed = Dict(r["to"] => r["from"] for r in vcat(get(answer["query"], "normalized", []), get(answer["query"], "redirects", [])))
-	for p in answer["query"]["pages"]
-		item = get(get(p, "pageprops", Dict()), "wikibase_item", nothing)
-		item === nothing || (items[get(renamed, p["title"], p["title"])] = item)
-	end
-end
-years = Dict{String, Int}()
-for batch in Iterators.partition(unique(values(items)), 50)
-	answer = mediawiki("www.wikidata.org", ["action" => "wbgetentities", "ids" => join(batch, "|"), "props" => "claims"])
-	for (id, entity) in answer["entities"]
-		claims = get(entity, "claims", Dict())
-		for property in ("P577", "P571")
-			dates = [c["mainsnak"]["datavalue"]["value"]["time"] for c in get(claims, property, []) if haskey(c["mainsnak"], "datavalue")]
-			isempty(dates) || (years[id] = minimum(parse(Int, match(r"^[+-]\d+", d).match) for d in dates); break)
-		end
-	end
-end
-year_of(work) = haskey(items, work) ? get(years, items[work], nothing) : nothing
-in_years(y) = (isempty(from_year) && isempty(to_year)) || (y !== nothing && (isempty(from_year) || y >= parse(Int, from_year)) && (isempty(to_year) || y <= parse(Int, to_year)))
-page_link(title) = "https://$wikisource/wiki/" * replace(encode(replace(title, " " => "_")), "%2F" => "/")
-kept = [merge(h, (year = year_of(h.work), wikidata = haskey(items, h.work) ? "https://www.wikidata.org/wiki/" * items[h.work] : "",
-	wikisource_page = page_link(h.title))) for h in chosen_hits if in_years(year_of(h.work))]
-kept = order == "oldest" ? sort(kept; by = h -> something(h.year, typemax(Int))) : order == "newest" ? sort(kept; by = h -> -something(h.year, typemin(Int) + 1)) : kept
-results = [merge((number = i,), h) for (i, h) in enumerate(kept)]
-println(length(results), " of the first ", length(chosen_hits), " pages kept, ", count(r -> r.year !== nothing, results), " of them with the year of their work")
-vscodedisplay([merge(Base.structdiff(r, NamedTuple{(:year,)}), (year = something(r.year, missing),)) for r in results], "Wikisource: $words")
+from_year, to_year = tryparse(Int, strip(raw""" {{fromYear}} """)), tryparse(Int, strip(raw""" {{toYear}} """))
+# The first pages, each with the year of its work from Wikidata, those of the years kept, in the order asked
+chosen_pages = first(found.pages, min({{atMost}}, length(found.pages)))
+results = wikisource_years(language, chosen_pages; from = from_year, to = to_year, order = "{{order}}")
+println(length(results), " of the first ", length(chosen_pages), " pages kept, ", count(r -> !ismissing(r.year), results), " of them with the year of their work")
+vscodedisplay(results, "Wikisource: $words")
 '''
 
 [[steps.inputs]]
@@ -172,66 +106,13 @@ title = "Read"
 intro = "Read a page, by its number in the table of Step 2: its text, which Wikisource gives in a request, opens in Pollis's browser with the words marked where they are, and a link to each passage that has them at the top, without Wikisource's headers, notes on the licence and page numbers."
 code = '''
 chosen = results[{{number}}]
-# The HTML of a page without the elements whose opening tag matches, with what is inside them
-function without_elements(html, pattern)
-	out, at = IOBuffer(), 1
-	while (m = match(pattern, html, at)) !== nothing
-		print(out, html[at:prevind(html, m.offset)])
-		depth, k = 1, m.offset + ncodeunits(m.match)
-		while depth > 0
-			t = match(Regex("<(/?)$(m[:tag])\\b[^>]*?(/?)>"), html, k)
-			t === nothing && (k = ncodeunits(html) + 1; break)
-			depth += t[1] == "/" ? -1 : t[2] == "/" ? 0 : 1
-			k = t.offset + ncodeunits(t.match)
-		end
-		at = k
-	end
-	print(out, html[at:end])
-	return String(take!(out))
-end
-# The text of a page, a paragraph a line, and the year and author its header gives, from Wikisource's parse of it; kept in the folder
-pages_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "wikisource", language, "pages"))
-function page_text(title)
-	file = joinpath(pages_folder, first(replace(title, r"[/\\:*?\"<>|]" => "_"), 150) * ".txt")
-	isfile(file) && return read(file, String)
-	html = mediawiki(wikisource, ["action" => "parse", "page" => title, "prop" => "text", "disablelimitreport" => 1, "disableeditsection" => 1])["parse"]["text"]
-	header = join(("$k: $(strip(replace(m[:value], r"<[^>]+>" => "")))" for (k, id) in (("year of the edition", "ws-year"), ("author", "ws-author"))
-		for m in (match(Regex("<span id=\"$id\">(?<value>.*?)</span>"), html),) if m !== nothing), "\n")
-	s = replace(html, r"<style[^>]*>.*?</style>"s => "", r"<script[^>]*>.*?</script>"s => "")
-	s = without_elements(s, r"<(?<tag>div|span|table|sup|ol|ul|p)\b[^>]*(?:class=\"[^\"]*\b(?:ws-noexport|noprint|wst-header|licenseContainer|reference|mw-references-wrap|references)\b[^\"]*\"|style=\"display:\s*none;?\")[^>]*>")
-	s = replace(s, r"</p>|<br\s*/?>|</div>|</h\d>|</li>|</tr>|</dd>|</dt>" => "\n", r"<[^>]+>" => "")
-	s = replace(s, r"&#x(?<h>[0-9A-Fa-f]+);" => e -> string(Char(parse(Int, e[4:end-1]; base = 16))), r"&#(?<d>\d+);" => e -> string(Char(parse(Int, e[3:end-1]))))
-	s = replace(s, "&nbsp;" => " ", "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => "\"", r"\p{Cf}" => "")
-	text = (isempty(header) ? "" : header * "\n\n") * join(filter(!isempty, [strip(replace(l, r"\s+" => " ")) for l in split(s, "\n")]), "\n")
-	write(file, text)
-	return text
-end
-# The words and phrases of the query, without its operators and brackets, each marked where it is, a phrase whole
-terms = filter(t -> !(t in ("AND", "OR", "NOT")) && !isempty(t), [strip(m.match, ['"', '-']) for m in eachmatch(r"\"[^\"]+\"|[^\s()\"]+", words)])
-marks = [Regex("(?<!\\w)" * join((replace(replace(w, r"[\\^$.|?+()\[\]{}]" => s"\\\g<0>"), "*" => "\\w*") for w in split(t)), "[\\s\\-]+") * "(?!\\w)", "i") for t in terms]
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-function marked(s)
-	spans = sort!(unique(r for p in marks for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
-	out, last_end = IOBuffer(), 0
-	for r in spans
-		first(r) <= last_end && continue
-		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
-		last_end = last(r)
-	end
-	print(out, escaped(s[nextind(s, last_end):end]))
-	return String(take!(out))
-end
-paragraphs = split(page_text(chosen.title), "\n")
-with_words = [i for (i, p) in enumerate(paragraphs) if any(r -> occursin(r, p), marks)]
-page = joinpath(tempdir(), "wikisource-page.html")
-write(page, """<!doctype html><html lang="$language"><head><meta charset="utf-8"><title>$(escaped(chosen.title))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta,p.passages{font:14px sans-serif;color:#666}
-	p.passages a{margin-right:.5em}mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.title))</h2>
-	<p class="meta">$(language) Wikisource$(chosen.year === nothing ? "" : " · $(chosen.year)") · <a href="$(chosen.wikisource_page)">The page on Wikisource</a></p>
-	<p class="passages">$(length(with_words)) passages have the words$(isempty(with_words) ? "" : ": ") $(join(("<a href=\"#p$i\">$k</a>" for (k, i) in enumerate(first(with_words, 300))), ""))</p>
-	$(join(("<p id=\"p$i\">" * marked(p) * "</p>" for (i, p) in enumerate(paragraphs)), "\n"))</body></html>""")
-Pollis.browse(page)
-println(chosen.title, "\n", length(with_words), " passages have the words")
+folder = expanduser(raw"{{folder}}")
+# The text of the page, kept in the folder wikisource, with the words of the query marked
+text = wikisource_text(language, chosen.title; folder)
+page = reading_page(chosen.title, split(text, "\n"); marks = query_patterns(words), language,
+	meta = "$(language) Wikisource" * (ismissing(chosen.year) ? "" : " · $(chosen.year)"), link = "The page on Wikisource" => chosen.wikisource_page)
+Pollis.browse(page.file)
+println(chosen.title, "\n", length(page.passages), " passages have the words")
 '''
 
 [[steps.inputs]]
@@ -261,20 +142,12 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the pages retrieved as text files, a file each with its title, year and link above its text, and the table of Step 2 as a CSV file beside them. Wikisource gives the text of each page in a request, with a pause of a second, except those already read."
 code = '''
-# The folder of the texts, named after the words
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-saved = mkpath(joinpath(expanduser(raw"{{folder}}"), "wikisource", language, "saved", first(plain(join(filter(!isempty, [words, category]), " ")), 60)))
-saving = first(results, min({{toSave}}, length(results)))
-for r in saving
-	write(joinpath(saved, lpad(r.number, 5, '0') * "-" * first(plain(r.title), 60) * ".txt"), r.title, "\n", r.year === nothing ? "" : string(r.year),
-		"\n", r.wikisource_page, "\n\n", page_text(r.title), "\n")
-end
-# The table of the pages
-quoted(value) = "\"" * replace(string(something(value, "")), "\"" => "\"\"") * "\""
-columns = (:number, :title, :work, :year, :words, :rank, :wikidata, :wikisource_page)
-write(joinpath(saved, "pages.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " pages in ", saved)
+# The texts, a file each, and the table of the pages, in a folder named after the words
+saved = save_texts(joinpath(folder, "wikisource", language, "saved", plain_name("$words $category")), results; count = {{toSave}},
+	table = "pages.csv", name = r -> plain_name(r.title), text = r -> wikisource_text(language, r.title; folder),
+	header = r -> [r.title, string(coalesce(r.year, "")), r.wikisource_page],
+	columns = (:number, :title, :work, :year, :words, :rank, :wikidata, :wikisource_page))
+println(saved.saved, " texts and the table of the ", length(results), " pages in ", saved.folder)
 '''
 
 [[steps.inputs]]

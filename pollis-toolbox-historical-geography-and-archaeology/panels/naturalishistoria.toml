@@ -7,150 +7,30 @@ style = "timeArrow"
 intro = "Find the chapters of the Naturalis Historia of Pliny the Elder, the encyclopedia of the Roman world in 37 books, from the heavens and the earth to animals, plants, medicines, metals and stones: query its English translation by John Bostock and Henry Riley (1855) or its Latin text, edited by Karl Mayhoff, by words, retrieve the chapters found as a table, read a chapter in English and Latin side by side with the words marked, and save the texts. Both texts come from the Perseus Digital Library, downloaded once. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "EzXML.jl"
-github = "https://github.com/JuliaIO/EzXML.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Search the chapters of the books chosen, in English or in Latin, and count those that have the words, book by book. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings, which Latin needs: elephant* finds elephantos and elephantorum. The two texts, 22 MB, are downloaded into the folder the first time."
 code = '''
-using EzXML, Downloads
+using HistoricalGeography
 # The query: the words, the language of the text searched, and the books, from 1 to 37
 words = strip(raw""" {{words}} """)
 language = "{{language}}"
 books = {{fromBook}}:{{toBook}}
-# The two texts of the Perseus Digital Library, in TEI, downloaded into the folder once
-texts_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "naturalishistoria"))
-source = "https://raw.githubusercontent.com/PerseusDL/canonical-latinLit/master/data/phi0978/phi001/phi0978.phi001.perseus-"
-for edition in ("eng1", "lat2")
-	file = joinpath(texts_folder, "$edition.xml")
-	isfile(file) || Downloads.download(source * edition * ".xml", file)
-end
-# The English text names its characters by the entities of an older TEI, which are written out here before it is read
-entities = Dict("aelig" => "æ", "AElig" => "Æ", "oelig" => "œ", "OElig" => "Œ", "mdash" => "—", "ndash" => "–", "eacute" => "é",
-	"egrave" => "è", "ecirc" => "ê", "euml" => "ë", "Euml" => "Ë", "aacute" => "á", "agrave" => "à", "acirc" => "â", "auml" => "ä",
-	"iacute" => "í", "icirc" => "î", "iuml" => "ï", "Iuml" => "Ï", "ograve" => "ò", "ocirc" => "ô", "ouml" => "ö", "Ouml" => "Ö",
-	"uacute" => "ú", "ugrave" => "ù", "ucirc" => "û", "uuml" => "ü", "Uuml" => "Ü", "yuml" => "ÿ", "ccedil" => "ç", "ntilde" => "ñ",
-	"emacr" => "ē", "deg" => "°", "prime" => "′", "sect" => "§", "pound" => "£", "cdot" => "·")
-written_out(xml) = replace(replace(xml, r"<!DOCTYPE.*?\]>"s => ""), r"&(?<name>[A-Za-z]+);" => m -> m in ("&amp;", "&lt;", "&gt;", "&quot;") ? m : get(entities, m[2:end-1], ""))
-# The text of a part of the TEI, without its notes, page breaks and headings; the notes kept apart
-function text_of(node, notes = String[])
-	out = IOBuffer()
-	for child in eachnode(node)
-		if istext(child)
-			print(out, nodecontent(child))
-		elseif iselement(child)
-			name = nodename(child)
-			if name == "note"
-				push!(notes, replace(strip(nodecontent(child)), r"\s+" => " "))
-			elseif !(name in ("head", "pb", "milestone", "lb"))
-				print(out, text_of(child, notes))
-			end
-		end
-	end
-	return String(take!(out))
-end
-# (the namespaces given, so EzXML does not take the TEI's default namespace from the document)
-tei = ["tei" => "http://www.tei-c.org/ns/1.0"]
-paragraphs_of(node, notes = String[]) = join((replace(strip(text_of(p, notes)), r"\s+" => " ") for p in findall(".//*[local-name()='p']", node, tei)), "\n\n")
-english_doc = parsexml(written_out(read(joinpath(texts_folder, "eng1.xml"), String)))
-latin_doc = readxml(joinpath(texts_folder, "lat2.xml"))
-# The Latin chapters, by book and chapter
-latin = Dict{Tuple{Int, String}, String}()
-for book in findall("//*[local-name()='div'][@subtype='book']", root(latin_doc), tei)
-	b = parse(Int, book["n"])
-	for chapter in findall("*[local-name()='div'][@subtype='chapter']", book, tei)
-		latin[(b, chapter["n"])] = paragraphs_of(chapter)
-	end
-end
-# The English chapters, Bostock and Riley's, each with the Latin chapters it gives in brackets in its heading, or the last
-# Latin chapter before it
-english = NamedTuple[]
-# The subject of each book, from Pliny's own table of contents in book 1
-book_titles = Dict(enumerate(["Preface and Contents", "The Universe", "Geography: Spain, Gaul, Italy", "Geography: Greece and Northern Europe",
-	"Geography: Africa and the Near East", "Geography: Asia", "Man", "Land Animals", "Sea Creatures", "Birds", "Insects",
-	"Exotic Trees", "Exotic Trees and Plants", "Vines and Wine", "Fruit Trees", "Forest Trees", "Cultivated Trees", "Grain and Agriculture",
-	"Flax and Gardens", "Remedies from Garden Plants", "Flowers and Garlands", "Remedies from Plants", "Remedies from Cultivated Trees",
-	"Remedies from Forest Trees", "Wild Plants", "Remedies from Plants", "Remedies from Plants", "Remedies from Man and Animals",
-	"Remedies from Animals", "Magic and Remedies from Animals", "Remedies from Waters", "Remedies from Sea Creatures", "Gold and Silver",
-	"Copper, Iron and Lead", "Painting and Colours", "Stones and Building", "Gems"]))
-for book in findall("//div1[@type='book']", root(english_doc), tei)
-	b = parse(Int, book["n"])
-	current = "1"
-	for chapter in findall("div2", book, tei)
-		head = findfirst("head", chapter, tei)
-		heading = head === nothing ? "" : replace(strip(nodecontent(head)), r"\s+" => " ")
-		in_latin = [m[1] for m in eachmatch(r"\((\d+)\.\)", heading)]
-		isempty(in_latin) || (current = last(in_latin))
-		notes = String[]
-		text = paragraphs_of(chapter, notes)
-		push!(english, (book = b, chapter = chapter["n"], latin_chapters = isempty(in_latin) ? [current] : in_latin,
-			title = replace(heading, r"^CHAP\.\s*\d+\.\s*(\(\d+\.\)\s*)*(—|\.)?\s*" => ""), text = text, notes = notes))
-	end
-end
-# The entries searched: the English chapters, or the Latin chapters with the titles of the English chapters in them
-entries = if language == "english"
-	[(book = e.book, book_title = book_titles[e.book], chapter = e.chapter, latin_chapters = join(e.latin_chapters, ", "), title = e.title,
-		text = e.text, other = join((get(latin, (e.book, c), "") for c in e.latin_chapters), "\n\n"), notes = e.notes,
-		perseus = "https://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.02.0137:book=$(e.book):chapter=$(e.chapter)")
-	for e in english if e.book in books]
-else
-	[(book = b, book_title = get(book_titles, b, "Book $b"), chapter = c, latin_chapters = c,
-		title = join((e.title for e in english if e.book == b && c in e.latin_chapters), "; "), text = t,
-		other = join((e.text for e in english if e.book == b && c in e.latin_chapters), "\n\n"), notes = String[],
-		perseus = "https://www.perseus.tufts.edu/hopper/text?doc=Perseus:text:1999.02.0138:book=$b:chapter=$c")
-	for ((b, c), t) in sort(collect(latin); by = x -> (x[1][1], something(tryparse(Int, x[1][2]), 0))) if b in books]
-end
-# The query as a test of a chapter's text: each word or phrase a regular expression, a phrase's words apart by spaces
-tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
-term_patterns = Regex[]
-function term_regex(token)
-	parts = split(strip(token, '"'))
-	pattern = join((replace(replace(p, r"[\\^$.|?+()\[\]{}]" => s"\\\g<0>"), "*" => "\\w*") for p in parts), "[\\s\\-]+")
-	r = Regex("\\b" * pattern * "\\b", "i")
-	push!(term_patterns, r)
-	return text -> occursin(r, text)
-end
-token_at = 1
-next_token() = token_at <= length(tokens) ? tokens[token_at] : nothing
-take_token() = (global token_at += 1; tokens[token_at - 1])
-function either()
-	test = both()
-	while next_token() == "OR"
-		take_token(); a, b = test, both(); test = text -> a(text) || b(text)
-	end
-	return test
-end
-function both()
-	test = negated()
-	while !(next_token() in (nothing, "OR", ")"))
-		next_token() == "AND" && take_token()
-		a, b = test, negated(); test = text -> a(text) && b(text)
-	end
-	return test
-end
-negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
-function single()
-	next_token() === nothing && error("The words end too soon: ", words)
-	if next_token() == "("
-		take_token(); test = either()
-		next_token() == ")" || error("A bracket is not closed in ", words)
-		take_token(); return test
-	end
-	return term_regex(take_token())
-end
-matches_query = either()
-token_at <= length(tokens) && error("The words have a bracket too many: ", words)
+folder = expanduser(raw"{{folder}}")
+# The chapters of the books, from the two texts of the Perseus Digital Library in TEI, downloaded into the folder
+# naturalishistoria once: the English chapters with the Latin they give, or the Latin chapters with the English
+entries = pliny_chapters(language; books, folder)
 # The chapters with the words, in their title or text, each with how often the words are in it
-found = [merge(e, (hits = sum(r -> count(r, e.title * "\n" * e.text), term_patterns),)) for e in entries if matches_query(e.title * "\n" * e.text)]
+query = text_query(words)
+found = [merge(e, (hits = query_hits(query, e.title * "\n" * e.text),)) for e in entries if query(e.title * "\n" * e.text)]
 total = length(found)
 println(total, " of the ", length(entries), " chapters of books ", first(books), " to ", last(books), " have ", words, ", in ", language == "english" ? "English" : "Latin")
-widest = maximum((count(f -> f.book == b, found) for b in books); init = 1)
-for b in books
-	n = count(f -> f.book == b, found)
-	println(lpad(b, 3), "  ", rpad(get(book_titles, b, ""), 37), lpad(n, 5), " ", repeat("█", round(Int, 30 * n / widest)))
-end
+print_bars([lpad(b, 3) * "  " * pliny_book_title(b) => count(f -> f.book == b, found) for b in books]; width = 30)
 '''
 
 [[steps.inputs]]
@@ -200,9 +80,7 @@ title = "Retrieve"
 intro = "Retrieve the chapters found, up to a number, as a table: a row per chapter with its book, the book's subject, its number, the Latin chapters it falls in, its heading, how often the words are in it, and its page on the Perseus Digital Library."
 code = '''
 total == 0 && error("Step 1 found no chapters: change its words, language or books")
-order = "{{order}}"
-sorted = order == "relevance" ? sort(found; by = r -> -r.hits) : found
-results = [merge((number = i,), r) for (i, r) in enumerate(first(sorted, min({{atMost}}, length(sorted))))]
+results = ranked(found, "{{order}}" == "relevance" ? "relevance" : "work"; at_most = {{atMost}})
 println(length(results), " of ", total, " chapters retrieved, in ", length(unique(r.book for r in results)), " books")
 vscodedisplay([(number = r.number, book = r.book, subject = r.book_title, chapter = r.chapter, latin_chapters = r.latin_chapters, title = r.title,
 	hits = r.hits, words = length(split(r.text)), perseus = r.perseus) for r in results], "Naturalis Historia: $words")
@@ -235,32 +113,8 @@ title = "Read"
 intro = "Read a chapter, by its number in the table of Step 2: the language searched and the other side by side in Pollis's browser, the words marked where they are, Bostock and Riley's notes below the English, and the link to the chapter on the Perseus Digital Library."
 code = '''
 chapter = results[{{number}}]
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-# The words of the query marked where the text has them: each pattern of the query, on the text before it is escaped
-function marked(s)
-	spans = sort!(unique(r for p in term_patterns for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
-	out, last_end = IOBuffer(), 0
-	for r in spans
-		first(r) <= last_end && continue
-		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
-		last_end = last(r)
-	end
-	print(out, escaped(s[nextind(s, last_end):end]))
-	return String(take!(out))
-end
-column(text, mark) = join(("<p>$(mark ? marked(p) : escaped(p))</p>" for p in split(text, "\n\n") if !isempty(strip(p))), "\n")
-searched, other = language == "english" ? ("English", "Latin") : ("Latin", "English")
-page = joinpath(tempdir(), "naturalishistoria-chapter.html")
-write(page, """<!doctype html><html><head><meta charset="utf-8"><title>Pliny, Naturalis Historia $(chapter.book).$(chapter.chapter)</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:72em;margin:2em auto;padding:0 1em}p.meta,h3{font:14px sans-serif;color:#666}
-	.columns{display:grid;grid-template-columns:1fr 1fr;gap:2em}.notes{font-size:14px;color:#444}mark{background:#f5d76e}</style></head><body>
-	<h2>$(marked(chapter.title))</h2>
-	<p class="meta">Book $(chapter.book), $(escaped(chapter.book_title)) · chapter $(escaped(chapter.chapter))$(language == "english" ? " (Latin chapter $(chapter.latin_chapters))" : "")
-	· <a href="$(chapter.perseus)">The chapter on the Perseus Digital Library</a></p>
-	<div class="columns"><div><h3>$searched</h3>$(column(chapter.text, true))</div><div><h3>$other</h3>$(column(chapter.other, false))</div></div>
-	$(isempty(chapter.notes) ? "" : "<h3>Notes of Bostock and Riley</h3><div class=\"notes\">" * join(("<p>$(escaped(n))</p>" for n in chapter.notes), "\n") * "</div>")
-	</body></html>""")
-Pollis.browse(page)
+# The chapter in the language searched, with the words marked, beside the other language, and the notes of Bostock and Riley
+Pollis.browse(pliny_page(chapter, query.patterns; language))
 println(chapter.title, "\nBook ", chapter.book, ", chapter ", chapter.chapter, "\n\n", chapter.text)
 '''
 
@@ -283,21 +137,14 @@ id = "save"
 title = "Save"
 intro = "Save the chapters retrieved as text files, a file each with its book, chapter and heading above its text in the language searched and then in the other, and the table of Step 2 as a CSV file beside them, in the folder of Step 1."
 code = '''
-# The folder of the texts, named after the words and the language
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-saved = mkpath(joinpath(texts_folder, "chapters", first(plain(words), 60) * "-" * language))
-saving = first(results, min({{toSave}}, length(results)))
-for c in saving
-	file = joinpath(saved, lpad(c.number, 5, '0') * "-book$(c.book)-chapter$(c.chapter).txt")
-	write(file, "Pliny the Elder, Naturalis Historia, book ", string(c.book), " (", c.book_title, "), chapter ", c.chapter, "\n", c.title, "\n", c.perseus,
-		"\n\n", c.text, "\n\n", "-"^40, "\n\n", c.other, isempty(c.notes) ? "" : "\n\nNotes\n\n" * join(c.notes, "\n\n"), "\n")
-end
-# The table of the chapters
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :book, :book_title, :chapter, :latin_chapters, :title, :hits, :perseus)
-write(joinpath(saved, "chapters.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " chapters in ", saved)
+# The texts, a file each with the other language and the notes, and the table of the chapters, in a folder named after
+# the words and the language
+saved = save_texts(joinpath(folder, "naturalishistoria", "chapters", plain_name(words) * "-" * language), results; count = {{toSave}},
+	table = "chapters.csv", name = c -> "book$(c.book)-chapter$(c.chapter)",
+	text = c -> c.text * "\n\n" * "-"^40 * "\n\n" * c.other * (isempty(c.notes) ? "" : "\n\nNotes\n\n" * join(c.notes, "\n\n")),
+	header = c -> ["Pliny the Elder, Naturalis Historia, book $(c.book) ($(c.book_title)), chapter $(c.chapter)", c.title, c.perseus],
+	columns = (:number, :book, :book_title, :chapter, :latin_chapters, :title, :hits, :perseus))
+println(saved.saved, " texts and the table of the ", length(results), " chapters in ", saved.folder)
 '''
 
 [[steps.inputs]]

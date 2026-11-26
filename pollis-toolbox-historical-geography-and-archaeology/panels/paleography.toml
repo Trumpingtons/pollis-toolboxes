@@ -11,7 +11,7 @@ rowTitle = "Source"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
-minimum = "0.1.8"
+minimum = "0.1.9"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -63,31 +63,48 @@ label = "Licence"
 id = "ecodices"
 title = "e-codices, Virtual Manuscript Library of Switzerland"
 subtitle = "University of Fribourg"
-description = "The medieval and some modern manuscripts of the libraries, archives and monasteries of Switzerland, each photographed whole, with its scholarly description, through IIIF: a manifest per manuscript with its title, date, place of origin, language, material, size and summary, and its pages on an image server. The code lists the libraries, reads the manifests of one, the Aargauer Kantonsbibliothek unless another is named, and saves a page's image."
+description = "The medieval and some modern manuscripts of the libraries, archives and monasteries of Switzerland, each photographed whole, with its scholarly description, through IIIF: a manifest per manuscript with its title, date, place of origin, language, material, size and summary, and its pages on an image server. Step 1 lists the libraries with their codes; Step 2 reads the manifests of the library whose code it is given, the Aargauer Kantonsbibliothek unless another is named, as a table of its manuscripts, each linked to its page on e-codices, and opens the image of a page."
 covers = "Manuscripts in Swiss collections, mostly Latin and German"
 period = "The Middle Ages, and some modern manuscripts"
 size = "3,107 manuscripts in 100 collections"
 access = "Its site and IIIF manifests, a manuscript at a time"
 licence = "Manifests CC0; images by the terms of each library, most free to re-use with citation"
+
+[[rows.steps]]
+id = "libraries"
+title = "Libraries"
+intro = "The libraries, archives and monasteries of e-codices, each with the code of its collection, which Step 2 takes to read its manuscripts."
 code = '''
 using HistoricalGeography
 folder = expanduser("~/.pollis/data/examples/paleography")  # where the downloads are kept
-# A library of e-codices, by the name of its collection: kba is the Aargauer Kantonsbibliothek in Aarau, csg the
-# Stiftsbibliothek of St. Gallen, ubb the Universitätsbibliothek of Basel, bge the Bibliothèque de Genève
-library = "kba"
 libraries = ecodices_libraries(; folder)
-println(length(libraries), " libraries")
-vscodedisplay(libraries, "e-codices: the libraries")
-# The manuscripts of the library, from their IIIF manifests, downloaded once, a second apart
+println(length(libraries), " libraries, in the order of their places: choose one by its code in the column library, and give it to Step 2")
+vscodedisplay(libraries, "e-codices: Libraries and Their Codes")
+'''
+
+[[rows.steps]]
+id = "manuscripts"
+title = "Manuscripts"
+intro = "The manuscripts of the library whose code is given, from their IIIF manifests, downloaded once, a second apart: a row each, in the order of their shelfmarks, the shelfmark a link to the manuscript's page on e-codices. The image of the third page of the first opens in Pollis's browser."
+code = '''
+library = "{{ecodicesLibrary}}"
+name = ecodices_library(library; folder)
 manuscripts = ecodices(library; folder)
-println(length(manuscripts), " manuscripts, ", sum(m -> m.images, manuscripts), " images")
+println(name, ": ", length(manuscripts), " manuscripts, ", sum(m -> m.images, manuscripts), " images, in the order of their shelfmarks")
 println("By century: ", tallied(c for m in manuscripts for c in split(m.century, "; ")))
 println("By language: ", tallied(l for m in manuscripts for l in split(m.language, "; ")))
-vscodedisplay(manuscripts, "e-codices: $library")
+vscodedisplay(linked(manuscripts, :manuscript => :page), "e-codices: Manuscripts of $name")
 # The third image of the first manuscript, 1000 pixels wide, from the IIIF image server
 image = ecodices_image(manuscripts[1].manifest, 3; folder)
 println(manuscripts[1].manuscript, ", ", image.label, ": ", image.file)
+Pollis.browse(image.file)
 '''
+
+[[rows.steps.inputs]]
+id = "ecodicesLibrary"
+label = "Library"
+tooltip = "The code of the library, in the column library of the table of Step 1: kba the Aargauer Kantonsbibliothek in Aarau, csg the Stiftsbibliothek of St. Gallen, ubb the Universitätsbibliothek of Basel, bge the Bibliothèque de Genève."
+default = "kba"
 
 [[rows]]
 id = "biblissima"

@@ -7,57 +7,28 @@ style = "timeArrow"
 intro = "Find articles in the newspapers of Delpher, the KB's digitised Dutch newspapers from 1618 to 1995: query them by words and dates, retrieve the articles found as a table, read an article in full with the words of the query marked, and save the texts. The KB's search service needs no key; its texts are open to research. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "EzXML.jl"
-github = "https://github.com/JuliaIO/EzXML.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Count the articles that have the words between two dates, and how many there are each year (each decade, over more than 60 years). Words are joined by AND, OR and NOT, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. The newspapers are in Dutch, so are the words that find them."
 code = '''
-using EzXML, Downloads, Dates
+using HistoricalGeography, Dates
 # The query: the words, the dates between which the articles were published, and optionally the newspaper (its title as
 # Delpher gives it), the kind of article and the region where the newspaper was published
 words = strip(raw""" {{words}} """)
 from, to = Date("{{from}}"), Date("{{to}}")
 newspaper = strip(raw""" {{newspaper}} """)
 kind, region = "{{kind}}", "{{region}}"
-# The query in CQL, the language of the KB's search service: a phrase in quotes is searched for with adj, the words next
-# to one another
-function delpher_query(from, to)
-	parts = ["(" * replace(words, r"\"(?<phrase>[^\"]+)\"" => s"cql.serverChoice adj \"\g<phrase>\"") * ")",
-		"date within \"$(Dates.format(from, "dd-mm-yyyy")) $(Dates.format(to, "dd-mm-yyyy"))\""]
-	isempty(newspaper) || push!(parts, "papertitle=\"$newspaper\"")
-	kind == "all" || push!(parts, "type=\"$kind\"")
-	region == "all" || push!(parts, "spatial=\"$region\"")
-	return join(parts, " AND ")
-end
-# A request to the search service, for the articles from start on, count of them at most (up to 1,000), or 0 to count
-sru_ns = ["srw" => "http://www.loc.gov/zing/srw/", "diag" => "http://www.loc.gov/zing/srw/diagnostic/",
-	"dc" => "http://purl.org/dc/elements/1.1/", "ddd" => "http://www.kb.nl/ddd"]
-encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
-	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
-function sru(query; start = 1, count = 0)
-	url = "https://jsru.kb.nl/sru/sru?version=1.2&operation=searchRetrieve&x-collection=DDD_artikel&recordSchema=ddd" *
-		"&startRecord=$start&maximumRecords=$count&query=$(encode(query))"
-	doc = parsexml(String(take!(Downloads.download(url, IOBuffer()))))
-	message = findfirst("//diag:message", root(doc), sru_ns)
-	message === nothing || error("Delpher: ", nodecontent(message), " in the query ", query)
-	return doc
-end
-found(doc) = parse(Int, nodecontent(findfirst("//srw:numberOfRecords", root(doc), sru_ns)))
-query = delpher_query(from, to)
-total = found(sru(query))
+# The query in CQL, the language of the KB's search service, and the articles it finds, then those of each year, or of
+# each decade over more than 60 years, a request each
+query = delpher_query(words, from, to; newspaper, kind, region)
+total = delpher_count(query)
 println(total, " articles found for ", query)
-# The articles of each year, or of each decade over more than 60 years, a request each
-years_each = year(to) - year(from) > 60 ? 10 : 1
-starts = (year(from) ÷ years_each) * years_each:years_each:year(to)
-by_period = map(starts) do y
-	a, b = max(from, Date(y)), min(to, Date(y + years_each - 1, 12, 31))
-	(period = years_each == 1 ? string(y) : "$(y)s", articles = found(sru(delpher_query(a, b))))
-end
-widest = maximum(p -> p.articles, by_period; init = 1)
-foreach(p -> println(rpad(p.period, 6), lpad(p.articles, 9), " ", repeat("█", round(Int, 40 * p.articles / widest))), by_period)
+print_bars(delpher_periods(words, from, to; newspaper, kind, region))
 '''
 
 [[steps.inputs]]
@@ -151,29 +122,12 @@ id = "retrieve"
 title = "Retrieve"
 intro = "Retrieve the articles found, up to a number, as a table: a row per article with its date, newspaper, title, kind, page, place and region, and its link on Delpher. The search service gives 1,000 articles a request, so 5,000 take five requests."
 code = '''
-# The articles found, the most relevant first, or by date
-order = Dict("relevance" => "", "oldest" => " sortBy dc.date/sort.ascending", "newest" => " sortBy dc.date/sort.descending")["{{order}}"]
-wanted = min({{atMost}}, total)
-field(record, name) = (node = findfirst(name, record, sru_ns); node === nothing ? "" : String(strip(nodecontent(node))))
-results = NamedTuple[]
-for start in 1:1000:wanted
-	doc = sru(query * order; start, count = min(1000, wanted - start + 1))
-	for record in findall("//srw:recordData", root(doc), sru_ns)
-		id = field(record, "ddd:metadataKey")
-		push!(results, (number = length(results) + 1, date = Date(first(field(record, "dc:date"), 10), "yyyy/mm/dd"),
-			newspaper = field(record, "ddd:papertitle"), title = field(record, "dc:title"), kind = field(record, "dc:type"),
-			page = something(tryparse(Int, field(record, "ddd:page")), 0), place = field(record, "ddd:spatialCreation"),
-			region = field(record, "ddd:spatial"), id = id, text = field(record, "dc:identifier"),
-			delpher = "https://www.delpher.nl/nl/kranten/view?identifier=$id&coll=ddd"))
-	end
-	sleep(0.5)  # a pause between requests, as the KB asks of programs
-end
-results = identity.(results)
-counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The articles found, the most relevant first, or by date, up to 1,000 a request, half a second apart
+results = delpher_articles(query; at_most = {{atMost}}, order = "{{order}}")
 println(length(results), " of ", total, " articles retrieved, from ", minimum(r -> r.date, results), " to ", maximum(r -> r.date, results))
-println("By newspaper: ", join(("$v ($n)" for (v, n) in first(counts([r.newspaper for r in results]), 10)), ", "))
-println("By kind: ", join(("$v ($n)" for (v, n) in counts([r.kind for r in results])), ", "))
-vscodedisplay([Base.structdiff(r, NamedTuple{(:text,)}) for r in results], "Delpher: $words")
+println("By newspaper: ", tallied([r.newspaper for r in results]; top = 10))
+println("By kind: ", tallied([r.kind for r in results]))
+vscodedisplay(without(results, :text), "Delpher: $words")
 '''
 
 [[steps.inputs]]
@@ -206,28 +160,13 @@ id = "read"
 title = "Read"
 intro = "Read an article in full, by its number in the table of Step 2: its text, as the KB's OCR read it, opens in Pollis's browser with the words of the query marked, and the link to its page on Delpher, where the scan is."
 code = '''
-# The text of an article: its title and paragraphs, as the KB's OCR read them, from the KB's resolver, given up after a
-# minute without an answer
-function article_text(article)
-	doc = parsexml(String(take!(Downloads.download(replace(article.text, r"^http:" => "https:"), IOBuffer(); timeout = 60))))
-	return (title = strip(nodecontent(something(findfirst("//title", root(doc)), ElementNode("title")))),
-		paragraphs = [strip(nodecontent(p)) for p in findall("//p", root(doc))])
-end
 article = results[{{number}}]
-text = article_text(article)
-# The words of the query, its letters and digits without its operators, marked where a word starts with them
-terms = filter(t -> !(uppercase(t) in ("AND", "OR", "NOT")), split(replace(words, r"[^\p{L}\d]+" => " ")))
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-marked(s) = isempty(terms) ? escaped(s) :
-	replace(escaped(s), Regex("\\b(" * join(terms, "|") * ")\\w*", "i") => s"<mark>\g<0></mark>")
-page = joinpath(tempdir(), "delpher-article.html")
-write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(text.title))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
-	mark{background:#f5d76e}</style></head><body><h2>$(marked(text.title))</h2>
-	<p class="meta">$(escaped(article.newspaper)), $(Dates.format(article.date, "d U yyyy")), page $(article.page), $(escaped(article.place))
-	· <a href="$(article.delpher)">The page on Delpher</a></p>
-	$(join(("<p>$(marked(p))</p>" for p in text.paragraphs), "\n"))</body></html>""")
-Pollis.browse(page)
+# The text of the article, as the KB's OCR read it, with the words of the query marked where a word starts with them
+text = delpher_text(article)
+page = reading_page(text.title, text.paragraphs; marks = query_patterns(words; prefix = true), mark_title = true, passages = false,
+	meta = "$(article.newspaper), $(Dates.format(article.date, "d U yyyy")), page $(article.page), $(article.place)",
+	link = "The page on Delpher" => article.delpher)
+Pollis.browse(page.file)
 println(text.title, "\n", article.newspaper, ", ", article.date, ", page ", article.page, "\n\n", join(text.paragraphs, "\n\n"))
 '''
 
@@ -250,27 +189,13 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the articles retrieved as text files, a file each with its title, newspaper, date, page and link above its text, and the table of Step 2 as a CSV file beside them. Files already saved are kept, so a save stopped halfway goes on where it stopped."
 code = '''
-# The folder of the texts, named after the words and the dates
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-name = plain(words) * "-$from-$to"
-texts = mkpath(joinpath(expanduser(raw"{{folder}}"), "delpher", name))
-saving = first(results, min({{toSave}}, length(results)))
-missed = Int[]  # the articles whose text did not come, saved by running the step again
-for article in saving
-	file = joinpath(texts, lpad(article.number, 5, '0') * "-$(article.date)-$(first(plain(article.newspaper), 40)).txt")
-	isfile(file) && continue
-	t = try article_text(article) catch; push!(missed, article.number); continue end
-	write(file, t.title, "\n", article.newspaper, ", ", string(article.date), ", page ", string(article.page), "\n", article.delpher,
-		"\n\n", join(t.paragraphs, "\n\n"), "\n")
-	sleep(0.2)  # a pause between requests, as the KB asks of programs
-end
-# The table of the articles, with the name of each one's text file
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :date, :newspaper, :title, :kind, :page, :place, :region, :id, :delpher)
-write(joinpath(texts, "articles.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving) - length(missed), " texts and the table of the ", length(results), " articles in ", texts)
-isempty(missed) || println("The texts of articles ", join(missed, ", "), " did not come: run the step again to save them")
+# The texts, a file each, fetched a fifth of a second apart, and the table of the articles, in a folder named after the
+# words and the dates; the texts that did not come are saved by running the step again
+saved = save_texts(joinpath(expanduser(raw"{{folder}}"), "delpher", plain_name(words) * "-$from-$to"), results; count = {{toSave}},
+	table = "articles.csv", name = r -> "$(r.date)-$(plain_name(r.newspaper, 40))", text = r -> join(delpher_text(r).paragraphs, "\n\n"),
+	header = r -> [r.title, "$(r.newspaper), $(r.date), page $(r.page)", r.delpher], pause = 0.2)
+println(saved.saved, " texts and the table of the ", length(results), " articles in ", saved.folder)
+isempty(saved.missed) || println("The texts of articles ", join(saved.missed, ", "), " did not come: run the step again to save them")
 '''
 
 [[steps.inputs]]

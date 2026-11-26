@@ -18,44 +18,26 @@ label = "DigitalNZ"
 prompt = "DigitalNZ API key, from your account at digitalnz.org (optional)"
 
 [[packages]]
-name = "JSON.jl"
-github = "https://github.com/JuliaIO/JSON.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Count the articles that have the words, year by year (decade by decade, over more than 60 years). Words are joined by AND, OR and NOT, with brackets, and a phrase goes in quotes. DigitalNZ filters by years, not by days. It holds 25.9 million articles of Papers Past, from 1839 to the 1940s, but some newspapers only in part, such as the Lyttelton Times to 1862: the same search on Papers Past finds the others."
 code = '''
-using JSON, Downloads, Dates
+using HistoricalGeography, Dates
 # The query: the words, the years of publication, and optionally the newspaper (its title as Papers Past gives it)
 words = strip(raw""" {{words}} """)
 from, to = {{from}}, {{to}}
 newspaper = strip(raw""" {{newspaper}} """)
-# A request to the DigitalNZ API for the newspaper articles of Papers Past, with the key when one is set
-encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
-	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
-key = get(ENV, "DIGITALNZ_API_KEY", "")
-function digitalnz(parameters)
-	filters = ["and[display_collection][]" => "Papers Past", "and[category][]" => "Newspapers", "text" => words]
-	isempty(newspaper) || push!(filters, "and[collection][]" => newspaper)
-	append!(filters, ["or[year][]" => string(y) for y in from:to])
-	url = "https://api.digitalnz.org/v3/records.json?" * join(("$(encode(k))=$(encode(string(v)))" for (k, v) in [filters; parameters]), "&")
-	buffer = IOBuffer()  # the answer, read also when it is an error, whose reason DigitalNZ gives in it
-	Downloads.request(url; output = buffer, headers = isempty(key) ? Pair{String, String}[] : ["Authentication-Token" => key], throw = false)
-	answer = JSON.parse(String(take!(buffer)))
-	haskey(answer, "errors") && error("DigitalNZ: ", join(answer["errors"], "; "))
-	return answer["search"]
-end
-# The articles of each year in one request, from the counts of the facet year
-counted = digitalnz(["per_page" => 0, "facets" => "year", "facets_per_page" => 350])
-total = counted["result_count"]
-years = Dict(parse(Int, string(y)) => n for (y, n) in counted["facets"]["year"])
+# The articles found, and those of each year, in one request to the DigitalNZ API, with the key in DIGITALNZ_API_KEY
+# when one is set
+found = paperspast_search(words, from, to; newspaper)
+total = found.total
 println(total, " articles found for ", words, " from ", from, " to ", to, isempty(newspaper) ? "" : " in the " * newspaper)
-years_each = to - from > 60 ? 10 : 1
-by_period = [(period = years_each == 1 ? string(y) : "$(y)s", articles = sum(get(years, x, 0) for x in max(y, from):min(y + years_each - 1, to)))
-	for y in (from ÷ years_each) * years_each:years_each:to]
-widest = maximum(p -> p.articles, by_period; init = 1)
-foreach(p -> println(rpad(p.period, 6), lpad(p.articles, 9), " ", repeat("█", round(Int, 40 * p.articles / widest))), by_period)
+print_bars(period_counts(found.years, from, to))
 '''
 
 [[steps.inputs]]
@@ -87,7 +69,7 @@ id = "search"
 label = "The Same Search on Papers Past"
 desc = "Open Papers Past's own search for the words and years in Pollis's browser, with the newspapers and years DigitalNZ does not hold"
 code = '''
-Pollis.browse("https://paperspast.natlib.govt.nz/newspapers?query=$(encode(words))&start_date=01-01-$from&end_date=31-12-$to")
+Pollis.browse(paperspast_search_address(words, from, to))
 '''
 
 [[steps]]
@@ -95,29 +77,12 @@ id = "retrieve"
 title = "Retrieve"
 intro = "Retrieve the articles found, up to a number, as a table: a row per article with its date, newspaper, title, rights and its page on Papers Past. Their texts come with them, as DigitalNZ gives them: in lower case and without punctuation, for searching and counting; the page on Papers Past shows each one as printed."
 code = '''
-# The articles found, the most relevant first, or by date, 100 a request
-order = Dict("relevance" => [], "oldest" => ["sort" => "date", "direction" => "asc"], "newest" => ["sort" => "date", "direction" => "desc"])["{{order}}"]
-wanted = min({{atMost}}, total)
-results = NamedTuple[]
-for page in 1:cld(wanted, 100)
-	found = digitalnz([["per_page" => 100, "page" => page]; order])["results"]
-	for r in found
-		length(results) < wanted || break
-		papers = filter(!=("Papers Past"), string.(r["collection_title"]))
-		date = Date(first(string(first(r["date"])), 10))
-		push!(results, (number = length(results) + 1, date = date, newspaper = isempty(papers) ? "" : first(papers),
-			title = replace(string(r["title"]), r"\s*\([^()]*\)$" => ""), rights = string(something(r["rights"], "")),
-			id = r["id"], papers_past = string(r["landing_url"]), text = string(something(r["fulltext"], ""))))
-	end
-	isempty(found) && break
-	sleep(0.5)  # a pause between requests, to keep within DigitalNZ's limit for requests without a key
-end
-results = identity.(results)
-counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The articles found, the most relevant first, or by date, 100 a request, half a second apart
+results = paperspast_articles(words, from, to; newspaper, at_most = min({{atMost}}, total), order = "{{order}}")
 println(length(results), " of ", total, " articles retrieved, from ", minimum(r -> r.date, results), " to ", maximum(r -> r.date, results))
-println("By newspaper: ", join(("$v ($n)" for (v, n) in first(counts([r.newspaper for r in results]), 10)), ", "))
-println("By rights: ", join(("$v ($n)" for (v, n) in counts([r.rights for r in results])), ", "))
-vscodedisplay([merge(Base.structdiff(r, NamedTuple{(:text,)}), (words = length(split(r.text)),)) for r in results], "Papers Past: $words")
+println("By newspaper: ", tallied([r.newspaper for r in results]; top = 10))
+println("By rights: ", tallied([r.rights for r in results]))
+vscodedisplay(without([merge(r, (words = length(split(r.text)),)) for r in results], :text), "Papers Past: $words")
 '''
 
 [[steps.inputs]]
@@ -151,19 +116,10 @@ title = "Read"
 intro = "Read an article, by its number in the table of Step 2: its text opens in Pollis's browser with the words of the query marked, and the article's page on Papers Past, where it is as printed beside the scan."
 code = '''
 article = results[{{number}}]
-# The words of the query, its letters and digits without its operators, marked where a word starts with them
-terms = filter(t -> !(uppercase(t) in ("AND", "OR", "NOT")), split(replace(lowercase(words), r"[^\p{L}\d]+" => " ")))
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-marked(s) = isempty(terms) ? escaped(s) :
-	replace(escaped(s), Regex("\\b(" * join(terms, "|") * ")\\w*", "i") => s"<mark>\g<0></mark>")
-page = joinpath(tempdir(), "paperspast-article.html")
-write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(article.title))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
-	mark{background:#f5d76e}</style></head><body><h2>$(marked(article.title))</h2>
-	<p class="meta">$(escaped(article.newspaper)), $(Dates.format(article.date, "d U yyyy")), $(escaped(article.rights))
-	· <a href="$(article.papers_past)">The article on Papers Past</a></p>
-	<p>$(marked(article.text))</p></body></html>""")
-Pollis.browse(page)
+# The text of the article, with the words of the query marked where a word starts with them
+page = reading_page(article.title, [article.text]; marks = query_patterns(words; prefix = true), mark_title = true, passages = false,
+	meta = "$(article.newspaper), $(Dates.format(article.date, "d U yyyy")), $(article.rights)", link = "The article on Papers Past" => article.papers_past)
+Pollis.browse(page.file)
 println(article.title, "\n", article.newspaper, ", ", article.date, "\n\n", article.text)
 '''
 
@@ -186,21 +142,11 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the articles retrieved as text files, a file each with its title, newspaper, date, rights and link above its text, and the table of Step 2 as a CSV file beside them. The texts came with Step 2, so saving makes no request."
 code = '''
-# The folder of the texts, named after the words and the years
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-texts = mkpath(joinpath(expanduser(raw"{{folder}}"), "paperspast", plain(words) * "-$from-$to"))
-saving = first(results, min({{toSave}}, length(results)))
-for article in saving
-	file = joinpath(texts, lpad(article.number, 5, '0') * "-$(article.date)-$(first(plain(article.newspaper), 40)).txt")
-	write(file, article.title, "\n", article.newspaper, ", ", string(article.date), "\n", article.rights, "\n", article.papers_past,
-		"\n\n", article.text, "\n")
-end
-# The table of the articles
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :date, :newspaper, :title, :rights, :id, :papers_past)
-write(joinpath(texts, "articles.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " articles in ", texts)
+# The texts, a file each, and the table of the articles, in a folder named after the words and the years
+saved = save_texts(joinpath(expanduser(raw"{{folder}}"), "paperspast", plain_name(words) * "-$from-$to"), results; count = {{toSave}},
+	table = "articles.csv", name = r -> "$(r.date)-$(plain_name(r.newspaper, 40))",
+	header = r -> [r.title, "$(r.newspaper), $(r.date)", r.rights, r.papers_past])
+println(saved.saved, " texts and the table of the ", length(results), " articles in ", saved.folder)
 '''
 
 [[steps.inputs]]

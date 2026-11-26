@@ -7,59 +7,28 @@ style = "timeArrow"
 intro = "Find pages of the Yongle Encyclopedia (永樂大典), the encyclopedia of Ming China completed in 1408, which copied whole works under the characters of its rhymes in 22,877 juan, of which about 800 survive: query their text by words, retrieve the pages found as a table, read a page with the words marked, and save the texts. The text is Chinese Wikisource's transcription of the scans, made by a program and not yet proofread, page by page; its search answers the queries. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "JSON.jl"
-github = "https://github.com/JuliaIO/JSON.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Find the pages that have the words, and count them juan by juan, in ranges of a thousand juan, which follow the order of the rhymes. Words are joined by AND, OR and NOT, with brackets, and a phrase goes in quotes; characters in simplified script find the same pages as in traditional script. Wikisource lists 10,000 pages of a query at most."
 code = '''
-using JSON, Downloads
+using HistoricalGeography
 # The query: the words, and optionally a juan, by its number
 words = strip(raw""" {{words}} """)
 juan = strip(raw""" {{juan}} """)
-prefix = "Page:永樂大典" * (isempty(juan) ? "" : lpad(juan, 5, '0') * ".pdf/")
-# A request to the API of Chinese Wikisource, with a pause before it, to keep within Wikimedia's limits
-encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
-	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
-function wikisource(parameters)
-	sleep(1)
-	url = "https://zh.wikisource.org/w/api.php?" * join(("$(encode(k))=$(encode(string(v)))" for (k, v) in
-		[["action" => "query", "format" => "json", "formatversion" => 2, "maxlag" => 5]; parameters]), "&")
-	buffer = IOBuffer()  # the answer, read also when it is an error, whose reason Wikisource gives in it
-	Downloads.request(url; output = buffer, headers = ["User-Agent" => "research-script/1.0"], throw = false)
-	answer = JSON.parse(String(take!(buffer)))
-	haskey(answer, "error") && error("Wikisource: ", answer["error"]["info"])
-	return answer
-end
-# The pages found, 500 a request, in the order of relevance: each with its juan and its page in the scan of the juan
-hits = NamedTuple[]
-let offset = 0
-	while true
-		answer = wikisource(["list" => "search", "srsearch" => "$words prefix:$prefix", "srnamespace" => 104, "srprop" => "",
-			"srlimit" => 500, "sroffset" => offset])
-		global total = answer["query"]["searchinfo"]["totalhits"]
-		for r in answer["query"]["search"]
-			m = match(r"永樂大典(?<juan>\d+)\.pdf/(?<page>\d+)", r["title"])
-			m === nothing || push!(hits, (rank = length(hits) + 1, juan = parse(Int, m[:juan]), page = parse(Int, m[:page]), title = r["title"]))
-		end
-		haskey(answer, "continue") || break
-		offset = answer["continue"]["sroffset"]
-		offset >= 10000 && break
-	end
-end
-hits = identity.(hits)
-println(total, " pages in ", length(unique(h.juan for h in hits)), " juan have ", words, isempty(juan) ? "" : " in juan " * juan,
-	length(hits) < total ? ", of which Wikisource lists the first $(length(hits))" : "")
+# The pages of the scans found by Chinese Wikisource's search, 500 a request, a second apart, in the order of relevance:
+# each with its juan and its page in the scan of the juan
+found = yongle_search(words; juan)
+total = found.total
+println(total, " pages in ", length(unique(p.juan for p in found.pages)), " juan have ", words, isempty(juan) ? "" : " in juan " * juan,
+	length(found.pages) < total ? ", of which Wikisource lists the first $(length(found.pages))" : "")
 # The pages by ranges of a thousand juan, and the juan with the most pages
-ranges = [(from = k * 1000 + 1, to = (k + 1) * 1000, pages = count(h -> (h.juan - 1) ÷ 1000 == k, hits)) for k in 0:22]
-widest = maximum(r -> r.pages, ranges; init = 1)
-for r in ranges
-	r.pages > 0 && println(lpad("$(r.from)–$(r.to)", 13), lpad(r.pages, 7), " ", repeat("█", round(Int, 40 * r.pages / widest)))
-end
-by_juan = sort!([(juan = j, pages = count(h -> h.juan == j, hits)) for j in unique(h.juan for h in hits)]; by = x -> -x.pages)
-println("The juan with the most pages: ", join(("$(x.juan) ($(x.pages))" for x in first(by_juan, 10)), ", "))
+print_bars(["$(k * 1000 + 1)–$((k + 1) * 1000)" => count(p -> (p.juan - 1) ÷ 1000 == k, found.pages) for k in 0:22])
+println("The juan with the most pages: ", tallied((p.juan for p in found.pages); top = 10))
 '''
 
 [[steps.inputs]]
@@ -81,40 +50,11 @@ intro = "Retrieve the pages found, up to a number, as a table: a row per page wi
 code = '''
 total == 0 && error("Step 1 found no pages: change its words")
 order = "{{order}}"
-chosen_hits = first(order == "work" ? sort(hits; by = h -> (h.juan, h.page)) : hits, min({{atMost}}, length(hits)))
-# The wikitext of a page as text: without its header and tags, the double-line notes in brackets and joined when they follow each
-# other, the other templates (the scans' images) left out, from the innermost out
-function template(t)
-	m = match(r"^\{\{\s*(?<name>[^{}|]*?)\s*(?:\|(?<arguments>[^{}]*))?\}\}$"s, t)
-	return m[:name] == "雙行註文" ? "〔" * replace(something(m[:arguments], ""), "|" => "") * "〕" : ""
-end
-function page_text(wikitext)
-	s = replace(wikitext, r"<noinclude>.*?</noinclude>"s => "", r"<[^>]*>" => "")
-	while occursin(r"\{\{[^{}]*\}\}", s)
-		s = replace(s, r"\{\{[^{}]*\}\}" => template)
-	end
-	return strip(replace(s, r"〕\s*〔" => "", r"\n\s*\n+" => "\n"))
-end
-# The words of the query as typed, without its operators, brackets and quotes, for counting and marking them
-terms = filter(t -> !(t in ("AND", "OR", "NOT")) && !isempty(t), [strip(t, ['"', '-']) for t in split(replace(words, r"[()]" => " "))])
-term_count(text) = sum((count(t, text) for t in terms); init = 0)
-texts = Dict{String, String}()
-for batch in Iterators.partition(chosen_hits, 50)
-	answer = wikisource(["prop" => "revisions", "rvprop" => "content", "rvslots" => "main", "titles" => join((h.title for h in batch), "|")])
-	for p in answer["query"]["pages"]
-		haskey(p, "revisions") && (texts[p["title"]] = page_text(p["revisions"][1]["slots"]["main"]["content"]))
-	end
-end
-link(title) = "https://zh.wikisource.org/wiki/" * encode(replace(title, " " => "_"))
-results = [begin
-	text = get(texts, h.title, "")
-	heading = match(r"永樂大典卷之[^\s　]+(?:[\s　]+[^\s　〔]+)?", text)
-	(number = i, juan = h.juan, page = h.page, heading = heading === nothing ? "" : heading.match, hits = term_count(text), rank = h.rank,
-		text = text, wikisource = link(h.title))
-end for (i, h) in enumerate(chosen_hits)]
+chosen_pages = first(order == "work" ? sort(found.pages; by = p -> (p.juan, p.page)) : found.pages, min({{atMost}}, length(found.pages)))
+# The texts of the pages, 50 a request, the double-line notes in brackets
+results = yongle_texts(chosen_pages, words)
 println(length(results), " of ", total, " pages retrieved, in ", length(unique(r.juan for r in results)), " juan")
-vscodedisplay([merge(Base.structdiff(r, NamedTuple{(:text,)}), (beginning = first(replace(r.text, r"\s+" => " "), 60),)) for r in results],
-	"Yongle Encyclopedia: $words")
+vscodedisplay(without([merge(r, (beginning = first(replace(r.text, r"\s+" => " "), 60),)) for r in results], :text), "Yongle Encyclopedia: $words")
 '''
 
 [[steps.inputs]]
@@ -144,18 +84,8 @@ title = "Read"
 intro = "Read a page, by its number in the table of Step 2: its text opens in Pollis's browser with the words marked where they are as typed, and its page on Wikisource, where the scan is beside the text."
 code = '''
 chosen = results[{{number}}]
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-marked(s) = isempty(terms) ? escaped(s) : replace(escaped(s), Regex(join((replace(t, r"[\\^$.|?*+()\[\]{}]" => s"\\\g<0>") for t in terms), "|")) =>
-	s"<mark>\g<0></mark>")
-# The text, a paragraph each line, the double-line notes smaller
-paragraphs = join(("<p>" * replace(marked(line), r"〔(?<note>[^〕]*)〕" => s"<small>\g<note></small>") * "</p>" for line in split(chosen.text, "\n")), "\n")
-page = joinpath(tempdir(), "yongle-page.html")
-write(page, """<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><title>永樂大典 $(chosen.juan)</title>
-	<style>body{font:18px/1.9 "Songti TC","Noto Serif TC",serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
-	small{font-size:.8em;color:#555}mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.heading))</h2>
-	<p class="meta">Juan $(chosen.juan), page $(chosen.page) of the scan · <a href="$(chosen.wikisource)">The page on Wikisource</a></p>
-	$paragraphs</body></html>""")
-Pollis.browse(page)
+# The page, a paragraph each line, the double-line notes smaller, with the words marked
+Pollis.browse(yongle_page(chosen, words))
 println("Juan ", chosen.juan, ", page ", chosen.page, "\n\n", chosen.text)
 '''
 
@@ -178,7 +108,7 @@ id = "juanpage"
 label = "The Juan on Wikisource"
 desc = "Open the whole juan on Wikisource in Pollis's browser, its pages one after the other"
 code = '''
-Pollis.browse(link("永樂大典/卷" * lpad(chosen.juan, 5, '0')))
+Pollis.browse(yongle_juan_address(chosen.juan))
 '''
 
 [[steps]]
@@ -186,20 +116,11 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the pages retrieved as text files, a file each with its juan, page and link above its text, and the table of Step 2 as a CSV file beside them. The texts came with Step 2, so saving makes no request."
 code = '''
-# The folder of the texts, named after the words
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-saved = mkpath(joinpath(expanduser(raw"{{folder}}"), "yongle", first(plain(words), 40) * (isempty(juan) ? "" : "-juan$juan")))
-saving = first(results, min({{toSave}}, length(results)))
-for r in saving
-	write(joinpath(saved, lpad(r.number, 5, '0') * "-juan$(lpad(r.juan, 5, '0'))-page$(r.page).txt"),
-		"永樂大典, juan ", string(r.juan), ", page ", string(r.page), "\n", r.wikisource, "\n\n", r.text, "\n")
-end
-# The table of the pages
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :juan, :page, :heading, :hits, :rank, :wikisource)
-write(joinpath(saved, "pages.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " pages in ", saved)
+# The texts, a file each, and the table of the pages, in a folder named after the words
+saved = save_texts(joinpath(expanduser(raw"{{folder}}"), "yongle", plain_name(words, 40) * (isempty(juan) ? "" : "-juan$juan")), results;
+	count = {{toSave}}, table = "pages.csv", name = r -> "juan$(lpad(r.juan, 5, '0'))-page$(r.page)",
+	header = r -> ["永樂大典, juan $(r.juan), page $(r.page)", r.wikisource])
+println(saved.saved, " texts and the table of the ", length(results), " pages in ", saved.folder)
 '''
 
 [[steps.inputs]]

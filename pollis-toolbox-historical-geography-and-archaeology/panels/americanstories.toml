@@ -7,42 +7,21 @@ style = "timeArrow"
 intro = "Find articles in American Stories, the text of the American newspapers of Chronicling America, 1774 to 1963, read article by article with their headlines and bylines by Dell and nine coauthors (2023): download the years you need once, query them by words and dates, retrieve the articles found as a table, read an article with the words of the query marked, and save the texts. American Stories has no search service: its years are archives on Hugging Face, from a few MB for the 1770s to 7.6 GB for 1910, and Julia searches the archives downloaded. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "JSON.jl"
-github = "https://github.com/JuliaIO/JSON.jl"
-
-[[packages]]
-name = "CodecZlib.jl"
-github = "https://github.com/JuliaIO/CodecZlib.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "download"
 title = "Download"
 intro = "Download the archives of the years between two dates into the folder, those not there yet, once: each year of American Stories is one archive, of every article of that year's scans. The step shows the size of each before it downloads, and stops if they come to more than the most you allow."
 code = '''
-using JSON, CodecZlib, Downloads, Dates
+using HistoricalGeography, Dates
 # The dates of the articles to search, the folder of the archives, and the most to download now, in GB
 from, to = Date("{{from}}"), Date("{{to}}")
-archives = mkpath(joinpath(expanduser(raw"{{folder}}"), "americanstories"))
-allowed = {{downloadAtMost}}
-# The archives of American Stories on Hugging Face, a year each, with their sizes
-repository = "https://huggingface.co/datasets/dell-research-harvard/AmericanStories"
-listing = JSON.parse(String(take!(Downloads.download("https://huggingface.co/api/datasets/dell-research-harvard/AmericanStories/tree/main", IOBuffer()))))
-sizes = Dict(parse(Int, m[:year]) => f["size"] for f in listing
-	for m in (match(r"^faro_(?<year>\d{4})\.tar\.gz$", f["path"]),) if m !== nothing)
-years = filter(y -> haskey(sizes, y), year(from):year(to))
-isempty(years) && error("American Stories has no year from ", year(from), " to ", year(to), ": it has ", minimum(keys(sizes)), " to ", maximum(keys(sizes)))
-archive(y) = joinpath(archives, "faro_$y.tar.gz")
-missing_years = filter(y -> !isfile(archive(y)), years)
-size_text(bytes) = bytes < 1e8 ? "$(round(bytes / 1e6; digits = 1)) MB" : "$(round(bytes / 1e9; digits = 2)) GB"
-foreach(y -> println(y, lpad(size_text(sizes[y]), 10), isfile(archive(y)) ? ", downloaded" : ""), years)
-needed = sum(y -> sizes[y], missing_years; init = 0)
-needed > allowed * 1e9 && error("The years not downloaded come to ", size_text(needed), ", more than the ", allowed, " GB allowed: raise Download at Most, or choose fewer years")
-for y in missing_years
-	println("Downloading ", y, ", ", size_text(sizes[y]))
-	Downloads.download("$repository/resolve/main/faro_$y.tar.gz", archive(y) * ".part")
-	mv(archive(y) * ".part", archive(y); force = true)
-end
-println(length(years), " years in ", archives, isempty(missing_years) ? "" : ", $(length(missing_years)) of them downloaded now")
+folder = expanduser(raw"{{folder}}")
+# The archives of American Stories on Hugging Face, a year each, downloaded once into the folder americanstories
+years = americanstories_download(from, to; at_most_gb = {{downloadAtMost}}, folder)
 '''
 
 [[steps.inputs]]
@@ -78,115 +57,17 @@ intro = "Search the articles of the years downloaded for the words, and count th
 code = '''
 # The query: the words, and optionally the newspaper and the state, a part of their names
 words = strip(raw""" {{words}} """)
-newspaper = lowercase(strip(raw""" {{newspaper}} """))
-state = lowercase(strip(raw""" {{state}} """))
+newspaper = strip(raw""" {{newspaper}} """)
+state = strip(raw""" {{state}} """)
 kept = {{keepAtMost}}
-# The query as a test of an article's text: each word or phrase a regular expression, a phrase's words apart by spaces,
-# line breaks or a hyphen, as the OCR left them
-tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
-term_patterns = Regex[]
-function term_regex(token)
-	parts = split(strip(token, '"'))
-	pattern = join((replace(replace(p, r"[\\^$.|?+()\[\]{}]" => s"\\\g<0>"), "*" => "\\w*") for p in parts), "[\\s\\-]+")
-	r = Regex("\\b" * pattern * "\\b", "i")
-	push!(term_patterns, r)
-	return text -> occursin(r, text)
-end
-token_at = 1
-next_token() = token_at <= length(tokens) ? tokens[token_at] : nothing
-take_token() = (global token_at += 1; tokens[token_at - 1])
-function either()
-	test = both()
-	while next_token() == "OR"
-		take_token(); a, b = test, both(); test = text -> a(text) || b(text)
-	end
-	return test
-end
-function both()
-	test = negated()
-	while !(next_token() in (nothing, "OR", ")"))
-		next_token() == "AND" && take_token()
-		a, b = test, negated(); test = text -> a(text) && b(text)
-	end
-	return test
-end
-negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
-function single()
-	next_token() === nothing && error("The words end too soon: ", words)
-	if next_token() == "("
-		take_token(); test = either()
-		next_token() == ")" || error("A bracket is not closed in ", words)
-		take_token(); return test
-	end
-	return term_regex(take_token())
-end
-matches_query = either()
-token_at <= length(tokens) && error("The words have a bracket too many: ", words)
-# Each file of a tar archive in turn, read from the decompressed stream: a header of 512 bytes with its name and size,
-# then its data, padded to 512 bytes
-function each_file(f, io)
-	header = Vector{UInt8}(undef, 512)
-	while !eof(io) && readbytes!(io, header, 512) == 512 && !all(iszero, header)
-		name = String(rstrip(String(header[1:100]), '\0'))
-		size = parse(Int, strip(String(header[125:136]), ['\0', ' ']); base = 8)
-		data = read(io, size)
-		padding = mod(-size, 512)
-		padding > 0 && read(io, padding)
-		header[157] in (UInt8('0'), 0x00) && endswith(name, ".json") && f(name, data)
-	end
-end
-# A field of a scan's record, through its keys, or the default where a key is missing or empty
-function field(record, keys...; default = "")
-	for k in keys
-		record isa AbstractDict || return default
-		record = get(record, k, nothing)
-		record === nothing && return default
-	end
-	return record
-end
-unescaped(s) = replace(s, "&#39;" => "'", "&quot;" => "\"", "&amp;" => "&", "&lt;" => "<", "&gt;" => ">")
-# The articles with the words, in the scans of the dates asked, each with how often the words are in it
-found = NamedTuple[]
-by_year = Dict{Int, Int}()
-for y in years
-	open(GzipDecompressorStream, archive(y)) do io
-		each_file(io) do name, data
-			parts = match(r"(?<date>\d{4}-\d{2}-\d{2})_p(?<page>\d+)_(?<lccn>[a-z]+\d+)", basename(name))
-			parts === nothing && return
-			date = tryparse(Date, parts[:date])
-			(date === nothing || date < from || date > to) && return
-			scan = JSON.parse(String(data))
-			title = unescaped(string(field(scan, "lccn", "title")))
-			paper_state = string(field(scan, "lccn", "state"))
-			(isempty(newspaper) || occursin(newspaper, lowercase(title))) || return
-			(isempty(state) || occursin(state, lowercase(paper_state))) || return
-			for a in field(scan, "full articles"; default = [])
-				text = string(field(a, "article"))
-				matches_query(text) || continue
-				by_year[y] = get(by_year, y, 0) + 1
-				edition = something(tryparse(Int, replace(string(field(scan, "scan", "edition"; default = "ed-1")), r"\D" => "")), 1)
-				push!(found, (date = date, newspaper = rstrip(strip(first(split(title, " [volume]"))), '.'), state = paper_state,
-					page = parse(Int, parts[:page]), headline = replace(strip(string(field(a, "headline"))), r"\s+" => " "),
-					byline = strip(string(field(a, "byline"))), hits = sum(r -> count(r, text), term_patterns),
-					id = "$(field(scan, "id"))_$(field(a, "full_article_id"))",
-					chronicling_america = "https://chroniclingamerica.loc.gov/lccn/$(parts[:lccn])/$(parts[:date])/ed-$edition/seq-$(parts[:page])/",
-					text = text))
-				# beyond twice the articles to keep, only the most relevant are kept
-				length(found) > 2kept && (sort!(found; by = r -> -r.hits); resize!(found, kept))
-			end
-		end
-	end
-	println(y, ": ", get(by_year, y, 0), " articles")
-end
-total = sum(values(by_year); init = 0)
-length(found) > kept && (sort!(found; by = r -> -r.hits); resize!(found, kept))
+# The articles with the words, in the scans of the dates asked, read from each archive as it is decompressed, each with
+# how often the words are in it; a phrase's words apart by spaces, line breaks or a hyphen, as the OCR left them
+query = text_query(words)
+found = americanstories_articles(query, from, to; newspaper, state, keep = kept, folder)
+total = sum(values(found.years); init = 0)
 println(total, " articles found for ", words, " from ", from, " to ", to, isempty(newspaper) ? "" : " in the newspapers called $newspaper",
 	isempty(state) ? "" : " of $state", total > kept ? ", the $kept most relevant kept" : "")
-years_each = year(to) - year(from) > 60 ? 10 : 1
-by_period = [(period = years_each == 1 ? string(y) : "$(y)s", articles = sum(get(by_year, x, 0) for x in max(y, year(from)):min(y + years_each - 1, year(to))))
-	for y in (year(from) ÷ years_each) * years_each:years_each:year(to)]
-widest = maximum(p -> p.articles, by_period; init = 1)
-foreach(p -> println(rpad(p.period, 6), lpad(p.articles, 9), " ", repeat("█", round(Int, 40 * p.articles / widest))), by_period)
+print_bars(period_counts(found.years, year(from), year(to)))
 '''
 
 [[steps.inputs]]
@@ -219,14 +100,11 @@ title = "Retrieve"
 intro = "Retrieve the articles found, up to a number, as a table: a row per article with its date, newspaper, state, page, headline and byline, how often the words are in it, and the link to its page on Chronicling America. The articles come from the search of Step 2, with no further request."
 code = '''
 total == 0 && error("Step 2 found no articles: change its words, newspaper or state, or the dates of Step 1")
-order = "{{order}}"
-sorted = order == "relevance" ? sort(found; by = r -> -r.hits) : sort(found; by = r -> r.date, rev = order == "newest")
-results = [merge((number = i,), r) for (i, r) in enumerate(first(sorted, min({{atMost}}, length(sorted))))]
-counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+results = ranked(found.articles, "{{order}}"; at_most = {{atMost}}, date = :date)
 println(length(results), " of ", total, " articles retrieved, from ", minimum(r -> r.date, results), " to ", maximum(r -> r.date, results))
-println("By newspaper: ", join(("$v ($n)" for (v, n) in first(counts([r.newspaper for r in results]), 10)), ", "))
-println("By state: ", join(("$v ($n)" for (v, n) in first(counts([r.state for r in results]), 10)), ", "))
-vscodedisplay([merge(Base.structdiff(r, NamedTuple{(:text,)}), (words = length(split(r.text)),)) for r in results], "American Stories: $words")
+println("By newspaper: ", tallied([r.newspaper for r in results]; top = 10))
+println("By state: ", tallied([r.state for r in results]; top = 10))
+vscodedisplay(without([merge(r, (words = length(split(r.text)),)) for r in results], :text), "American Stories: $words")
 '''
 
 [[steps.inputs]]
@@ -260,29 +138,13 @@ title = "Read"
 intro = "Read an article in full, by its number in the table of Step 3: its headline, byline and text, as American Stories read them from the scan, open in Pollis's browser with the words of the query marked, and the link to its page on Chronicling America, where the scan is."
 code = '''
 article = results[{{number}}]
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-# The words of the query marked where the article has them: each pattern of the query, on the text before it is escaped
-function marked(s)
-	spans = sort!(unique(r for p in term_patterns for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
-	out, last_end = IOBuffer(), 0
-	for r in spans
-		first(r) <= last_end && continue
-		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
-		last_end = last(r)
-	end
-	print(out, escaped(s[nextind(s, last_end):end]))
-	return String(take!(out))
-end
+# The article, with the words of the query marked where it has them
 paragraphs = [strip(p) for p in split(article.text, r"\n\s*\n") if !isempty(strip(p))]
-page = joinpath(tempdir(), "americanstories-article.html")
-write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(isempty(article.headline) ? article.newspaper : article.headline))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
-	mark{background:#f5d76e}</style></head><body><h2>$(marked(article.headline))</h2>
-	$(isempty(article.byline) ? "" : "<p><i>$(escaped(article.byline))</i></p>")
-	<p class="meta">$(escaped(article.newspaper)), $(escaped(article.state)), $(Dates.format(article.date, "d U yyyy")), page $(article.page)
-	· <a href="$(article.chronicling_america)">The page on Chronicling America</a></p>
-	$(join(("<p>$(marked(p))</p>" for p in paragraphs), "\n"))</body></html>""")
-Pollis.browse(page)
+page = reading_page(isempty(article.headline) ? article.newspaper : article.headline, paragraphs; marks = query.patterns, mark_title = true,
+	passages = false, meta = (isempty(article.byline) ? "" : article.byline * " · ") *
+	"$(article.newspaper), $(article.state), $(Dates.format(article.date, "d U yyyy")), page $(article.page)",
+	link = "The page on Chronicling America" => article.chronicling_america)
+Pollis.browse(page.file)
 println(article.headline, "\n", article.newspaper, ", ", article.date, ", page ", article.page, "\n\n", article.text)
 '''
 
@@ -305,21 +167,11 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the articles retrieved as text files, a file each with its headline, byline, newspaper, date, page and link above its text, and the table of Step 3 as a CSV file beside them, in the folder of Step 1. The texts came with the search, so saving makes no request."
 code = '''
-# The folder of the texts, named after the words and the dates
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-texts = mkpath(joinpath(archives, "articles", first(plain(words), 60) * "-$from-$to"))
-saving = first(results, min({{toSave}}, length(results)))
-for article in saving
-	file = joinpath(texts, lpad(article.number, 5, '0') * "-$(article.date)-$(first(plain(article.newspaper), 40)).txt")
-	write(file, article.headline, "\n", isempty(article.byline) ? "" : article.byline * "\n", article.newspaper, ", ", article.state, ", ",
-		string(article.date), ", page ", string(article.page), "\n", article.chronicling_america, "\n\n", article.text, "\n")
-end
-# The table of the articles
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :date, :newspaper, :state, :page, :headline, :byline, :hits, :id, :chronicling_america)
-write(joinpath(texts, "articles.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " articles in ", texts)
+# The texts, a file each, and the table of the articles, in a folder named after the words and the dates
+saved = save_texts(joinpath(folder, "americanstories", "articles", plain_name(words) * "-$from-$to"), results; count = {{toSave}},
+	table = "articles.csv", name = r -> "$(r.date)-$(plain_name(r.newspaper, 40))",
+	header = r -> [r.headline, r.byline, "$(r.newspaper), $(r.state), $(r.date), page $(r.page)", r.chronicling_america])
+println(saved.saved, " texts and the table of the ", length(results), " articles in ", saved.folder)
 '''
 
 [[steps.inputs]]

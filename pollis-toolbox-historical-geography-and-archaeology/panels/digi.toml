@@ -7,60 +7,36 @@ style = "timeArrow"
 intro = "Find pages in the newspapers of Digi, the National Library of Finland's digitised newspapers in Finnish, Swedish and other languages, from 1771 to 1925 for everyone: query them by words and dates, retrieve the pages found as a table, read a page in full with the words found marked, and save the texts. Digi's search finds the inflected forms of Finnish and Swedish words, and needs no key. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "JSON.jl"
-github = "https://github.com/JuliaIO/JSON.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Count the pages that have the words between two dates, and how many there are each year (each decade, over more than 60 years), beside the pages of the newspapers searched, all of them. Words are joined by AND, OR and NOT, a phrase goes in quotes, and a word ending in * stands for all its endings. Digi divides most newspapers into pages, not articles, so a hit is a page."
 code = '''
-using JSON, Downloads, Dates
+using HistoricalGeography, Dates
 # The query: the words, the dates between which the newspapers were published, and optionally the newspaper (its title as
 # Digi gives it) and the language of the newspapers
 words = strip(raw""" {{words}} """)
 from, to = Date("{{from}}"), Date("{{to}}")
 newspaper = strip(raw""" {{newspaper}} """)
 language = "{{language}}"
-encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
-	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
-get_json(url) = JSON.parse(String(take!(Downloads.download(url, IOBuffer(); timeout = 120))))
-# The newspapers of Digi, with their ISSN, by which the search takes a newspaper, and their languages
-titles = get_json("https://digi.kansalliskirjasto.fi/api/newspaper/titles")
-languages = Dict(string(t["identification"]) => join(t["languageCodes"], ", ") for t in titles)
-issns = String[]
-if !isempty(newspaper)
-	issns = [string(t["identification"]) for t in titles if lowercase(t["title"]) == lowercase(newspaper)]
-	isempty(issns) && error("Digi has no newspaper called ", newspaper)
-elseif language != "all"
-	issns = [string(t["identification"]) for t in titles if language in t["languageCodes"]]
-end
-# The search, as on digi.kansalliskirjasto.fi, in the order asked
-order = Dict("relevance" => "RELEVANCE", "oldest" => "DATE", "newest" => "DATE_DESC")
-search_parameters(sort = "relevance") = join(vcat(["formats=NEWSPAPER", "query=$(encode(words))", "startDate=$from", "endDate=$to",
-	"orderBy=$(order[sort])"], ["title=$i" for i in issns]), "&")
-function digi(sort = "relevance")
-	answer = get_json("https://digi.kansalliskirjasto.fi/api/dam/binding-search?" * search_parameters(sort))
-	answer["queryValidity"] == "VALID" || error("Digi does not take the query ", words, ": ", answer["queryValidity"])
-	return answer
-end
-found = digi()
-total = found["totalResults"]
+# The search, as on digi.kansalliskirjasto.fi: the pages found, and those of each year
+found = digi_search(words, from, to; newspaper, language)
+total = found.total
 println(total, " pages found for ", words, " from ", from, " to ", to,
 	isempty(newspaper) ? (language == "all" ? "" : " in the newspapers in " *
 	Dict("fin" => "Finnish", "swe" => "Swedish", "rus" => "Russian", "ger" => "German")[language]) : " in " * newspaper)
-# The pages of each year with the words, and all the pages of the year in the newspapers searched
-hits = Dict(parse(Int, string(y)) => n for (y, n) in something(found["hitsByYear"], Dict()))
-pages = Dict(parse(Int, string(y)) => n for (y, n) in something(found["totalHitsByYear"], Dict()))
-years_each = year(to) - year(from) > 60 ? 10 : 1
-by_period = [(period = years_each == 1 ? string(y) : "$(y)s",
-	found = sum(get(hits, x, 0) for x in max(y, year(from)):min(y + years_each - 1, year(to))),
-	of = sum(get(pages, x, 0) for x in max(y, year(from)):min(y + years_each - 1, year(to))))
-	for y in (year(from) ÷ years_each) * years_each:years_each:year(to)]
-widest = maximum(p -> p.found, by_period; init = 1)
+# The pages of each year, or of each decade over more than 60 years, with the words, and all the pages of the newspapers searched
+with_words = period_counts(Dict(y => c.found for (y, c) in found.years), year(from), year(to))
+of_all = period_counts(Dict(y => c.of for (y, c) in found.years), year(from), year(to))
+widest = max(maximum(last, with_words; init = 1), 1)
 println(rpad("", 6), lpad("pages", 9), lpad("of", 10), lpad("‰", 7))
-foreach(p -> println(rpad(p.period, 6), lpad(p.found, 9), lpad(p.of, 10), lpad(p.of == 0 ? "" : string(round(1000 * p.found / p.of; digits = 1)), 7),
-	" ", repeat("█", round(Int, 40 * p.found / widest))), by_period)
+for ((period, n), (_, of)) in zip(with_words, of_all)
+	println(rpad(period, 6), lpad(n, 9), lpad(of, 10), lpad(of == 0 ? "" : string(round(1000 * n / of; digits = 1)), 7), " ", repeat("█", round(Int, 40 * n / widest)))
+end
 '''
 
 [[steps.inputs]]
@@ -119,7 +95,7 @@ id = "search"
 label = "The Same Search on Digi"
 desc = "Open the same search on digi.kansalliskirjasto.fi in Pollis's browser, with the pages and their scans"
 code = '''
-Pollis.browse("https://digi.kansalliskirjasto.fi/search?" * search_parameters())
+Pollis.browse(digi_search_address(words, from, to; newspaper, language))
 '''
 
 [[steps]]
@@ -127,33 +103,14 @@ id = "retrieve"
 title = "Retrieve"
 intro = "Retrieve the pages found, up to a number, as a table: a row per page with its date, newspaper, issue, page number, place and language, the words found on it in the forms they have there, a passage around them, and its link on Digi. The search gives 1,000 pages a request, so 5,000 take five requests."
 code = '''
-# The pages found, the most relevant first, or by date, 1,000 a request: the first request, then the next ones by its scrollId
 total == 0 && error("Step 1 found no pages: change its words, dates, newspaper or language")
-wanted = min({{atMost}}, total)
-answer = digi("{{order}}")
-results = NamedTuple[]
-while length(results) < wanted && !isempty(answer["rows"])
-	for r in answer["rows"]
-		length(results) < wanted || break
-		date = something(tryparse(Date, first(string(r["date"]), 10)), Date(parse(Int, first(string(r["date"]), 4))))
-		passage = isempty(r["textHighlights"]["text"]) ? "" : replace(string(first(r["textHighlights"]["text"])), r"</?em>" => "", r"\s+" => " ")
-		issn = string(r["publicationId"])
-		push!(results, (number = length(results) + 1, date = date, newspaper = string(r["bindingTitle"]), issue = string(something(r["issue"], "")),
-			page = r["pageNumber"], place = string(something(r["placeOfPublication"], "")), language = get(languages, issn, ""),
-			found = join(unique(string.(r["terms"])), ", "), passage = passage, restricted = r["copyrightWarnings"] == true,
-			digi = "$(r["baseUrl"])?page=$(r["pageNumber"])", text = "$(r["baseUrl"])/page-$(r["pageNumber"]).txt"))
-	end
-	length(results) < wanted || break
-	sleep(0.5)  # a pause between requests
-	global answer = get_json("https://digi.kansalliskirjasto.fi/api/dam/binding-search/" * answer["scrollId"])
-end
-results = identity.(results)
-counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+# The pages found, the most relevant first, or by date, 1,000 a request, half a second apart
+results = digi_pages(words, from, to; newspaper, language, at_most = {{atMost}}, order = "{{order}}")
 println(length(results), " of ", total, " pages retrieved, from ", minimum(r -> r.date, results), " to ", maximum(r -> r.date, results))
-println("By newspaper: ", join(("$v ($n)" for (v, n) in first(counts([r.newspaper for r in results]), 10)), ", "))
-println("By language: ", join(("$v ($n)" for (v, n) in counts([r.language for r in results])), ", "))
+println("By newspaper: ", tallied([r.newspaper for r in results]; top = 10))
+println("By language: ", tallied([r.language for r in results]))
 any(r -> r.restricted, results) && println(count(r -> r.restricted, results), " pages may have rights that restrict their use: column restricted")
-vscodedisplay([Base.structdiff(r, NamedTuple{(:text,)}) for r in results], "Digi: $words")
+vscodedisplay(without(results, :text), "Digi: $words")
 '''
 
 [[steps.inputs]]
@@ -186,29 +143,17 @@ id = "read"
 title = "Read"
 intro = "Read a page in full, by its number in the table of Step 2: its text, as the National Library's OCR read it, opens in Pollis's browser with the words found marked in the forms they have on the page, and the link to the page on Digi, where the scan is."
 code = '''
-# The text of a page, as the National Library's OCR read it, given up after a minute without an answer
-page_text(page) = String(take!(Downloads.download(page.text, IOBuffer(); timeout = 60)))
 page = results[{{number}}]
-text = page_text(page)
-# The words found on the page, as they are written there, marked where they stand as whole words
-terms = filter(!isempty, strip.(split(page.found, ",")))
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-literal(s) = replace(escaped(s), r"[\\^$.|?*+()\[\]{}]" => s"\\\g<0>")
-marked(s) = isempty(terms) ? escaped(s) :
-	replace(escaped(s), Regex("(?<!\\w)(" * join(literal.(terms), "|") * ")(?!\\w)", "i") => s"<mark>\g<0></mark>")
+# The text of the page, as the National Library's OCR read it, with the words found on it marked where they stand as
+# whole words
+text = digi_text(page)
 title = "$(page.newspaper), $(Dates.format(page.date, "d U yyyy")), page $(page.page)"
 paragraphs = [strip(p) for p in split(text, r"\n\s*\n") if !isempty(strip(p))]
-html = joinpath(tempdir(), "digi-page.html")
-write(html, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(title))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
-	mark{background:#f5d76e}</style></head><body><h2>$(escaped(title))</h2>
-	<p class="meta">Issue $(escaped(page.issue)), $(escaped(page.place)), $(escaped(page.language))
-	· <a href="$(page.digi)">The page on Digi</a></p>
-	$(join(("<p>$(marked(p))</p>" for p in paragraphs), "\n"))</body></html>""")
-Pollis.browse(html)
+html = reading_page(title, paragraphs; marks = literal_patterns(strip.(split(page.found, ","))), passages = false,
+	meta = "Issue $(page.issue), $(page.place), $(page.language)", link = "The page on Digi" => page.digi)
+Pollis.browse(html.file)
 # Here, the paragraphs of the page with the words found; the whole page is in Pollis's browser
-with_terms = filter(p -> any(t -> occursin(lowercase(t), lowercase(p)), terms), paragraphs)
-println(title, ": ", length(paragraphs), " paragraphs, ", length(with_terms), " with the words found\n\n", join(with_terms, "\n\n"))
+println(title, ": ", length(paragraphs), " paragraphs, ", length(html.passages), " with the words found\n\n", join(paragraphs[html.passages], "\n\n"))
 '''
 
 [[steps.inputs]]
@@ -230,25 +175,13 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the pages retrieved as text files, a file each with its newspaper, date, page and link above its text, and the table of Step 2 as a CSV file beside them. Files already saved are kept, so a save stopped halfway goes on where it stopped."
 code = '''
-# The folder of the texts, named after the words and the dates
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-texts = mkpath(joinpath(expanduser(raw"{{folder}}"), "digi", plain(words) * "-$from-$to"))
-saving = first(results, min({{toSave}}, length(results)))
-missed = Int[]  # the pages whose text did not come, saved by running the step again
-for page in saving
-	file = joinpath(texts, lpad(page.number, 5, '0') * "-$(page.date)-$(first(plain(page.newspaper), 40))-p$(page.page).txt")
-	isfile(file) && continue
-	t = try page_text(page) catch; push!(missed, page.number); continue end
-	write(file, page.newspaper, ", ", string(page.date), ", issue ", page.issue, ", page ", string(page.page), "\n", page.digi, "\n\n", t, "\n")
-	sleep(0.2)  # a pause between requests
-end
-# The table of the pages
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :date, :newspaper, :issue, :page, :place, :language, :found, :passage, :restricted, :digi)
-write(joinpath(texts, "pages.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving) - length(missed), " texts and the table of the ", length(results), " pages in ", texts)
-isempty(missed) || println("The texts of pages ", join(missed, ", "), " did not come: run the step again to save them")
+# The texts, a file each, fetched a fifth of a second apart, and the table of the pages, in a folder named after the
+# words and the dates; the texts that did not come are saved by running the step again
+saved = save_texts(joinpath(expanduser(raw"{{folder}}"), "digi", plain_name(words) * "-$from-$to"), results; count = {{toSave}},
+	table = "pages.csv", name = r -> "$(r.date)-$(plain_name(r.newspaper, 40))-p$(r.page)", text = digi_text,
+	header = r -> ["$(r.newspaper), $(r.date), issue $(r.issue), page $(r.page)", r.digi], pause = 0.2)
+println(saved.saved, " texts and the table of the ", length(results), " pages in ", saved.folder)
+isempty(saved.missed) || println("The texts of pages ", join(saved.missed, ", "), " did not come: run the step again to save them")
 '''
 
 [[steps.inputs]]

@@ -7,104 +7,28 @@ style = "timeArrow"
 intro = "Find articles of the Encyclopédie, ou dictionnaire raisonné des sciences, des arts et des métiers, edited by Denis Diderot and Jean le Rond d'Alembert from 1751 to 1772, about 74,000 articles in 17 volumes of text: query them by words, and optionally by their class of knowledge and their author, retrieve the articles found as a table, read an article with the words marked, and save the texts. The text is that of the ARTFL Encyclopédie of the University of Chicago, edited by Robert Morrissey and Glenn Roe, whose PhiloLogic service answers the queries, with the authors that Frank Kafker identified. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "JSON.jl"
-github = "https://github.com/JuliaIO/JSON.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Find the articles that have the words, and count them volume by volume, with their classes and authors. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets, and a phrase goes in quotes; a word ending in * stands for all its endings, and capitals do not matter, nor accents but in quotes. ARTFL is asked once for each word or phrase, and Julia joins the articles found."
 code = '''
-using JSON, Downloads
+using HistoricalGeography
 # The query: the words, and optionally the class of knowledge and the author of the articles
 words = strip(raw""" {{words}} """)
 class = strip(raw""" {{class}} """)
 author = strip(raw""" {{author}} """)
-# A request to ARTFL's PhiloLogic service, with a pause before it
-artfl = "https://artflsrv04.uchicago.edu/philologic5/encyclopedie0226"
-encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
-	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
-function philologic(report, parameters)
-	sleep(0.5)
-	url = "$artfl/reports/$report.py?" * join(("$(encode(k))=$(encode(string(v)))" for (k, v) in [["report" => report, "format" => "json"]; parameters]), "&")
-	buffer = IOBuffer()  # the answer, read also when it is an error, whose reason ARTFL gives in it
-	Downloads.request(url; output = buffer, headers = ["User-Agent" => "research-script/1.0"], throw = false)
-	answer = JSON.parse(String(take!(buffer)))
-	haskey(answer, "title") && occursin("Bad Request", answer["title"]) && error("ARTFL: ", answer["description"])
-	return answer
-end
-# The articles of a word or phrase, from ARTFL's counts of its hits by class broken up by article, each with how often it is in it;
-# a phrase, or a word with an apostrophe or a hyphen, as words next to one another, and in quotes as written, with its accents
-articles = Dict{String, NamedTuple}()
-hits = Dict{String, Int}()
-function term_articles(token)
-	term = strip(token, '"')
-	phrase = occursin(r"[\s'’\-]", term)
-	filters = [k => v for (k, v) in ("normclass" => class, "kafauth" => author) if !isempty(v)]
-	answer = philologic("aggregation", [["q" => startswith(token, '"') ? "\"$term\"" : term, "group_by" => "normclass"]; phrase ? ["method" => "phrase_ordered", "arg" => 0] : []; filters])
-	found_ids = Set{String}()
-	for group in get(answer, "results", []), a in group["break_up_field"]
-		m = a["metadata_fields"]
-		id = m["philo_div1_id"]
-		push!(found_ids, id)
-		hits[id] = get(hits, id, 0) + a["count"]
-		articles[id] = (volume = parse(Int, m["vol"]), headword = string(m["head"]), author = string(something(get(m, "kafauth", ""), "")),
-			attribution = string(something(get(m, "attribution", ""), "")), class = string(something(get(m, "normclass", ""), "")),
-			machine_class = string(something(get(m, "generatedclass", ""), "")), entry_type = string(something(get(m, "objecttype", ""), "")))
-	end
-	return found_ids
-end
-# The query on the articles: each word or phrase the set of its articles, AND their common articles, OR all of them, and
-# NOT the articles of the words before it without those of the words after it
-tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
-token_at = 1
-next_token() = token_at <= length(tokens) ? tokens[token_at] : nothing
-take_token() = (global token_at += 1; tokens[token_at - 1])
-function either()
-	a = both()
-	while next_token() == "OR"
-		take_token(); b = both()
-		(a.negated || b.negated) && error("NOT goes with words joined to it by AND: ", words)
-		a = (ids = union(a.ids, b.ids), negated = false)
-	end
-	return a
-end
-function both()
-	a = negated()
-	while !(next_token() in (nothing, "OR", ")"))
-		next_token() == "AND" && take_token()
-		b = negated()
-		a = a.negated && b.negated ? (ids = union(a.ids, b.ids), negated = true) : a.negated ? (ids = setdiff(b.ids, a.ids), negated = false) :
-			b.negated ? (ids = setdiff(a.ids, b.ids), negated = false) : (ids = intersect(a.ids, b.ids), negated = false)
-	end
-	return a
-end
-negated() = next_token() == "NOT" ? (take_token(); a = negated(); (ids = a.ids, negated = !a.negated)) : single()
-function single()
-	next_token() === nothing && error("The words end too soon: ", words)
-	if next_token() == "("
-		take_token(); a = either()
-		next_token() == ")" || error("A bracket is not closed in ", words)
-		take_token(); return a
-	end
-	return (ids = term_articles(take_token()), negated = false)
-end
-query_result = either()
-token_at <= length(tokens) && error("The words have a bracket too many: ", words)
-query_result.negated && error("NOT needs words before it, joined by AND: ", words)
-term_words = [(word = lowercase(strip(t, '"')), exact = startswith(t, '"')) for t in tokens if !(t in ("AND", "OR", "NOT", "(", ")"))]
-found = sort!([merge((id = id,), articles[id], (hits = hits[id],)) for id in query_result.ids];
-	by = a -> Tuple(parse.(Int, split(a.id))))
+# The articles with the words, from ARTFL's counts of the hits of each word or phrase broken up by article, half a second
+# apart; in quotes as written, with its accents
+found = encyclopedie_search(words; class, author)
 total = length(found)
 println(total, " articles have ", words, isempty(class) ? "" : ", in the class $class", isempty(author) ? "" : ", by $author")
-widest = maximum((count(a -> a.volume == v, found) for v in 1:17); init = 1)
-for v in 1:17
-	n = count(a -> a.volume == v, found)
-	println("Volume ", lpad(v, 2), lpad(n, 7), " ", repeat("█", round(Int, 40 * n / widest)))
-end
-counts(values) = first(sort!([(v, count(==(v), values)) for v in unique(values) if !isempty(v)]; by = x -> -x[2]), 8)
-println("Classes: ", join(("$v ($n)" for (v, n) in counts([a.class for a in found])), ", "))
-println("Authors: ", join(("$v ($n)" for (v, n) in counts([a.author for a in found])), ", "))
+print_bars(["Volume " * lpad(v, 2) => count(a -> a.volume == v, found) for v in 1:17])
+println("Classes: ", tallied(filter(!isempty, [a.class for a in found]); top = 8))
+println("Authors: ", tallied(filter(!isempty, [a.author for a in found]); top = 8))
 '''
 
 [[steps.inputs]]
@@ -131,12 +55,9 @@ title = "Retrieve"
 intro = "Retrieve the articles found, up to a number, as a table: a row per article with its volume, headword, author and whether the article is signed or attributed to the author, its class of knowledge as the Encyclopédie gives it and as ARTFL's classifier gives it, how often the words are in it, and its page on ARTFL. The table makes no request: Read and Save get the texts."
 code = '''
 total == 0 && error("Step 1 found no articles: change its words, class or author")
-order = "{{order}}"
-sorted = order == "relevance" ? sort(found; by = a -> -a.hits) : found
-article_link(id) = "$artfl/navigate/" * join(split(id), "/")
-results = [merge((number = i,), a, (artfl = article_link(a.id),)) for (i, a) in enumerate(first(sorted, min({{atMost}}, length(sorted))))]
+results = ranked(found, "{{order}}" == "relevance" ? "relevance" : "work"; at_most = {{atMost}})
 println(length(results), " of ", total, " articles retrieved")
-vscodedisplay([Base.structdiff(r, NamedTuple{(:id,)}) for r in results], "Encyclopédie: $words")
+vscodedisplay(without(results, :id), "Encyclopédie: $words")
 '''
 
 [[steps.inputs]]
@@ -166,48 +87,10 @@ title = "Read"
 intro = "Read an article, by its number in the table of Step 2: its text, which ARTFL gives in a request, opens in Pollis's browser with the words marked where they are, and its page on ARTFL and the scan of its first page."
 code = '''
 chosen = results[{{number}}]
-# The text of an article, in paragraphs, without ARTFL's index fields and page images; and the scans of its pages
-function article_text(id)
-	answer = philologic("navigation", ["philo_id" => id])
-	html = replace(answer["text"], r"<span[^>]*class=\"xml-pb-image\"[^>]*>.*?</span>"s => " ", r"<span[^>]*class=\"xml-index\"[^>]*>(?:</span>)?"s => "")
-	paragraphs = [strip(replace(replace(p, r"<[^>]+>"s => "", "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => "\"", "&nbsp;" => " "),
-		r"\s+" => " ")) for p in split(html, r"</?p[^>]*>|<br\s*/?>")]
-	images = get(get(answer, "imgs", Dict()), "current_obj_img", [])
-	return (text = join(filter(!isempty, paragraphs), "\n"), scans = ["https://artflsrv04.uchicago.edu/images/encyclopedie/" * i for i in images])
-end
-read_article = article_text(chosen.id)
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-# The words of the query marked where they are in the text, capitals apart, and accents apart unless they were in quotes
-folded(s) = lowercase(Base.Unicode.normalize(s; stripmark = true))
-marks = [(pattern = Regex("\\b" * replace(replace(t.exact ? t.word : folded(t.word), r"[\\^$.|?+()\[\]{}]" => s"\\\g<0>"), "*" => "\\w*",
-	r"[\s'’\-]+" => "\\W+") * "\\b"), exact = t.exact) for t in term_words]
-# The characters from and to which each match of a pattern runs in a text
-function char_spans(pattern, text)
-	offsets = collect(eachindex(text))
-	return [(searchsortedfirst(offsets, m.offset), searchsortedlast(offsets, m.offset + ncodeunits(m.match) - 1)) for m in eachmatch(pattern, text)]
-end
-function marked(s)
-	f, lower = folded(s), lowercase(s)
-	length(f) == length(s) == length(lower) || return escaped(s)  # a text whose letters change in number when folded is left unmarked
-	spans = sort!(unique(reduce(vcat, (char_spans(m.pattern, m.exact ? lower : f) for m in marks); init = Tuple{Int, Int}[])))
-	chars = collect(s)
-	out, last_char = IOBuffer(), 0
-	for (i, j) in spans
-		i <= last_char && continue
-		print(out, escaped(String(chars[last_char + 1:i - 1])), "<mark>", escaped(String(chars[i:j])), "</mark>")
-		last_char = j
-	end
-	print(out, escaped(String(chars[last_char + 1:end])))
-	return String(take!(out))
-end
-page = joinpath(tempdir(), "encyclopedie-article.html")
-write(page, """<!doctype html><html lang="fr"><head><meta charset="utf-8"><title>$(escaped(chosen.headword))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
-	mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.headword))</h2>
-	<p class="meta">Encyclopédie, volume $(chosen.volume)$(isempty(chosen.class) ? "" : ", " * escaped(chosen.class))$(isempty(chosen.author) ? "" : ", " * escaped(chosen.author) * " ($(chosen.attribution))")
-	· <a href="$(chosen.artfl)">The article on ARTFL</a>$(isempty(read_article.scans) ? "" : " · <a href=\"$(first(read_article.scans))\">The scan of its first page</a>")</p>
-	$(join(("<p>" * marked(p) * "</p>" for p in split(read_article.text, "\n")), "\n"))</body></html>""")
-Pollis.browse(page)
+# The text of the article, without ARTFL's index fields and page images, with the words marked, capitals apart, and
+# accents apart unless they were in quotes; and the scans of its pages
+read_article = encyclopedie_article(chosen.id)
+Pollis.browse(encyclopedie_page(chosen, read_article, words))
 println(chosen.headword, ", volume ", chosen.volume, ", ", chosen.author, "\n\n", read_article.text)
 '''
 
@@ -238,23 +121,14 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the articles retrieved as text files, a file each with its headword, volume, class, author and link above its text, and the table of Step 2 as a CSV file beside them. ARTFL gives the text of each article in a request, with a pause of half a second."
 code = '''
-# The folder of the texts, named after the words, the class and the author
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-saved = mkpath(joinpath(expanduser(raw"{{folder}}"), "encyclopedie", first(plain(join(filter(!isempty, [words, class, author]), " ")), 60)))
-saving = first(results, min({{toSave}}, length(results)))
-for r in saving
-	file = joinpath(saved, lpad(r.number, 5, '0') * "-volume$(r.volume)-" * first(plain(r.headword), 40) * ".txt")
-	isfile(file) && continue  # saved before, by the same query
-	t = article_text(r.id)
-	write(file, r.headword, "\nEncyclopédie, volume ", string(r.volume), ", ", r.class, "\n", r.author, isempty(r.attribution) ? "" : " ($(r.attribution))",
-		"\n", r.artfl, "\n\n", t.text, "\n")
-end
-# The table of the articles
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :volume, :headword, :author, :attribution, :class, :machine_class, :entry_type, :hits, :artfl)
-write(joinpath(saved, "articles.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " articles in ", saved)
+# The texts, a file each, fetched from ARTFL, and the table of the articles, in a folder named after the words, the class
+# and the author
+saved = save_texts(joinpath(expanduser(raw"{{folder}}"), "encyclopedie", plain_name(join(filter(!isempty, [words, class, author]), " "))), results;
+	count = {{toSave}}, table = "articles.csv", name = r -> "volume$(r.volume)-$(plain_name(r.headword, 40))", text = r -> encyclopedie_article(r.id).text,
+	header = r -> [r.headword, "Encyclopédie, volume $(r.volume), $(r.class)", r.author * (isempty(r.attribution) ? "" : " ($(r.attribution))"), r.artfl],
+	columns = (:number, :volume, :headword, :author, :attribution, :class, :machine_class, :entry_type, :hits, :artfl))
+println(saved.saved, " texts and the table of the ", length(results), " articles in ", saved.folder)
+isempty(saved.missed) || println("The texts of articles ", join(saved.missed, ", "), " did not come: run the step again to save them")
 '''
 
 [[steps.inputs]]

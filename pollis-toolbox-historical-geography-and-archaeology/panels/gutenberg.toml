@@ -7,132 +7,40 @@ style = "timeArrow"
 intro = "Find books in Project Gutenberg, the 75,000 books in the public domain in the United States that its volunteers have transcribed since 1971, most of them printed before 1930: query its catalogue by words in their titles, authors, subjects and bookshelves, by language and by the years of their authors, retrieve the books found as a table with their texts, searched for words of their own, read a text with the words marked, and save the texts. The catalogue and the texts come from the mirror of the Project Gutenberg Literary Archive Foundation, downloaded once. A step first runs the steps before it that have not run in the Julia REPL as they are now."
 
 [[packages]]
-name = "CodecZlib.jl"
-github = "https://github.com/JuliaIO/CodecZlib.jl"
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.9"
 
 [[steps]]
 id = "query"
 title = "Query"
 intro = "Find the books whose title, authors, subjects or bookshelves have the words, in a language, by authors who lived between two years, and count them by the quarter century in which their first author died, with their bookshelves, subjects and authors. The catalogue gives no year of first printing, so the years are those of the authors' lives. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. The catalogue, 21 MB, is downloaded into the folder the first time; Update the Catalogue downloads it again, with the books added since."
 code = '''
-using Downloads, CodecZlib
+using HistoricalGeography
 # The query: the words of the catalogue's records, the language, and the years of the authors' lives
 words = strip(raw""" {{words}} """)
 language = strip(raw""" {{language}} """)
-from_year, to_year = strip(raw""" {{from}} """), strip(raw""" {{to}} """)
-mirror = "https://gutenberg.pglaf.org"
-# The catalogue of Project Gutenberg, a row per book, downloaded once
-gutenberg_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "gutenberg"))
-catalogue_file = joinpath(gutenberg_folder, "pg_catalog.csv")
-function download_catalogue()
-	packed = joinpath(gutenberg_folder, "pg_catalog.csv.gz")
-	Downloads.download("$mirror/cache/epub/feeds/pg_catalog.csv.gz", packed; headers = ["User-Agent" => "research-script/1.0"])
-	write(catalogue_file, transcode(GzipDecompressor, read(packed)))
-	rm(packed)
-end
-isfile(catalogue_file) || download_catalogue()
-# The rows of a CSV text, fields apart by commas, those in quotes with commas, lines and quotes written twice in them
-function csv_rows(text)
-	rows, row, field, in_quotes = Vector{String}[], String[], IOBuffer(), false
-	chars = collect(text)
-	k = 1
-	while k <= length(chars)
-		c = chars[k]
-		if in_quotes && c == '"'
-			k < length(chars) && chars[k + 1] == '"' ? (print(field, '"'); k += 1) : (in_quotes = false)
-		elseif in_quotes || !(c in ",\"\n\r")
-			print(field, c)
-		elseif c == '"'
-			in_quotes = true
-		elseif c == ','
-			push!(row, String(take!(field)))
-		elseif c == '\n'
-			push!(row, String(take!(field))); push!(rows, row); row = String[]
-		end
-		k += 1
-	end
-	isempty(row) || (push!(row, String(take!(field))); push!(rows, row))
-	return rows
-end
-rows = csv_rows(read(catalogue_file, String))
-header = (:ebook, :type, :issued, :title, :language, :authors, :subjects, :locc, :bookshelves)
-catalogue = [NamedTuple{header}(Tuple(replace.(r, r"\s*\n\s*" => " "))) for r in rows[2:end] if length(r) == length(header) && r[2] == "Text"]
-# The years of the life of a book's first author, as the catalogue gives them after the name: 1775-1817, 1564?-1616, -0428?-0348?
-function life(authors)
-	m = match(r"(?<born>-?\d{1,4})\??\s*-\s*(?<died>-?\d{1,4})\??", first(split(authors, ";")))
-	m === nothing ? nothing : (born = parse(Int, m[:born]), died = parse(Int, m[:died]))
-end
-# A word of the query as a pattern, a * for any ending
-letter_pattern(word) = join(c == '*' ? "\\w*" : c in "\\^\$.|?+()[]{}" ? "\\" * c : string(c) for c in word)
-# The query as a test of a text, and its patterns, which mark the words: AND, OR, NOT, brackets, phrases in quotes
-function parse_query(words)
-	tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
-	patterns = Regex[]
-	at = 1
-	next_token() = at <= length(tokens) ? tokens[at] : nothing
-	take_token() = (at += 1; tokens[at - 1])
-	function term(token)
-		r = Regex("(?<!\\w)" * join((letter_pattern(lowercase(p)) for p in split(strip(token, '"'))), "[\\s\\-]+") * "(?!\\w)", "i")
-		push!(patterns, r)
-		return text -> occursin(r, text)
-	end
-	function either()
-		test = both()
-		while next_token() == "OR"
-			take_token(); a, b = test, both(); test = text -> a(text) || b(text)
-		end
-		return test
-	end
-	function both()
-		test = negated()
-		while !(next_token() in (nothing, "OR", ")"))
-			next_token() == "AND" && take_token()
-			a, b = test, negated(); test = text -> a(text) && b(text)
-		end
-		return test
-	end
-	negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
-	function single()
-		next_token() === nothing && error("The words end too soon: ", words)
-		if next_token() == "("
-			take_token(); test = either()
-			next_token() == ")" || error("A bracket is not closed in ", words)
-			take_token(); return test
-		end
-		return term(take_token())
-	end
-	isempty(tokens) && return (test = text -> true, patterns = patterns)
-	test = either()
-	at <= length(tokens) && error("The words have a bracket too many: ", words)
-	return (test = test, patterns = patterns)
-end
-record_query = parse_query(words)
-record_text(r) = join((r.title, r.authors, r.subjects, r.bookshelves), " ; ")
-# The authors lived between the years: born before To Year and dead after From Year
-lived(l) = (isempty(from_year) && isempty(to_year)) || (l !== nothing && (isempty(to_year) || l.born <= parse(Int, to_year)) && (isempty(from_year) || l.died >= parse(Int, from_year)))
-in_language(r) = isempty(language) || language in strip.(split(r.language, ";"))
-found = [merge(r, (life = life(r.authors), record_hits = sum((count(p, record_text(r)) for p in record_query.patterns); init = 0)))
-	for r in catalogue if in_language(r) && lived(life(r.authors)) && record_query.test(record_text(r))]
+from_year, to_year = tryparse(Int, strip(raw""" {{from}} """)), tryparse(Int, strip(raw""" {{to}} """))
+folder = expanduser(raw"{{folder}}")
+# The books of the catalogue of Project Gutenberg, downloaded once into the folder gutenberg, whose title, authors,
+# subjects or bookshelves have the words, in the language, by authors who lived between the years
+record_query = text_query(words)
+found = gutenberg_books(record_query; language, from = from_year, to = to_year, folder)
 total = length(found)
 println(total, " books of Project Gutenberg", isempty(language) ? "" : " in $language",
-	isempty(from_year) && isempty(to_year) ? "" : " by authors who lived between $(something(tryparse(Int, from_year), "any year")) and $(something(tryparse(Int, to_year), "any year"))",
+	from_year === nothing && to_year === nothing ? "" : " by authors who lived between $(something(from_year, "any year")) and $(something(to_year, "any year"))",
 	isempty(words) ? "" : " have " * words)
-dated = [r.life.died for r in found if r.life !== nothing]
-if !isempty(dated)
+died = [r.died for r in found if !ismissing(r.died)]
+if !isempty(died)
 	println("By the quarter century in which their first author died:")
-	spans = (minimum(dated) ÷ 25) * 25:25:maximum(dated)
-	widest = maximum(count(y -> s <= y < s + 25, dated) for s in spans)
-	for s in spans
-		n = count(y -> s <= y < s + 25, dated)
-		n > 0 && println(lpad(s, 5), "–", rpad(s + 24, 5), lpad(n, 7), " ", repeat("█", round(Int, 40 * n / widest)))
-	end
+	print_bars(period_counts(died, minimum(died), maximum(died); each = 25))
 end
-println(count(r -> r.life === nothing, found), " books whose authors have no years in the catalogue")
-counts(values) = first(sort!([(v, count(==(v), values)) for v in unique(values) if !isempty(v)]; by = x -> -x[2]), 8)
-total == 0 || for (name, values) in (("Bookshelves", [t for r in found for t in unique(replace(strip(t), r"^Category:\s*" => "") for t in split(r.bookshelves, ";"))]),
-	("Subjects", [strip(t) for r in found for t in split(r.subjects, ";")]), ("Authors", [strip(first(split(r.authors, ";"))) for r in found]))
-	listed = counts(values)
-	isempty(listed) || println(name, ": ", join(("$v ($n)" for (v, n) in listed), "; "))
+println(count(r -> ismissing(r.born), found), " books whose authors have no years in the catalogue")
+if total > 0
+	println("Bookshelves: ", tallied([t for r in found for t in unique(replace(strip(t), r"^Category:\s*" => "") for t in split(r.bookshelves, ";")) if !isempty(t)];
+		top = 8, separator = "; "))
+	println("Subjects: ", tallied(filter(!isempty, [strip(t) for r in found for t in split(r.subjects, ";")]); top = 8, separator = "; "))
+	println("Authors: ", tallied(filter(!isempty, [strip(first(split(r.authors, ";"))) for r in found]); top = 8, separator = "; "))
 end
 '''
 
@@ -173,7 +81,7 @@ id = "update"
 label = "Update the Catalogue"
 desc = "Download the catalogue again, with the books added to Project Gutenberg since it was downloaded, and run the query again"
 code = '''
-download_catalogue()
+gutenberg_catalogue(; folder, update = true)
 println("The catalogue is updated: run Step 1 again to query it")
 '''
 
@@ -184,46 +92,12 @@ intro = "Retrieve the books found, up to a number, as a table with their texts: 
 code = '''
 total == 0 && error("Step 1 found no books: change its words, language or years")
 text_words = strip(raw""" {{textWords}} """)
-text_query = parse_query(text_words)
-order = "{{order}}"
-# The books downloaded: the oldest, newest or those whose records have the words most, by the years of their first author, up to the number
-born(r) = r.life === nothing ? nothing : r.life.born
-candidates = order == "oldest" ? sort(found; by = r -> something(born(r), typemax(Int))) : order == "newest" ? sort(found; by = r -> -something(born(r), typemin(Int) + 1)) :
-	sort(found; by = r -> -r.record_hits)
-candidates = first(candidates, min({{atMost}}, length(candidates)))
-texts_folder = mkpath(joinpath(gutenberg_folder, "texts"))
-# The text of a book of Project Gutenberg, without its header and its licence, a paragraph a line
-function book_text(file)
-	s = replace(read(file, String), "\ufeff" => "", "\r\n" => "\n")
-	start = findfirst(r"^\*\*\* ?START OF (THE|THIS) PROJECT GUTENBERG.*$"m, s)
-	start === nothing || (s = s[nextind(s, last(start)):end])
-	stop = findfirst(r"^\*\*\* ?END OF (THE|THIS) PROJECT GUTENBERG"m, s)
-	stop === nothing || (s = s[1:prevind(s, first(stop))])
-	return join(filter(!isempty, [strip(replace(p, r"\s+" => " ")) for p in split(s, r"\n\s*\n")]), "\n")
-end
-results = NamedTuple[]
-for r in candidates
-	file = joinpath(texts_folder, "pg$(r.ebook).txt")
-	if !isfile(file)
-		sleep(1)  # a pause between requests
-		try
-			Downloads.download("$mirror/cache/epub/$(r.ebook)/pg$(r.ebook).txt", file; headers = ["User-Agent" => "research-script/1.0"])
-		catch
-			println("No plain text of book ", r.ebook, ", ", r.title)
-			continue
-		end
-	end
-	text = book_text(file)
-	text_query.test(text) || continue
-	push!(results, (ebook = parse(Int, r.ebook), title = r.title, authors = r.authors, born = r.life === nothing ? missing : r.life.born,
-		died = r.life === nothing ? missing : r.life.died, language = r.language, subjects = r.subjects, bookshelves = r.bookshelves, issued = r.issued,
-		words = length(split(text)), hits = sum((count(p, text) for p in text_query.patterns); init = 0),
-		link = "https://www.gutenberg.org/ebooks/$(r.ebook)", text = text))
-end
-isempty(text_words) || order != "relevance" || sort!(results; by = r -> -r.hits)
-results = [merge((number = i,), r) for (i, r) in enumerate(results)]
-println(length(candidates), " of the ", total, " books of Step 1 searched", isempty(text_words) ? "" : ", of which " * string(length(results)) * " have " * text_words)
-vscodedisplay([Base.structdiff(r, NamedTuple{(:text,)}) for r in results], "Project Gutenberg: $words")
+in_text = text_query(text_words)
+# The texts of the first books in the order asked, downloaded once into gutenberg/texts, and kept when they have the
+# words of the text
+results = gutenberg_texts(found, in_text; at_most = {{atMost}}, order = "{{order}}", folder)
+println(min({{atMost}}, total), " of the ", total, " books of Step 1 searched", isempty(text_words) ? "" : ", of which " * string(length(results)) * " have " * text_words)
+vscodedisplay(without(results, :text), "Project Gutenberg: $words")
 '''
 
 [[steps.inputs]]
@@ -263,31 +137,12 @@ title = "Read"
 intro = "Read a book, by its number in the table of Step 2: its whole text opens in Pollis's browser with the words of the text marked, or those of the catalogue when there are none, and a link to each passage that has them at the top."
 code = '''
 chosen = results[{{number}}]
-marking = isempty(text_query.patterns) ? record_query.patterns : text_query.patterns
-escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
-# The words marked where the text has them: each pattern of the query, on the text before it is escaped
-function marked(s)
-	spans = sort!(unique(r for p in marking for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
-	out, last_end = IOBuffer(), 0
-	for r in spans
-		first(r) <= last_end && continue
-		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
-		last_end = last(r)
-	end
-	print(out, escaped(s[nextind(s, last_end):end]))
-	return String(take!(out))
-end
-paragraphs = split(chosen.text, "\n")
-with_words = [i for (i, p) in enumerate(paragraphs) if any(r -> occursin(r, p), marking)]
-page = joinpath(tempdir(), "gutenberg-text.html")
-write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(chosen.title))</title>
-	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta,p.passages{font:14px sans-serif;color:#666}
-	p.passages a{margin-right:.5em}mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.title))</h2>
-	<p class="meta">$(escaped(chosen.authors)) · Project Gutenberg $(chosen.ebook) · <a href="$(chosen.link)">The book at Project Gutenberg</a></p>
-	<p class="passages">$(length(with_words)) passages have the words$(isempty(with_words) ? "" : ": ") $(join(("<a href=\"#p$i\">$k</a>" for (k, i) in enumerate(first(with_words, 300))), ""))</p>
-	$(join(("<p id=\"p$i\">" * marked(p) * "</p>" for (i, p) in enumerate(paragraphs)), "\n"))</body></html>""")
-Pollis.browse(page)
-println(chosen.title, "\n", chosen.authors, "\n", length(with_words), " passages have the words")
+# The text with the words marked, those of the text, or else those of the catalogue's records
+marks = isempty(text_words) ? record_query.patterns : in_text.patterns
+page = reading_page(chosen.title, split(chosen.text, "\n"); marks, meta = "$(chosen.authors) · Project Gutenberg $(chosen.ebook)",
+	link = "The book at Project Gutenberg" => chosen.link)
+Pollis.browse(page.file)
+println(chosen.title, "\n", chosen.authors, "\n", length(page.passages), " passages have the words")
 '''
 
 [[steps.inputs]]
@@ -309,20 +164,11 @@ id = "save"
 title = "Save"
 intro = "Save the texts of the books retrieved as text files, a file each with its title, authors, number and link above its text, and the table of Step 2 as a CSV file beside them. The texts came with Step 2, so saving makes no request."
 code = '''
-# The folder of the texts, named after the words, the language and the years
-plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
-saved = mkpath(joinpath(gutenberg_folder, "saved", first(plain(join(filter(!isempty, [words, text_words, language, from_year, to_year]), " ")), 60)))
-saving = first(results, min({{toSave}}, length(results)))
-for r in saving
-	write(joinpath(saved, lpad(r.number, 5, '0') * "-pg$(r.ebook)-" * first(plain(r.title), 50) * ".txt"), r.title, "\n", r.authors, "\n",
-		"Project Gutenberg ", string(r.ebook), "\n", r.link, "\n\n", r.text, "\n")
-end
-# The table of the books
-quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
-columns = (:number, :ebook, :title, :authors, :born, :died, :language, :subjects, :bookshelves, :issued, :words, :hits, :link)
-write(joinpath(saved, "books.csv"), join(columns, ",") * "\n" *
-	join((join((quoted(coalesce(getfield(r, c), "")) for c in columns), ",") for r in results), "\n") * "\n")
-println(length(saving), " texts and the table of the ", length(results), " books in ", saved)
+# The texts, a file each, and the table of the books, in a folder named after the words, the language and the years
+saved = save_texts(joinpath(folder, "gutenberg", "saved", plain_name(join(filter(!isempty, [words, text_words, language, string.(something.([from_year, to_year], ""))...]), " "))),
+	results; count = {{toSave}}, table = "books.csv", name = r -> "pg$(r.ebook)-$(plain_name(r.title, 50))",
+	header = r -> [r.title, r.authors, "Project Gutenberg $(r.ebook)", r.link])
+println(saved.saved, " texts and the table of the ", length(results), " books in ", saved.folder)
 '''
 
 [[steps.inputs]]
