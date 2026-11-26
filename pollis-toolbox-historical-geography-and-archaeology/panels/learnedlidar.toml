@@ -1,4 +1,4 @@
-# Learned Detection in Lidar: trained neural networks applied to lidar terrain models to find archaeological features, starting with the published models of ADAF (HRNet segmentation and Faster R-CNN object detection of all archaeology, barrows, enclosures and ringforts) run in Julia with ArchaeologicalDetection.jl, NNlib.jl and Pickle.jl, and SmartRegions.jl for their outlines and the scheduled monuments
+# Learned Detection in Lidar: trained neural networks applied to lidar terrain models to find archaeological features: the published models of ADAF (HRNet segmentation and Faster R-CNN object detection of all archaeology, barrows, enclosures and ringforts) and the YOLOv3 tumulus detector of Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021), with its Sentinel-2 soil mask, run in Julia with ArchaeologicalDetection.jl, NNlib.jl and Pickle.jl, and SmartRegions.jl for their outlines and the scheduled monuments
 
 [meta]
 title = "Learned Detection in Lidar"
@@ -40,6 +40,10 @@ name = "Pickle.jl"
 github = "https://github.com/chengchingwen/Pickle.jl"
 
 [[packages]]
+name = "DecisionTree.jl"
+github = "https://github.com/JuliaAI/DecisionTree.jl"
+
+[[packages]]
 name = "Rasters.jl"
 github = "https://github.com/rafaqz/Rasters.jl"
 
@@ -63,13 +67,13 @@ description = "What learned detection is, what a trained model knows, and where 
 name = "Diagnostics"
 file = "learnedlidar/diagnostics.md"
 bundled = true
-description = "No features, too many features, features cut at the seams of the tiles, and models applied far from where they were trained"
+description = "No features, too many features, features cut at the seams of the tiles, models applied far from where they were trained, and tumuli missed or found where there are none"
 
 [[wikis]]
 name = "Decision Guide"
 file = "learnedlidar/decision-guide.md"
 bundled = true
-description = "Which model to apply, and how to set the threshold, the minimum area and the minimum roundness"
+description = "Which model to apply, whether to apply the soil mask, and how to set the threshold, the minimum area, the minimum roundness and the minimum similarity"
 
 [[wikis]]
 separator = true
@@ -79,6 +83,12 @@ label = "Methods"
 name = "ADAF Models"
 file = "learnedlidar/adaf.md"
 bundled = true
+
+[[wikis]]
+name = "Tumuli Model"
+file = "learnedlidar/tumuli.md"
+bundled = true
+description = "The tumulus detector of north-western Iberia: its training, the Multi-Scale Relief Model, YOLOv3, the Sentinel-2 soil mask, and its check against Darknet"
 
 [[references]]
 separator = true
@@ -107,6 +117,9 @@ key = "DKPKS...2023a"
 
 [[references]]
 key = "ZRCUL2025a"
+
+[[references]]
+key = "JAIC2026a"
 
 [[references]]
 separator = true
@@ -138,6 +151,24 @@ key = "HZRS2016a"
 key = "LDGHH...2017a"
 
 [[references]]
+key = "BOLCF...2021a"
+
+[[references]]
+key = "OP2018a"
+
+[[references]]
+key = "RF2018a"
+
+[[references]]
+key = "OCGLG...2020a"
+
+[[references]]
+key = "Bre2001a"
+
+[[references]]
+key = "DDCCF...2012a"
+
+[[references]]
 separator = true
 label = "Data"
 
@@ -149,6 +180,15 @@ key = "EA2022a"
 
 [[references]]
 key = "HE2026a"
+
+[[references]]
+key = "IGN2026b"
+
+[[references]]
+key = "XG2026a"
+
+[[references]]
+key = "E2026a"
 
 [[faq]]
 question = "What does Learned Detection in Lidar compute?"
@@ -170,6 +210,20 @@ answer = '''
 The segmentation network of Learned Detection in Lidar is the HRNet of AiTLAS, the toolbox ADAF runs, rewritten in Julia in ArchaeologicalDetection.jl with NNlib.jl and loaded with ADAF's own trained weights. On a tile of 1024 by 1024 cells of a lidar terrain model, its probabilities differ from those of the PyTorch model by less than 0.0001 at every cell, and the same cells reach a probability of 0.5. The object detection network is torchvision's Faster R-CNN, rewritten in the same way: on the same tile, it finds the same boxes as torchvision, their sides within 0.0001 cells and their scores within 0.00001.
 '''
 wiki = "ADAF Models"
+
+[[faq]]
+question = "Is the Julia tumulus detector the same as the authors' Darknet model?"
+answer = '''
+The Tumuli model of Learned Detection in Lidar is the YOLOv3 network of Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021), rewritten in Julia in ArchaeologicalDetection.jl with NNlib.jl and loaded with the authors' own weights and configuration. On the authors' 30 validation images, 15 of Galicia and 15 of Laboreiro in Portugal, it finds the same 72 tumuli as their Darknet. 71 have the same centre and size to the cell and the same similarity to the percent that Darknet prints; the last has a similarity of 95.5%, which Darknet prints as 95% and Julia rounds to 96%. On the authors' own terrain model of a square kilometre of Calvos de Randín, it finds 59 of the 60 tumuli they published there, a median of 0.75 m from their positions.
+'''
+wiki = "Tumuli Model"
+
+[[faq]]
+question = "Why does the tumulus detector find fewer tumuli on my terrain model than the authors found?"
+answer = '''
+The detector was trained on the Multi-Scale Relief Model of one terrain model, the 1 m model of the Xunta de Galicia (MDT_1m_h50). It finds tumuli as they appear in that model. On the same square kilometre, a terrain model made from PNOA's lidar point clouds of 2016 or 2024 has a highest local relief of less than 0.25 m (2016) or 0.2 m (2024) within 2 m of half of the authors' tumuli, and the detector finds 6 and 1 of their 60. A terrain model made in another way, at another resolution or from another survey, shows mounds otherwise, and the detector finds them otherwise.
+'''
+wiki = "Diagnostics"
 
 [[faq]]
 question = "Why are there gaps along straight lines in the features of Learned Detection in Lidar?"
@@ -212,7 +266,7 @@ println(size(dem, X), " by ", size(dem, Y), " cells of ", dx, ", in a projected 
 [[steps.inputs]]
 id = "folder"
 label = "Folder"
-tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. The models are kept in its adaf folder, and Steps 5 and 8 write there."
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. A file given by an absolute path is read where it is. The models are kept in its adaf and tumuli folders, and Steps 3, 5 and 8 write there."
 default = "~/.pollis/data/examples"
 folder = "data/examples"
 chooseFolder = false
@@ -220,26 +274,27 @@ chooseFolder = false
 [[steps.inputs]]
 id = "demFile"
 label = "Terrain Model"
-tooltip = "A GeoTIFF of a bare-earth terrain model in metres, in the folder, or an absolute path, in a projected coordinate system with square cells. With the default, wandlebury-dtm.tif, the code first reads the Environment Agency's 1 m lidar terrain model of 2 x 2 km south-east of Cambridge from its Web Coverage Service, unless the folder has the file already."
+tooltip = "A GeoTIFF of a bare-earth terrain model in metres, in the folder, or an absolute path, in a projected coordinate system with square cells. With the default, wandlebury-dtm.tif, the code first reads the Environment Agency's 1 m lidar terrain model of 2 x 2 km south-east of Cambridge from its Web Coverage Service, unless the folder has the file already. The Tumuli model was trained on the 1 m terrain model of the Xunta de Galicia, whose sheets, MDT_1m_h50_<sheet>.zip, are downloaded by hand from the Xunta's Descargas de Cartografía, under Capas de Información Ráster (IMG)."
 default = "wandlebury-dtm.tif"
 
 [[steps]]
 id = "network"
 title = "Trained Network Model"
-intro = "Choose one of ADAF's trained models. Four are HRNet segmentation models and four are Faster R-CNN object detection models, each for one class: all archaeology, barrows, enclosures or ringforts."
+intro = "Choose a trained model. ADAF's are four HRNet segmentation models and four Faster R-CNN object detection models, each for one class: all archaeology, barrows, enclosures or ringforts. The Tumuli model is the YOLOv3 object detector of burial mounds of Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021)."
 code = '''
 {{?feature=all|barrow|enclosure|ringfort}}model = adaf_model(adaf_weights(folder; feature = :{{feature}}));  # ADAF's trained HRNet model, downloaded once (about 860 MB)
 {{?feature=fasterrcnn-all}}model = adaf_model(adaf_weights(folder; feature = :all, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
 {{?feature=fasterrcnn-barrow}}model = adaf_model(adaf_weights(folder; feature = :barrow, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
 {{?feature=fasterrcnn-enclosure}}model = adaf_model(adaf_weights(folder; feature = :enclosure, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
 {{?feature=fasterrcnn-ringfort}}model = adaf_model(adaf_weights(folder; feature = :ringfort, network = :fasterrcnn));  # ADAF's trained Faster R-CNN model, downloaded once (about 520 MB)
+{{?feature=tumuli}}model = tumuli_model(tumuli_weights(folder));  # the authors' trained YOLOv3 model, downloaded once from their link (about 250 MB)
 '''
 
 [[steps.inputs]]
 id = "feature"
 label = "Trained Network Model"
 kind = "select"
-tooltip = "Each model was trained by ADAF's authors on lidar of Ireland to find one class: All Archaeology is any of barrows, enclosures and ringforts. An HRNet model is about 860 MB and a Faster R-CNN model about 520 MB, each downloaded once."
+tooltip = "Each of ADAF's models was trained by its authors on lidar of Ireland to find one class: All Archaeology is any of barrows, enclosures and ringforts. An HRNet model is about 860 MB and a Faster R-CNN model about 520 MB. The Tumuli model was trained by Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021) on tumuli of Galicia and northern Portugal, and is about 250 MB. Each is downloaded once."
 default = "all"
 
 [[steps.inputs.options]]
@@ -274,26 +329,55 @@ label = "Faster R-CNN Object Detection: Enclosures"
 value = "fasterrcnn-ringfort"
 label = "Faster R-CNN Object Detection: Ringforts"
 
+[[steps.inputs.options]]
+value = "tumuli"
+label = "YOLOv3 Object Detection: Tumuli"
+
 [[steps]]
 id = "image"
 title = "Input Image"
-intro = "Prepare the terrain model as the chosen model expects it. For ADAF, that is the simple local relief model with a radius of 10 m, or 10 cells where cells are 1 m or more, from -0.5 to 0.5 m stretched onto 0 to 1."
+intro = "Prepare the terrain model as the chosen model expects it. For ADAF, that is the simple local relief model with a radius of 10 m, or 10 cells where cells are 1 m or more, from -0.5 to 0.5 m stretched onto 0 to 1. For the Tumuli model, it is the Multi-Scale Relief Model, black where it is 0 or below and where the soil mask finds no soil fit for tumuli."
 code = '''
-image = adaf_input(dem)
+{{?feature!=tumuli}}image = adaf_input(dem)
+{{?feature=tumuli}}{{?soilMask=none}}soil = nothing  # no soil mask
+{{?feature=tumuli}}{{?soilMask=sentinel}}composite_path = joinpath(folder, splitext(basename(dem_path))[1] * "-sentinel.tif")  # the composite, read from this file when it is there
+{{?feature=tumuli}}{{?soilMask=sentinel}}scenes = isfile(composite_path) ? [] : filter(s -> s.acquired < "2020-06-06", sentinel_scenes(lonlat_box(dem); years = 2016:2020, cloud = 20))  # the authors' period, to 5 June 2020
+{{?feature=tumuli}}{{?soilMask=sentinel}}composite = sentinel_composite(scenes, lonlat_box(dem); path = composite_path)
+{{?feature=tumuli}}{{?soilMask=sentinel}}soil = tumuli_soil(tumuli_soil_model(), composite; to = dem)  # 1 where the random forest finds soil fit for tumuli, on the grid of the terrain model
+{{?feature=tumuli}}image = tumuli_input(dem; soil = soil)
+{{?feature=tumuli}}{{?soilMask=sentinel}}println(round(100 * count(>(0), skipmissing(soil)) / length(soil); digits = 1), "% of the cells on soil fit for tumuli")
 '''
+
+[[steps.inputs]]
+id = "soilMask"
+label = "Soil Mask"
+kind = "select"
+when = "feature=tumuli"
+tooltip = "With the Sentinel-2 soil mask, as the authors applied it, the cells where a random forest, trained on their cells of Galicia, finds no soil fit for tumuli, such as rock outcrops, towns and water, are black in the image. It reads the mean of the Sentinel-2 Level-2A scenes over the terrain model from November 2016 to 5 June 2020, some minutes for the 100 to 200 scenes of a small area, and saves it in the folder as <terrain model>-sentinel.tif, read from there later."
+default = "sentinel"
+
+[[steps.inputs.options]]
+value = "sentinel"
+label = "Sentinel-2 Soil Mask"
+
+[[steps.inputs.options]]
+value = "none"
+label = "None"
 
 [[steps]]
 id = "run"
 title = "Run the Network"
-intro = "The network reads the input image on tiles of 1024 by 1024 cells, from the north-west corner. Each tile takes several seconds with HRNet, and about 40 seconds with Faster R-CNN."
+intro = "The network reads the input image on tiles of 1024 by 1024 cells, from the north-west corner. Each tile takes several seconds with HRNet, about 15 seconds with the Tumuli model, and about 40 seconds with Faster R-CNN."
 code = '''
 {{?feature=all|barrow|enclosure|ringfort}}probability = adaf_probability(model, dem)  # the probability of a feature at each cell, tile by tile
 {{?feature=fasterrcnn-all|fasterrcnn-barrow|fasterrcnn-enclosure|fasterrcnn-ringfort}}probability = adaf_probability(model, dem)  # the score of the best box over each cell, tile by tile
+{{?feature=tumuli}}boxes = tumuli_boxes(model, image)  # the boxes of similarity above 25%, tile by tile, as Darknet keeps them
+{{?feature=tumuli}}probability = tumuli_features(boxes, image).similarity  # the similarity of the best box over each cell
 '''
 
 [[steps.sections]]
 heading = "What the Network Gives"
-items = ["An HRNet model gives a probability map: the probability of a feature at each cell.", "A Faster R-CNN model gives boxes, each with a score. Each cell takes the score of the best box over it, so the cells at or above a threshold are those of the boxes."]
+items = ["An HRNet model gives a probability map: the probability of a feature at each cell.", "A Faster R-CNN model gives boxes, each with a score. Each cell takes the score of the best box over it, so the cells at or above a threshold are those of the boxes.", "The Tumuli model gives boxes, each with its similarity to the tumuli it was trained on, as the authors called its confidence. Each cell takes the similarity of the best box over it."]
 
 [[steps]]
 id = "save-output"
@@ -305,7 +389,8 @@ id = "save-probability"
 label = "Probability Map as Cloud-Optimised GeoTIFF"
 desc = "Write the probability map to a Cloud-Optimised GeoTIFF in the folder of the files, with DEFLATE compression, to open in a GIS beside other layers"
 code = '''
-out = joinpath(folder, "adaf-{{feature}}.tif")
+{{?feature!=tumuli}}out = joinpath(folder, "adaf-{{feature}}.tif")
+{{?feature=tumuli}}out = joinpath(folder, "tumuli-similarity.tif")
 if isfile(out)
 	println(out, " is there already: rename or move it first")
 else
@@ -317,30 +402,42 @@ end
 [[steps]]
 id = "features"
 title = "Compute the Features"
-intro = "The cells at or above the threshold are joined into regions: for HRNet, without the 8 cells along the edges of each tile, as ADAF does; for Faster R-CNN, the boxes, overlapping ones joined. The minimum area and the minimum roundness then filter the regions, which are ranked by their highest probability or score."
+intro = "The cells at or above the threshold are joined into regions: for HRNet, without the 8 cells along the edges of each tile, as ADAF does; for Faster R-CNN, the boxes, overlapping ones joined. The minimum area and the minimum roundness then filter the regions, which are ranked by their highest probability or score. For the Tumuli model, each box of at least the minimum similarity is a tumulus, at its centre, with its size, as the authors listed them."
 code = '''
 {{?feature=all|barrow|enclosure|ringfort}}found = adaf_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}});
 {{?feature=fasterrcnn-all|fasterrcnn-barrow|fasterrcnn-enclosure|fasterrcnn-ringfort}}found = adaf_features(probability; threshold = {{threshold}}, min_area = {{minArea}}, min_roundness = {{minRoundness}}, margin = 0);  # boxes: no cells left out along the edges of the tiles
-candidates = sort(found.candidates; by = c -> -c.probability);  # the features, ranked by their highest probability
+{{?feature=tumuli}}found = tumuli_features(boxes, image; min_similarity = {{minSimilarity}});
+{{?feature!=tumuli}}candidates = sort(found.candidates; by = c -> -c.probability);  # the features, ranked by their highest probability
+{{?feature=tumuli}}candidates = sort(found.candidates; by = c -> -c.similarity);  # the tumuli, ranked by their similarity
 println(length(candidates), " features")
 candidates[1:min(15, end)]  # the first 15
 '''
 
 [[steps.inputs]]
+id = "minSimilarity"
+label = "Minimum Similarity"
+when = "feature=tumuli"
+tooltip = "The similarity, from 0 to 1, a box of the Tumuli model must reach to be a tumulus. The authors kept boxes of at least 0.25, as Darknet does by default; the boxes below it are not kept by the network."
+default = "0.25"
+
+[[steps.inputs]]
 id = "threshold"
 label = "Threshold"
+when = "feature!=tumuli"
 tooltip = "The probability, or for Faster R-CNN the score, from 0 to 1, a cell must reach to belong to a feature. ADAF's default is 0.5."
 default = "0.5"
 
 [[steps.inputs]]
 id = "minArea"
 label = "Minimum Area (m²)"
+when = "feature!=tumuli"
 tooltip = "Features of this area or less are left out, in square metres. 0 keeps every feature, as ADAF does by default."
 default = "0"
 
 [[steps.inputs]]
 id = "minRoundness"
 label = "Minimum Roundness"
+when = "feature!=tumuli"
 tooltip = "Features of this roundness or less are left out: 4 pi times the area over the squared perimeter of the convex hull, 1 for a circle and 0.785 for a square. 0 keeps every feature, as ADAF does by default."
 default = "0"
 
@@ -391,7 +488,7 @@ label = "None"
 [[steps.actions]]
 id = "zoom"
 label = "Zoom and Pan"
-desc = "The image the model reads and the probability of a feature (for Faster R-CNN, the score of the best box), as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
+desc = "The image the model reads and the probability of a feature (for Faster R-CNN, the score of the best box; for the Tumuli model, its similarity), as separate maps, side by side with aerial or satellite imagery of the same ground, from the source Imagery names, with each feature outlined in yellow, on the whole area: the hand moves the maps together, + and − zoom them, Zoom on the Place goes to the square of the Zoom Size around the Zoom Centre and Reset back to the whole area, with a scale bar and N, E, S and W"
 code = '''
 x0, y0 = {{zoomCentre}}
 d = {{zoomSize}} / 2
@@ -400,13 +497,14 @@ Pollis.browse(terrain_maps("Learned Detection in Lidar",
 	"Image the Model Reads" => image,
 {{?feature=all|barrow|enclosure|ringfort}}	"Probability of a Feature" => probability;
 {{?feature=fasterrcnn-all|fasterrcnn-barrow|fasterrcnn-enclosure|fasterrcnn-ringfort}}	"Score of the Best Box" => probability;
+{{?feature=tumuli}}	"Similarity of the Best Box" => probability;
 	labels = found.labels, centre = (x0, y0), width = 2d, imagery = :{{imagery}}))
 '''
 
 [[steps]]
 id = "save"
 title = "Save Features"
-intro = "Write the features for a GIS: the outline of each, with its area, its roundness and its probability."
+intro = "Write the features for a GIS: the outline of each, with its area, its roundness and its probability; for the Tumuli model, the box of each, with its size and its similarity."
 
 [[steps.actions]]
 id = "save-features"
@@ -416,7 +514,9 @@ code = '''
 using DuckDB
 con = DBInterface.connect(DuckDB.DB)
 DBInterface.execute(con, "LOAD spatial")
-out = save_candidates(con, candidates, joinpath(folder, "adaf-{{feature}}.gpkg"); crs = dem, labels = found.labels)
+{{?feature!=tumuli}}path = joinpath(folder, "adaf-{{feature}}.gpkg")
+{{?feature=tumuli}}path = joinpath(folder, "tumuli.gpkg")
+out = save_candidates(con, candidates, path; crs = dem, labels = found.labels)
 println("Wrote ", length(candidates), " features to ", out)
 '''
 

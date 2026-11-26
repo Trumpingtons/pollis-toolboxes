@@ -20,7 +20,28 @@ The local relief model needs heights within 10 m or 10 cells of each cell. Close
 
 A trained model gives a probability of resemblance, not of archaeology ([Čož, Corns, Curran, Kocev and Kokalj (2026)](#ref-CCCKK2026a)). Natural forms such as glacial mounds, sinkholes and the scars of springs, and modern ones such as reservoirs, roundabouts, landscaped mounds and the bunkers of golf courses, can resemble barrows and ringforts closely. These false alarms are expected, and each feature is a place to check. In England, Features and Scheduled Monuments sets the features beside the recorded monuments ([Historic England (2026)](#ref-HE2026a)). Older maps, aerial photographs and visits to the ground decide the rest.
 
+## Few Tumuli on Another Terrain Model
+
+The Tumuli model learned tumuli as they appear in the Multi-Scale Relief Model of one terrain model: the Xunta de Galicia's 1 m model, made from the lidar flights of 2015 and 2016, its points classified by hand ([Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021)](#ref-BOLCF...2021a); [Xunta de Galicia (2026)](#ref-XG2026a)).
+
+The same square kilometre of Calvos de Randín was read from two terrain models:
+- On the Xunta's model of the authors' tile 41722, the model finds 59 of the 60 tumuli the authors list there.
+- On a terrain model made from PNOA's lidar point clouds of 2016 or of 2024, by inverse distance weighting or by triangulation alike, it finds 6 and 1 of them ([Instituto Geográfico Nacional (2026)](#ref-IGN2026b)).
+
+In those models, the highest local relief within 2 m of half of the authors' tumuli is less than 0.25 m (2016) or 0.2 m (2024). Few tumuli on a terrain model made otherwise, from another survey, by another classification or at another resolution, may come from the terrain model and not from the ground. In Galicia, the Xunta's sheets, `MDT_1m_h50_<sheet>.zip`, are the terrain model the detector learned from.
+
+## Tumuli Removed by the Soil Mask
+
+The soil mask sets the image to 0 on land where its random forest finds no tumuli can be, and no tumulus is found there. The authors' mask removed 24 of their known tumuli from the training data ([Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021)](#ref-BOLCF...2021a)). The classes are of cells of 10 m, the cells of Sentinel-2, so a tumulus of 15 to 20 m covers few of them. Input Image, Step 3, prints the share of cells on land where tumuli can be found. Running it again with the Soil Mask set to None, and the steps after it, shows which tumuli the mask removed.
+
+## Rock Outcrops, Roofs and Pools Found as Tumuli
+
+Tumular forms that are not tumuli are the usual false detections of mound detectors. The authors' soil mask removed all urban areas and road infrastructure in Galicia, roundabouts among them, but not every false detection ([Berganzo-Besga, Orengo, Lumbreras, Carrero-Pazos, Fonte and Vilas-Estévez (2021)](#ref-BOLCF...2021a)). Of 3,086 detections they checked on aerial imagery, 324 were not tumuli: 225 rock outcrops, 33 roofs of isolated houses, 9 swimming pools and 57 other mound-shaped features. Some, such as mounds on golf courses, were told apart only by where they lay. The imagery beside the maps in Zoom and Pan, Look at the Features, shows the land at each tumulus found.
+
 ## References
+
+<a id="ref-BOLCF...2021a"></a>Berganzo-Besga, I., Orengo, H. A., Lumbreras, F., Carrero-Pazos, M., Fonte, J. and Vilas-Estévez, B. (2021). Hybrid MSRM-based deep learning and multitemporal Sentinel 2-based machine learning algorithm detects near 10k archaeological tumuli in north-western Iberia. *Remote Sensing* 13(20), 4181. [doi:10.3390/rs13204181](https://doi.org/10.3390/rs13204181)
+
 
 <a id="ref-CCCKK2026a"></a>Čož, N., Corns, A., Curran, S., Kocev, D. and Kokalj, Ž. (2026). Automatic detection of archaeological features from airborne laser scanning data using deep learning: development and evaluation of the ADAF tool. *Journal of Archaeological Science: Reports* 71, 105733. [doi:10.1016/j.jasrep.2026.105733](https://doi.org/10.1016/j.jasrep.2026.105733)
 
@@ -28,5 +49,9 @@ A trained model gives a probability of resemblance, not of archaeology ([Čož, 
 
 <a id="ref-HE2026a"></a>Historic England (2026). National Heritage List for England (NHLE). Dataset, updated continuously. [historicengland.org.uk/listing/the-list](https://historicengland.org.uk/listing/the-list/)
 
+<a id="ref-IGN2026b"></a>Instituto Geográfico Nacional (2026). PNOA-LiDAR. Dataset. Centro Nacional de Información Geográfica. [pnoa.ign.es](https://pnoa.ign.es/web/portal/pnoa-lidar/presentacion)
+
+<a id="ref-XG2026a"></a>Xunta de Galicia (2026). MDT_1m_h50: digital terrain model of Galicia at 1 m from lidar. Dataset. Instituto de Estudos do Territorio. [mapas.xunta.gal](https://mapas.xunta.gal/es/mapas/productos-cartograficos/relieve)
+
 ## See Also
-- [Overview](overview.md) · [ADAF Models](adaf.md) · [Decision Guide](decision-guide.md)
+- [Overview](overview.md) · [ADAF Models](adaf.md) · [Tumuli Model](tumuli.md) · [Decision Guide](decision-guide.md)
