@@ -1,0 +1,247 @@
+# Cyclopaedia by Ephraim Chambers: the two volumes of the first edition (1728), as the Internet Archive reads the Getty Research Institute's scans, downloaded once, split into entries at their headwords, searched in Julia by words with the long s read as f, the entries found retrieved as a table, read with the words marked beside the page of the scan, and saved as text files; with CodecZlib.jl and JSON.jl
+
+[meta]
+title = "Cyclopaedia by Ephraim Chambers"
+viewType = "pollis.cyclopaedia"
+style = "timeArrow"
+intro = "Find the entries of the Cyclopaedia, or, An Universal Dictionary of Arts and Sciences of Ephraim Chambers, the English encyclopedia of 1728 whose translation began the Encyclopédie: query its two volumes by words, in their headwords or their text, retrieve the entries found as a table, read an entry with the words marked, and save the texts. The text is the Internet Archive's reading of the Getty Research Institute's scans, downloaded once: a rough reading, which takes the long s for an f, which the search allows for, and at times mixes the two columns of a page. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+[[packages]]
+name = "CodecZlib.jl"
+github = "https://github.com/JuliaIO/CodecZlib.jl"
+
+[[packages]]
+name = "JSON.jl"
+github = "https://github.com/JuliaIO/JSON.jl"
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Search the entries of the two volumes, A to H and I to Z, and count those that have the words, letter by letter of their headwords. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. An s in a word also finds an f, as the reading has it for the long s: sense finds Senfe. The text of each volume, 4 MB compressed, and the list of its pages are downloaded into the folder the first time."
+code = '''
+using CodecZlib, JSON, Downloads
+# The query: the words, and where they are searched, in the headwords or in the whole text of the entries
+words = strip(raw""" {{words}} """)
+within = "{{within}}"
+# The two volumes of the scans of the Getty Research Institute at the Internet Archive, each with the first letters of its entries, I and J one letter in 1728
+volumes = [(volume = 1, item = "gri_33125011113764", letters = "A–H", first_letters = "A"), (volume = 2, item = "gri_33125011134307", letters = "I–Z", first_letters = "IJ")]
+texts_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "cyclopaedia"))
+for v in volumes, suffix in ("_hocr_searchtext.txt.gz", "_hocr_pageindex.json.gz")
+	file = joinpath(texts_folder, v.item * suffix)
+	isfile(file) || Downloads.download("https://archive.org/download/$(v.item)/$(v.item)$suffix", file)
+end
+read_gzip(file) = String(transcode(GzipDecompressor, read(file)))
+# The entries of a volume: a paragraph of the reading starts an entry when it opens with a headword in capitals and a comma, and the
+# paragraphs after it belong to it; each with its page of the scan, from the characters where each page starts
+headword = r"^(?<head>[A-Z][A-Z'\-]+(?:[ \-][A-Z][A-Z'\-]+)*) ?,"
+field_of = r"^[^,]*,\s*(?:or [^,]*,\s*)?(?:in|among)\s+(?:the\s+)?(?:antient\s+|ancient\s+)?(?<field>[A-Z][a-z]+)"
+cleaned(s) = replace(replace(s, r"(?<=\p{Ll})- (?=\p{Ll})" => ""), r"\s+" => " ")  # words joined across lines, one space
+function volume_entries(v)
+	text = read_gzip(joinpath(texts_folder, v.item * "_hocr_searchtext.txt.gz"))
+	page_starts = [p[1] for p in JSON.parse(read_gzip(joinpath(texts_folder, v.item * "_hocr_pageindex.json.gz")))]
+	found_entries = NamedTuple[]
+	head, field, leaf, paragraphs, offset, started = "(Front Matter)", "", 0, String[], 0, false
+	function add()
+		isempty(paragraphs) || push!(found_entries, (volume = v.volume, headword = head, field = field, leaf = leaf,
+			text = join(paragraphs, "\n"), link = "https://archive.org/details/$(v.item)/page/n$leaf"))
+	end
+	for line in split(text, '\n')
+		m = match(headword, line)
+		started = started || (m !== nothing && first(m[:head]) in v.first_letters && length(m[:head]) > 2)
+		if started && m !== nothing
+			add()
+			f = match(field_of, line)
+			head, field, leaf, paragraphs = m[:head], f === nothing ? "" : f[:field], searchsortedlast(page_starts, offset) - 1, String[]
+		end
+		isempty(strip(line)) || push!(paragraphs, cleaned(line))
+		offset += length(line) + 1
+	end
+	add()
+	return found_entries
+end
+entries = reduce(vcat, (volume_entries(v) for v in volumes); init = NamedTuple[])
+# The query as a test of a text: each word or phrase a regular expression, an s also an f, a phrase's words apart by spaces
+tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
+term_patterns = Regex[]
+function term_regex(token)
+	parts = split(lowercase(strip(token, '"')))
+	pattern = join((replace(replace(replace(p, r"[\\^$.|?+()\[\]{}]" => s"\\\g<0>"), "s" => "[sf]"), "*" => "\\w*") for p in parts), "[\\s\\-]+")
+	r = Regex("\\b" * pattern * "\\b", "i")
+	push!(term_patterns, r)
+	return text -> occursin(r, text)
+end
+token_at = 1
+next_token() = token_at <= length(tokens) ? tokens[token_at] : nothing
+take_token() = (global token_at += 1; tokens[token_at - 1])
+function either()
+	test = both()
+	while next_token() == "OR"
+		take_token(); a, b = test, both(); test = text -> a(text) || b(text)
+	end
+	return test
+end
+function both()
+	test = negated()
+	while !(next_token() in (nothing, "OR", ")"))
+		next_token() == "AND" && take_token()
+		a, b = test, negated(); test = text -> a(text) && b(text)
+	end
+	return test
+end
+negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
+function single()
+	next_token() === nothing && error("The words end too soon: ", words)
+	if next_token() == "("
+		take_token(); test = either()
+		next_token() == ")" || error("A bracket is not closed in ", words)
+		take_token(); return test
+	end
+	return term_regex(take_token())
+end
+matches_query = either()
+token_at <= length(tokens) && error("The words have a bracket too many: ", words)
+# The entries with the words, each with how often the words are in it
+searched(e) = within == "headwords" ? e.headword : e.text
+found = [merge(e, (hits = sum(r -> count(r, e.text), term_patterns),)) for e in entries if matches_query(searched(e))]
+total = length(found)
+println(total, " of the ", length(entries), " entries have ", words, within == "headwords" ? " in their headwords" : "")
+letters = [string(l) for l in 'A':'Z']
+by_letter = [(letter = l, entries = count(e -> startswith(e.headword, l), found)) for l in letters]
+widest = maximum(x -> x.entries, by_letter; init = 1)
+foreach(x -> x.entries > 0 && println(rpad(x.letter, 3), lpad(x.entries, 6), " ", repeat("█", round(Int, 40 * x.entries / widest))), by_letter)
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find, in English: telescope, or comet AND Newton, or (magnet OR loadstone) NOT compass, or \"Royal Society\" for the words next to one another. A word ending in * finds all its endings, and an s also finds an f. Capitals do not matter."
+default = "telescope*"
+
+[[steps.inputs]]
+id = "within"
+label = "Search In"
+kind = "select"
+tooltip = "Whole Entries: the words anywhere in the entries. Headwords: only in the headwords, to find the entry on a subject."
+default = "text"
+
+[[steps.inputs.options]]
+value = "text"
+label = "Whole Entries"
+
+[[steps.inputs.options]]
+value = "headwords"
+label = "Headwords"
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The two volumes go into cyclopaedia, and stay there for the next queries."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the entries found, up to a number, as a table: a row per entry with its volume, headword, the field the entry names (Anatomy, Heraldry, Chirurgery), how often the words are in it, its length, the beginning of its text and its page of the scan at the Internet Archive."
+code = '''
+total == 0 && error("Step 1 found no entries: change its words")
+order = "{{order}}"
+sorted = order == "relevance" ? sort(found; by = e -> -e.hits) : found
+results = [merge((number = i,), e) for (i, e) in enumerate(first(sorted, min({{atMost}}, length(sorted))))]
+println(length(results), " of ", total, " entries retrieved")
+vscodedisplay([(number = r.number, volume = r.volume, headword = r.headword, field = r.field, hits = r.hits, characters = length(r.text),
+	text = first(r.text, 120), internet_archive = r.link) for r in results], "Cyclopaedia: $words")
+'''
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of entries to retrieve at most: 1,000 by default."
+default = "1000"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: the entries where the words come most often. In the Order of the Work: alphabetical, as the volumes have them."
+default = "relevance"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "work"
+label = "In the Order of the Work"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read an entry, by its number in the table of Step 2: its text opens in Pollis's browser with the words marked, and the page of the scan where it starts, at the Internet Archive, which shows it as printed."
+code = '''
+chosen = results[{{number}}]
+escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
+# The words of the query marked where the text has them: each pattern of the query, on the text before it is escaped
+function marked(s)
+	spans = sort!(unique(r for p in term_patterns for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
+	out, last_end = IOBuffer(), 0
+	for r in spans
+		first(r) <= last_end && continue
+		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
+		last_end = last(r)
+	end
+	print(out, escaped(s[nextind(s, last_end):end]))
+	return String(take!(out))
+end
+page = joinpath(tempdir(), "cyclopaedia-entry.html")
+write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(chosen.headword))</title>
+	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
+	mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.headword))</h2>
+	<p class="meta">Chambers, Cyclopaedia (1728), volume $(chosen.volume)$(isempty(chosen.field) ? "" : ", " * escaped(chosen.field))
+	· <a href="$(chosen.link)">The page at the Internet Archive</a></p>
+	$(join(("<p>" * marked(p) * "</p>" for p in split(chosen.text, "\n")), "\n"))</body></html>""")
+Pollis.browse(page)
+println(chosen.headword, ", volume ", chosen.volume, "\n\n", chosen.text)
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Entry"
+tooltip = "The number of the entry, in the column number of the table of Step 2."
+default = "1"
+
+[[steps.actions]]
+id = "scan"
+label = "The Page at the Internet Archive"
+desc = "Open the page of the scan where the entry starts in Pollis's browser, at the Internet Archive, as printed"
+code = '''
+Pollis.browse(chosen.link)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the entries retrieved as text files, a file each with its headword, volume and link above its text, and the table of Step 2 as a CSV file beside them, in the folder of Step 1."
+code = '''
+# The folder of the texts, named after the words
+plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
+saved = mkpath(joinpath(texts_folder, "entries", first(plain(words), 60) * (within == "headwords" ? "-headwords" : "")))
+saving = first(results, min({{toSave}}, length(results)))
+for r in saving
+	write(joinpath(saved, lpad(r.number, 5, '0') * "-" * first(plain(r.headword), 40) * ".txt"),
+		r.headword, "\nChambers, Cyclopaedia (1728), volume ", string(r.volume), "\n", r.link, "\n\n", r.text, "\n")
+end
+# The table of the entries
+quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
+columns = (:number, :volume, :headword, :field, :hits, :leaf, :link)
+write(joinpath(saved, "entries.csv"), join(columns, ",") * "\n" *
+	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
+println(length(saving), " texts and the table of the ", length(results), " entries in ", saved)
+'''
+
+[[steps.inputs]]
+id = "toSave"
+label = "Entries to Save"
+tooltip = "The number of entries whose texts are saved, the first in the table of Step 2: all of those retrieved by default."
+default = "1000"

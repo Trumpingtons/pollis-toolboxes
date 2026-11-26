@@ -1,0 +1,263 @@
+# Etymologiae by Isidore of Seville: its 20 books in Lindsay's Latin text, as Bill Thayer gives them on LacusCurtius, downloaded once, searched in Julia by words, the sections found retrieved as a table, read in their chapter with the words marked, and saved as text files
+
+[meta]
+title = "Etymologiae by Isidore of Seville"
+viewType = "pollis.etymologiae"
+style = "timeArrow"
+intro = "Find the sections of the Etymologiae of Isidore of Seville, the encyclopedia of the early Middle Ages in 20 books, written about 630, which explains each thing by the origin of its name, from grammar and medicine to animals, stones, ships and tools: query its Latin text, as Wallace Lindsay edited it in 1911, by words, retrieve the sections found as a table, read a section in its chapter with the words marked, and save the texts. The text comes from Bill Thayer's LacusCurtius, a page each book, downloaded once. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Search the sections of the books chosen, each one or a few sentences, most of them the etymology of a word, and count those that have the words, book by book. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings, which Latin needs: elephant* finds elephantus and elephantos. The 20 books, 2 MB, are downloaded into the folder the first time, a request each."
+code = '''
+using Downloads
+# The query: the words, and the books, from 1 to 20
+words = strip(raw""" {{words}} """)
+books = {{fromBook}}:{{toBook}}
+# The books of LacusCurtius, a page each, downloaded into the folder once
+texts_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "etymologiae"))
+page_url(b) = "https://penelope.uchicago.edu/Thayer/L/Roman/Texts/Isidore/$b%2A.html"
+for b in 1:20
+	file = joinpath(texts_folder, "$b.html")
+	isfile(file) && continue
+	Downloads.download(page_url(b), file)
+	sleep(0.5)  # a pause between requests
+end
+# The subject of each book, from Lindsay's titles
+book_titles = Dict(enumerate(["Grammar", "Rhetoric and Dialectic", "Mathematics", "Medicine", "Laws and Times",
+	"Books and Ecclesiastical Offices", "God, Angels and Saints", "The Church and Sects", "Languages, Nations, Kingdoms, Armies, Citizens, Kinship",
+	"Words", "Man and Portents", "Animals", "The World and its Parts", "The Earth and its Parts", "Buildings and Fields", "Stones and Metals",
+	"Agriculture", "War and Games", "Ships, Buildings and Clothing", "Provisions and Tools"]))
+# The text of a passage of a page: without its comments and tags (whose quoted attributes, Thayer's notes, may hold a >), its
+# entities written out, without invisible characters, and its spaces as one, none before a stop or after a bracket
+function plain_text(html)
+	s = replace(html, r"<!--.*?-->"s => " ", r"<(?:[^>\"']|\"[^\"]*\"|'[^']*')*>"s => " ")
+	s = replace(s, r"&#x(?<h>[0-9A-Fa-f]+);" => e -> string(Char(parse(Int, e[4:end-1]; base = 16))))
+	s = replace(s, r"&#(?<d>\d+);" => e -> string(Char(parse(Int, e[3:end-1]))))
+	s = replace(s, "&nbsp;" => " ", "&shy;" => "", "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => "\"", "&mdash;" => "—", "&ndash;" => "–")
+	return strip(replace(replace(s, r"\p{Cf}" => "", r"\s+" => " "), r"\s+(?=[.,;:?!)])" => "", r"(?<=\()\s+" => ""))
+end
+# The sections of each book, by its chapter anchors and section anchors: a section's text runs to the next anchor, and the
+# first section of a chapter is the text before its second; the text of the page ends at the table after the last section
+function book_sections(b)
+	html = read(joinpath(texts_folder, "$b.html"), String)
+	found_sections = NamedTuple[]
+	last_section = findlast("CLASS=\"sec\"", html)
+	last_section === nothing && return found_sections
+	start = something(findfirst("<A CLASS=\"chapter\"", html), findlast("</H1>", html))
+	stop = something(findnext("<TABLE", html, last(last_section)), lastindex(html):lastindex(html))
+	text = html[first(start):prevind(html, first(stop))]
+	anchors = collect(eachmatch(r"<A CLASS=\"(?<kind>chapter|sec)\" NAME=\"(?:(?<c>\d+)\.)?(?<n>\d+)\">\s*\d+\s*</A>"s, text))
+	chapter, chapter_title, number, from_index = "", "", "1", 1
+	title_end = 0  # where the title of the chapter ends, which its first section leaves out
+	function add(upto)
+		# the text, without the stop after the chapter's title and the marks º of Thayer's notes
+		t = replace(plain_text(text[max(from_index, title_end + 1):prevind(text, upto)]), r"^[.:]\s*" => "", r"\s*º" => "")
+		isempty(t) || push!(found_sections, (book = b, book_title = book_titles[b], chapter = chapter, chapter_title = chapter_title,
+			section = number, text = t, link = page_url(b) * "#" * (isempty(chapter) ? number : "$chapter.$number")))
+	end
+	for a in anchors
+		add(a.offset)
+		if a[:kind] == "chapter"
+			chapter, number = a[:n], "1"
+			title = match(r"<SPAN CLASS=\"smallcaps\">(?<t>.*?)</SPAN>"s, text, a.offset)
+			has_title = title !== nothing && title.offset < a.offset + 400
+			chapter_title = has_title ? plain_text(title[:t]) : ""
+			title_end = has_title ? title.offset + ncodeunits(title.match) - 1 : 0
+		else
+			number = a[:n]
+		end
+		from_index = a.offset + ncodeunits(a.match)
+	end
+	add(ncodeunits(text) + 1)
+	return found_sections
+end
+sections = reduce(vcat, (book_sections(b) for b in books); init = NamedTuple[])
+# The query as a test of a section's text: each word or phrase a regular expression, a phrase's words apart by spaces
+tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
+term_patterns = Regex[]
+function term_regex(token)
+	parts = split(strip(token, '"'))
+	pattern = join((replace(replace(p, r"[\\^$.|?+()\[\]{}]" => s"\\\g<0>"), "*" => "\\w*") for p in parts), "[\\s\\-]+")
+	r = Regex("\\b" * pattern * "\\b", "i")
+	push!(term_patterns, r)
+	return text -> occursin(r, text)
+end
+token_at = 1
+next_token() = token_at <= length(tokens) ? tokens[token_at] : nothing
+take_token() = (global token_at += 1; tokens[token_at - 1])
+function either()
+	test = both()
+	while next_token() == "OR"
+		take_token(); a, b = test, both(); test = text -> a(text) || b(text)
+	end
+	return test
+end
+function both()
+	test = negated()
+	while !(next_token() in (nothing, "OR", ")"))
+		next_token() == "AND" && take_token()
+		a, b = test, negated(); test = text -> a(text) && b(text)
+	end
+	return test
+end
+negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
+function single()
+	next_token() === nothing && error("The words end too soon: ", words)
+	if next_token() == "("
+		take_token(); test = either()
+		next_token() == ")" || error("A bracket is not closed in ", words)
+		take_token(); return test
+	end
+	return term_regex(take_token())
+end
+matches_query = either()
+token_at <= length(tokens) && error("The words have a bracket too many: ", words)
+# The sections with the words, each with how often the words are in it
+found = [merge(s, (hits = sum(r -> count(r, s.text), term_patterns),)) for s in sections if matches_query(s.text)]
+total = length(found)
+println(total, " of the ", length(sections), " sections of books ", first(books), " to ", last(books), " have ", words)
+widest = maximum((count(f -> f.book == b, found) for b in books); init = 1)
+for b in books
+	n = count(f -> f.book == b, found)
+	println(lpad(b, 3), "  ", rpad(first(book_titles[b], 38), 39), lpad(n, 5), " ", repeat("█", round(Int, 30 * n / widest)))
+end
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find, in Latin: elephant*, or equus AND bellum, or (leo OR leaena) NOT pardus, or \"dictus quod\" for the words next to one another. A word ending in * finds all its endings. Capitals do not matter."
+default = "elephant*"
+
+[[steps.inputs]]
+id = "fromBook"
+label = "From Book"
+tooltip = "The first book searched, from 1 to 20: 1 to 3 the liberal arts; 4 medicine; 5 laws and times; 6 to 8 books, God and the Church; 9 languages and peoples; 10 words; 11 man; 12 animals; 13 and 14 the world and the earth; 15 buildings; 16 stones and metals; 17 agriculture; 18 war and games; 19 ships, buildings and clothing; 20 provisions and tools."
+default = "1"
+
+[[steps.inputs]]
+id = "toBook"
+label = "To Book"
+tooltip = "The last book searched, from 1 to 20."
+default = "20"
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The books go into etymologiae, and stay there for the next queries."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the sections found, up to a number, as a table: a row per section with its book, the book's subject, its chapter and the chapter's title, its number, how often the words are in it, the beginning of its text, and its place on LacusCurtius."
+code = '''
+total == 0 && error("Step 1 found no sections: change its words or books")
+order = "{{order}}"
+sorted = order == "relevance" ? sort(found; by = r -> -r.hits) : found
+results = [merge((number = i,), r) for (i, r) in enumerate(first(sorted, min({{atMost}}, length(sorted))))]
+println(length(results), " of ", total, " sections retrieved, in ", length(unique((r.book, r.chapter) for r in results)), " chapters")
+vscodedisplay([(number = r.number, book = r.book, subject = r.book_title, chapter = r.chapter, chapter_title = r.chapter_title, section = r.section,
+	hits = r.hits, text = first(r.text, 120), lacuscurtius = r.link) for r in results], "Etymologiae: $words")
+'''
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of sections to retrieve at most: 1,000 by default."
+default = "1000"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: the sections where the words come most often. In the Order of the Work: book by book, chapter by chapter."
+default = "work"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "work"
+label = "In the Order of the Work"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read a section, by its number in the table of Step 2, in its chapter: the chapter opens in Pollis's browser with the section found shaded and the words marked, and the link to the section on LacusCurtius."
+code = '''
+chosen = results[{{number}}]
+escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
+# The words of the query marked where the text has them: each pattern of the query, on the text before it is escaped
+function marked(s)
+	spans = sort!(unique(r for p in term_patterns for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
+	out, last_end = IOBuffer(), 0
+	for r in spans
+		first(r) <= last_end && continue
+		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
+		last_end = last(r)
+	end
+	print(out, escaped(s[nextind(s, last_end):end]))
+	return String(take!(out))
+end
+in_chapter = [s for s in sections if s.book == chosen.book && s.chapter == chosen.chapter]
+heading = "Etymologiae $(chosen.book)" * (isempty(chosen.chapter) ? "" : ".$(chosen.chapter)") * ".$(chosen.section)"
+page = joinpath(tempdir(), "etymologiae-section.html")
+write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(heading))</title>
+	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
+	p.found{background:rgba(232,163,61,.12);padding:.3em .6em}sup{color:#888;font:12px sans-serif}mark{background:#f5d76e}</style></head><body>
+	<h2>$(escaped(chosen.chapter_title))</h2>
+	<p class="meta">Book $(chosen.book), $(escaped(chosen.book_title))$(isempty(chosen.chapter) ? "" : ", chapter $(chosen.chapter)") · section $(chosen.section)
+	· <a href="$(chosen.link)">The section on LacusCurtius</a></p>
+	$(join(("<p$(s.section == chosen.section ? " class=\"found\"" : "")><sup>$(s.section)</sup> $(marked(s.text))</p>" for s in in_chapter), "\n"))
+	</body></html>""")
+Pollis.browse(page)
+println(heading, ", ", chosen.chapter_title, "\n\n", chosen.text)
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Section"
+tooltip = "The number of the section, in the column number of the table of Step 2."
+default = "1"
+
+[[steps.actions]]
+id = "lacuscurtius"
+label = "The Section on LacusCurtius"
+desc = "Open the section in Bill Thayer's LacusCurtius in Pollis's browser, with his notes on the readings of the text"
+code = '''
+Pollis.browse(chosen.link)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the sections retrieved as text files, a file each with its book, chapter, section and link above its text, and the table of Step 2 as a CSV file beside them, in the folder of Step 1."
+code = '''
+# The folder of the texts, named after the words
+plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
+saved = mkpath(joinpath(texts_folder, "sections", first(plain(words), 60)))
+saving = first(results, min({{toSave}}, length(results)))
+for s in saving
+	file = joinpath(saved, lpad(s.number, 5, '0') * "-book$(s.book)" * (isempty(s.chapter) ? "" : "-chapter$(s.chapter)") * "-section$(s.section).txt")
+	write(file, "Isidore of Seville, Etymologiae, book ", string(s.book), " (", s.book_title, ")", isempty(s.chapter) ? "" : ", chapter $(s.chapter), $(s.chapter_title)",
+		", section ", s.section, "\n", s.link, "\n\n", s.text, "\n")
+end
+# The table of the sections
+quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
+columns = (:number, :book, :book_title, :chapter, :chapter_title, :section, :hits, :text, :link)
+write(joinpath(saved, "sections.csv"), join(columns, ",") * "\n" *
+	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
+println(length(saving), " texts and the table of the ", length(results), " sections in ", saved)
+'''
+
+[[steps.inputs]]
+id = "toSave"
+label = "Sections to Save"
+tooltip = "The number of sections whose texts are saved, the first in the table of Step 2: all of those retrieved by default."
+default = "1000"
