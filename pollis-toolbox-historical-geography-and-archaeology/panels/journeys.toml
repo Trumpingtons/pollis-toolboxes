@@ -11,7 +11,7 @@ rowTitle = "Map"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
-minimum = "0.1.6"
+minimum = "0.1.7"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -341,6 +341,28 @@ trip = journey(con, :petrie; folder)
 display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#b5651d", opacity = 0.8),
 	Pollis.layer(trip.path; name = "Sites", column = "year");
 	title = "Ten Years' Digging in Egypt", center = (31.2, 27.5), zoom = 5))
+'''
+
+[[rows]]
+id = "van-gogh"
+title = "In the Light of the South: Van Gogh"
+subtitle = "Vincent van Gogh, Brieven aan zijn broeder"
+description = "Vincent van Gogh from his arrival in Paris in March 1886 to Auvers-sur-Oise, where he died in July 1890: Arles under snow, the sea at Saintes-Maries, Montmajour, the Yellow House and Gauguin, Montpellier, the hospital of Arles, the asylum of Saint-Rémy, Theo and Jo in Paris, and the wheat fields of Auvers. Each stage has a passage of his letters in the language he wrote it in, French or Dutch, as Jo van Gogh-Bonger printed them in 1914, with a summary in English, and a painting of that place and time, whose picture shows when a stage is clicked."
+kind = "Historical"
+years = "1886–1890"
+region = "France"
+source = "Brieven aan zijn broeder, edited by Jo van Gogh-Bonger (1914, Internet Archive); paintings from Wikimedia Commons"
+licence = "Public domain (letters and paintings), CC0 1.0 (places)"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The stages of his last years, each with its date, a passage of his letters and a painting, and the way through them
+trip = journey(con, :vangogh; folder)
+display(Pollis.webmap(Pollis.layer(trip.route; name = "Route", color = "#d4a017", opacity = 0.8),
+	Pollis.layer(trip.path; name = "Stages", column = "year");
+	title = "In the Light of the South: Van Gogh", center = (3.5, 46.3), zoom = 5))
 '''
 
 [[rows]]
