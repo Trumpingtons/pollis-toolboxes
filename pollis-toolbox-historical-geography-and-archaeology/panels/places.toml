@@ -155,3 +155,26 @@ println(places.count, " places, named in ", places.mentions, " passages")
 display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "order"); title = "Places in The Tale of Genji",
 	center = (134, 34.6), zoom = 5.5))
 '''
+
+[[rows]]
+id = "decameron"
+title = "Places of The Decameron"
+subtitle = "Giovanni Boccaccio, The Decameron"
+description = "The places of The Decameron, from its frame story, in which seven young women and three young men leave Florence in the plague of 1348 for villas in the hills near the city, to the hundred stories they tell there over ten days, from Ireland and London to Alexandria and Jerusalem. Each place has its passage of John Payne's translation, with the day, the story and its teller, and the map colours the places of the frame story apart from those of the stories. The two villas are those that tradition identifies with the palaces the book describes without naming them. The Ladies' Valley, Camerata, Bengodi, Cathay and the lands of Frate Cipolla's journey have no coordinates and are not on the map. Cyprus has Rubens's Cimon and Iphigenia (Day 5, Story 1), and Chiassi, the pine wood of Ravenna, Botticelli's The Story of Nastagio degli Onesti (Day 5, Story 8). Its years are those of its writing."
+kind = "Fictional"
+years = "1348–1353"
+region = "From Ireland to Alexandria and Antioch"
+source = "The Decameron of Giovanni Boccaccio, translated by John Payne (Internet Archive)"
+licence = "Public domain (text and paintings), CC0 1.0 (places)"
+code = '''
+using HistoricalGeography, DuckDB, Tables
+con = DBInterface.connect(DuckDB.DB)
+foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
+folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
+# The places the book names, in the order it first names them, each with its passages, the day, story and teller of
+# each, and its level: the frame story, the stories or both
+places = text_places(con, :decameron; folder)
+println(places.count, " places, named in ", places.mentions, " passages")
+display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "level"); title = "Places of The Decameron",
+	center = (14, 41), zoom = 3.5))
+'''
