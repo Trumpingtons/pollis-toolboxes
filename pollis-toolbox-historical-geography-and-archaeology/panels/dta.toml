@@ -1,0 +1,332 @@
+# Deutsches Textarchiv: the German books and newspapers of the Deutsches Textarchiv of the Berlin-Brandenburg Academy, 1600 to 1900, its plain texts downloaded once by century, in normalised or original spelling, searched in Julia by words, years and category, the works found retrieved as a table, read with the words marked, and saved as text files
+
+[meta]
+title = "Deutsches Textarchiv"
+viewType = "pollis.dta"
+style = "timeArrow"
+intro = "Find works in the Deutsches Textarchiv (DTA) of the Berlin-Brandenburg Academy of Sciences and Humanities, 5,500 German books, journals and newspapers from the sixteenth to the early twentieth century, transcribed in full, its core corpus of 1,500 works chosen to represent their time: download its texts by century, in their spelling made modern or as printed, query them by words, years and category, retrieve the works found as a table, read a text with the words marked, and save the texts. The DTA's search does not take requests from programs, so Julia searches the texts downloaded. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+[[steps]]
+id = "download"
+title = "Download"
+intro = "Download the plain texts of the centuries of the years chosen into the panel's folder, once, after showing their sizes, with the DTA's catalogue of its works, and stop if they come to more than the most allowed. A century of the core corpus is 50 to 145 MB, and its texts take about three times as much space once unpacked; the further texts, which add newspapers, letters and more books, come to 8 to 109 MB a century."
+code = '''
+using Downloads, p7zip_jll
+# The years, the spelling of the texts and the parts of the DTA, and the most to download
+from, to = {{from}}, {{to}}
+spelling = "{{spelling}}"
+parts = "{{parts}}" == "core" ? ["dtak"] : ["dtak", "dtae"]  # the core corpus, and the further texts (DTA-Erweiterungen)
+part_names = Dict("dtak" => "core corpus", "dtae" => "further texts")
+dta_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "dta"))
+headers = ["User-Agent" => "research-script/1.0"]
+# The catalogue of the DTA's works in Dublin Core, a file each, unpacked once
+catalogue_folder = joinpath(dta_folder, "catalogue")
+if !isdir(catalogue_folder)
+	catalogue_zip = Downloads.download("https://www.deutschestextarchiv.de/media/download/dta_metadaten_oai_dc_2026-02-12.zip",
+		joinpath(dta_folder, "catalogue.zip"); headers)
+	run(pipeline(`$(p7zip_jll.p7zip()) x -y -o$catalogue_folder $catalogue_zip`; stdout = devnull))
+	rm(catalogue_zip)
+end
+# The packages of the centuries of the years, a ZIP file each, with their sizes from the DTA's server
+centuries = [c for c in 1400:100:1900 if c <= to && c + 99 >= from]
+packages = [(part = p, century = c, url = "https://www.deutschestextarchiv.de/media/download/$p/2020-10-23/$spelling/$c-$(c + 99).zip",
+	folder = joinpath(dta_folder, p, spelling, "$c-$(c + 99)")) for p in parts for c in centuries]
+size_of(url) = (r = Downloads.request(url; method = "HEAD", headers, throw = false); r.status == 200 ? parse(Int, Dict(r.headers)["content-length"]) : 0)
+sizes = Dict(p.url => size_of(p.url) for p in packages)
+size_text(b) = b < 1e9 ? string(round(b / 1e6; digits = 1), " MB") : string(round(b / 1e9; digits = 2), " GB")
+done(p) = isfile(joinpath(p.folder, ".complete"))
+for p in packages
+	println(rpad(part_names[p.part], 15), "$(p.century)–$(p.century + 99)  ", sizes[p.url] == 0 ? "no texts" : lpad(size_text(sizes[p.url]), 9),
+		done(p) ? "  downloaded" : "")
+end
+missing_bytes = sum((sizes[p.url] for p in packages if !done(p)); init = 0)
+missing_bytes > {{atMostGB}} * 1e9 && error("The texts still to download come to ", size_text(missing_bytes), ", more than the ", {{atMostGB}},
+	" GB allowed: raise Download at Most, choose fewer years, or only the core corpus")
+for p in packages
+	(done(p) || sizes[p.url] == 0) && continue
+	println("Downloading the ", part_names[p.part], " of ", p.century, "–", p.century + 99, ", ", size_text(sizes[p.url]))
+	package_zip = Downloads.download(p.url, joinpath(dta_folder, "package.zip"); headers)
+	run(pipeline(`$(p7zip_jll.p7zip()) x -y -o$(dirname(p.folder)) $package_zip`; stdout = devnull))
+	rm(package_zip)
+	touch(joinpath(p.folder, ".complete"))
+end
+# The works of the catalogue, by the name of their folder at the DTA, which names their text files
+dc(xml, field) = (m = match(Regex("<dc:$field>(?<value>[^<]*)</dc:$field>"), xml); m === nothing ? "" : strip(m[:value]))
+catalogue = Dict{String, NamedTuple}()
+for file in readdir(joinpath(catalogue_folder, only(readdir(catalogue_folder))); join = true)
+	xml = read(file, String)
+	name = last(split(dc(xml, "identifier"), "/"))
+	subject = split(dc(xml, "subject"), ":"; limit = 2)
+	year = match(r"\d{4}", dc(xml, "date"))
+	catalogue[name] = (title = replace(dc(xml, "title"), r"\s*\(vollständige digitalisierte Ausgabe\)" => ""), author = dc(xml, "creator"),
+		year = year === nothing ? 0 : parse(Int, year.match), category = strip(first(subject)), subcategory = length(subject) > 1 ? strip(subject[2]) : "",
+		rights = isempty(dc(xml, "rights")) ? "CC BY-SA 4.0" : replace(dc(xml, "rights"), "Creative Commons Attribution-NonCommercial 3.0 Unported License" => "CC BY-NC 3.0"),
+		part = occursin("Kernkorpus", dc(xml, "publisher")) ? "core corpus" : "further texts", source = dc(xml, "source"))
+end
+text_files = [joinpath(p.folder, f) for p in packages if isdir(p.folder) for f in readdir(p.folder) if endswith(f, ".txt")]
+in_years = count(f -> from <= get(catalogue, replace(basename(f), ".txt" => ""), (year = 0,)).year <= to, text_files)
+println(length(text_files), " texts downloaded, of which ", in_years, " from ", from, " to ", to, ", in ", spelling == "normalized" ? "modern spelling" : "their spelling as printed")
+'''
+
+[[steps.inputs]]
+id = "from"
+label = "From Year"
+tooltip = "The first year of the works: 1825. The DTA's works start in the fifteenth century, most of them in 1600."
+default = "1825"
+
+[[steps.inputs]]
+id = "to"
+label = "To Year"
+tooltip = "The last year of the works: 1899. Most of the DTA's works end in 1900."
+default = "1899"
+
+[[steps.inputs]]
+id = "spelling"
+label = "Spelling"
+kind = "select"
+tooltip = "Modern Spelling: the DTA's texts with their spelling made modern, which finds Teil for Theil and sein for seyn. As Printed: the spelling of the time, with the long s and other old letters as their modern ones."
+default = "normalized"
+
+[[steps.inputs.options]]
+value = "normalized"
+label = "Modern Spelling"
+
+[[steps.inputs.options]]
+value = "transliterated"
+label = "As Printed"
+
+[[steps.inputs]]
+id = "parts"
+label = "Texts"
+kind = "select"
+tooltip = "Core Corpus: the 1,500 works the DTA chose to represent their time, books of literature, science and everyday use. All Texts: with the 4,000 further texts, which add newspapers, letters and more books."
+default = "core"
+
+[[steps.inputs.options]]
+value = "core"
+label = "Core Corpus"
+
+[[steps.inputs.options]]
+value = "all"
+label = "All Texts"
+
+[[steps.inputs]]
+id = "atMostGB"
+label = "Download at Most (GB)"
+tooltip = "The most to download in one go, in GB: 1 by default. The texts downloaded stay in the folder, and are not downloaded again."
+default = "1"
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The texts and the catalogue go into dta."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps.actions]]
+id = "dtasite"
+label = "The Deutsches Textarchiv"
+desc = "Open the Deutsches Textarchiv in Pollis's browser, with its own search, its list of works and the scans of their pages"
+code = '''
+Pollis.browse("https://www.deutschestextarchiv.de/")
+'''
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Search the texts downloaded of the years of Step 1, optionally of one category, for the works that have the words, and count them decade by decade, with their categories and authors. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. Capitals do not matter."
+code = '''
+words = strip(raw""" {{words}} """)
+category = strip(raw""" {{category}} """)
+# A word of the query as a pattern of letters, a * for any ending
+letter_pattern(word) = join(c == '*' ? "\\w*" : c in "\\^\$.|?+()[]{}" ? "\\" * c : string(c) for c in word)
+# The query as a test of a text, and its patterns, which mark the words: AND, OR, NOT, brackets, phrases in quotes
+function parse_query(words)
+	tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
+	patterns = Regex[]
+	at = 1
+	next_token() = at <= length(tokens) ? tokens[at] : nothing
+	take_token() = (at += 1; tokens[at - 1])
+	function term(token)
+		r = Regex("(?<!\\w)" * join((letter_pattern(lowercase(p)) for p in split(strip(token, '"'))), "[\\s\\-]+") * "(?!\\w)", "i")
+		push!(patterns, r)
+		return text -> occursin(r, text)
+	end
+	function either()
+		test = both()
+		while next_token() == "OR"
+			take_token(); a, b = test, both(); test = text -> a(text) || b(text)
+		end
+		return test
+	end
+	function both()
+		test = negated()
+		while !(next_token() in (nothing, "OR", ")"))
+			next_token() == "AND" && take_token()
+			a, b = test, negated(); test = text -> a(text) && b(text)
+		end
+		return test
+	end
+	negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
+	function single()
+		next_token() === nothing && error("The words end too soon: ", words)
+		if next_token() == "("
+			take_token(); test = either()
+			next_token() == ")" || error("A bracket is not closed in ", words)
+			take_token(); return test
+		end
+		return term(take_token())
+	end
+	isempty(tokens) && return (test = text -> true, patterns = patterns)
+	test = either()
+	at <= length(tokens) && error("The words have a bracket too many: ", words)
+	return (test = test, patterns = patterns)
+end
+query = parse_query(words)
+found = NamedTuple[]
+for file in text_files
+	name = replace(basename(file), ".txt" => "")
+	record = get(catalogue, name, (title = name, author = "", year = 0, category = "", subcategory = "", rights = "CC BY-SA 4.0", part = "", source = ""))
+	(from <= record.year <= to && (isempty(category) || lowercase(record.category) == lowercase(category))) || continue
+	text = read(file, String)
+	query.test(text) || continue
+	push!(found, merge((name = name,), record, (words = length(split(text)), hits = sum((count(p, text) for p in query.patterns); init = 0), file = file)))
+end
+found = identity.(found)
+total = length(found)
+println(total, " works from ", from, " to ", to, isempty(category) ? "" : ", in " * category, " have ", words)
+decades = (from ÷ 10) * 10:10:to
+widest = maximum((count(r -> r.year ÷ 10 * 10 == d, found) for d in decades); init = 1)
+for d in decades
+	n = count(r -> r.year ÷ 10 * 10 == d, found)
+	n > 0 && println(d, "s", lpad(n, 7), " ", repeat("█", round(Int, 40 * n / widest)))
+end
+counts(values) = first(sort!([(v, count(==(v), values)) for v in unique(values) if !isempty(v)]; by = x -> -x[2]), 8)
+total > 0 && println("Categories: ", join(("$v ($n)" for (v, n) in counts(["$(r.category): $(r.subcategory)" for r in found])), "; "))
+total > 0 && println("Authors: ", join(("$v ($n)" for (v, n) in counts([r.author for r in found])), "; "))
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find, in German: Eisenbahn*, or Dampf* AND Maschine*, or (Kaffee OR Tee) NOT Zucker, or \"öffentliche Meinung\" for the words next to one another. A word ending in * finds all its endings. Capitals do not matter."
+default = "Eisenbahn*"
+
+[[steps.inputs]]
+id = "category"
+label = "Category"
+tooltip = "Empty for all the categories, or one of the DTA's: Belletristik (literature), Wissenschaft (science and scholarship), Gebrauchsliteratur (books for everyday use) or Zeitung (newspapers, among the further texts). Step 2 shows the categories of the works found, with their subcategories."
+default = ""
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the works found, up to a number, as a table: a row per work with its year, author, title, category and subcategory, the part of the DTA it belongs to, its licence, its length in words, how often the words are in it, and its page at the DTA, where the text is beside the scans of its pages."
+code = '''
+total == 0 && error("Step 2 found no works: change its words or category, or the years of Step 1")
+order = "{{order}}"
+sorted = order == "relevance" ? sort(found; by = r -> -r.hits) : order == "oldest" ? sort(found; by = r -> r.year) : sort(found; by = r -> -r.year)
+results = [merge((number = i,), r, (dta = "https://www.deutschestextarchiv.de/$(r.name)",)) for (i, r) in enumerate(first(sorted, min({{atMost}}, length(sorted))))]
+println(length(results), " of ", total, " works retrieved")
+vscodedisplay([Base.structdiff(r, NamedTuple{(:file, :source)}) for r in results], "Deutsches Textarchiv: $words")
+'''
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of works to retrieve at most: 1,000 by default."
+default = "1000"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: the works where the words come most often. Oldest First and Newest First: by year."
+default = "relevance"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "oldest"
+label = "Oldest First"
+
+[[steps.inputs.options]]
+value = "newest"
+label = "Newest First"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read a work, by its number in the table of Step 3: its whole text opens in Pollis's browser with the words marked, and a link to each passage that has them at the top."
+code = '''
+chosen = results[{{number}}]
+escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
+# The words marked where the text has them: each pattern of the query, on the text before it is escaped
+function marked(s)
+	spans = sort!(unique(r for p in query.patterns for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
+	out, last_end = IOBuffer(), 0
+	for r in spans
+		first(r) <= last_end && continue
+		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
+		last_end = last(r)
+	end
+	print(out, escaped(s[nextind(s, last_end):end]))
+	return String(take!(out))
+end
+paragraphs = filter(!isempty, strip.(split(read(chosen.file, String), "\n")))
+with_words = [i for (i, p) in enumerate(paragraphs) if any(r -> occursin(r, p), query.patterns)]
+page = joinpath(tempdir(), "dta-text.html")
+write(page, """<!doctype html><html lang="de"><head><meta charset="utf-8"><title>$(escaped(chosen.title))</title>
+	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta,p.passages{font:14px sans-serif;color:#666}
+	p.passages a{margin-right:.5em}mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.title))</h2>
+	<p class="meta">$(escaped(chosen.author)) · $(chosen.year) · $(escaped(chosen.category))$(isempty(chosen.subcategory) ? "" : ": " * escaped(chosen.subcategory))
+	· $(escaped(chosen.source)) · <a href="$(chosen.dta)">The work at the DTA</a></p>
+	<p class="passages">$(length(with_words)) passages have the words$(isempty(with_words) ? "" : ": ") $(join(("<a href=\"#p$i\">$k</a>" for (k, i) in enumerate(first(with_words, 300))), ""))</p>
+	$(join(("<p id=\"p$i\">" * marked(p) * "</p>" for (i, p) in enumerate(paragraphs)), "\n"))</body></html>""")
+Pollis.browse(page)
+println(chosen.title, "\n", chosen.author, ", ", chosen.year, "\n", length(with_words), " passages have the words")
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Work"
+tooltip = "The number of the work, in the column number of the table of Step 3."
+default = "1"
+
+[[steps.actions]]
+id = "dtawork"
+label = "The Work at the DTA"
+desc = "Open the work at the Deutsches Textarchiv in Pollis's browser: its text page by page beside the scans"
+code = '''
+Pollis.browse(chosen.dta)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the texts of the works retrieved as text files, a file each with its title, author, year, source and link above its text, and the table of Step 3 as a CSV file beside them. The texts were downloaded in Step 1, so saving makes no request."
+code = '''
+# The folder of the texts, named after the words and the years
+plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
+saved = mkpath(joinpath(dta_folder, "saved", first(plain(join(filter(!isempty, [words, category]), " ")), 50) * "-$from-$to-$spelling"))
+saving = first(results, min({{toSave}}, length(results)))
+for r in saving
+	write(joinpath(saved, lpad(r.number, 5, '0') * "-$(r.year)-$(first(r.name, 60)).txt"), r.title, "\n", r.author, "\n", string(r.year), "\n", r.source,
+		"\nDeutsches Textarchiv, ", r.dta, "\n\n", read(r.file, String))
+end
+# The table of the works
+quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
+columns = (:number, :name, :year, :author, :title, :category, :subcategory, :part, :rights, :words, :hits, :source, :dta)
+write(joinpath(saved, "works.csv"), join(columns, ",") * "\n" *
+	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
+println(length(saving), " texts and the table of the ", length(results), " works in ", saved)
+'''
+
+[[steps.inputs]]
+id = "toSave"
+label = "Works to Save"
+tooltip = "The number of works whose texts are saved, the first in the table of Step 3: all of those retrieved by default."
+default = "1000"

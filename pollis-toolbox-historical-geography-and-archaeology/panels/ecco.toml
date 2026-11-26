@@ -1,0 +1,284 @@
+# ECCO-TCP: the texts of Eighteenth Century Collections Online transcribed by the Text Creation Partnership, in the public domain, found in the TCP's catalogue by words and years, their texts downloaded from the TCP's repositories on GitHub and searched in Julia, read with the words marked, and saved as text files
+
+[meta]
+title = "ECCO-TCP"
+viewType = "pollis.ecco"
+style = "timeArrow"
+intro = "Find books printed in Britain and in English in the eighteenth century in ECCO-TCP, the 2,500 texts of Eighteenth Century Collections Online that the Text Creation Partnership transcribed, all in the public domain: query the TCP's catalogue by words in their titles, authors and subjects and by years, retrieve the works found as a table with their texts, searched for words of their own, read a text with the words marked, and save the texts. The catalogue and the texts come from the TCP's repositories on GitHub, downloaded once. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Find the works whose title, author or subjects have the words, printed between two years, and count them decade by decade, with their subjects and authors. Words are joined by AND, OR and NOT, words without an operator by AND, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. As the printers of the time, u and v, i and j, and s and the long s are the same letters: loue finds love, and love finds loue. Empty words find every work of those years. The catalogue of the TCP, 29 MB, is downloaded into the folder the first time."
+code = '''
+using Downloads
+# The query: the words of the catalogue's records, and the years of printing
+words = strip(raw""" {{words}} """)
+from, to = {{from}}, {{to}}
+collection = (name = "ECCO-TCP", prefixes = "K")  # the TCP's numbers of the texts of ECCO start with K
+# The catalogue of the Text Creation Partnership, a row per text, downloaded once
+tcp_folder = mkpath(joinpath(expanduser(raw"{{folder}}"), "tcp"))
+catalogue_file = joinpath(tcp_folder, "TCP.csv")
+isfile(catalogue_file) || Downloads.download("https://raw.githubusercontent.com/textcreationpartnership/Texts/master/TCP.csv", catalogue_file)
+# The fields of a line of the catalogue, apart by commas, those in quotes with a quote in them written twice
+function csv_fields(line)
+	fields, field, in_quotes = String[], IOBuffer(), false
+	chars = collect(line)
+	k = 1
+	while k <= length(chars)
+		c = chars[k]
+		if in_quotes && c == '"'
+			k < length(chars) && chars[k + 1] == '"' ? (print(field, '"'); k += 1) : (in_quotes = false)
+		elseif in_quotes || !(c in ",\"")
+			print(field, c)
+		elseif c == '"'
+			in_quotes = true
+		else
+			push!(fields, String(take!(field)))
+		end
+		k += 1
+	end
+	push!(fields, String(take!(field)))
+	return fields
+end
+lines = readlines(catalogue_file)
+header = Symbol.(lowercase.(csv_fields(first(lines))))
+catalogue = [NamedTuple{Tuple(header)}(Tuple(csv_fields(line))) for line in lines[2:end] if length(csv_fields(line)) == length(header)]
+year_of(date) = (m = match(r"\d{4}", date); m === nothing ? 0 : parse(Int, m.match))
+# A word of the query as a pattern of letters: u and v, i and j, s and the long s the same, a * for any ending
+letter_pattern(word) = join(c in "uv" ? "[uv]" : c in "ij" ? "[ij]" : c in "sſ" ? "[sſ]" : c == '*' ? "\\w*" :
+	c in "\\^\$.|?+()[]{}" ? "\\" * c : string(c) for c in word)
+# The query as a test of a text, and its patterns, which mark the words: AND, OR, NOT, brackets, phrases in quotes
+function parse_query(words)
+	tokens = [m.match for m in eachmatch(r"\"[^\"]+\"|\(|\)|[^\s()\"]+", words)]
+	patterns = Regex[]
+	at = 1
+	next_token() = at <= length(tokens) ? tokens[at] : nothing
+	take_token() = (at += 1; tokens[at - 1])
+	function term(token)
+		r = Regex("(?<!\\w)" * join((letter_pattern(lowercase(p)) for p in split(strip(token, '"'))), "[\\s\\-]+") * "(?!\\w)", "i")
+		push!(patterns, r)
+		return text -> occursin(r, text)
+	end
+	function either()
+		test = both()
+		while next_token() == "OR"
+			take_token(); a, b = test, both(); test = text -> a(text) || b(text)
+		end
+		return test
+	end
+	function both()
+		test = negated()
+		while !(next_token() in (nothing, "OR", ")"))
+			next_token() == "AND" && take_token()
+			a, b = test, negated(); test = text -> a(text) && b(text)
+		end
+		return test
+	end
+	negated() = next_token() == "NOT" ? (take_token(); a = negated(); text -> !a(text)) : single()
+	function single()
+		next_token() === nothing && error("The words end too soon: ", words)
+		if next_token() == "("
+			take_token(); test = either()
+			next_token() == ")" || error("A bracket is not closed in ", words)
+			take_token(); return test
+		end
+		return term(take_token())
+	end
+	isempty(tokens) && return (test = text -> true, patterns = patterns)
+	test = either()
+	at <= length(tokens) && error("The words have a bracket too many: ", words)
+	return (test = test, patterns = patterns)
+end
+record_query = parse_query(words)
+record_text(r) = join((r.title, r.author, r.terms), " ; ")
+found = [merge(r, (year = year_of(r.date), record_hits = sum((count(p, record_text(r)) for p in record_query.patterns); init = 0)))
+	for r in catalogue if first(r.tcp) in collection.prefixes && from <= year_of(r.date) <= to && record_query.test(record_text(r))]
+total = length(found)
+println(total, " works of ", collection.name, " printed from ", from, " to ", to, isempty(words) ? "" : " have " * words)
+decades = (from ÷ 10) * 10:10:to
+widest = maximum((count(r -> r.year ÷ 10 * 10 == d, found) for d in decades); init = 1)
+for d in decades
+	n = count(r -> r.year ÷ 10 * 10 == d, found)
+	n > 0 && println(d, "s", lpad(n, 7), " ", repeat("█", round(Int, 40 * n / widest)))
+end
+counts(values) = first(sort!([(v, count(==(v), values)) for v in unique(values) if !isempty(v)]; by = x -> -x[2]), 8)
+subjects = counts([strip(t) for r in found for t in split(r.terms, ";")])
+isempty(subjects) || println("Subjects: ", join(("$v ($n)" for (v, n) in subjects), "; "))
+println("Authors: ", join(("$v ($n)" for (v, n) in counts([strip(first(split(r.author, ";"))) for r in found])), "; "))
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find in the titles, authors and subjects of the catalogue: slave*, or comedy AND Drury, or (voyage* OR travels) NOT poem, or \"South Sea\" for the words next to one another. Empty for every work of the years. Capitals do not matter."
+default = "slave*"
+
+[[steps.inputs]]
+id = "from"
+label = "From Year"
+tooltip = "The first year of printing: ECCO-TCP's works start in 1701."
+default = "1701"
+
+[[steps.inputs]]
+id = "to"
+label = "To Year"
+tooltip = "The last year of printing: ECCO-TCP's works end in 1800, with a few later."
+default = "1800"
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The catalogue and the texts go into tcp, shared by EEBO-TCP, Evans-TCP and ECCO-TCP, and stay there for the next queries."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the works found, up to a number, as a table with their texts: a row per work with its TCP number, year, author, title, subjects, pages, length in words, how often the words of the text are in it, and its repository on GitHub. Each text is downloaded once into the folder of Step 1, a request each, and then read from there. Words in the Text keep the works whose text has them, searched as in Step 1."
+code = '''
+total == 0 && error("Step 1 found no works: change its words or years")
+text_words = strip(raw""" {{textWords}} """)
+text_query = parse_query(text_words)
+order = "{{order}}"
+# The works downloaded: the first, oldest, newest or those whose records have the words most, up to the number
+candidates = order == "oldest" ? sort(found; by = r -> r.year) : order == "newest" ? sort(found; by = r -> -r.year) : sort(found; by = r -> -r.record_hits)
+candidates = first(candidates, min({{atMost}}, length(candidates)))
+texts_folder = mkpath(joinpath(tcp_folder, "texts"))
+text_url(id) = "https://raw.githubusercontent.com/textcreationpartnership/$id/master/$id.xml"
+# The text of a TCP file: its text without the header, a paragraph each block, a line of verse or a speech; the hyphens at the ends of
+# lines removed, the notes in brackets, and what the keyers could not read as the TCP writes it: • a letter, 〈◊〉 a word, 〈…〉 more
+block_ends = r"</(?:p|l|head|speaker|stage|item|trailer|closer|salute|signed|byline|cell|dateline|opener|argument|epigraph|row)>"
+function tcp_text(xml)
+	header_end = findfirst("</teiHeader>", xml)
+	body = header_end === nothing ? xml : xml[nextind(xml, last(header_end)):end]
+	body = replace(body, r"<g ref=\"char:EOLhyphen\"\s*/>" => "", r"<gap[^>]*>\s*<desc>(?<desc>.*?)</desc>\s*</gap>"s => s"\g<desc>",
+		r"<gap[^>]*/>" => "〈…〉", r"<gap[^>]*>.*?</gap>"s => "〈…〉", r"<note[^>]*>" => " [", "</note>" => "] ", block_ends => "\n", r"<[^>]+>" => "")
+	body = replace(body, "&amp;" => "&", "&lt;" => "<", "&gt;" => ">", "&quot;" => "\"", "&apos;" => "'")
+	return join(filter(!isempty, [strip(replace(line, r"\s+" => " ")) for line in split(body, "\n")]), "\n")
+end
+results = NamedTuple[]
+for r in candidates
+	file = joinpath(texts_folder, r.tcp * ".xml")
+	if !isfile(file)
+		Downloads.download(text_url(r.tcp), file)
+		sleep(0.2)  # a pause between requests
+	end
+	text = tcp_text(read(file, String))
+	text_query.test(text) || continue
+	push!(results, (tcp = r.tcp, year = r.year, date = r.date, author = r.author, title = r.title, subjects = r.terms, pages = r.pages,
+		words = length(split(text)), hits = sum((count(p, text) for p in text_query.patterns); init = 0),
+		github = "https://github.com/textcreationpartnership/$(r.tcp)", text = text))
+end
+isempty(text_words) || order != "relevance" || sort!(results; by = r -> -r.hits)
+results = [merge((number = i,), r) for (i, r) in enumerate(results)]
+println(length(candidates), " of the ", total, " works of Step 1 searched", isempty(text_words) ? "" : ", of which " * string(length(results)) * " have " * text_words)
+vscodedisplay([Base.structdiff(r, NamedTuple{(:text,)}) for r in results], "$(collection.name): $words")
+'''
+
+[[steps.inputs]]
+id = "textWords"
+label = "Words in the Text"
+tooltip = "Empty to keep all the works downloaded, or words to find in their texts, as in Step 1: sugar, or Africa* AND trade."
+default = ""
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of works whose texts are downloaded and searched at most: 100 by default, a request each the first time, about 300 KB a text."
+default = "100"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: the works whose records have the words most, and then whose texts have the words of the text most. Oldest First and Newest First: by year of printing."
+default = "oldest"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "oldest"
+label = "Oldest First"
+
+[[steps.inputs.options]]
+value = "newest"
+label = "Newest First"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read a work, by its number in the table of Step 2: its whole text opens in Pollis's browser with the words of the text marked, or those of the catalogue when there are none, and a link to each passage that has them at the top."
+code = '''
+chosen = results[{{number}}]
+marking = isempty(text_query.patterns) ? record_query.patterns : text_query.patterns
+escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
+# The words marked where the text has them: each pattern of the query, on the text before it is escaped
+function marked(s)
+	spans = sort!(unique(r for p in marking for m in eachmatch(p, s) for r in (m.offset:m.offset + ncodeunits(m.match) - 1,)); by = first)
+	out, last_end = IOBuffer(), 0
+	for r in spans
+		first(r) <= last_end && continue
+		print(out, escaped(s[nextind(s, last_end):prevind(s, first(r))]), "<mark>", escaped(s[first(r):last(r)]), "</mark>")
+		last_end = last(r)
+	end
+	print(out, escaped(s[nextind(s, last_end):end]))
+	return String(take!(out))
+end
+paragraphs = split(chosen.text, "\n")
+with_words = [i for (i, p) in enumerate(paragraphs) if any(r -> occursin(r, p), marking)]
+page = joinpath(tempdir(), "tcp-text.html")
+write(page, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(chosen.tcp))</title>
+	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta,p.passages{font:14px sans-serif;color:#666}
+	p.passages a{margin-right:.5em}mark{background:#f5d76e}</style></head><body><h2>$(escaped(chosen.title))</h2>
+	<p class="meta">$(escaped(chosen.author)) · $(escaped(chosen.date)) · $(chosen.tcp) of $(collection.name) · <a href="$(chosen.github)">The text on GitHub</a></p>
+	<p class="passages">$(length(with_words)) passages have the words$(isempty(with_words) ? "" : ": ") $(join(("<a href=\"#p$i\">$k</a>" for (k, i) in enumerate(first(with_words, 300))), ""))</p>
+	$(join(("<p id=\"p$i\">" * marked(p) * "</p>" for (i, p) in enumerate(paragraphs)), "\n"))</body></html>""")
+Pollis.browse(page)
+println(chosen.title, "\n", chosen.author, ", ", chosen.date, "\n", length(with_words), " passages have the words")
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Work"
+tooltip = "The number of the work, in the column number of the table of Step 2."
+default = "1"
+
+[[steps.actions]]
+id = "github"
+label = "The Text on GitHub"
+desc = "Open the work's repository on GitHub in Pollis's browser: its text in TEI, with the TCP's record of it"
+code = '''
+Pollis.browse(chosen.github)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the texts of the works retrieved as text files, a file each with its title, author, date, TCP number and link above its text, and the table of Step 2 as a CSV file beside them. The texts came with Step 2, so saving makes no request."
+code = '''
+# The folder of the texts, named after the words and the years
+plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
+saved = mkpath(joinpath(tcp_folder, "saved", plain(collection.name) * "-" * first(plain(join(filter(!isempty, [words, text_words]), " ")), 50) * "-$from-$to"))
+saving = first(results, min({{toSave}}, length(results)))
+for r in saving
+	write(joinpath(saved, lpad(r.number, 5, '0') * "-$(r.year)-$(r.tcp).txt"), r.title, "\n", r.author, "\n", r.date, "\n", r.tcp, " of ", collection.name,
+		"\n", r.github, "\n\n", r.text, "\n")
+end
+# The table of the works
+quoted(value) = "\"" * replace(string(value), "\"" => "\"\"") * "\""
+columns = (:number, :tcp, :year, :date, :author, :title, :subjects, :pages, :words, :hits, :github)
+write(joinpath(saved, "works.csv"), join(columns, ",") * "\n" *
+	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
+println(length(saving), " texts and the table of the ", length(results), " works in ", saved)
+'''
+
+[[steps.inputs]]
+id = "toSave"
+label = "Works to Save"
+tooltip = "The number of works whose texts are saved, the first in the table of Step 2: all of those retrieved by default."
+default = "1000"
