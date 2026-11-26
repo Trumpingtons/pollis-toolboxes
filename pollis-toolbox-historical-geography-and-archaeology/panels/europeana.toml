@@ -1,0 +1,319 @@
+# Europeana Newspapers: the newspapers of Europeana with full text, from the national and state libraries of Europe, searched by words and dates through Europeana's full-text search, the issues found retrieved as a table, read page by page with the words found marked, and saved as text files; with JSON.jl
+
+[meta]
+title = "Europeana Newspapers"
+viewType = "pollis.europeana"
+style = "timeArrow"
+intro = "Find issues in the newspapers of Europeana that have their full text, about a million issues from the libraries of Germany, the Netherlands, Austria, Latvia, Estonia, Finland, Serbia, Poland and Luxembourg: query them by words and dates, retrieve the issues found as a table, read an issue page by page with the words found marked, and save the texts. Europeana's search needs a key: the code uses the demo key Europeana gives for trying its API, and a free key of your own, set on the Powered by line, for more requests. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+# The user's Europeana API key, kept by Pollis in Secret Storage and set in the Julia REPL; without it, the demo key is used
+[apiKey]
+label = "Europeana"
+noun = "key"
+
+[[apiKey.fields]]
+name = "europeanaKey"
+envVar = "EUROPEANA_API_KEY"
+label = "Europeana"
+prompt = "Europeana API key, from pro.europeana.eu/page/get-api (optional: the demo key is used without it)"
+
+[[packages]]
+name = "JSON.jl"
+github = "https://github.com/JuliaIO/JSON.jl"
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Count the issues that have the words between two dates, and how many there are each year (each decade, over more than 60 years). Words are joined by AND, OR and NOT, words without an operator by OR; a phrase goes in quotes, and a word ending in * stands for all its endings. Europeana gathers the newspapers that each library has given it with their text, so a hit is an issue, and each library's newspapers cover the years it gave."
+code = '''
+using JSON, Downloads, Dates
+# The query: the words, the dates between which the issues were published, and optionally the newspaper (its title as
+# Europeana gives it) and the language of the newspapers
+words = strip(raw""" {{words}} """)
+from, to = Date("{{from}}"), Date("{{to}}")
+newspaper = strip(raw""" {{newspaper}} """)
+language = "{{language}}"
+key = get(ENV, "EUROPEANA_API_KEY", "")
+key = isempty(key) ? "api2demo" : key  # the demo key that Europeana gives for trying its API
+encode(text) = join(isascii(c) && (isletter(c) || isdigit(c) || c in "-_.~") ? string(c) :
+	join("%" * uppercase(string(b; base = 16, pad = 2)) for b in codeunits(string(c))) for c in text)
+# The answer of a request, read also when it is an error, whose reason Europeana gives in it
+function get_json(url)
+	buffer = IOBuffer()
+	Downloads.request(url; output = buffer, timeout = 120)
+	answer = JSON.parse(String(take!(buffer)))
+	haskey(answer, "error") && error("Europeana: ", answer["error"], ". ", get(answer, "message", ""))
+	return answer
+end
+# A request to Europeana's full-text search of its newspapers, for the issues between two dates
+function europeana(a, b, parameters)
+	filters = ["theme" => "newspaper", "query" => words, "qf" => "proxy_dcterms_issued:[$a TO $b]"]
+	isempty(newspaper) || push!(filters, "qf" => "title:\"$newspaper\"")
+	language == "all" || push!(filters, "qf" => "LANGUAGE:$language")
+	url = "https://api.europeana.eu/fulltext/search.json?wskey=$key&" *
+		join(("$k=$(encode(string(v)))" for (k, v) in [filters; parameters]), "&")
+	return get_json(url)
+end
+found(a, b) = europeana(a, b, ["rows" => 0])["totalResults"]
+total = found(from, to)
+println(total, " issues found for ", words, " from ", from, " to ", to, isempty(newspaper) ? "" : " in " * newspaper,
+	language == "all" ? "" : " in the newspapers in " * language)
+# The issues of each year, or of each decade over more than 60 years, a request each
+years_each = year(to) - year(from) > 60 ? 10 : 1
+by_period = map((year(from) ÷ years_each) * years_each:years_each:year(to)) do y
+	sleep(0.2)  # a pause between requests
+	(period = years_each == 1 ? string(y) : "$(y)s", issues = found(max(from, Date(y)), min(to, Date(y + years_each - 1, 12, 31))))
+end
+widest = maximum(p -> p.issues, by_period; init = 1)
+foreach(p -> println(rpad(p.period, 6), lpad(p.issues, 9), " ", repeat("█", round(Int, 40 * p.issues / widest))), by_period)
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find, in the language of the newspapers: Eisenbahn, or Eisenbahn AND Wien, or (Eisenbahn OR Dampfschiff) NOT Berlin, or \"Wiener Eisenbahn\" for the words next to one another, or Eisenbahn* for Eisenbahnen, Eisenbahngesellschaft and the other words it starts. Capitals do not matter."
+default = "Eisenbahn"
+
+[[steps.inputs]]
+id = "from"
+label = "From"
+tooltip = "The first day of publication, as year-month-day: 1865-01-01."
+default = "1865-01-01"
+
+[[steps.inputs]]
+id = "to"
+label = "To"
+tooltip = "The last day of publication, as year-month-day: 1869-12-31."
+default = "1869-12-31"
+
+[[steps.inputs]]
+id = "newspaper"
+label = "Newspaper"
+tooltip = "Empty for all the newspapers, or the title of one as Europeana gives it, without the date: Tages-Post, Algemeen Handelsblad, Baltijas Vēstnesis, Hamburger Nachrichten. Step 2 shows the titles of the newspapers found."
+default = ""
+
+[[steps.inputs]]
+id = "language"
+label = "Language"
+kind = "select"
+tooltip = "The language of the newspapers searched: all of them, or one of the languages of the newspapers that Europeana holds with their text."
+default = "all"
+
+[[steps.inputs.options]]
+value = "all"
+label = "All"
+
+[[steps.inputs.options]]
+value = "de"
+label = "German"
+
+[[steps.inputs.options]]
+value = "nl"
+label = "Dutch"
+
+[[steps.inputs.options]]
+value = "lv"
+label = "Latvian"
+
+[[steps.inputs.options]]
+value = "et"
+label = "Estonian"
+
+[[steps.inputs.options]]
+value = "fi"
+label = "Finnish"
+
+[[steps.inputs.options]]
+value = "sr"
+label = "Serbian"
+
+[[steps.inputs.options]]
+value = "pl"
+label = "Polish"
+
+[[steps.inputs.options]]
+value = "fr"
+label = "French"
+
+[[steps.actions]]
+id = "search"
+label = "The Same Search on Europeana"
+desc = "Open the same search in the newspapers of europeana.eu in Pollis's browser, with the issues and their scans"
+code = '''
+Pollis.browse("https://www.europeana.eu/en/collections/topic/18-newspapers?api=fulltext&query=$(encode(words))" *
+	"&qf=$(encode("proxy_dcterms_issued:[$from TO $to]"))" * (language == "all" ? "" : "&qf=$(encode("LANGUAGE:\"$language\""))"))
+'''
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the issues found, up to a number, as a table: a row per issue with its date, newspaper, language, the library that gave it and its rights, the words found in it in the forms they have there, a passage around them, and its link on Europeana. The search gives 100 issues a request, so 1,000 take ten requests."
+code = '''
+# The issues found, the most relevant first, or by date, 100 a request, each request going on from the cursor of the last
+total == 0 && error("Step 1 found no issues: change its words, dates, newspaper or language")
+# (by date, with the record's id to break ties, as Europeana asks of a search that goes on from a cursor)
+sorting = Dict("relevance" => [], "oldest" => ["sort" => "proxy_dcterms_issued asc,europeana_id asc"],
+	"newest" => ["sort" => "proxy_dcterms_issued desc,europeana_id asc"])["{{order}}"]
+wanted = min({{atMost}}, total)
+rights_label(url) = occursin("publicdomain/mark", url) ? "Public Domain Mark" : occursin("publicdomain/zero", url) ? "CC0" :
+	occursin("creativecommons.org/licenses/", url) ? "CC " * uppercase(split(split(url, "licenses/")[2], '/')[1]) :
+	occursin("rightsstatements.org", url) ? split(rstrip(url, '/'), '/')[end - 1] : url
+results = NamedTuple[]
+cursor = "*"
+while length(results) < wanted
+	answer = europeana(from, to, [["rows" => min(100, wanted - length(results)), "cursor" => cursor, "profile" => "minimal hits"]; sorting])
+	hits = Dict(string(h["scope"]) => h["selectors"] for h in something(get(answer, "hits", nothing), []))
+	for item in something(get(answer, "items", nothing), [])
+		id = string(item["id"])
+		title = string(first(item["title"]))
+		parts = match(r"^(?<newspaper>.*?)\s+-\s+(?<date>\d{4}-\d{2}-\d{2})$", title)
+		selectors = get(hits, id, [])
+		push!(results, (number = length(results) + 1, date = parts === nothing ? missing : Date(parts[:date]),
+			newspaper = parts === nothing ? title : string(parts[:newspaper]), language = join(something(get(item, "language", nothing), []), ", "),
+			library = join(something(get(item, "dataProvider", nothing), []), ", "), rights = rights_label(string(first(item["rights"]))),
+			found = join(unique(string(s["exact"]) for s in selectors), ", "),
+			passage = isempty(selectors) ? "" : replace(string(get(first(selectors), "prefix", ""), first(selectors)["exact"], get(first(selectors), "suffix", "")), r"\s+" => " "),
+			id = id, europeana = "https://www.europeana.eu/item$id"))
+	end
+	global cursor = string(something(get(answer, "nextCursor", nothing), ""))
+	(isempty(cursor) || isempty(something(get(answer, "items", nothing), []))) && break
+	sleep(0.5)  # a pause between requests
+end
+results = identity.(results)
+counts(values) = sort!(collect(pairs(Dict(v => count(==(v), values) for v in unique(values)))); by = last, rev = true)
+dates = collect(skipmissing(r.date for r in results))
+println(length(results), " of ", total, " issues retrieved", isempty(dates) ? "" : ", from $(minimum(dates)) to $(maximum(dates))")
+println("By newspaper: ", join(("$v ($n)" for (v, n) in first(counts([r.newspaper for r in results]), 10)), ", "))
+println("By library: ", join(("$v ($n)" for (v, n) in counts([r.library for r in results])), ", "))
+println("By rights: ", join(("$v ($n)" for (v, n) in counts([r.rights for r in results])), ", "))
+vscodedisplay(results, "Europeana Newspapers: $words")
+'''
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of issues to retrieve at most: 1,000 by default. The search gives 100 a request, with a pause of half a second between requests."
+default = "1000"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: the issues in which the words count most, as Europeana ranks them. Oldest First and Newest First: by date of publication."
+default = "relevance"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "oldest"
+label = "Oldest First"
+
+[[steps.inputs.options]]
+value = "newest"
+label = "Newest First"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read an issue, by its number in the table of Step 2: the text of each of its pages, as the library's OCR read it, opens in Pollis's browser with the words found marked, and the link to the issue on Europeana, where the scans are. The issue's pages come from Europeana's IIIF service, a request each."
+code = '''
+# The texts of an issue's pages, from its IIIF manifest: each page's annotation names its full text, which Europeana's
+# full-text service gives, each request given up after a minute without an answer
+function issue_pages(issue)
+	manifest = get_json("https://iiif.europeana.eu/presentation$(issue.id)/manifest?format=3")
+	pages = NamedTuple[]
+	for canvas in something(get(manifest, "items", nothing), [])
+		label = string(first(first(values(canvas["label"]))))
+		annotations = something(get(canvas, "annotations", nothing), [])
+		isempty(annotations) && continue
+		text_id = split(split(string(first(annotations)["id"]), "/annopage/")[2], '?')[1]
+		resource = get_json("https://api.europeana.eu/fulltext$(issue.id)/$text_id")
+		push!(pages, (page = label, text = string(something(get(resource, "value", nothing), ""))))
+		sleep(0.2)  # a pause between requests
+	end
+	return pages
+end
+issue = results[{{number}}]
+pages = issue_pages(issue)
+isempty(pages) && error("Europeana gives no page texts for this issue: open it on Europeana with The Issue on Europeana")
+# The words found in the issue, as they are written there, or else the words of the query, marked where they stand
+terms = filter(!isempty, strip.(split(issue.found, ",")))
+isempty(terms) && (terms = filter(t -> !(uppercase(t) in ("AND", "OR", "NOT")), split(replace(words, r"[^\p{L}\d]+" => " "))))
+escaped(s) = replace(s, "&" => "&amp;", "<" => "&lt;", ">" => "&gt;", "\"" => "&quot;")
+literal(s) = replace(escaped(s), r"[\\^$.|?*+()\[\]{}]" => s"\\\g<0>")
+pattern = Regex("(?<!\\w)(" * join(literal.(terms), "|") * ")(?!\\w)", "i")
+marked(s) = isempty(terms) ? escaped(s) : replace(escaped(s), pattern => s"<mark>\g<0></mark>")
+title = "$(issue.newspaper), $(issue.date === missing ? "" : Dates.format(issue.date, "d U yyyy"))"
+html = joinpath(tempdir(), "europeana-issue.html")
+write(html, """<!doctype html><html><head><meta charset="utf-8"><title>$(escaped(title))</title>
+	<style>body{font:16px/1.6 Georgia,serif;max-width:46em;margin:2em auto;padding:0 1em}p.meta{font:14px sans-serif;color:#666}
+	h3{font:bold 14px sans-serif;color:#666;border-top:1px solid #ccc;padding-top:1em}mark{background:#f5d76e}</style></head><body>
+	<h2>$(escaped(title))</h2><p class="meta">$(escaped(issue.library)), $(escaped(issue.rights)), $(length(pages)) pages
+	· <a href="$(issue.europeana)">The issue on Europeana</a></p>
+	$(join(("<h3>$(escaped(p.page))</h3>" * join(("<p>$(marked(x))</p>" for x in split(p.text, r"\n\s*\n") if !isempty(strip(x))), "\n") for p in pages), "\n"))
+	</body></html>""")
+Pollis.browse(html)
+# Here, the lines of the issue with the words found, page by page; the whole issue is in Pollis's browser
+println(title, ": ", length(pages), " pages")
+for p in pages
+	lines = filter(l -> occursin(pattern, escaped(l)), split(p.text, '\n'))
+	isempty(lines) || println("\n", p.page, "\n", join(strip.(lines), "\n"))
+end
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Issue"
+tooltip = "The number of the issue, in the column number of the table of Step 2."
+default = "1"
+
+[[steps.actions]]
+id = "scan"
+label = "The Issue on Europeana"
+desc = "Open the issue on Europeana in Pollis's browser: the scans of its pages beside their text"
+code = '''
+Pollis.browse(issue.europeana)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the texts of the issues retrieved as text files, a file each with its newspaper, date, library, rights and link above the text of its pages, and the table of Step 2 as a CSV file beside them. Each issue is a request for each of its pages; files already saved are kept, so a save stopped halfway goes on where it stopped."
+code = '''
+# The folder of the texts, named after the words and the dates
+plain(s) = strip(replace(lowercase(s), r"[^\p{L}\p{N}]+" => "-"), '-')  # letters and digits, the rest as -
+texts = mkpath(joinpath(expanduser(raw"{{folder}}"), "europeana", plain(words) * "-$from-$to"))
+saving = first(results, min({{toSave}}, length(results)))
+missed = Int[]  # the issues whose texts did not come, saved by running the step again
+for issue in saving
+	file = joinpath(texts, lpad(issue.number, 5, '0') * "-$(coalesce(issue.date, ""))-$(first(plain(issue.newspaper), 40)).txt")
+	isfile(file) && continue
+	issue_texts = try issue_pages(issue) catch; push!(missed, issue.number); continue end
+	isempty(issue_texts) && (push!(missed, issue.number); continue)
+	write(file, issue.newspaper, ", ", string(coalesce(issue.date, "")), "\n", issue.library, ", ", issue.rights, "\n", issue.europeana, "\n",
+		join(("\n== $(p.page)\n\n$(p.text)\n" for p in issue_texts)))
+end
+# The table of the issues
+quoted(value) = "\"" * replace(string(coalesce(value, "")), "\"" => "\"\"") * "\""
+columns = (:number, :date, :newspaper, :language, :library, :rights, :found, :passage, :id, :europeana)
+write(joinpath(texts, "issues.csv"), join(columns, ",") * "\n" *
+	join((join((quoted(getfield(r, c)) for c in columns), ",") for r in results), "\n") * "\n")
+println(length(saving) - length(missed), " texts and the table of the ", length(results), " issues in ", texts)
+isempty(missed) || println("The texts of issues ", join(missed, ", "), " did not come: run the step again, or open them on Europeana")
+'''
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The texts go into europeana, in a folder named after the words and dates."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps.inputs]]
+id = "toSave"
+label = "Issues to Save"
+tooltip = "The number of issues whose texts are saved, the first in the table of Step 2: 20 by default. Each issue is a request for each of its pages, with a pause of a fifth of a second."
+default = "20"
