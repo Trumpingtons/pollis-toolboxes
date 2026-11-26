@@ -11,7 +11,7 @@ rowTitle = "Source"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
-minimum = "0.1.13"
+minimum = "0.1.14"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -77,27 +77,40 @@ intro = "The libraries, archives and monasteries of e-codices, each with the cod
 code = '''
 using HistoricalGeography
 folder = expanduser("~/.pollis/data/examples/paleography")  # where the downloads are kept
+saved = "{{ecodicesSaved}}"  # where Step 4 saves manuscripts whole: data/manuscripts of the open Pollis Workspace
 libraries = ecodices_libraries(; folder)
 println(length(libraries), " libraries, in the order of their places: click a code in the column library to see its manuscripts")
 # Each code a link that puts it in the field Library of Step 2 and runs Step 2
 vscodedisplay(Pollis.step_links(libraries, :library => :ecodicesLibrary), "e-codices: Libraries and Their Codes")
 '''
 
+[[rows.steps.inputs]]
+id = "ecodicesSaved"
+label = "Saved In"
+tooltip = "The folder where Step 4 saves manuscripts whole, each in a folder of its own, as e-codices/kba-BN0047, and Step 3 reads them without a connection: data/manuscripts of the open Pollis Workspace. Without a Pollis Workspace open, nothing is saved."
+default = ""
+folder = "data/manuscripts"
+chooseFolder = false
+
 [[rows.steps]]
 id = "manuscripts"
 title = "Manuscripts"
-intro = "The manuscripts of the library whose code is given, from their IIIF manifests, downloaded once, a second apart: a row each, in the order of their shelfmarks, with the summary beside the date and its citation, how to quote it as e-codices writes it. A click on a shelfmark opens the manuscript's page on e-codices in Pollis's browser; a click on its number of images puts the shelfmark in the field Manuscript of Step 3 and runs Step 3."
+intro = "The manuscripts of the library whose code is given, from their IIIF manifests, downloaded once, a second apart: a row each, in the order of their shelfmarks, with the summary beside the date and its citation, how to quote it as e-codices writes it. A click on a shelfmark puts it in the field Manuscript of Step 3 and runs Step 3; Save, under it, puts it in the field Manuscript of Step 4 and runs Step 4, and is Saved, in green, once the manuscript is saved whole."
 code = '''
 library = "{{ecodicesLibrary}}"
 name = ecodices_library(library; folder)
-manuscripts = ecodices(library; folder)
+manuscripts = ecodices(library; folder, saved)
 println(name, ": ", length(manuscripts), " manuscripts, ", sum(m -> m.images, manuscripts), " images, in the order of their shelfmarks")
 println("By century: ", tallied(c for m in manuscripts for c in split(m.century, "; ")))
 println("By language: ", tallied(l for m in manuscripts for l in split(m.language, "; ")))
-# The shelfmarks link to the manuscripts' pages on e-codices; the numbers of images run Step 3 for their manuscript
-table = linked(Pollis.step_links(manuscripts, :images => :ecodicesManuscript; values = :manuscript), :manuscript => :page)
-# Without the century, which the date gives, and the address of the manifest, which Step 3 reads
-vscodedisplay(without(table, :century, :manifest), "e-codices: Manuscripts of $name")
+# The table: a shelfmark runs Step 3 for its manuscript, and the pill under it, Save, Step 4; without the century,
+# which the date gives, the manifest, which Steps 3 and 4 read, and whether it is saved, which the pill shows
+function show_manuscripts(rows)
+	table = Pollis.pills(Pollis.step_links(rows, :manuscript => :ecodicesManuscript), :manuscript, "Save" => :ecodicesSave;
+		done = r -> r.saved, done_label = "Saved")
+	vscodedisplay(without(table, :century, :manifest, :saved), "e-codices: Manuscripts of $name")
+end
+show_manuscripts(manuscripts)
 '''
 
 [[rows.steps.inputs]]
@@ -109,28 +122,56 @@ default = "kba"
 [[rows.steps]]
 id = "pages"
 title = "Pages"
-intro = "The images of a manuscript of the library of Step 2, each leaf, cover and paste-down at the size it was photographed, in Pollis's browser: Previous Page, the page and Next Page on the browser's bar go through them, and the tab is titled with the shelfmark and the folio."
+intro = "The images of a manuscript of the library of Step 2, each leaf, cover and paste-down 2000 pixels wide, in Pollis's browser, from the copy saved in Step 4 when there is one, which needs no connection: Previous Page, the page and Next Page on the browser's bar go through them, the tab is titled with the shelfmark and the folio, and Save on the bar runs Step 4 for the manuscript."
+needs = ["libraries", "manuscripts"]
 code = '''
 chosen = filter(m -> m.manuscript == "{{ecodicesManuscript}}", manuscripts)
 isempty(chosen) && error("$name has no manuscript {{ecodicesManuscript}}: the shelfmarks are in the column manuscript of the table of Step 2")
 manuscript = first(chosen)
-pages = ecodices_pages(manuscript.manifest; folder)
+# 2000 pixels wide, from the saved copy when there is one
+pages = ecodices_pages(manuscript.manifest; folder, saved)
 println(manuscript.citation)
-println(length(pages.images), " images, from ", first(pages.labels), " to ", last(pages.labels))
-Pollis.browse(pages.images; page = {{ecodicesPage}}, labels = pages.labels, title = "$(manuscript.manuscript), {label}")
+println(length(pages.images), " images, from ", first(pages.labels), " to ", last(pages.labels), startswith(first(pages.images), "http") ? "" : ", from the saved copy")
+Pollis.browse(pages.images; page = {{ecodicesPage}}, labels = pages.labels, title = "$(manuscript.manuscript), {label}",
+	save = :ecodicesSave => manuscript.manuscript)
 '''
 
 [[rows.steps.inputs]]
 id = "ecodicesManuscript"
 label = "Manuscript"
-tooltip = "The shelfmark of a manuscript, in the column manuscript of the table of Step 2, where a click on its number of images fills it in: MsBN 47 is Henry Suso's Büchlein der ewigen Weisheit, of the Aargauer Kantonsbibliothek."
+tooltip = "The shelfmark of a manuscript, in the column manuscript of the table of Step 2, where a click on it fills it in: MsBN 47 is Henry Suso's Büchlein der ewigen Weisheit, of the Aargauer Kantonsbibliothek."
 default = "MsBN 47"
 
 [[rows.steps.inputs]]
 id = "ecodicesPage"
 label = "Page"
-tooltip = "The image to open at, counted from 1 as on the browser's bar, the covers and paste-downs among them."
+tooltip = "The image to open at, counted from 1 as on the browser's bar, the covers and paste-downs among them: a page that matters, say, for every manuscript opened."
 default = "1"
+
+[[rows.steps]]
+id = "save"
+title = "Save"
+intro = "Saves a manuscript of the library of Step 2 whole into the folder Saved In of Step 1, its own folder: each image 2000 pixels wide, a second apart, with the manifest and its record, the citation among it, so that Step 3 shows it without a connection. A manuscript of 300 images takes about ten minutes and 250 MB; images saved before are kept, so a save that stopped goes on. The table of Step 2 then shows the manuscript Saved."
+needs = ["libraries", "manuscripts"]
+code = '''
+isempty(saved) && error("Open a Pollis Workspace (File > Open Pollis Workspace...) to save manuscripts into its folder data/manuscripts, or give a folder in the field Saved In of Step 1")
+chosen = filter(m -> m.manuscript == "{{ecodicesSave}}", manuscripts)
+isempty(chosen) && error("$name has no manuscript {{ecodicesSave}}: the shelfmarks are in the column manuscript of the table of Step 2")
+manuscript = first(chosen)
+minutes = cld(manuscript.images * 2, 60)
+println("Saving the ", manuscript.images, " images of ", manuscript.manuscript, ", a second apart: about ", minutes == 1 ? "a minute" : "$minutes minutes")
+copy = ecodices_save(manuscript.manifest; folder, saved)
+println(isempty(copy.missed) ? "$(manuscript.manuscript) saved whole in $(copy.folder)" : "$(length(copy.missed)) images did not come: run the step again to save them")
+# The table of Step 2 again, the manuscript Saved
+manuscripts = ecodices(library; folder, saved)
+show_manuscripts(manuscripts)
+'''
+
+[[rows.steps.inputs]]
+id = "ecodicesSave"
+label = "Manuscript"
+tooltip = "The shelfmark of the manuscript to save, in the column manuscript of the table of Step 2, where its pill Save fills it in, as does Save on the bar of the browser's tab that Step 3 opens."
+default = "MsBN 47"
 
 [[rows]]
 id = "biblissima"
