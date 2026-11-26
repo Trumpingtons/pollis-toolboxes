@@ -11,7 +11,7 @@ rowTitle = "Source"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
-minimum = "0.1.10"
+minimum = "0.1.13"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -63,7 +63,7 @@ label = "Licence"
 id = "ecodices"
 title = "e-codices, Virtual Manuscript Library of Switzerland"
 subtitle = "University of Fribourg"
-description = "The medieval and some modern manuscripts of the libraries, archives and monasteries of Switzerland, each photographed whole, with its scholarly description, through IIIF: a manifest per manuscript with its title, date, place of origin, language, material, size and summary, and its pages on an image server. Step 1 lists the libraries with their codes; Step 2 reads the manifests of the library whose code it is given, the Aargauer Kantonsbibliothek unless another is named, as a table of its manuscripts, each linked to its page on e-codices, and opens the image of a page."
+description = "The medieval and some modern manuscripts of the libraries, archives and monasteries of Switzerland, each photographed whole, with its scholarly description, through IIIF: a manifest per manuscript with its title, date, place of origin, language, material, size and summary, and its pages on an image server."
 covers = "Manuscripts in Swiss collections, mostly Latin and German"
 period = "The Middle Ages, and some modern manuscripts"
 size = "3,107 manuscripts in 100 collections"
@@ -73,19 +73,20 @@ licence = "Manifests CC0; images by the terms of each library, most free to re-u
 [[rows.steps]]
 id = "libraries"
 title = "Libraries"
-intro = "The libraries, archives and monasteries of e-codices, each with the code of its collection, which Step 2 takes to read its manuscripts."
+intro = "The libraries, archives and monasteries of e-codices, each with the code of its collection. A click on a code puts it in the field Library of Step 2 and runs Step 2."
 code = '''
 using HistoricalGeography
 folder = expanduser("~/.pollis/data/examples/paleography")  # where the downloads are kept
 libraries = ecodices_libraries(; folder)
-println(length(libraries), " libraries, in the order of their places: choose one by its code in the column library, and give it to Step 2")
-vscodedisplay(libraries, "e-codices: Libraries and Their Codes")
+println(length(libraries), " libraries, in the order of their places: click a code in the column library to see its manuscripts")
+# Each code a link that puts it in the field Library of Step 2 and runs Step 2
+vscodedisplay(Pollis.step_links(libraries, :library => :ecodicesLibrary), "e-codices: Libraries and Their Codes")
 '''
 
 [[rows.steps]]
 id = "manuscripts"
 title = "Manuscripts"
-intro = "The manuscripts of the library whose code is given, from their IIIF manifests, downloaded once, a second apart: a row each, in the order of their shelfmarks, the shelfmark a link to the manuscript's page on e-codices, the summary beside the date. The image of the third page of the first opens in Pollis's browser."
+intro = "The manuscripts of the library whose code is given, from their IIIF manifests, downloaded once, a second apart: a row each, in the order of their shelfmarks, with the summary beside the date and its citation, how to quote it as e-codices writes it. A click on a shelfmark opens the manuscript's page on e-codices in Pollis's browser; a click on its number of images puts the shelfmark in the field Manuscript of Step 3 and runs Step 3."
 code = '''
 library = "{{ecodicesLibrary}}"
 name = ecodices_library(library; folder)
@@ -93,19 +94,43 @@ manuscripts = ecodices(library; folder)
 println(name, ": ", length(manuscripts), " manuscripts, ", sum(m -> m.images, manuscripts), " images, in the order of their shelfmarks")
 println("By century: ", tallied(c for m in manuscripts for c in split(m.century, "; ")))
 println("By language: ", tallied(l for m in manuscripts for l in split(m.language, "; ")))
-# The table without the century, which the date gives, and the address of the manifest, which the image below reads
-vscodedisplay(without(linked(manuscripts, :manuscript => :page), :century, :manifest), "e-codices: Manuscripts of $name")
-# The third image of the first manuscript, 1000 pixels wide, from the IIIF image server
-image = ecodices_image(manuscripts[1].manifest, 3; folder)
-println(manuscripts[1].manuscript, ", ", image.label, ": ", image.file)
-Pollis.browse(image.file)
+# The shelfmarks link to the manuscripts' pages on e-codices; the numbers of images run Step 3 for their manuscript
+table = linked(Pollis.step_links(manuscripts, :images => :ecodicesManuscript; values = :manuscript), :manuscript => :page)
+# Without the century, which the date gives, and the address of the manifest, which Step 3 reads
+vscodedisplay(without(table, :century, :manifest), "e-codices: Manuscripts of $name")
 '''
 
 [[rows.steps.inputs]]
 id = "ecodicesLibrary"
 label = "Library"
-tooltip = "The code of the library, in the column library of the table of Step 1: kba the Aargauer Kantonsbibliothek in Aarau, csg the Stiftsbibliothek of St. Gallen, ubb the Universitätsbibliothek of Basel, bge the Bibliothèque de Genève."
+tooltip = "The code of the library, in the column library of the table of Step 1, where a click on a code fills it in: kba the Aargauer Kantonsbibliothek in Aarau, csg the Stiftsbibliothek of St. Gallen, ubb the Universitätsbibliothek of Basel, bge the Bibliothèque de Genève."
 default = "kba"
+
+[[rows.steps]]
+id = "pages"
+title = "Pages"
+intro = "The images of a manuscript of the library of Step 2, each leaf, cover and paste-down at the size it was photographed, in Pollis's browser: Previous Page, the page and Next Page on the browser's bar go through them, and the tab is titled with the shelfmark and the folio."
+code = '''
+chosen = filter(m -> m.manuscript == "{{ecodicesManuscript}}", manuscripts)
+isempty(chosen) && error("$name has no manuscript {{ecodicesManuscript}}: the shelfmarks are in the column manuscript of the table of Step 2")
+manuscript = first(chosen)
+pages = ecodices_pages(manuscript.manifest; folder)
+println(manuscript.citation)
+println(length(pages.images), " images, from ", first(pages.labels), " to ", last(pages.labels))
+Pollis.browse(pages.images; page = {{ecodicesPage}}, labels = pages.labels, title = "$(manuscript.manuscript), {label}")
+'''
+
+[[rows.steps.inputs]]
+id = "ecodicesManuscript"
+label = "Manuscript"
+tooltip = "The shelfmark of a manuscript, in the column manuscript of the table of Step 2, where a click on its number of images fills it in: MsBN 47 is Henry Suso's Büchlein der ewigen Weisheit, of the Aargauer Kantonsbibliothek."
+default = "MsBN 47"
+
+[[rows.steps.inputs]]
+id = "ecodicesPage"
+label = "Page"
+tooltip = "The image to open at, counted from 1 as on the browser's bar, the covers and paste-downs among them."
+default = "1"
 
 [[rows]]
 id = "biblissima"
