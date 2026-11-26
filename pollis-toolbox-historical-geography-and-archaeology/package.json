@@ -91,6 +91,12 @@
             "id": "encyclopedie", "command": "pollis.historicalGeography.encyclopedie", "title": "Encyclopédie", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 5, "data": "panels/encyclopedie.toml"
           },
           {
+            "id": "meyers", "command": "pollis.historicalGeography.meyers", "title": "Meyers Konversations-Lexikon", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 7, "data": "panels/meyers.toml"
+          },
+          {
+            "id": "brockhausefron", "command": "pollis.historicalGeography.brockhausefron", "title": "Brockhaus and Efron Encyclopedic Dictionary", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 8, "data": "panels/brockhausefron.toml"
+          },
+          {
             "id": "eebo", "command": "pollis.historicalGeography.eebo", "title": "EEBO-TCP", "submenu": "books", "group": "1_books", "order": 1, "data": "panels/eebo.toml"
           },
           {
@@ -135,7 +141,8 @@
         ],
         "planned": [
           { "title": "ZEN", "submenu": "newspapers", "group": "1_newspapers", "order": 1 },
-          { "title": "Encyclopedia of China", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 7 }
+          { "title": "Great Soviet Encyclopedia", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 9 },
+          { "title": "Encyclopedia of China", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 10 }
         ]
       }
     ]

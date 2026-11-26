@@ -11,7 +11,7 @@ rowTitle = "Map"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
-minimum = "0.1.9"
+minimum = "0.1.12"
 
 [[packages]]
 name = "DuckDB.jl"

@@ -1,0 +1,138 @@
+# Meyers Konversations-Lexikon: the articles of the fourth edition (1885–1890) that German Wikisource transcribes from the scans of their pages, searched by words through the MediaWiki API, the articles found retrieved as a table with their volumes and pages, read with the words marked beside the scan of the page, and saved as text files; with JSON.jl
+
+[meta]
+title = "Meyers Konversations-Lexikon"
+viewType = "pollis.meyers"
+style = "timeArrow"
+intro = "Find articles of the fourth edition of Meyers Konversations-Lexikon, the German encyclopedia published in Leipzig by the Bibliographisches Institut from 1885 to 1890 in 16 volumes, and three volumes of supplements after them, with some 19,600 pages and 700 plates and maps: query their text by words, retrieve the articles found as a table with their volumes and pages, read an article with the words marked, beside the scan of its page, and save the texts. The text is German Wikisource's transcription of about 39,000 of its articles, proofread page by page against the scans, not the whole work; its search answers the queries. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.12"
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Find the articles that have the words, and count them by the first letter of their headwords. Words are joined by AND, OR and NOT, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. Wikisource's search also finds the other forms of a German word, as Eisenbahnen for Eisenbahn. It lists 10,000 articles of a query at most, 500 a request."
+code = '''
+using HistoricalGeography
+# The query: the words, in German
+words = strip(raw""" {{words}} """)
+# The articles that Wikisource's search finds, the most relevant first, up to the 10,000 it lists, a second apart
+found = meyers_search(words)
+total = found.total
+println(total, " articles have ", words, length(found.articles) < total ? ", of which Wikisource lists the first $(length(found.articles))" : "")
+# The articles by the first letter of their headwords
+letters = tally(uppercase(first(a.headword)) for a in found.articles)
+print_bars(sort([string(l) => n for (l, n) in letters]; by = first); width = 30)
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find, in German: Eisenbahn, or Eisenbahn AND Bagdad, or (Komet OR Meteor) NOT Kalender, or \"Suezkanal\" for the words next to one another. A word ending in * finds all its endings, and marks them all in Step 3. Capitals do not matter."
+default = "Eisenbahn"
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the articles found, up to a number, as a table: a row per article with its headword, its volume and the page where it starts (volumes 17 to 19 are the supplements), its length in words, the words around the first place that has the words, its page on Wikisource and the scan of its page at Wikimedia Commons. The volumes and pages come from the articles' pages on Wikisource, 50 a request."
+code = '''
+total == 0 && error("Step 1 found no articles: change its words")
+order = "{{order}}"
+chosen_articles = first(found.articles, min({{atMost}}, length(found.articles)))
+# The volume and page of each article, from its page on Wikisource, 50 a request
+placed = meyers_volumes(chosen_articles)
+placed = order == "work" ? sort(placed; by = a -> (coalesce(a.volume, 99), coalesce(a.page, 0))) : placed
+results = [merge((number = i,), a) for (i, a) in enumerate(placed)]
+println(length(results), " of ", total, " articles retrieved, in ", length(unique(skipmissing(r.volume for r in results))), " volumes")
+vscodedisplay(without(results, :title), "Meyers Konversations-Lexikon: $words")
+'''
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of articles to retrieve at most, the first that Wikisource lists: 1,000 by default, 50 a request with a pause of a second."
+default = "1000"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: as Wikisource's search ranks the articles. In the Order of the Work: volume by volume, page by page."
+default = "relevance"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "work"
+label = "In the Order of the Work"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read an article, by its number in the table of Step 2: its text, which Wikisource gives in a request, opens in Pollis's browser with the words marked where they are as typed, or with all their endings for a word ending in *, the pages of the volume in brackets where they begin, and a link to each passage that has the words at the top."
+code = '''
+chosen = results[{{number}}]
+folder = expanduser(raw"{{folder}}")
+# The text of the article, kept in the folder wikisource, with the words of the query marked
+text = meyers_text(chosen; folder)
+page = reading_page(chosen.headword, split(text, "\n"); marks = query_patterns(words), language = "de",
+	meta = "Meyers Konversations-Lexikon, 4th edition" * (ismissing(chosen.volume) ? "" : ", volume $(chosen.volume), page $(chosen.page)"),
+	link = "The article on Wikisource" => chosen.wikisource)
+Pollis.browse(page.file)
+println(chosen.headword, "\n", length(page.passages), " passages have the words")
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Article"
+tooltip = "The number of the article, in the column number of the table of Step 2."
+default = "1"
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The texts go into wikisource/de and are not asked for again."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps.actions]]
+id = "scan"
+label = "The Scan of the Page"
+desc = "Open the scan of the page where the article starts, at Wikimedia Commons, in Pollis's browser"
+code = '''
+ismissing(chosen.scan) && error("Wikisource gives no page for this article")
+Pollis.browse(chosen.scan)
+'''
+
+[[steps.actions]]
+id = "wikisourcepage"
+label = "The Article on Wikisource"
+desc = "Open the article on Wikisource in Pollis's browser, with its pages beside their scans"
+code = '''
+Pollis.browse(chosen.wikisource)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the texts of the articles retrieved as text files, a file each with its headword, volume, page and link above its text, and the table of Step 2 as a CSV file beside them. Wikisource gives the text of each article in a request, with a pause of a second, except those already read."
+code = '''
+# The texts, a file each, and the table of the articles, in a folder named after the words
+saved = save_texts(joinpath(folder, "meyers", plain_name(words, 40)), results; count = {{toSave}}, table = "articles.csv",
+	name = r -> plain_name(r.headword), text = r -> meyers_text(r; folder),
+	header = r -> [r.headword, ismissing(r.volume) ? "" : "Volume $(r.volume), page $(r.page)", r.wikisource],
+	columns = (:number, :headword, :volume, :page, :words, :rank, :wikisource, :scan))
+println(saved.saved, " texts and the table of the ", length(results), " articles in ", saved.folder)
+'''
+
+[[steps.inputs]]
+id = "toSave"
+label = "Articles to Save"
+tooltip = "The number of articles whose texts are saved, the first in the table of Step 2: 100 by default, a request each."
+default = "100"

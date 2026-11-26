@@ -1,0 +1,124 @@
+# Brockhaus and Efron Encyclopedic Dictionary: the articles of the Russian encyclopedia of 1890–1907 as Russian Wikisource transcribes them, searched by words through the MediaWiki API, the articles found retrieved as a table, read with the words marked, and saved as text files; with JSON.jl
+
+[meta]
+title = "Brockhaus and Efron Encyclopedic Dictionary"
+viewType = "pollis.brockhausefron"
+style = "timeArrow"
+intro = "Find articles of the Brockhaus and Efron Encyclopedic Dictionary (Энциклопедический словарь Брокгауза и Ефрона), the Russian encyclopedia published in St Petersburg from 1890 to 1907 in 86 half-volumes, from a translation of the German Brockhaus to a work of its own on Russia and its peoples: query their text by words, retrieve the articles found as a table, read an article with the words marked, and save the texts. The text is Russian Wikisource's transcription, in modern spelling, of about 120,000 articles; its search answers the queries. A step first runs the steps before it that have not run in the Julia REPL as they are now."
+
+[[packages]]
+name = "HistoricalGeography.jl"
+github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
+minimum = "0.1.12"
+
+[[steps]]
+id = "query"
+title = "Query"
+intro = "Find the articles that have the words, and count them by the first letter of their headwords. Words are joined by AND, OR and NOT, with brackets; a phrase goes in quotes, and a word ending in * stands for all its endings. Wikisource's search also finds the other forms of a Russian word, as чумы for чума. It lists 10,000 articles of a query at most, 500 a request."
+code = '''
+using HistoricalGeography
+# The query: the words, in Russian
+words = strip(raw""" {{words}} """)
+# The articles that Wikisource's search finds, the most relevant first, up to the 10,000 it lists, a second apart
+found = brockhaus_search(words)
+total = found.total
+println(total, " articles have ", words, length(found.articles) < total ? ", of which Wikisource lists the first $(length(found.articles))" : "")
+# The articles by the first letter of their headwords
+letters = tally(uppercase(first(a.headword)) for a in found.articles)
+print_bars(sort([string(l) => n for (l, n) in letters]; by = first); width = 30)
+'''
+
+[[steps.inputs]]
+id = "words"
+label = "Words"
+tooltip = "The words to find, in Russian: чума, or чума AND Астрахань, or (комета OR метеор) NOT календарь, or \"Сибирский тракт\" for the words next to one another. A word ending in * finds all its endings, and marks them all in Step 3. Capitals do not matter."
+default = "чума"
+
+[[steps]]
+id = "retrieve"
+title = "Retrieve"
+intro = "Retrieve the articles found, up to a number, as a table: a row per article with its headword, its length in words, the words around the first place that has the words, and its page on Wikisource. The search gave them, so retrieving makes no request."
+code = '''
+total == 0 && error("Step 1 found no articles: change its words")
+order = "{{order}}"
+chosen_articles = first(order == "alphabetical" ? sort(found.articles; by = a -> a.headword) : found.articles, min({{atMost}}, length(found.articles)))
+results = [merge((number = i,), a) for (i, a) in enumerate(chosen_articles)]
+println(length(results), " of ", total, " articles retrieved")
+vscodedisplay(without(results, :title), "Brockhaus and Efron: $words")
+'''
+
+[[steps.inputs]]
+id = "atMost"
+label = "At Most"
+tooltip = "The number of articles to retrieve at most, the first that Wikisource lists: 1,000 by default."
+default = "1000"
+
+[[steps.inputs]]
+id = "order"
+label = "Order"
+kind = "select"
+tooltip = "Most Relevant First: as Wikisource's search ranks the articles. Alphabetical: by their headwords, as the dictionary has them."
+default = "relevance"
+
+[[steps.inputs.options]]
+value = "relevance"
+label = "Most Relevant First"
+
+[[steps.inputs.options]]
+value = "alphabetical"
+label = "Alphabetical"
+
+[[steps]]
+id = "read"
+title = "Read"
+intro = "Read an article, by its number in the table of Step 2: its text, which Wikisource gives in a request, opens in Pollis's browser with the words marked where they are as typed, or with all their endings for a word ending in *, and a link to each passage that has them at the top."
+code = '''
+chosen = results[{{number}}]
+folder = expanduser(raw"{{folder}}")
+# The text of the article, kept in the folder wikisource, with the words of the query marked
+text = brockhaus_text(chosen; folder)
+page = reading_page(chosen.headword, split(text, "\n"); marks = query_patterns(words), language = "ru",
+	meta = "Энциклопедический словарь Брокгауза и Ефрона", link = "The article on Wikisource" => chosen.wikisource)
+Pollis.browse(page.file)
+println(chosen.headword, "\n", length(page.passages), " passages have the words")
+'''
+
+[[steps.inputs]]
+id = "number"
+label = "Article"
+tooltip = "The number of the article, in the column number of the table of Step 2."
+default = "1"
+
+[[steps.inputs]]
+id = "folder"
+label = "Folder"
+tooltip = "Folder of the files: data/examples of the open Pollis Workspace, otherwise in Pollis's own folder. The texts go into wikisource/ru and are not asked for again."
+default = "~/.pollis/data/examples"
+folder = "data/examples"
+chooseFolder = false
+
+[[steps.actions]]
+id = "wikisourcepage"
+label = "The Article on Wikisource"
+desc = "Open the article on Wikisource in Pollis's browser, with its links to the articles it names"
+code = '''
+Pollis.browse(chosen.wikisource)
+'''
+
+[[steps]]
+id = "save"
+title = "Save"
+intro = "Save the texts of the articles retrieved as text files, a file each with its headword and link above its text, and the table of Step 2 as a CSV file beside them. Wikisource gives the text of each article in a request, with a pause of a second, except those already read."
+code = '''
+# The texts, a file each, and the table of the articles, in a folder named after the words
+saved = save_texts(joinpath(folder, "brockhaus-efron", plain_name(words, 40)), results; count = {{toSave}}, table = "articles.csv",
+	name = r -> plain_name(r.headword), text = r -> brockhaus_text(r; folder), header = r -> [r.headword, r.wikisource],
+	columns = (:number, :headword, :words, :rank, :wikisource))
+println(saved.saved, " texts and the table of the ", length(results), " articles in ", saved.folder)
+'''
+
+[[steps.inputs]]
+id = "toSave"
+label = "Articles to Save"
+tooltip = "The number of articles whose texts are saved, the first in the table of Step 2: 100 by default, a request each."
+default = "100"
