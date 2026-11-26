@@ -11,7 +11,7 @@ rowTitle = "Source"
 [[packages]]
 name = "HistoricalGeography.jl"
 github = "https://github.com/Trumpingtons/HistoricalGeography.jl"
-minimum = "0.1.14"
+minimum = "0.1.15"
 
 [[packages]]
 name = "DuckDB.jl"
@@ -151,7 +151,7 @@ default = "1"
 [[rows.steps]]
 id = "save"
 title = "Save"
-intro = "Saves a manuscript of the library of Step 2 whole into the folder Saved In of Step 1, its own folder: each image 2000 pixels wide, a second apart, with the manifest and its record, the citation among it, so that Step 3 shows it without a connection. A manuscript of 300 images takes about ten minutes and 250 MB; images saved before are kept, so a save that stopped goes on. The table of Step 2 then shows the manuscript Saved."
+intro = "Saves a manuscript of the library of Step 2 whole into the folder Saved In of Step 1, its own folder: each image 2000 pixels wide, a second apart, with the manifest and its record, the citation among it, so that Step 3 shows it without a connection. A manuscript of 300 images takes about ten minutes and 250 MB; images saved before are kept, so a save that stopped goes on. The table of Step 2 then shows the manuscript Saved, and the row e-codices: Saved Manuscripts lists it."
 needs = ["libraries", "manuscripts"]
 code = '''
 isempty(saved) && error("Open a Pollis Workspace (File > Open Pollis Workspace...) to save manuscripts into its folder data/manuscripts, or give a folder in the field Saved In of Step 1")
@@ -172,6 +172,69 @@ id = "ecodicesSave"
 label = "Manuscript"
 tooltip = "The shelfmark of the manuscript to save, in the column manuscript of the table of Step 2, where its pill Save fills it in, as does Save on the bar of the browser's tab that Step 3 opens."
 default = "MsBN 47"
+
+[[rows]]
+id = "ecodicesCopies"
+title = "e-codices: Saved Manuscripts"
+subtitle = "Your Pollis Workspace"
+description = "The manuscripts of e-codices saved whole by Save, in the table of the manuscripts of the row e-codices, into data/manuscripts of the open Pollis Workspace, of any library: listed with their shelfmarks, titles, dates and libraries, and read page by page in Pollis's browser without a connection."
+covers = "The manuscripts saved, of any library of e-codices"
+period = "That of each manuscript"
+size = "About 250 MB for a manuscript of 300 images"
+access = "The saved copies, without a connection"
+licence = "Images by the terms of each library, as e-codices gives them"
+
+[[rows.steps]]
+id = "copies"
+title = "Saved Manuscripts"
+intro = "The manuscripts saved in the folder Saved In, a row each, in the order of their folders, with how to quote each. A click on a shelfmark puts its folder in the field Manuscript of Step 2 and runs Step 2."
+code = '''
+using HistoricalGeography
+saved = "{{ecodicesCopies}}"  # where Save of the row e-codices saves manuscripts: data/manuscripts of the open Pollis Workspace
+isempty(saved) && error("Open a Pollis Workspace (File > Open Pollis Workspace...) whose folder data/manuscripts has the manuscripts saved, or give a folder in the field Saved In")
+copies = ecodices_copies(saved)
+if isempty(copies)
+	println("No manuscript is saved in ", saved, " yet: Save, under a shelfmark of the table of the manuscripts of the row e-codices, saves one")
+else
+	println(length(copies) == 1 ? "1 manuscript" : "$(length(copies)) manuscripts", " saved, ", sum(c -> c.images, copies), " images: click a shelfmark to read it")
+	# Each shelfmark a link that puts its folder in the field Manuscript of Step 2 and runs Step 2
+	vscodedisplay(Pollis.step_links(copies, :manuscript => :ecodicesCopy; values = :folder), "e-codices: Saved Manuscripts")
+end
+'''
+
+[[rows.steps.inputs]]
+id = "ecodicesCopies"
+label = "Saved In"
+tooltip = "The folder where Save of the row e-codices saves manuscripts, each in a folder of its own, as e-codices/kba-BN0047: data/manuscripts of the open Pollis Workspace."
+default = ""
+folder = "data/manuscripts"
+chooseFolder = false
+
+[[rows.steps]]
+id = "pages"
+title = "Pages"
+intro = "The images of a saved manuscript in Pollis's browser, read from its copy, without a connection: Previous Page, the page and Next Page on the browser's bar go through them, and the tab is titled with the shelfmark and the folio."
+code = '''
+chosen = filter(c -> c.folder == "{{ecodicesCopy}}", copies)
+isempty(chosen) && error("No manuscript is saved in the folder {{ecodicesCopy}} of $(saved)/e-codices: the folders are in the column folder of the table of Step 1")
+manuscript = first(chosen)
+pages = ecodices_copy_pages(saved, manuscript.folder)
+println(manuscript.citation)
+println(length(pages.images), " images, from ", first(pages.labels), " to ", last(pages.labels))
+Pollis.browse(pages.images; page = {{ecodicesCopyPage}}, labels = pages.labels, title = "$(manuscript.manuscript), {label}")
+'''
+
+[[rows.steps.inputs]]
+id = "ecodicesCopy"
+label = "Manuscript"
+tooltip = "The folder of a saved manuscript, in the column folder of the table of Step 1, where a click on its shelfmark fills it in: kba-BN0047 is MsBN 47 of the Aargauer Kantonsbibliothek, Henry Suso's Büchlein der ewigen Weisheit."
+default = "kba-BN0047"
+
+[[rows.steps.inputs]]
+id = "ecodicesCopyPage"
+label = "Page"
+tooltip = "The image to open at, counted from 1 as on the browser's bar, the covers and paste-downs among them."
+default = "1"
 
 [[rows]]
 id = "biblissima"
