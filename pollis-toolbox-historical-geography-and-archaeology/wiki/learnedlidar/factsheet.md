@@ -33,7 +33,7 @@ The network is that of AiTLAS, the toolbox that runs ADAF's models, on the HRNet
 
 ## How the Steps of Learned Detection in Lidar Run
 
-Each step of Learned Detection in Lidar has its inputs and its code, and the code of a step uses the results of the steps before it. Julia REPL first runs the earlier steps that have not run in the session as they are now, starting from the first one that changed. A new Threshold therefore runs Compute the Features again and leaves the network's probability map as it is, while a new Terrain Model runs every step from the first. Looking at the results and saving them are run only when asked. Editor, Notebook and Pluto receive the code of all the earlier steps, then that of the step.
+Each step of Learned Detection in Lidar has its inputs and its code, and the code of a step uses the results of the steps before it. Julia REPL first runs the earlier steps that have not run in the session as they are now, starting from the first one that changed. A new Threshold therefore runs Compute the Features again and leaves the network's probability map as it is, while a new Terrain Model runs every step from the first. Looking at the results and saving them are run only when asked. Editor, Jupyter and Pluto receive the code of all the earlier steps, then that of the step.
 
 ## What the Next Step of the Learned Detection in Lidar Panel Does
 
