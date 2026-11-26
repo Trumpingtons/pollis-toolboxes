@@ -160,7 +160,7 @@ display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "order
 id = "decameron"
 title = "Places of The Decameron"
 subtitle = "Giovanni Boccaccio, The Decameron"
-description = "The places of The Decameron, from its frame story, in which seven young women and three young men leave Florence in the plague of 1348 for villas in the hills near the city, to the hundred stories they tell there over ten days, from Ireland and London to Alexandria and Jerusalem. Each place has its passage of John Payne's translation, with the day, the story and its teller, and the map colours the places of the frame story apart from those of the stories. The two villas are those that tradition identifies with the palaces the book describes without naming them. The Ladies' Valley has a tentative point near Poggio Gherardo, not an identification, Camerata a point on Via di Camerata, and Cathay the point of China; Alba is Albisola Superiore, an identification that has been questioned. The far countries of Frate Cipolla's journey that are streets of Florence are on the map, but Bengodi and his imaginary lands are not. Cyprus has Rubens's Cimon and Iphigenia (Day 5, Story 1), and Chiassi, the pine wood of Ravenna, Botticelli's The Story of Nastagio degli Onesti (Day 5, Story 8). Its years are those of its writing."
+description = "The places of The Decameron, from its frame story, in which seven young women and three young men leave Florence in the plague of 1348 for villas in the hills near the city, to the hundred stories they tell there over ten days, from Ireland and London to Alexandria and Jerusalem. Each place has its passage of John Payne's translation, with the day, the story and its teller. The map colours the places by day, each with its theme, or by teller, chosen in the legend; a place of several days or tellers has a colour of its own. The two villas are those that tradition identifies with the palaces the book describes without naming them. The Ladies' Valley has a tentative point near Poggio Gherardo, not an identification, Camerata a point on Via di Camerata, and Cathay the point of China; Alba is Albisola Superiore, an identification that has been questioned. The far countries of Frate Cipolla's journey that are streets of Florence are on the map, but Bengodi and his imaginary lands are not. Cyprus has Rubens's Cimon and Iphigenia (Day 5, Story 1), and Chiassi, the pine wood of Ravenna, Botticelli's The Story of Nastagio degli Onesti (Day 5, Story 8). Its years are those of its writing."
 kind = "Fictional"
 years = "1348–1353"
 region = "From Ireland to Alexandria and Antioch"
@@ -172,9 +172,11 @@ con = DBInterface.connect(DuckDB.DB)
 foreach(sql -> DBInterface.execute(con, sql), ["LOAD spatial", "SET geometry_always_xy = true"])
 folder = mkpath(expanduser("~/.pollis/data/examples/topic-maps"))  # where the maps' files are kept
 # The places the book names, in the order it first names them, each with its passages, the day, story and teller of
-# each, and its level: the frame story, the stories or both
+# each; its day, with the day's theme, and its teller, or several
 places = text_places(con, :decameron; folder)
 println(places.count, " places, named in ", places.mentions, " passages")
-display(Pollis.webmap(Pollis.layer(places.path; name = "Places", column = "level"); title = "Places of The Decameron",
+# coloured by day, or by teller: a box in the legend shows each
+display(Pollis.webmap(Pollis.layer(places.path; name = "Day", column = "day"),
+	Pollis.layer(places.path; name = "Teller", column = "teller", visible = false); title = "Places of The Decameron",
 	center = (14, 41), zoom = 3.5))
 '''
