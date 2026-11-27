@@ -1,6 +1,6 @@
 # Relief Visualisation — Factsheet
 
-**Relief visualisation** turns a lidar terrain model into images in which small earthworks stand out: banks, ditches, mounds, hollow ways and old field boundaries that rise or sink by a few tens of centimetres ([Kokalj and Hesse (2017)](#ref-KH2017a)). The Relief Visualisation panel of the Historical Geography and Archaeology Toolbox computes the visualisations of the Relief Visualization Toolbox (RVT) in Julia, with SmartRegions.jl and Rasters.jl, on a grid read through ArchGDAL.jl ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a); [Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a)).
+**Relief visualisation** turns a lidar terrain model into images in which small earthworks stand out: banks, ditches, mounds, hollow ways and old field boundaries that rise or sink by a few tens of centimetres ([Kokalj and Hesse (2017)](#ref-KH2017a)). The Relief Visualisation panel of the Archaeology Toolbox computes the visualisations of the Relief Visualization Toolbox (RVT) in Julia, with SmartRegions.jl and Rasters.jl, on a grid read through ArchGDAL.jl ([ZRC SAZU and University of Ljubljana (UL FGG) (2025)](#ref-ZRCUL2025a); [Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a)).
 
 | Item | Relief Visualisation panel |
 |---|---|

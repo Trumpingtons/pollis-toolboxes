@@ -1,6 +1,6 @@
 # Sites and Monuments — Factsheet
 
-**Sites and monuments** are the places where people of the past lived, built, worshipped and were buried, as registers of ancient places record them. The Sites and Monuments panel of the Historical Geography and Archaeology Toolbox reads two registers that are not bound to one country, Pleiades and the Ancient Near East site placemarks, with DuckDB's spatial extension, draws the sites of an area on Google's maps, Esri's imagery or a free map, and saves them for Google Earth, Google My Maps and any GIS ([Elliott and 12 coauthors (2025)](#ref-ETBBB...2025a); [Pedersen (2007)](#ref-Ped2007a); [Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
+**Sites and monuments** are the places where people of the past lived, built, worshipped and were buried, as registers of ancient places record them. The Sites and Monuments panel of the Archaeology Toolbox reads two registers that are not bound to one country, Pleiades and the Ancient Near East site placemarks, with DuckDB's spatial extension, draws the sites of an area on Google's maps, Esri's imagery or a free map, and saves them for Google Earth, Google My Maps and any GIS ([Elliott and 12 coauthors (2025)](#ref-ETBBB...2025a); [Pedersen (2007)](#ref-Ped2007a); [Raasveldt and Mühleisen (2026)](#ref-RM2026a); [DuckDB Labs and contributors (2026)](#ref-DDBL2026b)).
 
 | Item | Sites and Monuments panel |
 |---|---|

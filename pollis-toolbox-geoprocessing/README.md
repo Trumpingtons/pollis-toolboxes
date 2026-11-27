@@ -13,7 +13,7 @@ Installing it adds the **Geoprocessing** submenu to the end of the **Extend** me
 
 The menu has Grid Calculations and Terrain and Elevation Analysis; then the submenus Satellite Indicators and Lidar and 3D Scans, whose items are greyed; then Coordinate Transformations and Projections and Spatial Indexing, greyed. One menu item per panel, which opens on its first tab.
 
-The [Smart Regions Toolbox](../pollis-toolbox-smart-regions/README.md) reads raster and vector files and downloads elevation models and satellite images; the [Spatial Econometrics Toolbox](../pollis-toolbox-spatial-econometrics/README.md) models data on areas; the [Historical Geography and Archaeology Toolbox](../pollis-toolbox-historical-geography-and-archaeology/README.md) turns lidar terrain models into relief images and finds archaeological features in them.
+The [Smart Regions Toolbox](../pollis-toolbox-smart-regions/README.md) reads raster and vector files and downloads elevation models and satellite images; the [Spatial Econometrics Toolbox](../pollis-toolbox-spatial-econometrics/README.md) models data on areas; the [Archaeology Toolbox](../pollis-toolbox-archaeology/README.md) turns lidar terrain models into relief images and finds archaeological features in them.
 
 ## Requirements
 

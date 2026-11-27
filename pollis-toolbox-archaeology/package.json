@@ -1,0 +1,54 @@
+{
+  "name": "pollis-toolbox-archaeology",
+  "displayName": "Archaeology Toolbox",
+  "description": "Pollis Archaeology Toolbox: archaeological prospection and the registers of ancient places, for archaeologists, heritage officers and museums. Makes terrain models from lidar point clouds, shows them as relief images, finds the places shaped like earthworks, and applies the trained models of ADAF to them; finds sites in satellite images with a model of known sites, and tests Enki, the network trained on tells of the Ancient Near East, on ground it was not trained on. Maps the ancient places of Pleiades and the Ancient Near East site placemarks of Pedersen.",
+  "version": "0.1.0",
+  "publisher": "pollis",
+  "author": "Pollis",
+  "license": "AGPL-3.0",
+  "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/saragga/pollis"
+  },
+  "engines": {
+    "vscode": "*"
+  },
+  "categories": ["Other"],
+  "contributes": {
+    "pollisToolboxes": [
+      {
+        "id": "archaeology",
+        "title": "Archaeology",
+        "order": 1,
+        "duckdbExtensions": ["spatial"],
+        "submenus": [
+          { "id": "archaeology", "title": "Archaeological Prospection", "group": "1_archaeology", "order": 1 }
+        ],
+        "panels": [
+          {
+            "id": "pointcloud", "command": "pollis.archaeology.pointcloud", "title": "Terrain Model from Point Cloud", "submenu": "archaeology", "group": "1_archaeology", "order": 1, "data": "panels/pointcloud.toml"
+          },
+          {
+            "id": "reliefvis", "command": "pollis.archaeology.reliefvis", "title": "Relief Visualisation", "submenu": "archaeology", "group": "1_archaeology", "order": 2, "data": "panels/reliefvis.toml", "defaultModel": "lrm", "decisionFirstColumn": "Visualisation"
+          },
+          {
+            "id": "candidates", "command": "pollis.archaeology.candidates", "title": "Candidate Features", "submenu": "archaeology", "group": "1_archaeology", "order": 3, "data": "panels/candidates.toml", "defaultModel": "mounds", "decisionFirstColumn": "Method"
+          },
+          {
+            "id": "learnedlidar", "command": "pollis.archaeology.learnedlidar", "title": "Learned Detection in Lidar", "submenu": "archaeology", "group": "1_archaeology", "order": 4, "data": "panels/learnedlidar.toml"
+          },
+          {
+            "id": "learnedsatellite", "command": "pollis.archaeology.learnedsatellite", "title": "Learned Detection in Satellite Images", "submenu": "archaeology", "group": "1_archaeology", "order": 5, "data": "panels/learnedsatellite.toml"
+          },
+          {
+            "id": "enkiheldout", "command": "pollis.archaeology.enkiheldout", "title": "Enki on Held-Out Ground", "submenu": "archaeology", "group": "1_archaeology", "order": 6, "data": "panels/enkiheldout.toml", "defaultModel": "published", "decisionFirstColumn": "Tab"
+          },
+          {
+            "id": "sitesmonuments", "command": "pollis.archaeology.sitesmonuments", "title": "Sites and Monuments", "group": "1_archaeology", "order": 2, "data": "panels/sitesmonuments.toml", "defaultModel": "pleiades", "decisionFirstColumn": "Register"
+          }
+        ]
+      }
+    ]
+  }
+}

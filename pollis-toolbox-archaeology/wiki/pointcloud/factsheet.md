@@ -1,6 +1,6 @@
 # Terrain Model from Point Cloud — Factsheet
 
-**A terrain model from a point cloud** is a grid of the height of the bare ground, made from the points a lidar survey measured. The Terrain Model from Point Cloud panel of the Historical Geography and Archaeology Toolbox makes one in Julia, in five steps. PDAL reads and gathers the points ([Butler, Chambers, Hartzell and Glennie (2021)](#ref-BCHG2021a)), LazIO.jl reads them into Julia ([Pronk (2026b)](#ref-Pro2026b)), Geomorphometry.jl finds the ground again ([Pronk and Schouten (2026)](#ref-PS2026a)), NearestNeighbors.jl fills the gaps ([Carlsson (2026)](#ref-Car2026a)), and Rasters.jl and ArchGDAL.jl write the result ([Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a)).
+**A terrain model from a point cloud** is a grid of the height of the bare ground, made from the points a lidar survey measured. The Terrain Model from Point Cloud panel of the Archaeology Toolbox makes one in Julia, in five steps. PDAL reads and gathers the points ([Butler, Chambers, Hartzell and Glennie (2021)](#ref-BCHG2021a)), LazIO.jl reads them into Julia ([Pronk (2026b)](#ref-Pro2026b)), Geomorphometry.jl finds the ground again ([Pronk and Schouten (2026)](#ref-PS2026a)), NearestNeighbors.jl fills the gaps ([Carlsson (2026)](#ref-Car2026a)), and Rasters.jl and ArchGDAL.jl write the result ([Schouten (2026a)](#ref-Sch2026a); [Ng (2026)](#ref-Ng2026a)).
 
 | Item | Terrain Model from Point Cloud panel |
 |---|---|
