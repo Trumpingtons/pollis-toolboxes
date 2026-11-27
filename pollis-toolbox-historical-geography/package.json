@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-historical-geography",
   "displayName": "Historical Geography Toolbox",
   "description": "Pollis Historical Geography Toolbox: the past on the map, for historians, archaeologists, heritage officers, museums, and the municipalities and regions with history attached. Maps the borders of states with a year slider, from Cliopatria, the world maps of historical-basemaps and CShapes 2.0, and tells which states held a place over the centuries. Sets old maps beside today's map, with a line to swipe between them: the maps of Cassini and of the état-major and IGN's aerial photographs since 1950 for France, the maps that libraries have shared and Allmaps has georeferenced anywhere, and eight famous maps from the Tabula Peutingeriana to the Tasman map. Maps the populations of the past, from the European cities of Buringh, the world cities of Chandler and Modelski, and the grid of HYDE 3.5.",
-  "version": "0.1.30",
+  "version": "0.1.31",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -69,13 +69,13 @@
             "id": "encyclopedie", "command": "pollis.historicalGeography.encyclopedie", "title": "Encyclopédie", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 5, "data": "panels/encyclopedie.toml"
           },
           {
-            "id": "meyers", "command": "pollis.historicalGeography.meyers", "title": "Meyers Konversations-Lexikon", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 7, "data": "panels/meyers.toml"
+            "id": "meyers", "command": "pollis.historicalGeography.meyers", "title": "Meyers Konversations-Lexikon", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 8, "data": "panels/meyers.toml"
           },
           {
-            "id": "brockhausefron", "command": "pollis.historicalGeography.brockhausefron", "title": "Brockhaus and Efron Encyclopedic Dictionary", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 8, "data": "panels/brockhausefron.toml"
+            "id": "brockhausefron", "command": "pollis.historicalGeography.brockhausefron", "title": "Brockhaus and Efron Encyclopedic Dictionary", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 9, "data": "panels/brockhausefron.toml"
           },
           {
-            "id": "sovietencyclopedia", "command": "pollis.historicalGeography.sovietencyclopedia", "title": "Great Soviet Encyclopedia, First Edition", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 9, "data": "panels/sovietencyclopedia.toml"
+            "id": "sovietencyclopedia", "command": "pollis.historicalGeography.sovietencyclopedia", "title": "Great Soviet Encyclopedia, First Edition", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 10, "data": "panels/sovietencyclopedia.toml"
           },
           {
             "id": "eebo", "command": "pollis.historicalGeography.eebo", "title": "EEBO-TCP", "submenu": "books", "group": "1_books", "order": 1, "data": "panels/eebo.toml"
@@ -118,11 +118,12 @@
           }
         ],
         "pages": [
-          { "command": "pollis.britannica.open", "title": "Encyclopædia Britannica", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 6 }
+          { "command": "pollis.britannica.open", "title": "Encyclopædia Britannica", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 6 },
+          { "command": "pollis.larousse.open", "title": "Larousse", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 7 }
         ],
         "planned": [
           { "title": "ZEN", "submenu": "newspapers", "group": "1_newspapers", "order": 1 },
-          { "title": "Encyclopedia of China", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 10 }
+          { "title": "Encyclopedia of China", "submenu": "encyclopedias", "group": "1_encyclopedias", "order": 11 }
         ]
       }
     ]
