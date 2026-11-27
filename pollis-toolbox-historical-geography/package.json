@@ -1,8 +1,8 @@
 {
-  "name": "pollis-toolbox-historical-geography-and-archaeology",
+  "name": "pollis-toolbox-historical-geography",
   "displayName": "Historical Geography Toolbox",
   "description": "Pollis Historical Geography Toolbox: the past on the map, for historians, archaeologists, heritage officers, museums, and the municipalities and regions with history attached. Maps the borders of states with a year slider, from Cliopatria, the world maps of historical-basemaps and CShapes 2.0, and tells which states held a place over the centuries. Sets old maps beside today's map, with a line to swipe between them: the maps of Cassini and of the état-major and IGN's aerial photographs since 1950 for France, the maps that libraries have shared and Allmaps has georeferenced anywhere, and eight famous maps from the Tabula Peutingeriana to the Tasman map. Maps the populations of the past, from the European cities of Buringh, the world cities of Chandler and Modelski, and the grid of HYDE 3.5.",
-  "version": "0.1.29",
+  "version": "0.1.30",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
@@ -18,7 +18,7 @@
   "contributes": {
     "pollisToolboxes": [
       {
-        "id": "historical-geography-and-archaeology",
+        "id": "historical-geography",
         "title": "Historical Geography",
         "order": 1,
         "duckdbExtensions": ["spatial", "excel"],
