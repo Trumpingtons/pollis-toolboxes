@@ -215,7 +215,7 @@ id = "cloud"
 title = "Point Cloud"
 intro = "Read the points of a survey, and check its coordinate system and its classes. A survey can be a LAS or LAZ file, local or on the web, a folder of them, a tile index with an area, or a COPC file on the web, of which only the area is read. The points are gathered into one LAZ file in the folder, read again from there later."
 code = '''
-using ArchaeologicalDetection, SmartRegions, Rasters, ArchGDAL, Statistics
+using ArchaeologicalDetection, PDAL_jll, LazIO, SmartRegions, Rasters, ArchGDAL, Statistics
 using Downloads: download
 folder = mkpath(expanduser(raw"{{folder}}"))  # the folder of the files
 {{?survey=aguada}}# Example: the lidar survey of the Middle Usumacinta of 2019 (OpenTopography, CC BY 4.0), its tiles of 500 m over the platform of Aguada Fénix, Tabasco, Mexico, picked from the survey's tile index

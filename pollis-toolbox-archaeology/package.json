@@ -2,7 +2,7 @@
   "name": "pollis-toolbox-archaeology",
   "displayName": "Archaeology Toolbox",
   "description": "Pollis Archaeology Toolbox: archaeological prospection and the registers of ancient places, for archaeologists, heritage officers and museums. Makes terrain models from lidar point clouds, shows them as relief images, finds the places shaped like earthworks, and applies the trained models of ADAF to them; finds sites in satellite images with a model of known sites, and tests Enki, the network trained on tells of the Ancient Near East, on ground it was not trained on. Maps the ancient places of Pleiades and the Ancient Near East site placemarks of Pedersen.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "pollis",
   "author": "Pollis",
   "license": "AGPL-3.0",
